@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Conductor</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+</head>
+<body>
+<h1>Conductor</h1>
+<div id="state"></div>
+<h2>Juegos</h2>
+<ul id="games"></ul>
+
+<h3>Nuevo juego</h3>
+<form id="form">
+<input name="name" placeholder="Nombre" required>
+<input name="description" placeholder="Descripción">
+<button type="submit">Crear</button>
+</form>
+
+<script type="module">
+import { db } from './js/db.js';
+const gamesEl = document.getElementById('games');
+const stateEl = document.getElementById('state');
+
+async function load() {
+  const games = await db.listGames();
+  gamesEl.innerHTML = games.map(g => `<li>${g.name} ${g.active?'(activo)':''}</li>`).join('');
+  const state = await db.getState();
+  stateEl.textContent = JSON.stringify(state);
+}
+document.getElementById('form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(e.target));
+  await db.createGame(data);
+  e.target.reset();
+  load();
+});
+load();
+</script>
+</body>
+</html>
