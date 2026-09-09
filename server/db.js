@@ -76,8 +76,10 @@ const wrapper = {
         stmt.step();
         const changes = db.getRowsModified();
         stmt.free();
+        const rid = db.exec("SELECT last_insert_rowid()");
+        const lastInsertRowid = rid.length > 0 ? rid[0].values[0][0] : 0;
         save();
-        return { lastInsertRowid: db.getLastInsertRowid(), changes };
+        return { lastInsertRowid, changes };
       }
     };
   },
