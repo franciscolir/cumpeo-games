@@ -63,6 +63,7 @@ tailwind.config={
       <a class="nav-link flex items-center px-4 py-3 transition-all bg-primary text-on-primary font-headline-sm text-headline-sm uppercase border-2 border-on-surface comic-shadow-md rounded-xl translate-x-1" data-path="inicio" href="#">Inicio</a>
       <a class="nav-link flex items-center px-4 py-3 rounded-xl border-2 border-transparent text-on-surface font-label-lg text-label-lg transition-all hover:bg-surface-container hover:text-on-surface hover:border-on-surface hover:comic-shadow-sm" data-path="juegos" href="#">Juegos</a>
       <a class="nav-link flex items-center px-4 py-3 rounded-xl border-2 border-transparent text-on-surface font-label-lg text-label-lg transition-all hover:bg-surface-container hover:text-on-surface hover:border-on-surface hover:comic-shadow-sm" data-path="circuitos" href="#">Circuitos</a>
+      <a class="nav-link flex items-center px-4 py-3 rounded-xl border-2 border-transparent text-on-surface font-label-lg text-label-lg transition-all hover:bg-surface-container hover:text-on-surface hover:border-on-surface hover:comic-shadow-sm" data-path="conductor-live" href="#">Conductor Live</a>
       <a class="nav-link flex items-center px-4 py-3 rounded-xl border-2 border-transparent text-on-surface font-label-lg text-label-lg transition-all hover:bg-surface-container hover:text-on-surface hover:border-on-surface hover:comic-shadow-sm" data-path="extras" href="#">Extras</a>
       <a class="nav-link flex items-center px-4 py-3 rounded-xl border-2 border-transparent text-on-surface font-label-lg text-label-lg transition-all hover:bg-surface-container hover:text-on-surface hover:border-on-surface hover:comic-shadow-sm" data-path="configuracion" href="#">Configuracion</a>
     </nav>
@@ -354,7 +355,7 @@ tailwind.config={
           </div>
           <div class="pt-6 mt-6 border-t-2 border-surface-variant flex items-center gap-2">
             <button class="btn-detail flex-1 py-2.5 px-3 rounded-xl border-2 border-on-surface bg-surface-container-lowest text-on-surface font-label-lg text-label-lg uppercase comic-shadow-sm hover:bg-surface-container transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none text-center" type="button">Ver Detalle</button>
-            <button class="btn-play flex-1 py-2.5 px-3 rounded-xl border-2 border-on-surface bg-primary text-on-primary font-label-lg text-label-lg uppercase comic-shadow-sm hover:bg-primary-container transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none flex items-center justify-center gap-1" data-game="Trivia Relampago" type="button">
+            <button class="btn-play flex-1 py-2.5 px-3 rounded-xl border-2 border-on-surface bg-primary text-on-primary font-label-lg text-label-lg uppercase comic-shadow-sm hover:bg-primary-container transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none flex items-center justify-center gap-1" data-game="Trivia Relampago" data-href="console.html?game=trivia" type="button">
               <span class="material-symbols-outlined text-[18px]">play_arrow</span> Jugar
             </button>
           </div>
@@ -2128,10 +2129,379 @@ tailwind.config={
       </div>
     </section>
     <section id="page-extras" class="page-section hidden">
-      <div class="max-w-[72rem] mx-auto w-full flex flex-col gap-6">
-        <h1 class="font-display-hero text-display-hero text-on-surface uppercase">Extras</h1>
-        <p class="font-body-lg text-on-surface-variant">Seccion en construccion...</p>
+      <div class="flex flex-col w-full max-w-[72rem] mx-auto space-y-8 pb-12">
+
+        <!-- Top Comic Banner / Operational Status Bar -->
+        <div class="relative bg-surface-container-lowest rounded-xl p-6 sm:p-8 shadow-[4px_4px_0px_#111111] overflow-hidden">
+          <div class="absolute -top-16 -right-16 w-48 h-48 bg-secondary-container/20 rounded-full blur-2xl pointer-events-none"></div>
+          <div class="absolute -bottom-10 right-28 w-32 h-32 bg-primary-container/10 rounded-full blur-xl pointer-events-none"></div>
+          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 relative z-10">
+            <div class="space-y-2 max-w-2xl">
+              <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-secondary-container text-on-secondary-fixed rounded-full shadow-[2px_2px_0px_#111111] font-label-comic-pill text-label-comic-pill uppercase tracking-wider transform -rotate-1">
+                  <span class="material-symbols-outlined text-[16px] text-on-secondary-fixed" style="font-variation-settings: 'FILL' 1;">handyman</span>
+                  Caja de Herramientas
+                </span>
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-tertiary-container text-on-tertiary-container rounded-full shadow-[2px_2px_0px_#111111] font-label-comic-pill text-label-comic-pill uppercase tracking-wider transform rotate-1">
+                  <span class="w-2.5 h-2.5 rounded-full bg-tertiary-fixed inline-block animate-pulse"></span>
+                  3 / 3 Habilitadas
+                </span>
+                <span class="px-2.5 py-1 bg-surface-container-high text-on-surface-variant font-label-md text-label-md rounded-full">
+                  HUD v2.4 Activo
+                </span>
+              </div>
+              <h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight uppercase leading-none pt-1">
+                Extras — Caja de Herramientas del Conductor
+              </h1>
+              <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                Mecanismos auxiliares para controlar, resolver desempates y dinamizar situaciones en vivo sin salir del flujo de partida.
+              </p>
+            </div>
+            <div class="flex flex-col sm:flex-row lg:flex-col items-start lg:items-end justify-between gap-4 shrink-0">
+              <div class="flex items-center gap-2 text-on-surface-variant bg-surface-container-low px-3.5 py-2 rounded-xl shadow-[2px_2px_0px_#111111]">
+                <span class="material-symbols-outlined text-[20px] text-primary">bolt</span>
+                <span class="font-label-md text-label-md">Ejecución 1-Clic · Modal Inmersivo</span>
+              </div>
+              <button class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-primary-container text-on-primary-container font-label-comic-pill text-label-comic-pill uppercase tracking-wider shadow-[4px_4px_0px_#111111] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_#111111] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-all cursor-pointer" onclick="openGenericModal('Configurador de Extras', 'Permite agregar temporizadores personalizados, ruletas de castigo y zumbadores especiales.')">
+                <span class="material-symbols-outlined text-[20px]">add_circle</span>
+                <span>+ Agregar Herramienta Personalizada</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Primary Tools Grid (3 Essential Modules) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+          <!-- TOOL 1: TOMBOLA DE NOMBRES -->
+          <div class="flex flex-col bg-surface-container-lowest rounded-xl shadow-[4px_4px_0px_#111111] overflow-hidden group hover:-translate-y-1 transition-transform duration-200">
+            <div class="relative bg-secondary-container/30 p-6 flex items-center justify-between overflow-hidden">
+              <div class="absolute -right-8 -top-8 w-28 h-28 bg-secondary-container/40 rounded-full blur-xl pointer-events-none"></div>
+              <div class="space-y-1 z-10">
+                <div class="flex items-center gap-2">
+                  <span class="px-2.5 py-0.5 rounded-full bg-tertiary text-on-tertiary font-label-comic-pill text-label-comic-pill uppercase tracking-wider shadow-[2px_2px_0px_#111111]">Activo</span>
+                  <span class="font-label-md text-label-md text-secondary uppercase font-bold tracking-wider">Módulo #01</span>
+                </div>
+                <h2 class="font-headline-md text-headline-md text-on-surface uppercase leading-tight pt-1 flex items-center gap-2">
+                  <span>🎱</span> Tómbola de Nombres
+                </h2>
+              </div>
+              <div class="w-16 h-16 rounded-xl bg-surface-container-lowest shadow-[3px_3px_0px_#111111] flex items-center justify-center relative shrink-0">
+                <svg class="w-10 h-10 text-primary" fill="none" viewBox="0 0 48 48">
+                  <circle cx="24" cy="24" fill="#ffffff" r="16" stroke="currentColor" stroke-width="3"></circle>
+                  <path d="M12 24C12 17.37 17.37 12 24 12" stroke="#ffc72c" stroke-linecap="round" stroke-width="3"></path>
+                  <circle cx="20" cy="22" fill="#e41b34" r="3.5"></circle>
+                  <circle cx="28" cy="26" fill="#00694d" r="3"></circle>
+                  <circle cx="24" cy="30" fill="#ffc72c" r="2.5"></circle>
+                  <path d="M16 40L32 40" stroke="currentColor" stroke-linecap="round" stroke-width="3"></path>
+                  <path d="M20 40L24 36L28 40" stroke="currentColor" stroke-linejoin="round" stroke-width="3"></path>
+                  <path d="M38 18L42 14" stroke="#ffc72c" stroke-linecap="round" stroke-width="2.5"></path>
+                  <path d="M40 24L44 24" stroke="#ffc72c" stroke-linecap="round" stroke-width="2.5"></path>
+                </svg>
+                <span class="absolute -bottom-2 -right-1 font-label-comic-pill text-[10px] bg-primary text-on-primary px-1.5 py-0.5 rounded shadow-[1px_1px_0px_#111111] uppercase transform rotate-6">RND</span>
+              </div>
+            </div>
+            <div class="p-6 flex-1 flex flex-col justify-between space-y-6">
+              <div class="space-y-4">
+                <div class="p-3.5 rounded-xl bg-surface-container-low shadow-[2px_2px_0px_#111111]">
+                  <p class="font-label-md text-label-md uppercase text-on-surface-variant font-bold mb-1 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[16px] text-primary">psychology_alt</span>
+                    ¿Qué resuelve?
+                  </p>
+                  <p class="font-body-sm text-body-sm text-on-surface leading-snug">
+                    Sorteo y selección aleatoria e imparcial de un participante o equipo sin sesgos manuales ante dilemas del público.
+                  </p>
+                </div>
+                <div class="space-y-2.5">
+                  <span class="font-label-md text-label-md text-on-surface-variant uppercase font-bold tracking-wider block">Parámetros Rápidos:</span>
+                  <div class="flex items-center justify-between p-2.5 rounded-lg bg-surface-container-lowest shadow-[2px_2px_0px_#111111]">
+                    <span class="font-body-sm text-body-sm text-on-surface font-medium">Ámbito de sorteo</span>
+                    <span class="px-2.5 py-0.5 rounded-md bg-secondary-fixed text-on-secondary-fixed font-label-md text-label-md font-bold">Todos en Sala</span>
+                  </div>
+                  <div class="flex items-center justify-between p-2.5 rounded-lg bg-surface-container-lowest shadow-[2px_2px_0px_#111111]">
+                    <span class="font-body-sm text-body-sm text-on-surface font-medium">Exclusión en ronda</span>
+                    <span class="inline-flex items-center gap-1 text-tertiary font-label-md text-label-md font-bold">
+                      <span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                      Sin repetición
+                    </span>
+                  </div>
+                  <div class="flex items-center justify-between p-2.5 rounded-lg bg-surface-container-lowest shadow-[2px_2px_0px_#111111]">
+                    <span class="font-body-sm text-body-sm text-on-surface font-medium">Duración de giro</span>
+                    <span class="px-2 py-0.5 rounded bg-surface-container-high text-on-surface font-label-comic-pill text-label-comic-pill">3.5 seg</span>
+                  </div>
+                </div>
+              </div>
+              <div class="space-y-2.5 pt-2">
+                <button class="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-secondary-container text-on-secondary-fixed font-label-comic-pill text-label-comic-pill uppercase tracking-wider shadow-[4px_4px_0px_#111111] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_#111111] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-all cursor-pointer" onclick="triggerTombolaTest()">
+                  <span class="material-symbols-outlined text-[20px]">casino</span>
+                  <span>Probar Tómbola (Test Modal)</span>
+                </button>
+                <button class="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-surface-container-lowest text-on-surface font-label-md text-label-md shadow-[2px_2px_0px_#111111] hover:bg-surface-container-low transition-colors cursor-pointer" onclick="openGenericModal('Configurar Tómbola de Nombres', 'Ajusta la lista de participantes, filtra por capitanes o incluye comodines sorpresa.')">
+                  <span class="material-symbols-outlined text-[18px] text-on-surface-variant">settings</span>
+                  <span>Configurar Parámetros</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- TOOL 2: DADOS DE RIVALIDAD (VS) -->
+          <div class="flex flex-col bg-surface-container-lowest rounded-xl shadow-[4px_4px_0px_#111111] overflow-hidden group hover:-translate-y-1 transition-transform duration-200">
+            <div class="relative bg-primary-container/20 p-6 flex items-center justify-between overflow-hidden">
+              <div class="absolute -right-8 -top-8 w-28 h-28 bg-primary-container/30 rounded-full blur-xl pointer-events-none"></div>
+              <div class="space-y-1 z-10">
+                <div class="flex items-center gap-2">
+                  <span class="px-2.5 py-0.5 rounded-full bg-tertiary text-on-tertiary font-label-comic-pill text-label-comic-pill uppercase tracking-wider shadow-[2px_2px_0px_#111111]">Activo</span>
+                  <span class="font-label-md text-label-md text-primary uppercase font-bold tracking-wider">Módulo #02</span>
+                </div>
+                <h2 class="font-headline-md text-headline-md text-on-surface uppercase leading-tight pt-1 flex items-center gap-2">
+                  <span>🎲</span> Dados de Rivalidad (VS)
+                </h2>
+              </div>
+              <div class="w-16 h-16 rounded-xl bg-surface-container-lowest shadow-[3px_3px_0px_#111111] flex items-center justify-center relative shrink-0">
+                <svg class="w-11 h-11" fill="none" viewBox="0 0 48 48">
+                  <rect fill="#e41b34" height="16" rx="3" stroke="#111111" stroke-width="2" width="16" x="7" y="14"></rect>
+                  <circle cx="12" cy="19" fill="#ffffff" r="1.5"></circle>
+                  <circle cx="18" cy="25" fill="#ffffff" r="1.5"></circle>
+                  <circle cx="15" cy="22" fill="#ffffff" r="1.5"></circle>
+                  <rect fill="#008562" height="16" rx="3" stroke="#111111" stroke-width="2" transform="rotate(12 31 18)" width="16" x="23" y="10"></rect>
+                  <circle cx="28" cy="15" fill="#ffffff" r="1.5"></circle>
+                  <circle cx="34" cy="21" fill="#ffffff" r="1.5"></circle>
+                  <circle cx="34" cy="15" fill="#ffffff" r="1.5"></circle>
+                  <circle cx="28" cy="21" fill="#ffffff" r="1.5"></circle>
+                  <path d="M22 6L24 2" stroke="#111111" stroke-linecap="round" stroke-width="2"></path>
+                  <path d="M26 34L28 38" stroke="#111111" stroke-linecap="round" stroke-width="2"></path>
+                </svg>
+                <span class="absolute -bottom-2 -left-1 font-label-comic-pill text-[10px] bg-secondary-container text-on-secondary-fixed px-1.5 py-0.5 rounded shadow-[1px_1px_0px_#111111] uppercase transform -rotate-6">VS</span>
+              </div>
+            </div>
+            <div class="p-6 flex-1 flex flex-col justify-between space-y-6">
+              <div class="space-y-4">
+                <div class="p-3.5 rounded-xl bg-surface-container-low shadow-[2px_2px_0px_#111111]">
+                  <p class="font-label-md text-label-md uppercase text-on-surface-variant font-bold mb-1 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[16px] text-primary">sports_kabaddi</span>
+                    ¿Qué resuelve?
+                  </p>
+                  <p class="font-body-sm text-body-sm text-on-surface leading-snug">
+                    Decidir quién inicia, resolver empates o retos directos comparando 2 dados simultáneos en pantalla gigante.
+                  </p>
+                </div>
+                <div class="space-y-2.5">
+                  <span class="font-label-md text-label-md text-on-surface-variant uppercase font-bold tracking-wider block">Parámetros Rápidos:</span>
+                  <div class="flex items-center justify-between p-2.5 rounded-lg bg-surface-container-lowest shadow-[2px_2px_0px_#111111]">
+                    <span class="font-body-sm text-body-sm text-on-surface font-medium">Bandos Asignados</span>
+                    <div class="flex items-center gap-1.5">
+                      <span class="w-3 h-3 rounded-full bg-primary-container inline-block"></span>
+                      <span class="font-label-md text-label-md font-bold text-on-surface">Escarlata</span>
+                      <span class="text-on-surface-variant text-xs font-bold">VS</span>
+                      <span class="w-3 h-3 rounded-full bg-tertiary inline-block"></span>
+                      <span class="font-label-md text-label-md font-bold text-on-surface">Titán</span>
+                    </div>
+                  </div>
+                  <div class="flex items-center justify-between p-2.5 rounded-lg bg-surface-container-lowest shadow-[2px_2px_0px_#111111]">
+                    <span class="font-body-sm text-body-sm text-on-surface font-medium">Cantidad de dados</span>
+                    <span class="px-2.5 py-0.5 rounded-md bg-surface-container-high text-on-surface font-label-md text-label-md font-bold">1 por bando (1-6)</span>
+                  </div>
+                  <div class="flex items-center justify-between p-2.5 rounded-lg bg-surface-container-lowest shadow-[2px_2px_0px_#111111]">
+                    <span class="font-body-sm text-body-sm text-on-surface font-medium">Regla de empate</span>
+                    <span class="px-2 py-0.5 rounded bg-primary-fixed text-on-primary-fixed font-label-comic-pill text-label-comic-pill uppercase">Re-tiro Rápido</span>
+                  </div>
+                </div>
+              </div>
+              <div class="space-y-2.5 pt-2">
+                <button class="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-primary-container text-on-primary-container font-label-comic-pill text-label-comic-pill uppercase tracking-wider shadow-[4px_4px_0px_#111111] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_#111111] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-all cursor-pointer" onclick="triggerDiceTest()">
+                  <span class="material-symbols-outlined text-[20px]">casino</span>
+                  <span>Lanzar Dados (Test)</span>
+                </button>
+                <button class="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-surface-container-lowest text-on-surface font-label-md text-label-md shadow-[2px_2px_0px_#111111] hover:bg-surface-container-low transition-colors cursor-pointer" onclick="openGenericModal('Configurar Dados de Rivalidad', 'Elige entre dados d6, d12 o d20. Asigna multiplicadores de puntaje extra para eventos de clímax.')">
+                  <span class="material-symbols-outlined text-[18px] text-on-surface-variant">tune</span>
+                  <span>Configurar Parámetros</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- TOOL 3: DINAMITA (CUENTA REGRESIVA) -->
+          <div class="flex flex-col bg-surface-container-lowest rounded-xl shadow-[4px_4px_0px_#111111] overflow-hidden group hover:-translate-y-1 transition-transform duration-200">
+            <div class="relative bg-tertiary-container/15 p-6 flex items-center justify-between overflow-hidden">
+              <div class="absolute -right-8 -top-8 w-28 h-28 bg-tertiary-container/25 rounded-full blur-xl pointer-events-none"></div>
+              <div class="space-y-1 z-10">
+                <div class="flex items-center gap-2">
+                  <span class="px-2.5 py-0.5 rounded-full bg-tertiary text-on-tertiary font-label-comic-pill text-label-comic-pill uppercase tracking-wider shadow-[2px_2px_0px_#111111]">Activo</span>
+                  <span class="font-label-md text-label-md text-tertiary uppercase font-bold tracking-wider">Módulo #03</span>
+                </div>
+                <h2 class="font-headline-md text-headline-md text-on-surface uppercase leading-tight pt-1 flex items-center gap-2">
+                  <span>🧨</span> Dinamita (Cuenta Explosiva)
+                </h2>
+              </div>
+              <div class="w-16 h-16 rounded-xl bg-surface-container-lowest shadow-[3px_3px_0px_#111111] flex items-center justify-center relative shrink-0">
+                <svg class="w-11 h-11" fill="none" viewBox="0 0 48 48">
+                  <rect fill="#ba1a1a" height="24" rx="2" width="7" x="14" y="16"></rect>
+                  <rect fill="#e41b34" height="26" rx="2" width="7" x="22" y="14"></rect>
+                  <rect fill="#ba1a1a" height="24" rx="2" width="7" x="29" y="16"></rect>
+                  <rect fill="#1c1b1b" height="6" width="24" x="13" y="24"></rect>
+                  <path d="M25 14C25 8 30 7 32 4" stroke="#775a00" stroke-linecap="round" stroke-width="2"></path>
+                  <circle cx="34" cy="4" fill="#ffc72c" r="3"></circle>
+                  <path d="M34 1L34 7M31 4L37 4" stroke="#e41b34" stroke-linecap="round" stroke-width="1.5"></path>
+                </svg>
+                <span class="absolute -bottom-2 -right-1 font-label-comic-pill text-[10px] bg-primary text-on-primary px-1.5 py-0.5 rounded shadow-[1px_1px_0px_#111111] uppercase transform rotate-3 animate-bounce">BOOM!</span>
+              </div>
+            </div>
+            <div class="p-6 flex-1 flex flex-col justify-between space-y-6">
+              <div class="space-y-4">
+                <div class="p-3.5 rounded-xl bg-surface-container-low shadow-[2px_2px_0px_#111111]">
+                  <p class="font-label-md text-label-md uppercase text-on-surface-variant font-bold mb-1 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[16px] text-primary">timer</span>
+                    ¿Qué resuelve?
+                  </p>
+                  <p class="font-body-sm text-body-sm text-on-surface leading-snug">
+                    Cuenta regresiva de alta tensión visual y auditiva para respuestas bajo fuego o desafíos físicos rápidos.
+                  </p>
+                </div>
+                <div class="space-y-2.5">
+                  <span class="font-label-md text-label-md text-on-surface-variant uppercase font-bold tracking-wider block">Parámetros Rápidos:</span>
+                  <div class="flex items-center justify-between p-2.5 rounded-lg bg-surface-container-lowest shadow-[2px_2px_0px_#111111]">
+                    <span class="font-body-sm text-body-sm text-on-surface font-medium">Preajustes de tiempo</span>
+                    <div class="flex items-center gap-1">
+                      <span class="px-1.5 py-0.5 rounded bg-surface-container-high font-label-comic-pill text-xs">10s</span>
+                      <span class="px-1.5 py-0.5 rounded bg-secondary-container font-label-comic-pill text-xs shadow-[1px_1px_0px_#111111]">20s</span>
+                      <span class="px-1.5 py-0.5 rounded bg-surface-container-high font-label-comic-pill text-xs">30s</span>
+                      <span class="px-1.5 py-0.5 rounded bg-surface-container-high font-label-comic-pill text-xs">60s</span>
+                    </div>
+                  </div>
+                  <div class="flex items-center justify-between p-2.5 rounded-lg bg-surface-container-lowest shadow-[2px_2px_0px_#111111]">
+                    <span class="font-body-sm text-body-sm text-on-surface font-medium">Efecto final</span>
+                    <span class="px-2 py-0.5 rounded-md bg-error text-on-error font-label-comic-pill text-label-comic-pill uppercase tracking-wider">¡BOOM! + Bloqueo</span>
+                  </div>
+                  <div class="flex items-center justify-between p-2.5 rounded-lg bg-surface-container-lowest shadow-[2px_2px_0px_#111111]">
+                    <span class="font-body-sm text-body-sm text-on-surface font-medium">Espejo en Escenario</span>
+                    <span class="inline-flex items-center gap-1 text-tertiary font-label-md text-label-md font-bold">
+                      <span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">tv</span>
+                      Sincronizado
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div class="space-y-2.5 pt-2">
+                <button class="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-error text-on-error font-label-comic-pill text-label-comic-pill uppercase tracking-wider shadow-[4px_4px_0px_#111111] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_#111111] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-all cursor-pointer" onclick="triggerDynamiteTest()">
+                  <span class="material-symbols-outlined text-[20px]">local_fire_department</span>
+                  <span>Encender Mecha (Test)</span>
+                </button>
+                <button class="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-surface-container-lowest text-on-surface font-label-md text-label-md shadow-[2px_2px_0px_#111111] hover:bg-surface-container-low transition-colors cursor-pointer" onclick="openGenericModal('Configurar Dinamita Explosiva', 'Configura audios personalizados, sirenas previas a la detonación y penalizaciones por tiempo agotado.')">
+                  <span class="material-symbols-outlined text-[18px] text-on-surface-variant">hourglass_bottom</span>
+                  <span>Configurar Parámetros</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Section: Host Guidelines & Mascot Card -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+          <div class="lg:col-span-6 bg-surface-container-lowest rounded-xl p-6 shadow-[4px_4px_0px_#111111] relative flex flex-col justify-between overflow-hidden">
+            <div class="flex items-start gap-4">
+              <div class="relative shrink-0">
+                <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-secondary-container/20 p-1 shadow-[3px_3px_0px_#111111] overflow-hidden flex items-center justify-center">
+                  <img alt="Pupi la mascota oficial de Cumpeo alzando el pulgar" class="w-full h-full object-contain" src="images/pupi-pulgar-arriba.png">
+                </div>
+                <span class="absolute -bottom-2 -left-1 bg-secondary-container text-on-secondary-fixed font-label-comic-pill text-[11px] uppercase px-2 py-0.5 rounded shadow-[1px_1px_0px_#111111] transform -rotate-3">¡TIP DE PUPI!</span>
+              </div>
+              <div class="flex-1 relative bg-surface-container-low rounded-2xl p-4 sm:p-5 shadow-[3px_3px_0px_#111111]">
+                <div class="absolute -left-3 top-6 w-0 h-0 border-t-[10px] border-t-transparent border-r-[12px] border-r-surface-container-low border-b-[10px] border-b-transparent"></div>
+                <p class="font-body-md text-body-md text-on-surface font-medium leading-relaxed">
+                  «¡Las herramientas de conductor <span class="text-primary font-bold">no son juegos aparte</span>! Úsalas en medio de una trivia para elegir a quién interrogar con la <span class="bg-secondary-fixed px-1 rounded font-bold">Tómbola</span>, o desempata una ronda tensa con los <span class="bg-primary-fixed px-1 rounded font-bold">Dados</span>. Al cerrarlas, vuelves exactamente al segundo de la partida donde estabas.»
+                </p>
+                <div class="mt-3 flex items-center justify-between pt-2">
+                  <span class="font-label-comic-pill text-label-comic-pill text-on-surface-variant uppercase tracking-wider">Control En Tiempo Real</span>
+                  <span class="material-symbols-outlined text-primary text-[20px]">thumb_up</span>
+                </div>
+              </div>
+            </div>
+            <div class="mt-6 pt-4 flex flex-wrap gap-2">
+              <span class="px-3 py-1 bg-surface-container text-on-surface-variant font-label-md text-label-md rounded-full">💡 Atajo Teclado: [T] Tómbola</span>
+              <span class="px-3 py-1 bg-surface-container text-on-surface-variant font-label-md text-label-md rounded-full">💡 Atajo Teclado: [D] Dados</span>
+              <span class="px-3 py-1 bg-surface-container text-on-surface-variant font-label-md text-label-md rounded-full">💡 Atajo Teclado: [B] Dinamita</span>
+            </div>
+          </div>
+          <div class="lg:col-span-6 bg-surface-container-lowest rounded-xl p-6 shadow-[4px_4px_0px_#111111] flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-primary text-[24px]">verified</span>
+                  <h3 class="font-headline-sm text-headline-sm text-on-surface uppercase tracking-tight">Reglas de Integración con la Partida</h3>
+                </div>
+                <span class="font-label-comic-pill text-label-comic-pill text-tertiary uppercase bg-tertiary-fixed/30 px-2.5 py-0.5 rounded-full">Seguridad 100%</span>
+              </div>
+              <p class="font-body-sm text-body-sm text-on-surface-variant mb-4">
+                Protocolo de ejecución diseñado para no alterar puntajes registrados ni perder el estado del buzzer en vivo:
+              </p>
+              <div class="space-y-3">
+                <div class="flex items-center gap-3.5 p-3 rounded-xl bg-surface-container-low shadow-[2px_2px_0px_#111111]">
+                  <div class="w-7 h-7 rounded-lg bg-primary-container text-on-primary-container flex items-center justify-center font-headline-sm text-headline-sm shrink-0 shadow-[1px_1px_0px_#111111]">1</div>
+                  <div class="min-w-0 flex-1">
+                    <span class="font-label-lg text-label-lg text-on-surface block leading-tight">Activación con 1-clic desde la cabina</span>
+                    <span class="font-body-sm text-body-sm text-on-surface-variant">Lanza cualquier extra al instante desde el mazo flotante del host.</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-3.5 p-3 rounded-xl bg-surface-container-low shadow-[2px_2px_0px_#111111]">
+                  <div class="w-7 h-7 rounded-lg bg-secondary-container text-on-secondary-fixed flex items-center justify-center font-headline-sm text-headline-sm shrink-0 shadow-[1px_1px_0px_#111111]">2</div>
+                  <div class="min-w-0 flex-1">
+                    <span class="font-label-lg text-label-lg text-on-surface block leading-tight">Modal de pantalla completa con foco total</span>
+                    <span class="font-body-sm text-body-sm text-on-surface-variant">Transmisión sincronizada en el proyector sin menús distractores.</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-3.5 p-3 rounded-xl bg-surface-container-low shadow-[2px_2px_0px_#111111]">
+                  <div class="w-7 h-7 rounded-lg bg-tertiary-container text-on-tertiary-container flex items-center justify-center font-headline-sm text-headline-sm shrink-0 shadow-[1px_1px_0px_#111111]">3</div>
+                  <div class="min-w-0 flex-1">
+                    <span class="font-label-lg text-label-lg text-on-surface block leading-tight">Pausa temporal no destructiva</span>
+                    <span class="font-body-sm text-body-sm text-on-surface-variant">Congela los relojes de trivia sin resetear preguntas en curso.</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-3.5 p-3 rounded-xl bg-surface-container-low shadow-[2px_2px_0px_#111111]">
+                  <div class="w-7 h-7 rounded-lg bg-surface-container-highest text-on-surface flex items-center justify-center font-headline-sm text-headline-sm shrink-0 shadow-[1px_1px_0px_#111111]">4</div>
+                  <div class="min-w-0 flex-1">
+                    <span class="font-label-lg text-label-lg text-on-surface block leading-tight">Cierre automático y retorno instantáneo</span>
+                    <span class="font-body-sm text-body-sm text-on-surface-variant">Al concluir el sorteo o dados, el juego reanuda sin recargar página.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="mt-4 pt-3 flex items-center justify-between text-on-surface-variant text-xs font-medium">
+              <span class="flex items-center gap-1">
+                <span class="w-2 h-2 rounded-full bg-tertiary inline-block"></span>
+                Conexión WebSockets activa con Proyector
+              </span>
+              <button class="hover:text-primary underline cursor-pointer" onclick="openGenericModal('Logs de Sesión', 'Todos los resultados de la tómbola y dados quedan registrados con sello de tiempo.')">Ver registro de auditoría</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Interactive Test Modal Container -->
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-on-surface/70 backdrop-blur-sm hidden" id="interactive-tool-modal">
+          <div class="relative w-full max-w-lg bg-surface-container-lowest rounded-2xl shadow-[6px_6px_0px_#111111] overflow-hidden transform transition-all">
+            <div class="p-4 bg-secondary-container text-on-secondary-fixed flex items-center justify-between" id="modal-header-bar">
+              <div class="flex items-center gap-2">
+                <span class="text-2xl" id="modal-icon">🎱</span>
+                <h4 class="font-headline-md text-headline-md uppercase tracking-tight" id="modal-title">Simulación en Vivo</h4>
+              </div>
+              <button class="w-8 h-8 rounded-lg bg-surface-container-lowest text-on-surface flex items-center justify-center shadow-[2px_2px_0px_#111111] hover:bg-surface-container hover:scale-105 active:scale-95 transition-all cursor-pointer" onclick="closeToolModal()">
+                <span class="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+            <div class="p-6 sm:p-8 flex flex-col items-center justify-center text-center space-y-6" id="modal-body-content"></div>
+            <div class="p-4 bg-surface-container-low flex items-center justify-between">
+              <span class="font-label-md text-label-md text-on-surface-variant flex items-center gap-1">
+                <span class="material-symbols-outlined text-[16px] text-tertiary">lock_reset</span>
+                Partida pausada en segundo plano
+              </span>
+              <button class="px-5 py-2 rounded-xl bg-surface-container-lowest text-on-surface font-label-comic-pill text-label-comic-pill uppercase shadow-[2px_2px_0px_#111111] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#111111] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer" onclick="closeToolModal()">Volver a la Partida</button>
+            </div>
+          </div>
+        </div>
+
       </div>
+    </section>
+    <section id="page-conductor-live" class="page-section hidden">
+      <iframe src="/console.html" class="w-full h-screen border-0" title="Consola CUMPEO"></iframe>
     </section>
     <section id="page-configuracion" class="page-section hidden">
       <div class="max-w-[72rem] mx-auto w-full flex flex-col gap-6">
@@ -2201,7 +2571,7 @@ tailwind.config={
 </div>
 
 <script>
-const API = 'http://localhost:3000/api';
+const API = 'http://localhost:4000/api';
 let currentState = null;
 
 // ==================== NAVEGACION ====================
@@ -2365,21 +2735,36 @@ function setupEventListeners() {
   }
 
   document.querySelectorAll('.btn-play').forEach(btn => {
-    btn.addEventListener('click', async () => {
+    btn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const href = btn.getAttribute('data-href');
+      if (href) {
+        window.location.href = href;
+        return;
+      }
       const gameName = btn.getAttribute('data-game');
       if (!gameName) return;
-      await fetch(API + '/games', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({name: gameName, description: 'Juego individual'})
-      });
-      await fetch(API + '/state', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({current_game_id: 1, status: 'active'})
-      });
-      await loadState();
-      openDashboard(gameName);
+      try {
+        const gameRes = await fetch(API + '/games', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({name: gameName, description: 'Juego individual'})
+        });
+        if (!gameRes.ok) throw new Error('Error creando juego');
+        const gameData = await gameRes.json();
+        const gameId = gameData.id;
+        const stateRes = await fetch(API + '/state', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({current_game_id: gameId, status: 'idle'})
+        });
+        if (!stateRes.ok) throw new Error('Error actualizando estado');
+        openDashboard(gameName);
+        await loadState();
+      } catch (err) {
+        console.error('Error al iniciar juego:', err);
+      }
     });
   });
 
@@ -2579,7 +2964,8 @@ function setupEventListeners() {
 
   // Boton Lanzar Circuito
   document.getElementById('circ-launch').addEventListener('click', () => {
-    alert('¡CIRCUITO LANZADO CON ÉXITO! Sincronizando pantallas públicas y abriendo pulsadores...');
+    navigateTo('conductor-live');
+    // TODO: sincronizar estado con API y abrir public screen
   });
 
   // Balancear Automatico
@@ -2658,12 +3044,249 @@ function presetEquilibrado() {
   });
 }
 
+// ==================== EXTRAS: CAJA DE HERRAMIENTAS ====================
+function closeToolModal() {
+  const modal = document.getElementById('interactive-tool-modal');
+  if (modal) modal.classList.add('hidden');
+  if (window._dynamiteInterval) {
+    clearInterval(window._dynamiteInterval);
+    window._dynamiteInterval = null;
+  }
+}
+
+function openGenericModal(title, text) {
+  const modal = document.getElementById('interactive-tool-modal');
+  if (!modal) return;
+  const headerBar = document.getElementById('modal-header-bar');
+  const icon = document.getElementById('modal-icon');
+  const titleEl = document.getElementById('modal-title');
+  const content = document.getElementById('modal-body-content');
+
+  headerBar.className = "p-4 bg-surface-container-highest text-on-surface flex items-center justify-between";
+  icon.innerText = "⚙️";
+  titleEl.innerText = title;
+
+  content.innerHTML = `
+    <div class="space-y-4 max-w-md text-center">
+      <div class="w-16 h-16 mx-auto rounded-full bg-surface-container-high flex items-center justify-center shadow-[3px_3px_0px_#111111]">
+        <span class="material-symbols-outlined text-[32px] text-primary">tune</span>
+      </div>
+      <p class="font-body-md text-body-md text-on-surface">${text}</p>
+      <div class="p-4 rounded-xl bg-surface-container-low shadow-[2px_2px_0px_#111111] text-left text-sm space-y-2">
+        <div class="flex justify-between font-bold">
+          <span>Sincronización de Salón:</span>
+          <span class="text-tertiary">Activa (Auto)</span>
+        </div>
+        <div class="flex justify-between">
+          <span>Sonidos de explosión / fanfarria:</span>
+          <span>Altavoces Principales</span>
+        </div>
+      </div>
+      <button onclick="closeToolModal()" class="w-full py-3 rounded-xl bg-primary-container text-on-primary-container font-label-comic-pill text-label-comic-pill uppercase shadow-[4px_4px_0px_#111111] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none cursor-pointer">
+        Guardar y Aplicar
+      </button>
+    </div>
+  `;
+
+  modal.classList.remove('hidden');
+}
+
+function triggerTombolaTest() {
+  const modal = document.getElementById('interactive-tool-modal');
+  if (!modal) return;
+  const headerBar = document.getElementById('modal-header-bar');
+  const icon = document.getElementById('modal-icon');
+  const titleEl = document.getElementById('modal-title');
+  const content = document.getElementById('modal-body-content');
+
+  headerBar.className = "p-4 bg-secondary-container text-on-secondary-fixed flex items-center justify-between";
+  icon.innerText = "🎱";
+  titleEl.innerText = "TÓMBOLA EN VIVO";
+
+  const players = ["Camila R. (Rayos)", "Martín S. (Titanes)", "Valeria P. (Rayos)", "Lucas D. (Titanes)", "Sofía M. (Rayos)"];
+
+  content.innerHTML = `
+    <div class="flex flex-col items-center space-y-4">
+      <div id="tombola-ball" class="w-32 h-32 rounded-full bg-secondary-container flex items-center justify-center shadow-[4px_4px_0px_#111111] animate-bounce">
+        <span class="material-symbols-outlined text-[56px] text-on-secondary-fixed">question_mark</span>
+      </div>
+      <div class="space-y-1">
+        <span class="font-label-comic-pill text-label-comic-pill uppercase text-primary tracking-widest block">Girando la urna...</span>
+        <h3 id="tombola-candidate" class="font-headline-lg text-headline-lg text-on-surface">Mezclando Salón</h3>
+      </div>
+      <p class="font-body-sm text-body-sm text-on-surface-variant max-w-xs">
+        Seleccionando participante imparcialmente sin repetir a los capitanes previos.
+      </p>
+    </div>
+  `;
+
+  modal.classList.remove('hidden');
+
+  let count = 0;
+  const interval = setInterval(() => {
+    const candidateEl = document.getElementById('tombola-candidate');
+    if (candidateEl) {
+      candidateEl.innerText = players[count % players.length];
+      count++;
+    }
+  }, 120);
+
+  setTimeout(() => {
+    clearInterval(interval);
+    const chosen = "🔥 MARTÍN S. (LOS TITANES)";
+    const candidateEl = document.getElementById('tombola-candidate');
+    const ball = document.getElementById('tombola-ball');
+    if (candidateEl && ball) {
+      ball.classList.remove('animate-bounce');
+      ball.className = "w-32 h-32 rounded-full bg-tertiary text-on-tertiary flex items-center justify-center shadow-[4px_4px_0px_#111111] transform scale-110 transition-all";
+      ball.innerHTML = `<span class="material-symbols-outlined text-[64px]" style="font-variation-settings: 'FILL' 1;">star</span>`;
+      candidateEl.innerText = chosen;
+      candidateEl.className = "font-headline-lg text-headline-lg text-primary uppercase font-black";
+    }
+  }, 2400);
+}
+
+function triggerDiceTest() {
+  const modal = document.getElementById('interactive-tool-modal');
+  if (!modal) return;
+  const headerBar = document.getElementById('modal-header-bar');
+  const icon = document.getElementById('modal-icon');
+  const titleEl = document.getElementById('modal-title');
+  const content = document.getElementById('modal-body-content');
+
+  headerBar.className = "p-4 bg-primary-container text-on-primary-container flex items-center justify-between";
+  icon.innerText = "🎲";
+  titleEl.innerText = "DUELO DE DADOS (VS)";
+
+  content.innerHTML = `
+    <div class="flex flex-col items-center space-y-6 w-full">
+      <div class="flex items-center justify-center gap-6 sm:gap-10 w-full py-4">
+        <div class="flex flex-col items-center space-y-2">
+          <span class="font-label-comic-pill text-label-comic-pill uppercase text-primary">Rayos</span>
+          <div id="die-red" class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-primary-container text-on-primary-container flex items-center justify-center font-headline-lg text-[44px] shadow-[4px_4px_0px_#111111] transform rotate-3 animate-spin">?</div>
+        </div>
+        <div class="font-headline-lg text-headline-lg text-on-surface uppercase font-black">VS</div>
+        <div class="flex flex-col items-center space-y-2">
+          <span class="font-label-comic-pill text-label-comic-pill uppercase text-tertiary">Titanes</span>
+          <div id="die-cyan" class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-tertiary-container text-on-tertiary-container flex items-center justify-center font-headline-lg text-[44px] shadow-[4px_4px_0px_#111111] transform -rotate-3 animate-spin">?</div>
+        </div>
+      </div>
+      <div id="dice-result-banner" class="p-3 rounded-xl bg-surface-container-low shadow-[2px_2px_0px_#111111] w-full text-center">
+        <span class="font-label-comic-pill text-label-comic-pill uppercase text-on-surface-variant">Lanzando dados en la arena...</span>
+      </div>
+      <button onclick="triggerDiceTest()" class="py-2.5 px-6 rounded-xl bg-secondary-container text-on-secondary-fixed font-label-comic-pill text-label-comic-pill uppercase shadow-[3px_3px_0px_#111111] cursor-pointer">Volver a Tirar</button>
+    </div>
+  `;
+
+  modal.classList.remove('hidden');
+
+  setTimeout(() => {
+    const redVal = Math.floor(Math.random() * 6) + 1;
+    let cyanVal = Math.floor(Math.random() * 6) + 1;
+    if (cyanVal === redVal) {
+      cyanVal = redVal < 6 ? redVal + 1 : redVal - 1;
+    }
+
+    const dieRed = document.getElementById('die-red');
+    const dieCyan = document.getElementById('die-cyan');
+    const banner = document.getElementById('dice-result-banner');
+
+    if (dieRed && dieCyan && banner) {
+      dieRed.classList.remove('animate-spin');
+      dieCyan.classList.remove('animate-spin');
+      dieRed.innerText = redVal;
+      dieCyan.innerText = cyanVal;
+
+      if (redVal > cyanVal) {
+        dieRed.classList.add('scale-110');
+        banner.className = "p-3 rounded-xl bg-primary-container text-on-primary-container shadow-[3px_3px_0px_#111111] w-full text-center";
+        banner.innerHTML = `<span class="font-headline-sm text-headline-sm uppercase">¡VICTORIA PARA LOS RAYOS (+${redVal - cyanVal} PTS)!</span>`;
+      } else {
+        dieCyan.classList.add('scale-110');
+        banner.className = "p-3 rounded-xl bg-tertiary-container text-on-tertiary-container shadow-[3px_3px_0px_#111111] w-full text-center";
+        banner.innerHTML = `<span class="font-headline-sm text-headline-sm uppercase">¡VICTORIA PARA LOS TITANES (+${cyanVal - redVal} PTS)!</span>`;
+      }
+    }
+  }, 1200);
+}
+
+function triggerDynamiteTest() {
+  const modal = document.getElementById('interactive-tool-modal');
+  if (!modal) return;
+  const headerBar = document.getElementById('modal-header-bar');
+  const icon = document.getElementById('modal-icon');
+  const titleEl = document.getElementById('modal-title');
+  const content = document.getElementById('modal-body-content');
+
+  headerBar.className = "p-4 bg-error text-on-error flex items-center justify-between";
+  icon.innerText = "🧨";
+  titleEl.innerText = "CUENTA REGRESIVA DINAMITA";
+
+  let timeLeft = 10;
+
+  content.innerHTML = `
+    <div class="flex flex-col items-center space-y-5 w-full">
+      <div class="relative flex items-center justify-center">
+        <div id="dynamite-box" class="w-32 h-32 rounded-3xl bg-error text-on-error flex items-center justify-center font-display-hero text-display-hero shadow-[5px_5px_0px_#111111] transition-all">
+          <span id="countdown-num">10</span>
+        </div>
+        <div id="fuse-indicator" class="absolute -top-3 -right-2 bg-secondary-container text-on-secondary-fixed font-label-comic-pill text-xs px-2 py-0.5 rounded shadow-[1px_1px_0px_#111111] animate-pulse">🔥 MECHA ENCENDIDA</div>
+      </div>
+      <div class="w-full bg-surface-container-high rounded-full h-4 overflow-hidden shadow-[2px_2px_0px_#111111]">
+        <div id="dynamite-bar" class="bg-primary-container h-full w-full transition-all duration-1000 ease-linear"></div>
+      </div>
+      <p id="dynamite-status-label" class="font-headline-sm text-headline-sm text-on-surface uppercase tracking-tight">¡Respuesta bajo presión!</p>
+      <div class="flex gap-2">
+        <button onclick="triggerDynamiteTest()" class="py-2 px-4 rounded-xl bg-surface-container-highest text-on-surface font-label-comic-pill text-label-comic-pill uppercase shadow-[2px_2px_0px_#111111] cursor-pointer">Reiniciar a 10s</button>
+      </div>
+    </div>
+  `;
+
+  modal.classList.remove('hidden');
+
+  if (window._dynamiteInterval) clearInterval(window._dynamiteInterval);
+
+  window._dynamiteInterval = setInterval(() => {
+    timeLeft--;
+    const numEl = document.getElementById('countdown-num');
+    const barEl = document.getElementById('dynamite-bar');
+    const boxEl = document.getElementById('dynamite-box');
+    const statusLabel = document.getElementById('dynamite-status-label');
+
+    if (!numEl) {
+      clearInterval(window._dynamiteInterval);
+      window._dynamiteInterval = null;
+      return;
+    }
+
+    numEl.innerText = timeLeft;
+    if (barEl) {
+      barEl.style.width = (timeLeft * 10) + '%';
+    }
+
+    if (timeLeft <= 3 && timeLeft > 0 && boxEl) {
+      boxEl.className = "w-32 h-32 rounded-3xl bg-primary text-on-primary flex items-center justify-center font-display-hero text-display-hero shadow-[5px_5px_0px_#111111] scale-110 animate-ping";
+    }
+
+    if (timeLeft <= 0) {
+      clearInterval(window._dynamiteInterval);
+      window._dynamiteInterval = null;
+      numEl.innerText = "💥";
+      if (boxEl) boxEl.className = "w-36 h-36 rounded-3xl bg-secondary-container text-on-secondary-fixed flex items-center justify-center font-display-hero text-display-hero shadow-[6px_6px_0px_#111111] transform rotate-6 scale-125 transition-transform";
+      if (statusLabel) {
+        statusLabel.className = "font-headline-lg text-headline-lg text-error uppercase font-black tracking-tight";
+        statusLabel.innerText = "¡TIEMPO AGOTADO! ¡BOOM!";
+      }
+    }
+  }, 1000);
+}
+
 // ==================== INIT ====================
-async function init() {
-  await loadState();
-  updatePublicScreen();
-  setupEventListeners();
+function init() {
   navigateTo('inicio');
+  setupEventListeners();
+  updatePublicScreen();
+  loadState();
 }
 
 setInterval(updatePublicScreen, 2000);

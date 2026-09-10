@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>CUMPEO — Panel de Control en Vivo</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;800&family=Plus+Jakarta+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Tailwind Config -->
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "on-tertiary-fixed-variant": "#00513b",
+            "on-surface-variant": "#5d3f3e",
+            "on-secondary-fixed-variant": "#5a4300",
+            "on-primary": "#ffffff",
+            "secondary": "#775a00",
+            "secondary-container": "#ffc72c",
+            "primary-fixed": "#ffdad8",
+            "inverse-on-surface": "#f3f0ef",
+            "inverse-primary": "#ffb3b0",
+            "on-surface": "#1c1b1b",
+            "tertiary-fixed-dim": "#27e0a9",
+            "error-container": "#ffdad6",
+            "tertiary-fixed": "#54fdc4",
+            "outline-variant": "#e6bdba",
+            "primary-container": "#e41b34",
+            "on-error": "#ffffff",
+            "surface-container": "#f0edec",
+            "on-secondary": "#ffffff",
+            "secondary-fixed": "#ffdf99",
+            "surface-container-low": "#f6f3f2",
+            "tertiary": "#00694d",
+            "surface-variant": "#e5e2e1",
+            "primary-fixed-dim": "#ffb3b0",
+            "on-tertiary-fixed": "#002116",
+            "on-primary-container": "#fffbff",
+            "error": "#ba1a1a",
+            "inverse-surface": "#313030",
+            "surface-container-lowest": "#ffffff",
+            "on-background": "#1c1b1b",
+            "surface-container-highest": "#e5e2e1",
+            "outline": "#926e6d",
+            "surface": "#fcf9f8",
+            "surface-dim": "#dcd9d9",
+            "tertiary-container": "#008562",
+            "on-primary-fixed": "#410006",
+            "secondary-fixed-dim": "#f6bf22",
+            "on-error-container": "#93000a",
+            "primary": "#bb0024",
+            "on-tertiary": "#ffffff",
+            "on-tertiary-container": "#f5fff8",
+            "on-secondary-fixed": "#251a00",
+            "background": "#fcf9f8",
+            "on-primary-fixed-variant": "#93001a",
+            "on-secondary-container": "#6f5400",
+            "surface-bright": "#fcf9f8",
+            "surface-container-high": "#ebe7e7",
+            "surface-tint": "#bf0025"
+          },
+          borderRadius: {
+            DEFAULT: "0.25rem",
+            lg: "0.5rem",
+            xl: "0.75rem",
+            "2xl": "1rem",
+            full: "9999px"
+          },
+          borderWidth: {
+            "3": "3px",
+            "2.5": "2.5px"
+          },
+          boxShadow: {
+            "comic-sm": "2px 2px 0px #1c1b1b",
+            "comic-md": "3px 3px 0px #1c1b1b",
+            "comic-lg": "4px 4px 0px #1c1b1b",
+            "comic-xl": "6px 6px 0px #1c1b1b"
+          },
+          fontFamily: {
+            "headline-sm": ["Bricolage Grotesque", "sans-serif"],
+            "label-comic-pill": ["Bricolage Grotesque", "sans-serif"],
+            "label-md": ["Plus Jakarta Sans", "sans-serif"],
+            "body-lg": ["Plus Jakarta Sans", "sans-serif"],
+            "headline-md": ["Bricolage Grotesque", "sans-serif"],
+            "headline-lg-mobile": ["Bricolage Grotesque", "sans-serif"],
+            "body-md": ["Plus Jakarta Sans", "sans-serif"],
+            "display-hero-mobile": ["Bricolage Grotesque", "sans-serif"],
+            "display-hero": ["Bricolage Grotesque", "sans-serif"],
+            "label-lg": ["Plus Jakarta Sans", "sans-serif"],
+            "body-sm": ["Plus Jakarta Sans", "sans-serif"],
+            "headline-lg": ["Bricolage Grotesque", "sans-serif"]
+          },
+          fontSize: {
+            "headline-sm": ["20px", { lineHeight: "26px", fontWeight: "700" }],
+            "label-comic-pill": ["14px", { lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "800" }],
+            "label-md": ["13px", { lineHeight: "16px", letterSpacing: "0.04em", fontWeight: "700" }],
+            "body-lg": ["18px", { lineHeight: "28px", letterSpacing: "-0.01em", fontWeight: "500" }],
+            "headline-md": ["24px", { lineHeight: "30px", letterSpacing: "-0.01em", fontWeight: "700" }],
+            "headline-lg-mobile": ["28px", { lineHeight: "34px", letterSpacing: "-0.01em", fontWeight: "700" }],
+            "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+            "display-hero-mobile": ["38px", { lineHeight: "42px", letterSpacing: "-0.02em", fontWeight: "800" }],
+            "display-hero": ["56px", { lineHeight: "60px", letterSpacing: "-0.03em", fontWeight: "800" }],
+            "label-lg": ["16px", { lineHeight: "20px", letterSpacing: "0.02em", fontWeight: "700" }],
+            "body-sm": ["14px", { lineHeight: "20px", fontWeight: "400" }],
+            "headline-lg": ["36px", { lineHeight: "44px", letterSpacing: "-0.02em", fontWeight: "700" }]
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    html, body { margin: 0; padding: 0; }
+    body { overscroll-behavior: none; }
+    main > :first-child { margin-top: 0 !important; }
+    main > :last-child  { margin-bottom: 0 !important; }
+    ::-webkit-scrollbar { display: none; }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-background font-body-md text-body-md text-on-surface antialiased min-h-screen">
+
+  
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- S2. NUEVO TOP BAR — Broadcast & Live Session HUD        -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="fixed top-0 left-0 right-0 z-30 bg-surface-container-lowest/95 backdrop-blur-md border-b-2 border-on-surface px-6 py-3">
+    <div class="w-full flex flex-wrap items-center justify-between gap-4">
+      <!-- Izquierda: estado en vivo -->
+      <div class="flex items-center flex-wrap gap-3">
+        <div class="flex items-center gap-2 bg-primary px-3.5 py-1.5 rounded-full border-2 border-on-surface shadow-comic-sm">
+          <span class="w-3 h-3 rounded-full bg-surface-container-lowest animate-ping"></span>
+          <span class="font-label-comic-pill text-label-comic-pill text-on-primary uppercase tracking-wider">EN VIVO • SALA #402</span>
+        </div>
+        <div class="flex items-center gap-2 bg-surface-container px-3.5 py-1.5 rounded-xl border-2 border-on-surface">
+          <span class="material-symbols-outlined text-primary text-[20px]" style="font-variation-settings:'FILL' 1;">bolt</span>
+          <span class="font-headline-sm text-headline-sm uppercase text-on-surface text-sm sm:text-base">RONDA 1 DE 4: TRIVIA RELÁMPAGO CÓMIC</span>
+        </div>
+        <div class="flex items-center gap-2 bg-secondary-container text-on-secondary-container px-4 py-1.5 rounded-xl border-2 border-on-surface shadow-comic-md rotate-[-1deg]">
+          <span class="material-symbols-outlined text-on-secondary-container text-[20px]">timer</span>
+          <span class="font-label-comic-pill text-label-comic-pill uppercase tracking-wide">RESTANTE:</span>
+          <span class="font-display-hero text-headline-md tracking-tight font-extrabold text-on-secondary-container" id="countdown-timer">03:45</span>
+        </div>
+      </div>
+
+      <!-- Derecha: acciones -->
+      <div class="flex items-center flex-wrap gap-2.5">
+        <div class="hidden xl:flex items-center gap-2 bg-surface-container-low px-3 py-1.5 rounded-xl border-2 border-on-surface">
+          <span class="w-2.5 h-2.5 rounded-full bg-tertiary border border-on-surface"></span>
+          <span class="font-label-md text-label-md text-on-surface uppercase">PROYECTOR: HDMI 1 (60 FPS)</span>
+        </div>
+        <button type="button" id="btn-pause" onclick="togglePause()" class="flex items-center gap-1.5 bg-surface-container-lowest text-on-surface px-3.5 py-2 rounded-xl border-2 border-on-surface shadow-comic-md hover:bg-surface-container active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all font-label-lg text-label-lg uppercase">
+          <span class="material-symbols-outlined text-[18px]">pause</span>
+          <span id="pause-text">Pausar</span>
+        </button>
+        <button type="button" onclick="toggleRulesModal()" class="flex items-center gap-1.5 bg-surface-container-lowest text-on-surface px-3 py-2 rounded-xl border-2 border-on-surface shadow-comic-md hover:bg-surface-container active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all font-label-lg text-label-lg uppercase">
+          <span class="material-symbols-outlined text-[18px]">info</span>
+          <span>Reglas</span>
+        </button>
+        <button type="button" class="flex items-center gap-1.5 bg-primary-container text-on-primary px-4 py-2 rounded-xl border-2 border-on-surface shadow-comic-md hover:opacity-95 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all font-label-lg text-label-lg uppercase">
+          <span class="material-symbols-outlined text-[18px]">stop_circle</span>
+          <span>Fin Ronda</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- MAIN + SIDEBAR DERECHO                                   -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="pt-32 flex">
+
+    <!-- ▓▓▓ CONTENIDO PRINCIPAL ▓▓▓ -->
+    <main class="flex-1 min-w-0 bg-surface px-8 py-8">
+      <div class="flex flex-col w-full max-w-[72rem] mx-auto pb-12 gap-6">
+
+        <!-- ────────────────────────────────────────────────── -->
+        <!-- S3. HERO SCOREBOARD — MODO DEFAULT (esperando equipos) -->
+        <!-- ────────────────────────────────────────────────── -->
+        <section class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
+
+          <!-- TEAM A: Slot vacío esperando carga -->
+          <div class="lg:col-span-5 bg-surface-container-lowest rounded-2xl border-3 border-on-surface border-dashed shadow-comic-lg p-5 flex flex-col justify-center items-center relative overflow-hidden min-h-[180px]">
+            <div class="w-16 h-16 rounded-full bg-surface-container border-2 border-on-surface border-dashed flex items-center justify-center mb-3">
+              <span class="material-symbols-outlined text-on-surface-variant text-[32px]">group_add</span>
+            </div>
+            <h3 class="font-headline-md text-headline-md uppercase text-on-surface-variant tracking-tight">BANDO A</h3>
+            <p class="font-body-sm text-body-sm text-on-surface-variant/70 uppercase tracking-wider mt-1">Esperando carga de equipo...</p>
+            <button type="button" class="mt-4 px-4 py-2 rounded-xl bg-surface-container-low hover:bg-surface-container border-2 border-on-surface shadow-comic-sm font-label-md text-label-md uppercase active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center gap-2">
+              <span class="material-symbols-outlined text-[18px]">add</span>
+              <span>Cargar Equipo A</span>
+            </button>
+          </div>
+
+          <!-- VS central -->
+          <div class="lg:col-span-2 flex flex-col items-center justify-center py-2 px-1">
+            <div class="relative flex flex-col items-center gap-2">
+              <div class="w-16 h-16 rounded-full bg-surface-container border-3 border-on-surface border-dashed shadow-comic-lg flex items-center justify-center rotate-[6deg]">
+                <span class="font-display-hero text-headline-lg font-black text-on-surface-variant tracking-tighter">VS</span>
+              </div>
+              <div class="bg-surface-container-lowest px-3 py-1 rounded-xl border-2 border-on-surface border-dashed shadow-comic-sm text-center">
+                <span class="font-label-comic-pill text-label-comic-pill text-on-surface-variant uppercase font-bold tracking-tight">SIN DATOS</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- TEAM B: Slot vacío esperando carga -->
+          <div class="lg:col-span-5 bg-surface-container-lowest rounded-2xl border-3 border-on-surface border-dashed shadow-comic-lg p-5 flex flex-col justify-center items-center relative overflow-hidden min-h-[180px]">
+            <div class="w-16 h-16 rounded-full bg-surface-container border-2 border-on-surface border-dashed flex items-center justify-center mb-3">
+              <span class="material-symbols-outlined text-on-surface-variant text-[32px]">group_add</span>
+            </div>
+            <h3 class="font-headline-md text-headline-md uppercase text-on-surface-variant tracking-tight">BANDO B</h3>
+            <p class="font-body-sm text-body-sm text-on-surface-variant/70 uppercase tracking-wider mt-1">Esperando carga de equipo...</p>
+            <button type="button" class="mt-4 px-4 py-2 rounded-xl bg-surface-container-low hover:bg-surface-container border-2 border-on-surface shadow-comic-sm font-label-md text-label-md uppercase active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center gap-2">
+              <span class="material-symbols-outlined text-[18px]">add</span>
+              <span>Cargar Equipo B</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- ────────────────────────────────────────────────── -->
+        <!-- S4. MAIN ARENA — Pregunta activa                    -->
+        <!-- ────────────────────────────────────────────────── -->
+        <section class="w-full bg-surface-container-lowest rounded-2xl border-3 border-on-surface shadow-comic-lg p-6 flex flex-col gap-6">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b-2 border-on-surface/20 pb-4">
+            <div class="flex flex-col gap-2">
+              <div class="flex flex-wrap items-center gap-2.5">
+                <div class="bg-secondary-container px-3 py-1 rounded-xl border-2 border-on-surface shadow-comic-sm rotate-[-2deg]">
+                  <span class="font-label-comic-pill text-label-comic-pill text-on-secondary-container uppercase">PREGUNTA 04 / 10</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="font-label-md text-label-md text-on-surface-variant uppercase font-bold">Categoría: Secretos del Cumpleañero</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="font-label-md text-label-md uppercase text-on-surface-variant">Estado en Proyector:</span>
+              <span class="px-3 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed border-2 border-on-surface font-label-comic-pill text-xs uppercase flex items-center gap-1 shadow-comic-sm" id="projector-badge">
+                <span class="material-symbols-outlined text-[14px]">check_circle</span> PREGUNTA MOSTRADA
+              </span>
+            </div>
+          </div>
+
+          <div class="bg-surface-container-low rounded-xl border-2.5 border-on-surface p-5 shadow-comic-md relative">
+            <div class="absolute -top-3.5 left-6 bg-on-surface text-on-primary px-3 py-0.5 rounded text-xs font-label-comic-pill uppercase tracking-wider">
+              ENUNCIADO EN PANTALLA GIGANTE
+            </div>
+            <p class="font-headline-md text-headline-md text-on-surface mt-1 leading-snug">
+              "¿Cuál es el superpoder no oficial que Martín afirma tener con total seguridad después de tomarse 3 cervezas?"
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+            <div class="flex items-center justify-between p-3.5 rounded-xl border-2 border-on-surface bg-surface-container-lowest shadow-comic-md">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg bg-surface-container border-2 border-on-surface flex items-center justify-center font-headline-sm text-headline-sm text-on-surface">A</div>
+                <span class="font-body-lg text-body-lg text-on-surface font-medium">Bailar breakdance sin romperse nada</span>
+              </div>
+              <span class="text-xs font-bold uppercase text-on-surface-variant/70 px-2 py-1 rounded bg-surface-container">Falsa</span>
+            </div>
+
+            <div class="flex items-center justify-between p-3.5 rounded-xl border-2.5 border-on-surface bg-tertiary-fixed shadow-comic-md relative">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg bg-tertiary text-on-tertiary border-2 border-on-surface flex items-center justify-center font-headline-sm text-headline-sm">B</div>
+                <div>
+                  <span class="font-body-lg text-body-lg text-on-tertiary-fixed font-bold">Imitar la voz de Shakira a la perfección</span>
+                  <div class="text-[12px] font-extrabold uppercase text-tertiary flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[14px]">verified</span> RESPUESTA CORRECTA OFICIAL
+                  </div>
+                </div>
+              </div>
+              <span class="px-2.5 py-1 rounded-lg bg-tertiary text-on-tertiary border border-on-surface font-label-comic-pill text-xs uppercase shadow-comic-sm">ACIERTO</span>
+            </div>
+
+            <div class="flex items-center justify-between p-3.5 rounded-xl border-2 border-on-surface bg-surface-container-lowest shadow-comic-md">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg bg-surface-container border-2 border-on-surface flex items-center justify-center font-headline-sm text-headline-sm text-on-surface">C</div>
+                <span class="font-body-lg text-body-lg text-on-surface font-medium">Desaparecer a la francesa sin despedirse</span>
+              </div>
+              <span class="text-xs font-bold uppercase text-on-surface-variant/70 px-2 py-1 rounded bg-surface-container">Falsa</span>
+            </div>
+
+            <div class="flex items-center justify-between p-3.5 rounded-xl border-2 border-on-surface bg-surface-container-lowest shadow-comic-md">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg bg-surface-container border-2 border-on-surface flex items-center justify-center font-headline-sm text-headline-sm text-on-surface">D</div>
+                <span class="font-body-lg text-body-lg text-on-surface font-medium">Convencer a todos de ir por tacos a las 4 AM</span>
+              </div>
+              <span class="text-xs font-bold uppercase text-on-surface-variant/70 px-2 py-1 rounded bg-surface-container">Falsa</span>
+            </div>
+          </div>
+
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
+            <div class="flex items-center gap-2">
+              <button type="button" onclick="broadcastAlert('Pregunta reenviada')" class="px-4 py-3 rounded-xl border-2 border-on-surface bg-surface-container-lowest hover:bg-surface-container shadow-comic-md font-label-lg text-label-lg uppercase active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center gap-2">
+                <span class="material-symbols-outlined text-[20px]">cast</span>
+                <span>Re-sincronizar Proyector</span>
+              </button>
+            </div>
+            <div class="flex items-center flex-wrap sm:flex-nowrap gap-3">
+              <button type="button" id="btn-reveal" onclick="revealAnswer()" class="flex-1 sm:flex-initial px-6 py-3.5 rounded-xl border-2.5 border-on-surface bg-secondary-container hover:bg-secondary-fixed text-on-secondary-container shadow-comic-lg active:translate-x-[2px] active:translate-y-[2px] active:shadow-none font-headline-sm text-headline-sm uppercase transition-all flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-[22px]">visibility</span>
+                <span id="reveal-text">REVELAR RESPUESTA EN ESCENARIO</span>
+              </button>
+              <button type="button" onclick="nextQuestion()" class="flex-1 sm:flex-initial px-6 py-3.5 rounded-xl border-2.5 border-on-surface bg-primary hover:bg-primary-container text-on-primary shadow-comic-lg active:translate-x-[2px] active:translate-y-[2px] active:shadow-none font-headline-sm text-headline-sm uppercase transition-all flex items-center justify-center gap-2">
+                <span>SIGUIENTE PREGUNTA</span>
+                <span class="material-symbols-outlined text-[22px]">arrow_forward</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+    <!-- ▓▓▓ SIDEBAR DERECHO: SOUNDBOARD + EXTRAS ▓▓▓ -->
+    <aside class="w-[340px] shrink-0 bg-surface-container-low border-l-2 border-on-surface min-h-[calc(100vh-8rem)] p-4 flex flex-col gap-4 overflow-y-auto">
+
+      <!-- SOUNDBOARD -->
+      <div class="bg-surface-container-lowest rounded-2xl border-3 border-on-surface shadow-comic-lg p-4 flex flex-col">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-[20px]">volume_up</span>
+            <h3 class="font-headline-sm text-headline-sm uppercase text-on-surface tracking-tight">SOUNDBOARD</h3>
+          </div>
+          <span class="font-label-md text-xs text-on-surface-variant uppercase">FX</span>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2">
+          <button type="button" onclick="playSoundFx('Aplausos')" class="p-2 bg-surface-container hover:bg-secondary-fixed rounded-xl border-2 border-on-surface shadow-comic-md active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex flex-col items-center gap-1 group">
+            <span class="text-xl group-hover:scale-110 transition-transform">👏</span>
+            <span class="font-label-comic-pill text-[10px] uppercase text-on-surface">OVACIÓN</span>
+          </button>
+          <button type="button" onclick="playSoundFx('Tambores')" class="p-2 bg-surface-container hover:bg-secondary-fixed rounded-xl border-2 border-on-surface shadow-comic-md active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex flex-col items-center gap-1 group">
+            <span class="text-xl group-hover:scale-110 transition-transform">🥁</span>
+            <span class="font-label-comic-pill text-[10px] uppercase text-on-surface">TENSIÓN</span>
+          </button>
+          <button type="button" onclick="playSoundFx('Fanfarria')" class="p-2 bg-secondary-container hover:bg-secondary-fixed rounded-xl border-2 border-on-surface shadow-comic-md active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex flex-col items-center gap-1 group">
+            <span class="text-xl group-hover:scale-110 transition-transform">🎺</span>
+            <span class="font-label-comic-pill text-[10px] uppercase text-on-secondary-container font-extrabold">VICTORIA</span>
+          </button>
+          <button type="button" onclick="playSoundFx('Sirena')" class="p-2 bg-primary-fixed hover:bg-primary text-on-primary-fixed hover:text-on-primary rounded-xl border-2 border-on-surface shadow-comic-md active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex flex-col items-center gap-1 group">
+            <span class="text-xl group-hover:scale-110 transition-transform">🚨</span>
+            <span class="font-label-comic-pill text-[10px] uppercase font-extrabold">ALERTA</span>
+          </button>
+          <button type="button" onclick="playSoundFx('Grillos')" class="p-2 bg-surface-container hover:bg-surface-container-high rounded-xl border-2 border-on-surface shadow-comic-md active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex flex-col items-center gap-1 group">
+            <span class="text-xl group-hover:scale-110 transition-transform">🦗</span>
+            <span class="font-label-comic-pill text-[10px] uppercase text-on-surface">INCÓMODO</span>
+          </button>
+          <button type="button" onclick="playSoundFx('Kaboom')" class="p-2 bg-primary text-on-primary hover:bg-primary-container rounded-xl border-2 border-on-surface shadow-comic-md active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex flex-col items-center gap-1 group">
+            <span class="text-xl group-hover:scale-110 transition-transform">💥</span>
+            <span class="font-label-comic-pill text-[10px] uppercase font-black">KABOOM</span>
+          </button>
+        </div>
+
+        <div class="mt-3 pt-3 border-t-2 border-on-surface/20 flex flex-col gap-2">
+          <span class="font-label-comic-pill text-[10px] uppercase text-on-surface-variant">Gatillos:</span>
+          <button type="button" onclick="broadcastAlert('¡Ruleta de Castigos activada!')" class="px-2.5 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container border border-on-surface text-[11px] font-label-md uppercase shadow-comic-sm text-left">🎲 Ruleta de Castigos</button>
+          <button type="button" onclick="broadcastAlert('Comodín Robo usado por Titanes')" class="px-2.5 py-1.5 rounded-lg bg-tertiary-fixed text-on-tertiary-fixed hover:bg-tertiary-fixed-dim border border-on-surface text-[11px] font-label-md uppercase shadow-comic-sm text-left">🚩 Comodín Robo</button>
+          <button type="button" onclick="broadcastAlert('Modo Muerte Súbita preparado')" class="px-2.5 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container border border-on-surface text-[11px] font-label-md uppercase shadow-comic-sm text-left">⚡ Muerte Súbita</button>
+        </div>
+      </div>
+
+      <!-- EXTRAS -->
+      <div class="bg-secondary-container rounded-2xl border-3 border-on-surface shadow-comic-lg p-4 flex flex-col">
+        <div class="flex items-center justify-between gap-2 mb-2">
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded-full bg-on-surface text-surface font-label-comic-pill text-[10px] uppercase tracking-wider">TOOLS</span>
+            <h3 class="font-headline-sm text-headline-sm uppercase text-on-secondary-container tracking-tight">EXTRAS</h3>
+          </div>
+          <span class="px-2 py-0.5 rounded-full bg-primary text-on-primary font-label-comic-pill text-[9px] uppercase border border-on-surface shadow-comic-sm flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-surface animate-ping"></span>AUTO
+          </span>
+        </div>
+
+        <div class="flex items-center gap-2 bg-surface-container-lowest/80 p-2 rounded-xl border-2 border-on-surface shadow-comic-sm mb-3">
+          <div class="w-10 h-10 shrink-0 rounded-lg border-2 border-on-surface bg-surface-container-lowest shadow-comic-sm overflow-hidden p-0.5 flex items-center justify-center">
+            <img alt="Pupi Guía Cómic" class="w-full h-full object-contain"
+                 src="https://lh3.googleusercontent.com/aida/AEtjO1VteACLim6S9qZ4_4Hm6bycyAb2nt5mYigZbSDMK1YM8U3Eek2O1ltNECB9dXeO0rpDzaEBLL667eu0xuMpsGEXMeRoSE2LgPgRgobfSjFBGZ0-d_K2T0JTAIYOTss1T-PDEKKn4l9SYcPF07eDnYMoIzbqX7hA6leSxExpf5Z48hwTdBpPZa3EbwFWdEYym6SSrg7QWTWGkIjaeEtEdjjB6dwbxBONLq6AR35ji7u5oNjfxv46o5H2sQE">
+          </div>
+          <p class="font-body-sm text-[10px] text-on-surface leading-tight font-medium"><strong>Pupi:</strong> Dispara un extra para animar la sala.</p>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <button type="button" onclick="broadcastAlert('🎱 ¡Tómbola de Nombres lanzada!')" class="w-full flex items-center justify-between p-2 bg-surface-container-lowest hover:bg-surface-container rounded-xl border-2 border-on-surface shadow-comic-md active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all text-left group">
+            <div class="flex items-center gap-2">
+              <span class="w-7 h-7 rounded-lg bg-surface-container border-2 border-on-surface flex items-center justify-center text-sm group-hover:scale-110 transition-transform">🎱</span>
+              <span class="font-headline-sm text-[13px] uppercase text-on-surface leading-none block">TÓMBOLA</span>
+            </div>
+          </button>
+
+          <button type="button" onclick="broadcastAlert('🎲 ¡Dados de Rivalidad rodando!')" class="w-full flex items-center justify-between p-2 bg-surface-container-lowest hover:bg-tertiary-fixed rounded-xl border-2 border-on-surface shadow-comic-md active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all text-left group">
+            <div class="flex items-center gap-2">
+              <span class="w-7 h-7 rounded-lg bg-tertiary-fixed text-on-tertiary-fixed border-2 border-on-surface flex items-center justify-center text-sm group-hover:scale-110 transition-transform">🎲</span>
+              <span class="font-headline-sm text-[13px] uppercase text-on-surface leading-none block">DADOS VS</span>
+            </div>
+          </button>
+
+          <button type="button" onclick="broadcastAlert('🧨 ¡Dinamita activada! 20s...')" class="w-full flex items-center justify-between p-2 bg-surface-container-lowest hover:bg-primary-fixed rounded-xl border-2 border-on-surface shadow-comic-md active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all text-left group">
+            <div class="flex items-center gap-2">
+              <span class="w-7 h-7 rounded-lg bg-primary-fixed text-on-primary border-2 border-on-surface flex items-center justify-center text-sm group-hover:scale-110 transition-transform">🧨</span>
+              <span class="font-headline-sm text-[13px] uppercase text-on-surface leading-none block">DINAMITA</span>
+            </div>
+          </button>
+
+          <button type="button" onclick="broadcastAlert('🎙️ ¡Aplausómetro en vivo!')" class="w-full flex items-center justify-between p-2 bg-surface-container-lowest hover:bg-secondary-fixed rounded-xl border-2 border-on-surface shadow-comic-md active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all text-left group">
+            <div class="flex items-center gap-2">
+              <span class="w-7 h-7 rounded-lg bg-secondary-container border-2 border-on-surface flex items-center justify-center text-sm group-hover:scale-110 transition-transform">🎙️</span>
+              <span class="font-headline-sm text-[13px] uppercase text-on-surface leading-none block">APLAUSÓMETRO</span>
+            </div>
+          </button>
+        </div>
+      </div>
+
+    </aside>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- POPUP DE PUNTAJE (aparece al presionar botón de score)  -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="fixed inset-0 bg-on-surface/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4" id="score-modal">
+    <div class="bg-surface-container-lowest rounded-2xl border-3 border-on-surface shadow-comic-xl max-w-md w-full p-6 relative">
+      <div class="flex items-center justify-between pb-3 border-b-2 border-on-surface">
+        <div class="flex items-center gap-2">
+          <span class="px-2.5 py-0.5 rounded-full bg-secondary-container font-label-comic-pill text-xs uppercase border border-on-surface">AJUSTE MANUAL</span>
+          <h3 class="font-headline-md text-headline-md uppercase text-on-surface" id="score-modal-title">Asignar Puntos</h3>
+        </div>
+        <button type="button" aria-label="Cerrar" onclick="closeScoreModal()" class="w-8 h-8 rounded-lg bg-surface-container border border-on-surface flex items-center justify-center font-bold">✕</button>
+      </div>
+
+      <div class="py-4 flex flex-col gap-3">
+        <div class="flex items-center gap-2 bg-surface-container-low border-2 border-on-surface rounded-xl p-3 shadow-comic-sm">
+          <span class="material-symbols-outlined text-primary text-[24px]">edit</span>
+          <div class="flex-1">
+            <label for="score-input" class="font-label-md text-label-md text-on-surface-variant uppercase block">Puntos a asignar</label>
+            <input id="score-input" type="number" value="50" min="0" max="500"
+                   class="w-full mt-1 bg-surface-container-lowest border-2 border-on-surface rounded-lg px-3 py-2 font-display-hero text-headline-md text-on-surface focus:outline-none focus:border-primary">
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <span class="font-label-comic-pill text-xs uppercase text-on-surface-variant">Razón (opcional)</span>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" onclick="setScoreReason('Respuesta correcta')" class="px-3 py-2 rounded-lg bg-tertiary-fixed text-on-tertiary-fixed border-2 border-on-surface shadow-comic-sm font-label-md uppercase text-left">✓ Correcta</button>
+            <button type="button" onclick="setScoreReason('Respuesta incorrecta')" class="px-3 py-2 rounded-lg bg-primary-fixed text-on-primary-fixed border-2 border-on-surface shadow-comic-sm font-label-md uppercase text-left">✗ Incorrecta</button>
+            <button type="button" onclick="setScoreReason('Robo')" class="px-3 py-2 rounded-lg bg-secondary-container text-on-secondary-container border-2 border-on-surface shadow-comic-sm font-label-md uppercase text-left">🚩 Robo</button>
+            <button type="button" onclick="setScoreReason('Bonus')" class="px-3 py-2 rounded-lg bg-surface-container border-2 border-on-surface shadow-comic-sm font-label-md uppercase text-left">⭐ Bonus</button>
+          </div>
+          <input id="score-reason" type="text" placeholder="Escribe una razón..."
+                 class="w-full bg-surface-container-lowest border-2 border-on-surface rounded-lg px-3 py-2 font-body-md text-body-md focus:outline-none focus:border-primary">
+        </div>
+      </div>
+
+      <div class="pt-2 flex justify-between gap-2">
+        <button type="button" onclick="closeScoreModal()" class="px-5 py-2.5 rounded-xl bg-surface-container text-on-surface font-headline-sm uppercase border-2 border-on-surface shadow-comic-md hover:bg-surface-container-high">
+          Cancelar
+        </button>
+        <button type="button" onclick="applyScore()" class="px-5 py-2.5 rounded-xl bg-primary text-on-primary font-headline-sm uppercase border-2 border-on-surface shadow-comic-md hover:bg-primary-container flex items-center gap-2">
+          <span class="material-symbols-outlined text-[20px]">check</span>
+          Confirmar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="fixed bottom-6 right-6 z-50 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none" id="live-toast">
+    <div class="bg-surface-container-lowest px-5 py-3 rounded-xl border-3 border-on-surface shadow-comic-lg flex items-center gap-3">
+      <span class="material-symbols-outlined text-tertiary text-[24px]">campaign</span>
+      <span class="font-headline-sm text-headline-sm uppercase text-on-surface" id="toast-message">Acción ejecutada</span>
+    </div>
+  </div>
+
+  <!-- MODAL REGLAS -->
+  <div class="fixed inset-0 bg-on-surface/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4" id="rules-modal">
+    <div class="bg-surface-container-lowest rounded-2xl border-3 border-on-surface shadow-comic-xl max-w-lg w-full p-6 relative">
+      <div class="flex items-center justify-between pb-3 border-b-2 border-on-surface">
+        <div class="flex items-center gap-2">
+          <span class="px-2.5 py-0.5 rounded-full bg-secondary-container font-label-comic-pill text-xs uppercase border border-on-surface">REFERENCIA RÁPIDA</span>
+          <h3 class="font-headline-md text-headline-md uppercase text-on-surface">Reglas de Trivia Cómic</h3>
+        </div>
+        <button type="button" aria-label="Cerrar reglas" onclick="toggleRulesModal()" class="w-8 h-8 rounded-lg bg-surface-container border border-on-surface flex items-center justify-center font-bold">✕</button>
+      </div>
+      <div class="py-4 space-y-3 font-body-md text-body-md text-on-surface">
+        <div class="p-2.5 rounded-xl bg-surface-container-low border border-on-surface">
+          <strong>1. Pulsadores:</strong> El primer equipo que bloquea tiene 10 segundos para responder verbalmente.
+        </div>
+        <div class="p-2.5 rounded-xl bg-surface-container-low border border-on-surface">
+          <strong>2. Puntuación:</strong> +50 pts respuesta correcta directa. Si falla, el equipo rival tiene robo con valor de +25 pts.
+        </div>
+        <div class="p-2.5 rounded-xl bg-surface-container-low border border-on-surface">
+          <strong>3. Comodines:</strong> Cada bando posee 1 comodín de duplicación y 1 comodín de descarte por partida.
+        </div>
+      </div>
+      <div class="pt-2 flex justify-end">
+        <button type="button" onclick="toggleRulesModal()" class="px-5 py-2.5 rounded-xl bg-primary text-on-primary font-headline-sm uppercase border-2 border-on-surface shadow-comic-md hover:bg-primary-container">
+          Entendido, Volver al Show
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- SCRIPT                                                   -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <script>
+    let scoreA = 0;
+    let scoreB = 0;
+    let isPaused = false;
+    let answerRevealed = false;
+    let pendingTeam = null;   // equipo seleccionado en el popup de puntaje
+
+    // ─── POPUP DE PUNTAJE ─────────────────────────────────
+    function openScoreModal(team) {
+      pendingTeam = team;
+      const title = document.getElementById('score-modal-title');
+      title.innerText = team === 'A' ? 'Asignar Puntos — BANDO A' : 'Asignar Puntos — BANDO B';
+      document.getElementById('score-input').value = 50;
+      document.getElementById('score-reason').value = '';
+      const modal = document.getElementById('score-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeScoreModal() {
+      const modal = document.getElementById('score-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      pendingTeam = null;
+    }
+
+    function setScoreReason(text) {
+      document.getElementById('score-reason').value = text;
+    }
+
+    function applyScore() {
+      const value = parseInt(document.getElementById('score-input').value, 10) || 0;
+      const reason = document.getElementById('score-reason').value.trim();
+      if (!pendingTeam) return;
+
+      if (pendingTeam === 'A') {
+        scoreA = Math.max(0, scoreA + value);
+        document.getElementById('score-team-a').innerText = scoreA;
+        showToast(`Los Rayos: ${value >= 0 ? '+' : ''}${value} PTS${reason ? ' — ' + reason : ''}`);
+      } else {
+        scoreB = Math.max(0, scoreB + value);
+        document.getElementById('score-team-b').innerText = scoreB;
+        showToast(`Los Titanes: ${value >= 0 ? '+' : ''}${value} PTS${reason ? ' — ' + reason : ''}`);
+      }
+      closeScoreModal();
+    }
+
+    // ─── CONTROLES GENERALES ──────────────────────────────
+    function togglePause() {
+      isPaused = !isPaused;
+      const btn = document.getElementById('btn-pause');
+      const text = document.getElementById('pause-text');
+      if (isPaused) {
+        text.innerText = 'Reanudar';
+        btn.classList.add('bg-secondary-container');
+        showToast('Partida En Pausa');
+      } else {
+        text.innerText = 'Pausar';
+        btn.classList.remove('bg-secondary-container');
+        showToast('Partida Reanudada');
+      }
+    }
+
+    function revealAnswer() {
+      answerRevealed = !answerRevealed;
+      const btn = document.getElementById('btn-reveal');
+      const text = document.getElementById('reveal-text');
+      const badge = document.getElementById('projector-badge');
+      if (answerRevealed) {
+        text.innerText = 'RESPUESTA REVELADA EN PROYECTOR ✅';
+        btn.classList.remove('bg-secondary-container');
+        btn.classList.add('bg-tertiary-fixed');
+        badge.innerHTML = '<span class="material-symbols-outlined text-[14px]">visibility</span> RESPUESTA VISIBLE';
+        showToast('¡Solución proyectada en escenario!');
+      } else {
+        text.innerText = 'REVELAR RESPUESTA EN ESCENARIO';
+        btn.classList.add('bg-secondary-container');
+        btn.classList.remove('bg-tertiary-fixed');
+        badge.innerHTML = '<span class="material-symbols-outlined text-[14px]">check_circle</span> PREGUNTA MOSTRADA';
+        showToast('Ocultando respuesta en escenario');
+      }
+    }
+
+    function nextQuestion() {
+      answerRevealed = false;
+      const btn = document.getElementById('btn-reveal');
+      const text = document.getElementById('reveal-text');
+      const badge = document.getElementById('projector-badge');
+      text.innerText = 'REVELAR RESPUESTA EN ESCENARIO';
+      btn.classList.add('bg-secondary-container');
+      btn.classList.remove('bg-tertiary-fixed');
+      badge.innerHTML = '<span class="material-symbols-outlined text-[14px]">check_circle</span> PREGUNTA MOSTRADA';
+      showToast('Cargando Pregunta 05 / 10...');
+    }
+
+    function playSoundFx(fxName) { showToast(`Sonido disparado: 🔊 ${fxName}`); }
+    function broadcastAlert(msg)  { showToast(msg); }
+
+    function toggleRulesModal() {
+      const modal = document.getElementById('rules-modal');
+      const isHidden = modal.classList.contains('hidden');
+      modal.classList.toggle('hidden');
+      modal.classList.toggle('flex');
+      modal.setAttribute('aria-hidden', isHidden ? 'false' : 'true');
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('live-toast');
+      const label = document.getElementById('toast-message');
+      label.innerText = msg;
+      toast.classList.remove('translate-y-24', 'opacity-0', 'pointer-events-none');
+      toast.classList.add('translate-y-0', 'opacity-100');
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => {
+        toast.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+      }, 2200);
+    }
+  </script>
+
+</body>
+</html>
