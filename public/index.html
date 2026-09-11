@@ -2591,7 +2591,8 @@ let activeSessionId = null;
 
 async function loadActiveSession() {
   try {
-    const res = await fetch(API + '/sessions?status=activo,pausado');
+    // Buscar sesiones activas (la pausa se guarda en progress.isPaused, no en status)
+    const res = await fetch(API + '/sessions?status=activo');
     const sessions = await res.json();
     
     if (sessions.length > 0) {
@@ -2619,13 +2620,15 @@ function updateSidebarSession(session) {
   
   if (!label || !code || !dot) return;
   
-  label.textContent = session.status === 'activo' ? 'En Juego' : 'Pausada';
+  const isPaused = session.progress && session.progress.isPaused;
+  
+  label.textContent = isPaused ? 'Pausada' : 'En Juego';
   code.textContent = session.code;
   
-  if (session.status === 'activo') {
-    dot.className = 'w-3 h-3 rounded-full bg-tertiary border-2 border-on-surface animate-pulse';
-  } else {
+  if (isPaused) {
     dot.className = 'w-3 h-3 rounded-full bg-secondary-container border-2 border-on-surface';
+  } else {
+    dot.className = 'w-3 h-3 rounded-full bg-tertiary border-2 border-on-surface animate-pulse';
   }
 }
 
@@ -2649,9 +2652,10 @@ function updateResumeButton(session) {
   if (!btn || !text || !code) return;
   
   if (session) {
-    text.textContent = session.status === 'activo' 
-      ? 'CONTINUAR SESIÓN EN CURSO' 
-      : 'REANUDAR SESIÓN PAUSADA';
+    const isPaused = session.progress && session.progress.isPaused;
+    text.textContent = isPaused 
+      ? 'REANUDAR SESIÓN PAUSADA' 
+      : 'CONTINUAR SESIÓN EN CURSO';
     code.textContent = session.code;
     btn.onclick = () => {
       window.location.href = `/console.html?session=${session.id}`;
