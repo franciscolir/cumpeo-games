@@ -11,12 +11,11 @@
 <style>
 @layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}
 ::-webkit-scrollbar{display:none;}
-#sidebar-history-list::-webkit-scrollbar{width:3px;}
-#sidebar-history-list::-webkit-scrollbar-track{background:transparent;}
-#sidebar-history-list::-webkit-scrollbar-thumb{background:#ccc;border-radius:2px;}
 .comic-shadow-sm{box-shadow:2px 2px 0px #1c1b1b;}
 .comic-shadow-md{box-shadow:3px 3px 0px #1c1b1b;}
 .comic-shadow-lg{box-shadow:4px 4px 0px #1c1b1b;}
+.comic-modal{animation:comic-pop 0.2s ease-out;}
+@keyframes comic-pop{0%{transform:scale(0.9) rotate(-1deg);opacity:0;}100%{transform:scale(1) rotate(0deg);opacity:1;}}
 </style>
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
@@ -70,16 +69,10 @@ tailwind.config={
       <a class="nav-link flex items-center px-4 py-3 rounded-xl border-2 border-transparent text-on-surface font-label-lg text-label-lg transition-all hover:bg-surface-container hover:text-on-surface hover:border-on-surface hover:comic-shadow-sm" data-path="conductor-live" href="#">Conductor Live</a>
       <a class="nav-link flex items-center px-4 py-3 rounded-xl border-2 border-transparent text-on-surface font-label-lg text-label-lg transition-all hover:bg-surface-container hover:text-on-surface hover:border-on-surface hover:comic-shadow-sm" data-path="extras" href="#">Extras</a>
       <a class="nav-link flex items-center px-4 py-3 rounded-xl border-2 border-transparent text-on-surface font-label-lg text-label-lg transition-all hover:bg-surface-container hover:text-on-surface hover:border-on-surface hover:comic-shadow-sm" data-path="configuracion" href="#">Configuracion</a>
+      <a class="nav-link flex items-center px-4 py-3 rounded-xl border-2 border-transparent text-on-surface font-label-lg text-label-lg transition-all hover:bg-surface-container hover:text-on-surface hover:border-on-surface hover:comic-shadow-sm" data-path="historial" href="#">
+        <span class="material-symbols-outlined text-[18px] mr-2">history</span> Historial
+      </a>
     </nav>
-    
-    <!-- Historial -->
-    <div class="flex flex-col gap-1.5 mt-2">
-      <div class="flex items-center gap-1.5 px-2">
-        <span class="material-symbols-outlined text-[12px] text-on-surface-variant">history</span>
-        <span class="font-label-xs text-[9px] uppercase text-on-surface-variant tracking-wider">Historial</span>
-      </div>
-      <div id="sidebar-history-list" class="flex flex-col gap-1 max-h-[180px] overflow-y-auto px-1"></div>
-    </div>
   </div>
   <div class="px-2" id="sidebar-session-container">
     <div class="bg-surface-container-low border-2 border-on-surface rounded-xl p-3 comic-shadow-sm flex items-center justify-between">
@@ -2458,6 +2451,18 @@ tailwind.config={
       </div>
     </section>
 
+    <!-- ==================== SECCION: HISTORIAL ==================== -->
+    <section id="page-historial" class="page-section hidden">
+      <div class="max-w-[72rem] mx-auto w-full flex flex-col gap-4">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-[22px] text-primary">history</span>
+          <h1 class="font-display-hero text-display-hero text-on-surface uppercase">Historial</h1>
+        </div>
+        <p class="font-body-sm text-on-surface-variant">Sesiones finalizadas. Presiona "Volver a Jugar" para crear una nueva sesion con los mismos juegos.</p>
+        <div id="history-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"></div>
+      </div>
+    </section>
+
   </main>
 </div>
 
@@ -2491,7 +2496,7 @@ tailwind.config={
 
 <!-- Session Warning Modal -->
 <div id="session-warning-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-on-surface/60 backdrop-blur-sm">
-  <div class="bg-surface-container-lowest rounded-2xl border-2 border-on-surface shadow-comic-lg max-w-md w-full p-5">
+  <div class="comic-modal bg-surface-container-lowest rounded-2xl border-2 border-on-surface max-w-md w-full p-5 relative" style="box-shadow: 5px 5px 0px #1c1b1b;">
     <div class="flex items-center gap-2 mb-3">
       <span class="material-symbols-outlined text-[24px] text-secondary">warning</span>
       <h3 class="font-headline-md text-headline-md uppercase text-on-surface">Sesion en Curso</h3>
@@ -2499,8 +2504,8 @@ tailwind.config={
     <p class="font-body-sm text-on-surface-variant mb-1">Ya hay una sesion activa (<span id="warning-session-code" class="font-bold text-on-surface"></span>).</p>
     <p class="font-body-sm text-on-surface-variant mb-5">¿Deseas finalizarla y crear una nueva? La sesion actual se guardara en el historial.</p>
     <div class="flex justify-end gap-2">
-      <button onclick="closeSessionWarning()" class="px-4 py-2 rounded-xl border-2 border-on-surface bg-surface-container text-on-surface font-label-sm text-label-sm uppercase hover:bg-surface-variant transition-colors">Cancelar</button>
-      <button onclick="confirmNewSession()" class="px-4 py-2 rounded-xl border-2 border-on-surface bg-primary text-on-primary font-label-sm text-label-sm uppercase hover:bg-primary-container transition-colors">Finalizar y Crear</button>
+      <button onclick="closeSessionWarning()" class="px-4 py-2 rounded-xl border-2 border-on-surface bg-surface-container text-on-surface font-label-sm text-label-sm uppercase hover:bg-surface-variant transition-colors cursor-pointer" style="transform: rotate(-0.5deg);">Cancelar</button>
+      <button onclick="confirmNewSession()" class="px-4 py-2 rounded-xl border-2 border-on-surface bg-error text-on-error font-label-sm text-label-sm uppercase hover:bg-error-container transition-colors cursor-pointer" style="transform: rotate(0.5deg);">Finalizar y Crear</button>
     </div>
   </div>
 </div>
@@ -2863,7 +2868,7 @@ function setupEventListeners() {
         await createAndStartSession(gameId, gameName);
       } catch (err) {
         console.error('Error al iniciar juego:', err);
-        alert('Error al iniciar el juego. Intenta de nuevo.');
+        showComicModal({ icon: 'error', iconColor: 'text-error', title: 'Error', message: 'Error al iniciar el juego. Intenta de nuevo.', confirmText: 'OK', confirmClass: 'bg-error text-on-error', onConfirm: null });
       }
     });
   });
@@ -3013,7 +3018,7 @@ function setupEventListeners() {
   document.getElementById('btn-continue').addEventListener('click', () => {
     const name = circuitName ? circuitName.value : '';
     if (!name.trim()) {
-      alert('Escribe un nombre para el circuito antes de continuar.');
+      showComicModal({ icon: 'edit', iconColor: 'text-secondary', title: 'Nombre Requerido', message: 'Escribe un nombre para el circuito antes de continuar.', confirmText: 'OK', confirmClass: 'bg-secondary text-on-secondary', onConfirm: null });
       return;
     }
     document.getElementById('circ-step-1').classList.add('hidden');
@@ -3075,7 +3080,7 @@ function setupEventListeners() {
       btnBalance.classList.add('rotate-2');
       setTimeout(() => {
         btnBalance.classList.remove('rotate-2');
-        alert('Equipos rebalanceados automaticamente!');
+        showComicModal({ icon: 'check_circle', iconColor: 'text-tertiary', title: 'Listo', message: 'Equipos rebalanceados automaticamente!', confirmText: 'OK', confirmClass: 'bg-tertiary text-on-tertiary', onConfirm: null });
       }, 150);
     });
   }
@@ -3390,6 +3395,27 @@ window.addEventListener('message', (event) => {
   }
 });
 
+// ==================== COMIC MODAL ====================
+function showComicModal({ icon, iconColor, title, message, confirmText, confirmClass, onConfirm }) {
+  const modal = document.getElementById('comic-modal');
+  document.getElementById('comic-modal-icon').textContent = icon;
+  document.getElementById('comic-modal-icon').className = `material-symbols-outlined text-[28px] ${iconColor}`;
+  document.getElementById('comic-modal-title').textContent = title;
+  document.getElementById('comic-modal-message').textContent = message;
+  const confirmBtn = document.getElementById('comic-modal-confirm');
+  confirmBtn.textContent = confirmText;
+  confirmBtn.className = `px-4 py-2 rounded-xl border-2 border-on-surface font-label-sm text-label-sm uppercase transition-colors cursor-pointer ${confirmClass}`;
+  document.getElementById('comic-modal-cancel').onclick = () => closeComicModal();
+  confirmBtn.onclick = () => { closeComicModal(); if (onConfirm) onConfirm(); };
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+}
+
+function closeComicModal() {
+  document.getElementById('comic-modal').classList.add('hidden');
+  document.getElementById('comic-modal').classList.remove('flex');
+}
+
 // ==================== SESSION WARNING MODAL ====================
 let pendingGame = null;
 let pendingReplaySession = null;
@@ -3450,7 +3476,7 @@ async function createAndStartSession(gameId, gameName) {
     window.location.href = `/console.html?session=${sessionData.id}`;
   } catch (err) {
     console.error('Error al iniciar juego:', err);
-    alert('Error al iniciar el juego. Intenta de nuevo.');
+    showComicModal({ icon: 'error', iconColor: 'text-error', title: 'Error', message: 'Error al iniciar el juego. Intenta de nuevo.', confirmText: 'OK', confirmClass: 'bg-error text-on-error', onConfirm: null });
   }
 }
 
@@ -3459,24 +3485,31 @@ async function loadSessionHistory() {
   try {
     const res = await fetch(API + '/sessions?status=finalizado');
     const sessions = await res.json();
-    const container = document.getElementById('sidebar-history-list');
+    const container = document.getElementById('history-grid');
     if (!container) return;
     
     if (sessions.length === 0) {
-      container.innerHTML = '<p class="text-[9px] text-on-surface-variant px-1">Sin sesiones anteriores</p>';
+      container.innerHTML = '<p class="text-on-surface-variant col-span-full text-center py-8">No hay sesiones finalizadas aun.</p>';
       return;
     }
     
     container.innerHTML = sessions.slice(0, 12).map(s => {
-      const date = s.finished_at ? new Date(s.finished_at).toLocaleDateString('es-PE', {day:'2-digit',month:'short'}) : '-';
+      const date = s.finished_at ? new Date(s.finished_at).toLocaleDateString('es-PE', {day:'2-digit',month:'short',year:'2-digit'}) : '-';
+      const scoreA = s.cumulative_score_a || 0;
+      const scoreB = s.cumulative_score_b || 0;
       return `
-        <div class="bg-surface-container-low border border-on-surface/20 rounded-lg p-1.5 flex flex-col gap-0.5">
+        <div class="bg-surface-container-lowest border-2 border-on-surface rounded-xl p-3 comic-shadow-sm flex flex-col gap-2 hover:-translate-y-1 transition-transform" style="transform: rotate(${(Math.random()*2-1).toFixed(1)}deg);">
           <div class="flex items-center justify-between">
-            <span class="font-label-xs text-[9px] font-bold text-on-surface">${s.code}</span>
-            <span class="font-label-xs text-[8px] text-on-surface-variant">${date}</span>
+            <span class="font-headline-sm text-headline-sm font-bold text-on-surface">${s.code}</span>
+            <span class="font-label-xs text-[10px] text-on-surface-variant">${date}</span>
           </div>
-          <span class="font-label-xs text-[8px] text-on-surface-variant truncate">${s.name || s.type}</span>
-          <button onclick="replaySession(${s.id})" class="w-full px-1.5 py-0.5 rounded bg-primary-container text-on-primary border border-on-surface text-[8px] font-label-xs uppercase hover:bg-primary transition-colors cursor-pointer">
+          <span class="font-label-xs text-[11px] text-on-surface-variant truncate">${s.name || s.type}</span>
+          <div class="flex items-center gap-2 text-[10px]">
+            <span class="text-primary font-bold">${scoreA}</span>
+            <span class="text-on-surface-variant">-</span>
+            <span class="text-tertiary font-bold">${scoreB}</span>
+          </div>
+          <button onclick="replaySession(${s.id})" class="w-full px-2 py-1 rounded-lg bg-primary-container text-on-primary border-2 border-on-surface text-[10px] font-label-sm uppercase hover:bg-primary transition-colors cursor-pointer comic-shadow-sm active:translate-x-[2px] active:translate-y-[2px] active:shadow-none" style="transform: rotate(-0.5deg);">
             ▶ Volver a Jugar
           </button>
         </div>`;
@@ -3525,7 +3558,7 @@ async function doReplaySession(sessionId) {
     window.location.href = `/console.html?session=${newSession.id}`;
   } catch (err) {
     console.error('Error creating replay session:', err);
-    alert('Error al crear la sesión. Intenta de nuevo.');
+    showComicModal({ icon: 'error', iconColor: 'text-error', title: 'Error', message: 'Error al crear la sesión. Intenta de nuevo.', confirmText: 'OK', confirmClass: 'bg-error text-on-error', onConfirm: null });
   }
 }
 
@@ -3543,5 +3576,20 @@ setInterval(updatePublicScreen, 2000);
 setInterval(loadActiveSession, 5000);
 init();
 </script>
+
+<!-- Comic Modal Reutilizable -->
+<div id="comic-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-on-surface/60 backdrop-blur-sm">
+  <div class="comic-modal bg-surface-container-lowest rounded-2xl border-2 border-on-surface max-w-sm w-full p-5 relative" style="box-shadow: 5px 5px 0px #1c1b1b;">
+    <div class="flex items-center gap-2 mb-3">
+      <span id="comic-modal-icon" class="material-symbols-outlined text-[28px]"></span>
+      <h3 id="comic-modal-title" class="font-headline-md text-headline-md uppercase text-on-surface"></h3>
+    </div>
+    <p id="comic-modal-message" class="font-body-sm text-on-surface-variant mb-5"></p>
+    <div class="flex justify-end gap-2">
+      <button id="comic-modal-cancel" class="px-4 py-2 rounded-xl border-2 border-on-surface bg-surface-container text-on-surface font-label-sm text-label-sm uppercase hover:bg-surface-variant transition-colors cursor-pointer" style="transform: rotate(-0.5deg);">Cancelar</button>
+      <button id="comic-modal-confirm" class="px-4 py-2 rounded-xl border-2 border-on-surface font-label-sm text-label-sm uppercase transition-colors cursor-pointer" style="transform: rotate(0.5deg);"></button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

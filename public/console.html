@@ -124,6 +124,8 @@
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #888; border-radius: 2px; }
+    .comic-modal{animation:comic-pop 0.2s ease-out;}
+    @keyframes comic-pop{0%{transform:scale(0.9) rotate(-1deg);opacity:0;}100%{transform:scale(1) rotate(0deg);opacity:1;}}
 
     #topbar {
       transition: top .3s ease, left .3s ease, right .3s ease,
@@ -819,6 +821,27 @@
       overlay.classList.toggle('open');
     }
 
+    // ==================== COMIC MODAL ====================
+    function showComicModal({ icon, iconColor, title, message, confirmText, confirmClass, onConfirm }) {
+      const modal = document.getElementById('comic-modal');
+      document.getElementById('comic-modal-icon').textContent = icon;
+      document.getElementById('comic-modal-icon').className = `material-symbols-outlined text-[28px] ${iconColor}`;
+      document.getElementById('comic-modal-title').textContent = title;
+      document.getElementById('comic-modal-message').textContent = message;
+      const confirmBtn = document.getElementById('comic-modal-confirm');
+      confirmBtn.textContent = confirmText;
+      confirmBtn.className = `px-4 py-2 rounded-xl border-2 border-on-surface font-label-sm text-label-sm uppercase transition-colors cursor-pointer ${confirmClass}`;
+      document.getElementById('comic-modal-cancel').onclick = () => closeComicModal();
+      confirmBtn.onclick = () => { closeComicModal(); if (onConfirm) onConfirm(); };
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeComicModal() {
+      document.getElementById('comic-modal').classList.add('hidden');
+      document.getElementById('comic-modal').classList.remove('flex');
+    }
+
     // ==================== NAVIGATION ====================
     function goHome() {
       // Pausar automáticamente si hay sesión activa
@@ -873,24 +896,29 @@
     async function finishSession() {
       if (!sessionData) return;
 
-      if (!confirm('¿Estás seguro de finalizar la sesión?')) return;
-
-      try {
-        await fetch(`${API}/sessions/${sessionData.id}/finish`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' }
-        });
-
-        showToast('✅ Sesión finalizada');
-        document.getElementById('session-status').textContent = 'FINALIZADO';
-
-        // Hide game iframe
-        document.getElementById('game-iframe').classList.add('hidden');
-        document.getElementById('empty-state').classList.remove('hidden');
-      } catch (err) {
-        console.error('Error finishing session:', err);
-        showToast('❌ Error al finalizar la sesión');
-      }
+      showComicModal({
+        icon: 'stop_circle',
+        iconColor: 'text-error',
+        title: '¿Finalizar Sesión?',
+        message: `Se cerrará la sesión "${sessionData.code}" y se guardará en el historial.`,
+        confirmText: 'FINALIZAR',
+        confirmClass: 'bg-error text-on-error',
+        onConfirm: async () => {
+          try {
+            await fetch(`${API}/sessions/${sessionData.id}/finish`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' }
+            });
+            showToast('✅ Sesión finalizada');
+            document.getElementById('session-status').textContent = 'FINALIZADO';
+            document.getElementById('game-iframe').classList.add('hidden');
+            document.getElementById('empty-state').classList.remove('hidden');
+          } catch (err) {
+            console.error('Error finishing session:', err);
+            showToast('❌ Error al finalizar la sesión');
+          }
+        }
+      });
     }
 
     // ==================== SCORE MODAL ====================
@@ -1028,6 +1056,21 @@
     // Start
     init();
   </script>
+
+  <!-- Comic Modal Reutilizable -->
+  <div id="comic-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-on-surface/60 backdrop-blur-sm">
+    <div class="comic-modal bg-surface-container-lowest rounded-2xl border-2 border-on-surface max-w-sm w-full p-5 relative" style="box-shadow: 5px 5px 0px #1c1b1b;">
+      <div class="flex items-center gap-2 mb-3">
+        <span id="comic-modal-icon" class="material-symbols-outlined text-[28px]"></span>
+        <h3 id="comic-modal-title" class="font-headline-md text-headline-md uppercase text-on-surface"></h3>
+      </div>
+      <p id="comic-modal-message" class="font-body-sm text-on-surface-variant mb-5"></p>
+      <div class="flex justify-end gap-2">
+        <button id="comic-modal-cancel" class="px-4 py-2 rounded-xl border-2 border-on-surface bg-surface-container text-on-surface font-label-sm text-label-sm uppercase hover:bg-surface-variant transition-colors cursor-pointer" style="transform: rotate(-0.5deg);">Cancelar</button>
+        <button id="comic-modal-confirm" class="px-4 py-2 rounded-xl border-2 border-on-surface font-label-sm text-label-sm uppercase transition-colors cursor-pointer" style="transform: rotate(0.5deg);"></button>
+      </div>
+    </div>
+  </div>
 
 </body>
 </html>
