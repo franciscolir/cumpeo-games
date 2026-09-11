@@ -11,6 +11,9 @@
 <style>
 @layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}
 ::-webkit-scrollbar{display:none;}
+#sidebar-history-list::-webkit-scrollbar{width:3px;}
+#sidebar-history-list::-webkit-scrollbar-track{background:transparent;}
+#sidebar-history-list::-webkit-scrollbar-thumb{background:#ccc;border-radius:2px;}
 .comic-shadow-sm{box-shadow:2px 2px 0px #1c1b1b;}
 .comic-shadow-md{box-shadow:3px 3px 0px #1c1b1b;}
 .comic-shadow-lg{box-shadow:4px 4px 0px #1c1b1b;}
@@ -57,7 +60,7 @@ tailwind.config={
   <div class="flex flex-col gap-4">
     <div class="flex flex-col items-center gap-1 px-2 pt-2">
       <img alt="CUMPEO Logo" class="h-15 w-auto object-contain" src="images/cumpeo.png">
-      <span class="font-headline-sm text-headline-sm tracking-tight text-on-surface-variant uppercase">GAMES</span>
+      <span class="font-headline-sm text-headline-sm tracking-tight text-on-surface-variant uppercase">games</span>
     </div>
     <div class="w-full h-px bg-on-surface/20"></div>
     <nav class="flex flex-col gap-2 pt-2" data-active-classes="bg-primary text-on-primary font-headline-sm text-headline-sm uppercase border-2 border-on-surface comic-shadow-md rounded-xl translate-x-1">
@@ -68,6 +71,15 @@ tailwind.config={
       <a class="nav-link flex items-center px-4 py-3 rounded-xl border-2 border-transparent text-on-surface font-label-lg text-label-lg transition-all hover:bg-surface-container hover:text-on-surface hover:border-on-surface hover:comic-shadow-sm" data-path="extras" href="#">Extras</a>
       <a class="nav-link flex items-center px-4 py-3 rounded-xl border-2 border-transparent text-on-surface font-label-lg text-label-lg transition-all hover:bg-surface-container hover:text-on-surface hover:border-on-surface hover:comic-shadow-sm" data-path="configuracion" href="#">Configuracion</a>
     </nav>
+    
+    <!-- Historial -->
+    <div class="flex flex-col gap-1.5 mt-2">
+      <div class="flex items-center gap-1.5 px-2">
+        <span class="material-symbols-outlined text-[12px] text-on-surface-variant">history</span>
+        <span class="font-label-xs text-[9px] uppercase text-on-surface-variant tracking-wider">Historial</span>
+      </div>
+      <div id="sidebar-history-list" class="flex flex-col gap-1 max-h-[180px] overflow-y-auto px-1"></div>
+    </div>
   </div>
   <div class="px-2" id="sidebar-session-container">
     <div class="bg-surface-container-low border-2 border-on-surface rounded-xl p-3 comic-shadow-sm flex items-center justify-between">
@@ -2477,6 +2489,22 @@ tailwind.config={
   </div>
 </div>
 
+<!-- Session Warning Modal -->
+<div id="session-warning-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-on-surface/60 backdrop-blur-sm">
+  <div class="bg-surface-container-lowest rounded-2xl border-2 border-on-surface shadow-comic-lg max-w-md w-full p-5">
+    <div class="flex items-center gap-2 mb-3">
+      <span class="material-symbols-outlined text-[24px] text-secondary">warning</span>
+      <h3 class="font-headline-md text-headline-md uppercase text-on-surface">Sesion en Curso</h3>
+    </div>
+    <p class="font-body-sm text-on-surface-variant mb-1">Ya hay una sesion activa (<span id="warning-session-code" class="font-bold text-on-surface"></span>).</p>
+    <p class="font-body-sm text-on-surface-variant mb-5">¿Deseas finalizarla y crear una nueva? La sesion actual se guardara en el historial.</p>
+    <div class="flex justify-end gap-2">
+      <button onclick="closeSessionWarning()" class="px-4 py-2 rounded-xl border-2 border-on-surface bg-surface-container text-on-surface font-label-sm text-label-sm uppercase hover:bg-surface-variant transition-colors">Cancelar</button>
+      <button onclick="confirmNewSession()" class="px-4 py-2 rounded-xl border-2 border-on-surface bg-primary text-on-primary font-label-sm text-label-sm uppercase hover:bg-primary-container transition-colors">Finalizar y Crear</button>
+    </div>
+  </div>
+</div>
+
 <!-- Public Audience Screen -->
 <div id="public-screen" class="hidden fixed inset-0 bg-surface-container-lowest z-50 flex items-center justify-center p-4">
   <div class="bg-gradient-to-br from-primary-container to-secondary-container border-2 border-on-surface rounded-3xl p-8 max-w-4xl w-full text-center comic-shadow-lg">
@@ -2765,7 +2793,47 @@ function setupEventListeners() {
       if (!gameName) return;
 
       try {
-        // First, get or create the game in the database
+        // Check for active session first
+        const activeRes = await fetch(API + '/sessions?status=activo');
+        const activeSessions = await activeRes.json();
+        
+        if (activeSessions.length > 0) {
+          // Find or create the game to get its ID
+          let gameId;
+          const gamesRes = await fetch(API + '/games');
+          const games = await gamesRes.json();
+          const existingGame = games.find(g => g.name === gameName);
+          
+          if (existingGame) {
+            gameId = existingGame.id;
+          } else {
+            const gameFiles = {
+              'Trivia Relampago': 'trivia-relampago.html',
+              'Mimica Explosiva': 'mimica-explosiva.html',
+              'Cancion Incompleta': 'cancion-incompleta.html',
+              'Meme Battle Live': 'meme-battle-live.html',
+              'Pictionary Veloz': 'pictionary-veloz.html',
+              'Duelo de Reflejos': 'duelo-de-reflejos.html'
+            };
+            const gameRes = await fetch(API + '/games', {
+              method: 'POST',
+              headers: {'Content-Type':'application/json'},
+              body: JSON.stringify({ name: gameName, description: 'Juego individual', file: gameFiles[gameName] || null })
+            });
+            if (!gameRes.ok) throw new Error('Error creando juego');
+            const gameData = await gameRes.json();
+            gameId = gameData.id;
+          }
+          
+          // Save pending game and show warning modal
+          pendingGame = { gameId, gameName };
+          document.getElementById('warning-session-code').textContent = activeSessions[0].code;
+          document.getElementById('session-warning-modal').classList.remove('hidden');
+          document.getElementById('session-warning-modal').classList.add('flex');
+          return;
+        }
+
+        // No active session - create directly
         let gameId;
         const gamesRes = await fetch(API + '/games');
         const games = await gamesRes.json();
@@ -2774,7 +2842,6 @@ function setupEventListeners() {
         if (existingGame) {
           gameId = existingGame.id;
         } else {
-          // Map game names to file paths
           const gameFiles = {
             'Trivia Relampago': 'trivia-relampago.html',
             'Mimica Explosiva': 'mimica-explosiva.html',
@@ -2786,37 +2853,14 @@ function setupEventListeners() {
           const gameRes = await fetch(API + '/games', {
             method: 'POST',
             headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({
-              name: gameName,
-              description: 'Juego individual',
-              file: gameFiles[gameName] || null
-            })
+            body: JSON.stringify({ name: gameName, description: 'Juego individual', file: gameFiles[gameName] || null })
           });
           if (!gameRes.ok) throw new Error('Error creando juego');
           const gameData = await gameRes.json();
           gameId = gameData.id;
         }
 
-        // Create a session for this game
-        const sessionRes = await fetch(API + '/sessions', {
-          method: 'POST',
-          headers: {'Content-Type':'application/json'},
-          body: JSON.stringify({
-            type: 'individual',
-            game_id: gameId
-          })
-        });
-        if (!sessionRes.ok) throw new Error('Error creando sesión');
-        const sessionData = await sessionRes.json();
-
-        // Start the session
-        await fetch(API + `/sessions/${sessionData.id}/start`, {
-          method: 'POST',
-          headers: {'Content-Type':'application/json'}
-        });
-
-        // Open console with session
-        window.location.href = `/console.html?session=${sessionData.id}`;
+        await createAndStartSession(gameId, gameName);
       } catch (err) {
         console.error('Error al iniciar juego:', err);
         alert('Error al iniciar el juego. Intenta de nuevo.');
@@ -3346,6 +3390,145 @@ window.addEventListener('message', (event) => {
   }
 });
 
+// ==================== SESSION WARNING MODAL ====================
+let pendingGame = null;
+let pendingReplaySession = null;
+
+function closeSessionWarning() {
+  document.getElementById('session-warning-modal').classList.add('hidden');
+  document.getElementById('session-warning-modal').classList.remove('flex');
+  pendingGame = null;
+  pendingReplaySession = null;
+}
+
+async function confirmNewSession() {
+  // Finalizar sesión activa
+  try {
+    const activeRes = await fetch(API + '/sessions?status=activo');
+    const activeSessions = await activeRes.json();
+    if (activeSessions.length > 0) {
+      await fetch(API + `/sessions/${activeSessions[0].id}/finish`, { method: 'POST' });
+    }
+  } catch (err) {
+    console.error('Error finishing session:', err);
+  }
+  
+  closeSessionWarning();
+  loadSessionHistory();
+  loadActiveSession();
+  
+  // Crear nueva sesión con el juego pendiente
+  if (pendingGame) {
+    await createAndStartSession(pendingGame.gameId, pendingGame.gameName);
+    pendingGame = null;
+  }
+  
+  // Reintentar replay
+  if (pendingReplaySession) {
+    const sessionId = pendingReplaySession;
+    pendingReplaySession = null;
+    await doReplaySession(sessionId);
+  }
+}
+
+// ==================== SESSION CREATION ====================
+async function createAndStartSession(gameId, gameName) {
+  try {
+    const sessionRes = await fetch(API + '/sessions', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ type: 'individual', game_id: gameId })
+    });
+    if (!sessionRes.ok) throw new Error('Error creando sesión');
+    const sessionData = await sessionRes.json();
+
+    await fetch(API + `/sessions/${sessionData.id}/start`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'}
+    });
+
+    window.location.href = `/console.html?session=${sessionData.id}`;
+  } catch (err) {
+    console.error('Error al iniciar juego:', err);
+    alert('Error al iniciar el juego. Intenta de nuevo.');
+  }
+}
+
+// ==================== SESSION HISTORY ====================
+async function loadSessionHistory() {
+  try {
+    const res = await fetch(API + '/sessions?status=finalizado');
+    const sessions = await res.json();
+    const container = document.getElementById('sidebar-history-list');
+    if (!container) return;
+    
+    if (sessions.length === 0) {
+      container.innerHTML = '<p class="text-[9px] text-on-surface-variant px-1">Sin sesiones anteriores</p>';
+      return;
+    }
+    
+    container.innerHTML = sessions.slice(0, 12).map(s => {
+      const date = s.finished_at ? new Date(s.finished_at).toLocaleDateString('es-PE', {day:'2-digit',month:'short'}) : '-';
+      return `
+        <div class="bg-surface-container-low border border-on-surface/20 rounded-lg p-1.5 flex flex-col gap-0.5">
+          <div class="flex items-center justify-between">
+            <span class="font-label-xs text-[9px] font-bold text-on-surface">${s.code}</span>
+            <span class="font-label-xs text-[8px] text-on-surface-variant">${date}</span>
+          </div>
+          <span class="font-label-xs text-[8px] text-on-surface-variant truncate">${s.name || s.type}</span>
+          <button onclick="replaySession(${s.id})" class="w-full px-1.5 py-0.5 rounded bg-primary-container text-on-primary border border-on-surface text-[8px] font-label-xs uppercase hover:bg-primary transition-colors cursor-pointer">
+            ▶ Volver a Jugar
+          </button>
+        </div>`;
+    }).join('');
+  } catch (err) {
+    console.error('Error loading history:', err);
+  }
+}
+
+async function replaySession(sessionId) {
+  try {
+    const activeRes = await fetch(API + '/sessions?status=activo');
+    const activeSessions = await activeRes.json();
+    
+    if (activeSessions.length > 0) {
+      pendingReplaySession = sessionId;
+      document.getElementById('warning-session-code').textContent = activeSessions[0].code;
+      document.getElementById('session-warning-modal').classList.remove('hidden');
+      document.getElementById('session-warning-modal').classList.add('flex');
+      return;
+    }
+    
+    await doReplaySession(sessionId);
+  } catch (err) {
+    console.error('Error replaying session:', err);
+  }
+}
+
+async function doReplaySession(sessionId) {
+  try {
+    const sessionRes = await fetch(API + `/sessions/${sessionId}`);
+    const oldSession = await sessionRes.json();
+    
+    const newRes = await fetch(API + '/sessions', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        type: oldSession.type,
+        game_ids: oldSession.games.map(g => g.game_id),
+        name: (oldSession.name || oldSession.type) + ' (reprise)'
+      })
+    });
+    const newSession = await newRes.json();
+    
+    await fetch(API + `/sessions/${newSession.id}/start`, { method: 'POST' });
+    window.location.href = `/console.html?session=${newSession.id}`;
+  } catch (err) {
+    console.error('Error creating replay session:', err);
+    alert('Error al crear la sesión. Intenta de nuevo.');
+  }
+}
+
 // ==================== INIT ====================
 function init() {
   navigateTo('inicio');
@@ -3353,10 +3536,11 @@ function init() {
   updatePublicScreen();
   loadState();
   loadActiveSession();
+  loadSessionHistory();
 }
 
 setInterval(updatePublicScreen, 2000);
-setInterval(loadActiveSession, 5000); // Refresh session status every 5 seconds
+setInterval(loadActiveSession, 5000);
 init();
 </script>
 </body>
