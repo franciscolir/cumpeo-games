@@ -25,25 +25,6 @@
 <div class="font-label-md text-label-md text-on-surface-variant">Equipo Rayos Escarlata</div>
 </div>
 </div>
-<div class="text-right">
-<span class="font-label-md text-label-md text-on-surface-variant uppercase block">RELOJ</span>
-<span class="font-headline-lg text-headline-lg text-primary tracking-tight animate-pulse text-error" id="timerA">00:00<span class="text-xs font-body-sm text-on-surface-variant">s</span></span>
-</div>
-</div>
-<!-- MARCADORES JUGADOR A -->
-<div class="grid grid-cols-3 gap-xs pt-xs bg-surface-container-low p-xs rounded-lg">
-<div class="flex items-center gap-2xs justify-center bg-tertiary/15 text-tertiary py-2xs px-xs rounded">
-<span class="material-symbols-outlined text-[18px]">check_circle</span>
-<span class="font-label-comic-pill text-label-comic-pill" id="scoreA-hits">14 Aciertos</span>
-</div>
-<div class="flex items-center gap-2xs justify-center bg-error/15 text-error py-2xs px-xs rounded">
-<span class="material-symbols-outlined text-[18px]">cancel</span>
-<span class="font-label-comic-pill text-label-comic-pill" id="scoreA-errors">2 Fallos</span>
-</div>
-<div class="flex items-center gap-2xs justify-center bg-secondary-container/30 text-on-secondary-container py-2xs px-xs rounded">
-<span class="material-symbols-outlined text-[18px]">fast_forward</span>
-<span class="font-label-comic-pill text-label-comic-pill" id="scoreA-passed">2 Pasadas</span>
-</div>
 </div>
 </div>
 <!-- HUD CENTRAL / INFO GLOBAL -->
@@ -197,33 +178,9 @@
       const manualErrorBtn = document.getElementById('btnManualError');
       const toggleTimerBtn = document.getElementById('btnToggleTimer');
       const pauseIcon = document.getElementById('pauseIcon');
-      const timerSpan = document.getElementById('timerA');
-      const scoreHits = document.getElementById('scoreA-hits');
       const letterNode = document.getElementById('letterNodeS');
       const activeHud = document.getElementById('activeLetterHUD');
       const questionText = document.getElementById('questionText');
-
-      let currentSeconds = 48;
-      let timerRunning = true;
-      let hits = 14;
-
-      // Actualizador cronómetro
-      const timerInterval = setInterval(() => {
-        if (!timerRunning) return;
-        if (currentSeconds > 0) {
-          currentSeconds--;
-          const formatted = currentSeconds < 10 ? `00:0${currentSeconds}` : `00:${currentSeconds}`;
-          timerSpan.innerHTML = `${formatted}<span class="text-xs font-body-sm text-on-surface-variant">s</span>`;
-          
-          // Alerta pop cuando baje de 10s
-          if (currentSeconds <= 10) {
-            timerSpan.classList.add('animate-pulse', 'text-error');
-          }
-        } else {
-          clearInterval(timerInterval);
-          alert("¡Tiempo cumplido para Julieta! Cambio de turno obligatorio.");
-        }
-      }, 1000);
 
       // Limpiar texto input
       clearBtn.addEventListener('click', () => {
@@ -238,8 +195,6 @@
 
         // Si responde acertado (por ejemplo tornado, siroco o cualquier intento de prueba)
         if (val.includes('siroco') || val.includes('tornado') || val.includes('sur')) {
-          hits++;
-          scoreHits.textContent = `${hits} Aciertos`;
           // Transformar la letra 'S' a Verde Acierto
           if (letterNode) {
             letterNode.innerHTML = `
@@ -297,20 +252,16 @@
         }
       });
 
-      // Botón Play / Pausa cronómetro
-      toggleTimerBtn.addEventListener('click', () => {
-        timerRunning = !timerRunning;
-        pauseIcon.textContent = timerRunning ? 'pause' : 'play_arrow';
-      });
+      // Botón Play / Pausa cronómetro eliminado, tiempo gestionado por consola
+
 
       // Botones manuales conductor
       manualHitBtn.addEventListener('click', () => {
-        hits++;
-        scoreHits.textContent = `${hits} Aciertos`;
+        // Emitir puntaje a consola, UI local removida
+        window.parent.postMessage({type:'score-update', payload:{teamId:'A', points:100}}, '*');
       });
       manualErrorBtn.addEventListener('click', () => {
-        const errorsEl = document.getElementById('scoreA-errors');
-        errorsEl.textContent = '3 Fallos';
+        // Sin UI local de fallos
       });
 
       // Helper de efectos de audio de broma / feedback
@@ -321,6 +272,31 @@
       };
     })();
   </script>
+
+  <script src="/games/_shared/game-sdk.js"></script>
+  <script>
+    window.addEventListener('message', (e) => {
+      const {type, payload} = e.data || {};
+      if (type === 'game:init') { window.__cumpeoSession = payload; }
+      if (type === 'game:next-round') { console.log('next-round', payload); }
+    });
+    window.updateScore = (teamId, points) => {
+      window.parent.postMessage({type:'score-update', payload:{teamId, points}}, '*');
+    };
+    window.finishGame = (results) => {
+      window.parent.postMessage({type:'game-over', payload:{results}}, '*');
+    };
+  </script>
+<aside class="lg:col-span-2 bg-surface-container-lowest rounded-2xl border-2 border-[#1c1b1b] p-4 space-y-4 mt-4 lg:mt-0">
+  <h3 class="font-bold text-yellow-300 text-lg text-center">Mando del Conductor</h3>
+  <div class="text-xs text-gray-400 text-center">Control centralizado por consola</div>
+  <div class="flex flex-col gap-2">
+    <button class="w-full bg-green-600 hover:bg-green-500 py-2 rounded-xl font-bold">+100 ACIERTO</button>
+    <button class="w-full bg-red-600 hover:bg-red-500 py-2 rounded-xl font-bold">FALLO</button>
+    <button class="w-full bg-gray-700 hover:bg-gray-600 py-2 rounded-xl font-bold">SIGUIENTE LETRA</button>
+    <button class="w-full bg-gray-900 hover:bg-black py-2 rounded-xl font-bold">FINALIZAR</button>
+  </div>
+</aside>
 </div></main></div>
 
 </body></html>

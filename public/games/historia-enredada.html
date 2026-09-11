@@ -141,7 +141,8 @@
 <body class="bg-background font-body-md text-body-md text-on-surface antialiased w-full min-h-screen m-0 p-0">
 
   <main class="w-full min-h-screen bg-background px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
-    <div class="flex flex-col w-full max-w-7xl mx-auto gap-8 sm:gap-10 pb-12">
+    <div class="grid grid-cols-1 lg:grid-cols-10 gap-6 w-full max-w-7xl mx-auto pb-12">
+      <section class="lg:col-span-8 flex flex-col gap-8 sm:gap-10">
 
       <!-- ═══════════════════════════════════════════════════════ -->
       <!-- AMBIENT COMIC HERO                                        -->
@@ -459,6 +460,17 @@
           </div>
         </footer>
       </div>
+      </section>
+      <aside class="lg:col-span-2 bg-surface-container-lowest rounded-2xl border-2 border-[#1c1b1b] p-4 space-y-4">
+        <h3 class="font-bold text-yellow-300 text-lg text-center">Mando del Conductor</h3>
+        <div class="text-xs text-gray-400 text-center">Mecánica: Elige historia, asigna puntos.</div>
+        <div class="flex flex-col gap-2">
+          <button class="w-full bg-green-600 hover:bg-green-500 py-2 rounded-xl font-bold">VALIDAR RESPUESTA</button>
+          <button class="w-full bg-red-600 hover:bg-red-500 py-2 rounded-xl font-bold">ANULAR</button>
+          <button class="w-full bg-gray-700 hover:bg-gray-600 py-2 rounded-xl font-bold">SIGUIENTE</button>
+          <button class="w-full bg-gray-900 hover:bg-black py-2 rounded-xl font-bold">FINALIZAR</button>
+        </div>
+      </aside>
     </div>
   </main>
 
@@ -513,6 +525,24 @@
       const randomIdx = Math.floor(Math.random() * stories.length);
       selectStory(stories[randomIdx]);
     }
+  </script>
+
+  <script src="/games/_shared/game-sdk.js"></script>
+  <script>
+    // Manual scoring note for conductor
+    window.addEventListener('message', (e) => {
+      const {type, payload} = e.data || {};
+      if (type === 'game:init') { window.__cumpeoSession = payload; }
+      if (type === 'game:next-round') { console.log('next-round', payload); }
+    });
+    window.updateScore = (teamId, points) => {
+      console.log('Manual scoring:', teamId, points);
+      window.parent.postMessage({type:'score-update', payload:{teamId, points}}, '*');
+    };
+    window.finishGame = (results) => {
+      window.parent.postMessage({type:'game-over', payload:{results}}, '*');
+    };
+    // Conductor can call updateScore(teamId, points) manually
   </script>
 
 </body>
