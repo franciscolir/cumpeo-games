@@ -162,4 +162,5 @@ const wrapper = {
 };
 
 await load();
+export { save };
 export default wrapper;

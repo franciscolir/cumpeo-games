@@ -565,6 +565,15 @@
         // Load current game
         updateGameInfo();
 
+        // Check if session was paused and restore pause state
+        if (sessionData.progress && sessionData.progress.isPaused) {
+          isPaused = true;
+          const pauseBtn = document.getElementById('btn-pause');
+          const pauseText = document.getElementById('pause-text');
+          if (pauseBtn) pauseBtn.classList.add('bg-secondary-container');
+          if (pauseText) pauseText.innerText = 'Reanudar';
+        }
+
         // Load the current game if session is active
         if (sessionData.status === 'activo') {
           loadCurrentGame();
@@ -901,6 +910,18 @@
         text.innerText = 'Pausar';
         btn.classList.remove('bg-secondary-container');
         showToast('▶ Partida Reanudada');
+      }
+
+      // Save pause state to session
+      if (sessionData) {
+        fetch(`${API}/sessions/${sessionData.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            status: 'activo',
+            progress: { isPaused: isPaused, pausedAt: isPaused ? new Date().toISOString() : null }
+          })
+        }).catch(err => console.error('Error saving pause state:', err));
       }
 
       // Send pause/resume to game
