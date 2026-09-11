@@ -127,6 +127,51 @@
     .comic-modal{animation:comic-pop 0.2s ease-out;}
     @keyframes comic-pop{0%{transform:scale(0.9) rotate(-1deg);opacity:0;}100%{transform:scale(1) rotate(0deg);opacity:1;}}
 
+    /* ========== RESULTS SCREEN ANIMATIONS ========== */
+    @keyframes results-slide-up {
+      0% { transform: translateY(40px); opacity: 0; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+    @keyframes results-glow-pulse {
+      0%, 100% { box-shadow: 0 0 8px 2px rgba(255,215,0,0.4); }
+      50% { box-shadow: 0 0 20px 6px rgba(255,215,0,0.7); }
+    }
+    @keyframes results-float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-6px); }
+    }
+    @keyframes results-confetti-fall {
+      0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+    @keyframes results-pop-in {
+      0% { transform: scale(0) rotate(-10deg); opacity: 0; }
+      60% { transform: scale(1.15) rotate(3deg); opacity: 1; }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+    @keyframes results-shake {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(-3deg); }
+      75% { transform: rotate(3deg); }
+    }
+    @keyframes results-badge-pulse {
+      0%, 100% { transform: rotate(-2deg) scale(1); }
+      50% { transform: rotate(-2deg) scale(1.08); }
+    }
+    .results-anim-slide { animation: results-slide-up 0.5s ease-out both; }
+    .results-anim-pop { animation: results-pop-in 0.4s ease-out both; }
+    .results-anim-glow { animation: results-glow-pulse 2s ease-in-out infinite; }
+    .results-anim-float { animation: results-float 2.5s ease-in-out infinite; }
+    .results-anim-badge { animation: results-badge-pulse 1.8s ease-in-out infinite; }
+    .results-anim-shake { animation: results-shake 3s ease-in-out infinite; }
+    .results-confetti-piece {
+      position: absolute;
+      width: 8px; height: 8px;
+      border-radius: 2px;
+      animation: results-confetti-fall linear forwards;
+      pointer-events: none;
+    }
+
     #topbar {
       transition: top .3s ease, left .3s ease, right .3s ease,
                   border-radius .3s ease, box-shadow .3s ease,
@@ -930,28 +975,57 @@
       const scoreA = sessionData.cumulative_score_a || teamA.score || 0;
       const scoreB = sessionData.cumulative_score_b || teamB.score || 0;
 
-      // Determine winner
       const isTeamAWinner = scoreA >= scoreB;
       const winner = isTeamAWinner ? teamA : teamB;
       const loser = isTeamAWinner ? teamB : teamA;
       const winnerScore = isTeamAWinner ? scoreA : scoreB;
       const loserScore = isTeamAWinner ? scoreB : scoreA;
+      const winnerLetter = isTeamAWinner ? 'A' : 'B';
+      const loserLetter = isTeamAWinner ? 'B' : 'A';
 
-      // Update results screen
       document.getElementById('results-1st-name').textContent = `${winner.avatar} ${winner.name}`;
       document.getElementById('results-1st-score').textContent = winnerScore;
       document.getElementById('results-2nd-name').textContent = `${loser.avatar} ${loser.name}`;
       document.getElementById('results-2nd-score').textContent = loserScore;
       document.getElementById('results-session-code').textContent = `SESIÓN ${sessionData.code}`;
-      document.getElementById('results-summary').textContent = 
-        `Tras ${(sessionData.games || []).length} juego(s), ${winner.name} se corona con ${winnerScore} puntos.`;
+      document.getElementById('results-summary').textContent =
+        `¡${winner.name} se corona con ${winnerScore} puntos tras ${(sessionData.games || []).length} juego(s)!`;
 
-      // Show results screen
+      document.getElementById('results-1st-img').src = `images/${winnerLetter}-victoria.png`;
+      document.getElementById('results-2nd-img').src = `images/${loserLetter}-derrota.png`;
+
+      spawnConfetti();
+
       document.getElementById('results-screen').classList.remove('hidden');
     }
 
-    function resultsRematch() {
+    function spawnConfetti() {
+      const container = document.getElementById('results-confetti');
+      container.innerHTML = '';
+      const colors = ['#FFD700', '#FF6B6B', '#4ECDC4', '#FF8A5C', '#A78BFA', '#F472B6', '#34D399', '#FBBF24'];
+      for (let i = 0; i < 50; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'results-confetti-piece';
+        piece.style.left = Math.random() * 100 + '%';
+        piece.style.top = '-10px';
+        piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.animationDuration = (2 + Math.random() * 3) + 's';
+        piece.style.animationDelay = (Math.random() * 2) + 's';
+        piece.style.width = (6 + Math.random() * 6) + 'px';
+        piece.style.height = (6 + Math.random() * 6) + 'px';
+        piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        container.appendChild(piece);
+      }
+      setTimeout(() => { container.innerHTML = ''; }, 6000);
+    }
+
+    function hideResultsScreen() {
       document.getElementById('results-screen').classList.add('hidden');
+      document.getElementById('results-confetti').innerHTML = '';
+    }
+
+    function resultsRematch() {
+      hideResultsScreen();
       // Create new session with same games
       if (sessionData && sessionData.games) {
         const gameIds = sessionData.games.map(g => g.game_id).filter(Boolean);
@@ -971,13 +1045,13 @@
     }
 
     function resultsHistory() {
-      document.getElementById('results-screen').classList.add('hidden');
+      hideResultsScreen();
       window.parent.postMessage('navigate-to-historial', '*');
       window.location.href = '/index.html#/historial';
     }
 
     function resultsGoHome() {
-      document.getElementById('results-screen').classList.add('hidden');
+      hideResultsScreen();
       if (window.parent && window.parent !== window) {
         window.parent.postMessage('navigate-to-inicio', '*');
       } else {
@@ -1138,10 +1212,14 @@
 
   <!-- RESULTS SCREEN -->
   <div id="results-screen" class="fixed inset-0 z-[90] hidden bg-surface overflow-hidden">
-    <div class="flex flex-col w-full h-full px-3 py-3 overflow-hidden">
+
+    <!-- Confetti container -->
+    <div id="results-confetti" class="absolute inset-0 pointer-events-none overflow-hidden z-[91]"></div>
+
+    <div class="flex flex-col w-full h-full px-3 py-3 overflow-hidden relative z-[92]">
 
       <!-- Header compacto -->
-      <div class="flex items-center justify-between shrink-0 mb-2">
+      <div id="results-header" class="results-anim-slide flex items-center justify-between shrink-0 mb-2" style="animation-delay:0.1s;">
         <div class="flex items-center gap-2">
           <div class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-secondary-container text-on-secondary-fixed border-2 border-on-surface rounded-full shadow-[2px_2px_0px_#1c1b1b] -rotate-1">
             <span class="material-symbols-outlined text-[12px] text-primary" style="font-variation-settings:'FILL'1;">stars</span>
@@ -1159,12 +1237,23 @@
       <div class="flex flex-col lg:flex-row gap-3 flex-1 min-h-0 overflow-hidden">
 
         <!-- Podio -->
-        <div class="flex-1 bg-surface-container-low border-3 border-on-surface rounded-xl p-3 shadow-[6px_6px_0px_#1c1b1b] flex flex-col justify-end overflow-hidden">
-          <div class="grid grid-cols-2 gap-2 items-end h-full">
+        <div id="results-podium" class="results-anim-slide flex-1 bg-surface-container-low border-3 border-on-surface rounded-xl p-3 shadow-[6px_6px_0px_#1c1b1b] flex flex-col justify-end overflow-hidden relative" style="animation-delay:0.3s;">
+          <!-- Decoración de fondo -->
+          <div class="absolute inset-0 opacity-10 pointer-events-none">
+            <div class="absolute top-2 left-4 text-4xl results-anim-float" style="animation-delay:0s;">🏆</div>
+            <div class="absolute top-6 right-8 text-3xl results-anim-float" style="animation-delay:0.5s;">⭐</div>
+            <div class="absolute bottom-4 left-12 text-2xl results-anim-float" style="animation-delay:1s;">🎉</div>
+            <div class="absolute top-3 right-20 text-2xl results-anim-float" style="animation-delay:1.5s;">🎊</div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 items-end h-full relative z-10">
             <!-- 2do lugar -->
-            <div id="results-2nd" class="flex flex-col items-center justify-end">
+            <div id="results-2nd" class="results-anim-slide flex flex-col items-center justify-end" style="animation-delay:0.5s;">
               <div class="w-full bg-surface border-2 border-on-surface rounded-lg p-2 shadow-[3px_3px_0px_#1c1b1b] flex flex-col items-center text-center mb-1.5">
-                <span class="text-base">🥈</span>
+                <!-- Imagen del equipo perdedor -->
+                <div class="w-14 h-14 rounded-full border-2 border-on-surface overflow-hidden mb-1 bg-surface-container-highest shadow-[2px_2px_0px_#1c1b1b]">
+                  <img id="results-2nd-img" src="images/A-derrota.png" alt="2do lugar" class="w-full h-full object-cover" />
+                </div>
                 <span class="font-label-comic-pill text-[9px] text-tertiary uppercase">2° LUGAR</span>
                 <h3 id="results-2nd-name" class="font-headline-sm text-[14px] text-on-surface uppercase leading-none mt-0.5">-</h3>
                 <div class="mt-1 px-2 py-0.5 bg-surface-container rounded-full border border-on-surface">
@@ -1178,13 +1267,19 @@
               </div>
             </div>
             <!-- 1er lugar -->
-            <div id="results-1st" class="flex flex-col items-center justify-end z-10">
-              <div class="relative -mb-2 z-20">
+            <div id="results-1st" class="results-anim-pop flex flex-col items-center justify-end z-10" style="animation-delay:0.4s;">
+              <!-- Trofeo flotante -->
+              <div class="results-anim-float relative -mb-2 z-20">
                 <span class="material-symbols-outlined text-[36px] text-secondary-container drop-shadow-[2px_2px_0px_#1c1b1b] animate-bounce" style="font-variation-settings:'FILL'1;">military_tech</span>
               </div>
-              <div class="w-full bg-secondary-fixed border-3 border-on-surface rounded-xl p-2.5 shadow-[4px_4px_0px_#1c1b1b] flex flex-col items-center text-center mb-1.5">
-                <div class="px-2 py-0.5 bg-primary text-on-primary font-label-comic-pill text-[8px] rounded-full border border-on-surface uppercase tracking-wider rotate-[-2deg] shadow-[1px_1px_0px_#1c1b1b]">
+              <div class="results-anim-glow w-full bg-secondary-fixed border-3 border-on-surface rounded-xl p-2.5 shadow-[4px_4px_0px_#1c1b1b] flex flex-col items-center text-center mb-1.5 relative">
+                <!-- Badge campeón animado -->
+                <div class="results-anim-badge px-2 py-0.5 bg-primary text-on-primary font-label-comic-pill text-[8px] rounded-full border border-on-surface uppercase tracking-wider rotate-[-2deg] shadow-[1px_1px_0px_#1c1b1b]">
                   ⚡ CAMPEÓN ⚡
+                </div>
+                <!-- Imagen del equipo ganador -->
+                <div class="w-16 h-16 rounded-full border-3 border-primary overflow-hidden mt-1 bg-surface shadow-[3px_3px_0px_#1c1b1b]">
+                  <img id="results-1st-img" src="images/A-victoria.png" alt="Campeón" class="w-full h-full object-cover" />
                 </div>
                 <h2 id="results-1st-name" class="font-headline-sm text-[15px] text-primary uppercase leading-tight mt-1">-</h2>
                 <div class="my-1 px-3 py-0.5 bg-surface rounded-lg border-2 border-on-surface shadow-[2px_2px_0px_#1c1b1b]">
@@ -1204,9 +1299,9 @@
         <div class="lg:w-[280px] shrink-0 flex flex-col gap-2 overflow-hidden">
 
           <!-- Mensaje del árbitro -->
-          <div class="bg-secondary-container border-2 border-on-surface rounded-xl p-2.5 shadow-[3px_3px_0px_#1c1b1b] flex items-center gap-2 shrink-0">
-            <div class="w-10 h-10 shrink-0 rounded-lg bg-surface-container-lowest border-2 border-on-surface shadow-[2px_2px_0px_#1c1b1b] flex items-center justify-center text-2xl">
-              🦜
+          <div id="results-arbiter" class="results-anim-slide bg-secondary-container border-2 border-on-surface rounded-xl p-2.5 shadow-[3px_3px_0px_#1c1b1b] flex items-center gap-2 shrink-0" style="animation-delay:0.6s;">
+            <div class="w-12 h-12 shrink-0 rounded-lg bg-surface-container-lowest border-2 border-on-surface shadow-[2px_2px_0px_#1c1b1b] overflow-hidden flex items-center justify-center">
+              <img src="images/pupi-pulgar-arriba.png" alt="Árbitro" class="w-full h-full object-cover" />
             </div>
             <div class="flex flex-col">
               <span class="font-label-comic-pill text-[8px] text-primary uppercase tracking-wider">ÁRBITRO</span>
@@ -1215,9 +1310,9 @@
           </div>
 
           <!-- Botonera -->
-          <div class="bg-surface-container-high border-2 border-on-surface rounded-xl p-2.5 shadow-[4px_4px_0px_#1c1b1b] flex flex-col gap-1.5 flex-1 overflow-hidden">
+          <div id="results-buttons" class="results-anim-slide bg-surface-container-high border-2 border-on-surface rounded-xl p-2.5 shadow-[4px_4px_0px_#1c1b1b] flex flex-col gap-1.5 flex-1 overflow-hidden" style="animation-delay:0.7s;">
             <span class="font-label-comic-pill text-[8px] text-on-surface-variant uppercase">ACCIONES</span>
-            <button onclick="resultsRematch()" class="w-full flex items-center gap-2 py-2 px-2.5 bg-tertiary-fixed hover:bg-tertiary-fixed-dim active:translate-x-1 active:translate-y-1 active:shadow-none transition-all border-2 border-on-surface rounded-lg shadow-[3px_3px_0px_#1c1b1b] text-on-tertiary-fixed cursor-pointer">
+            <button onclick="resultsRematch()" class="results-anim-shake w-full flex items-center gap-2 py-2 px-2.5 bg-tertiary-fixed hover:bg-tertiary-fixed-dim active:translate-x-1 active:translate-y-1 active:shadow-none transition-all border-2 border-on-surface rounded-lg shadow-[3px_3px_0px_#1c1b1b] text-on-tertiary-fixed cursor-pointer">
               <span class="material-symbols-outlined text-[16px]">refresh</span>
               <span class="font-headline-sm text-[11px] uppercase">REVANCHA</span>
             </button>
