@@ -152,11 +152,6 @@
       overflow: hidden;
     }
 
-    #content-wrapper {
-      height: calc(100vh - 4rem);
-      overflow: hidden;
-    }
-
     @media (max-width: 1023px) {
       aside {
         position: fixed;
@@ -276,11 +271,11 @@
   <div id="content-wrapper" class="pt-16 h-full flex flex-row overflow-hidden">
 
     <!-- CONTENIDO PRINCIPAL -->
-    <main class="flex-1 min-w-0 bg-surface px-3 py-2 overflow-y-auto">
-      <div class="flex flex-col w-full mx-auto gap-3">
+    <main class="flex-1 min-w-0 bg-surface px-3 py-2 flex flex-col overflow-hidden">
+      <div class="flex flex-col w-full mx-auto gap-2 flex-1 min-h-0">
 
         <!-- HERO SCOREBOARD -->
-        <section class="grid grid-cols-3 gap-2 items-stretch">
+        <section class="grid grid-cols-3 gap-2 items-stretch shrink-0">
 
           <!-- TEAM A -->
           <div class="bg-surface-container-lowest rounded-xl border-2 border-on-surface shadow-comic-md p-2 flex flex-col justify-center items-center relative overflow-hidden" id="team-a-card">

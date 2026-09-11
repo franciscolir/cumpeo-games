@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>CUMPEO — Historia Enredada</title>
+
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;800&family=Plus+Jakarta+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+  <!-- Tailwind Config -->
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "error": "#ba1a1a",
+            "on-primary": "#ffffff",
+            "secondary": "#775a00",
+            "surface-container-highest": "#e5e2e1",
+            "inverse-on-surface": "#f3f0ef",
+            "primary-container": "#e41b34",
+            "secondary-container": "#ffc72c",
+            "on-tertiary-fixed-variant": "#00513b",
+            "surface": "#fcf9f8",
+            "secondary-fixed-dim": "#f6bf22",
+            "surface-dim": "#dcd9d9",
+            "on-secondary-fixed": "#251a00",
+            "on-primary-fixed-variant": "#93001a",
+            "on-error-container": "#93000a",
+            "background": "#fcf9f8",
+            "surface-container-low": "#f6f3f2",
+            "surface-tint": "#bf0025",
+            "surface-container": "#f0edec",
+            "secondary-fixed": "#ffdf99",
+            "outline": "#926e6d",
+            "error-container": "#ffdad6",
+            "inverse-surface": "#313030",
+            "inverse-primary": "#ffb3b0",
+            "on-primary-container": "#fffbff",
+            "on-primary-fixed": "#410006",
+            "on-secondary": "#ffffff",
+            "tertiary": "#00694d",
+            "tertiary-fixed": "#54fdc4",
+            "surface-bright": "#fcf9f8",
+            "surface-variant": "#e5e2e1",
+            "on-tertiary-container": "#f5fff8",
+            "on-secondary-container": "#6f5400",
+            "surface-container-high": "#ebe7e7",
+            "on-secondary-fixed-variant": "#5a4300",
+            "on-background": "#1c1b1b",
+            "primary-fixed": "#ffdad8",
+            "on-surface": "#1c1b1b",
+            "on-surface-variant": "#5d3f3e",
+            "outline-variant": "#e6bdba",
+            "on-error": "#ffffff",
+            "on-tertiary": "#ffffff",
+            "tertiary-container": "#008562",
+            "primary-fixed-dim": "#ffb3b0",
+            "primary": "#bb0024",
+            "on-tertiary-fixed": "#002116",
+            "surface-container-lowest": "#ffffff",
+            "tertiary-fixed-dim": "#27e0a9"
+          },
+          borderRadius: {
+            DEFAULT: "0.25rem",
+            lg: "0.5rem",
+            xl: "0.75rem",
+            full: "9999px"
+          },
+          spacing: {
+            "container-max": "72rem",
+            "2xs": "0.25rem",
+            "3xl": "4rem",
+            "gutter-mobile": "1rem",
+            "xl": "2rem",
+            "sm": "0.75rem",
+            "lg": "1.5rem",
+            "gutter-desktop": "2rem",
+            "gutter-tablet": "1.5rem",
+            "xs": "0.5rem",
+            "2xl": "3rem",
+            "md": "1rem"
+          },
+          fontFamily: {
+            "display-hero": ["Bricolage Grotesque", "sans-serif"],
+            "display-hero-mobile": ["Bricolage Grotesque", "sans-serif"],
+            "body-lg": ["Plus Jakarta Sans", "sans-serif"],
+            "headline-md": ["Bricolage Grotesque", "sans-serif"],
+            "label-md": ["Plus Jakarta Sans", "sans-serif"],
+            "label-comic-pill": ["Bricolage Grotesque", "sans-serif"],
+            "body-sm": ["Plus Jakarta Sans", "sans-serif"],
+            "label-lg": ["Plus Jakarta Sans", "sans-serif"],
+            "headline-sm": ["Bricolage Grotesque", "sans-serif"],
+            "body-md": ["Plus Jakarta Sans", "sans-serif"],
+            "headline-lg": ["Bricolage Grotesque", "sans-serif"],
+            "headline-lg-mobile": ["Bricolage Grotesque", "sans-serif"]
+          },
+          fontSize: {
+            "display-hero": ["56px", { lineHeight: "60px", letterSpacing: "-0.03em", fontWeight: "800" }],
+            "display-hero-mobile": ["38px", { lineHeight: "42px", letterSpacing: "-0.02em", fontWeight: "800" }],
+            "body-lg": ["18px", { lineHeight: "28px", letterSpacing: "-0.01em", fontWeight: "500" }],
+            "headline-md": ["24px", { lineHeight: "30px", letterSpacing: "-0.01em", fontWeight: "700" }],
+            "label-md": ["13px", { lineHeight: "16px", letterSpacing: "0.04em", fontWeight: "700" }],
+            "label-comic-pill": ["14px", { lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "800" }],
+            "body-sm": ["14px", { lineHeight: "20px", letterSpacing: "0em", fontWeight: "400" }],
+            "label-lg": ["16px", { lineHeight: "20px", letterSpacing: "0.02em", fontWeight: "700" }],
+            "headline-sm": ["20px", { lineHeight: "26px", letterSpacing: "0em", fontWeight: "700" }],
+            "body-md": ["16px", { lineHeight: "24px", letterSpacing: "0em", fontWeight: "400" }],
+            "headline-lg": ["36px", { lineHeight: "44px", letterSpacing: "-0.02em", fontWeight: "700" }],
+            "headline-lg-mobile": ["28px", { lineHeight: "34px", letterSpacing: "-0.01em", fontWeight: "700" }]
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- CSS auxiliar (FUERA de @layer) -->
+  <style>
+    html, body { margin: 0; padding: 0; width: 100%; min-height: 100%; }
+    body { overscroll-behavior: none; background-color: #fcf9f8; }
+    main > :first-child { margin-top: 0 !important; }
+    main > :last-child  { margin-bottom: 0 !important; }
+    ::-webkit-scrollbar { display: none; }
+
+    /* Toast animado, sin bounce agresivo */
+    @keyframes toast-in {
+      from { opacity: 0; transform: translate(-50%, 20px); }
+      to   { opacity: 1; transform: translate(-50%, 0); }
+    }
+    .toast-enter { animation: toast-in .25s ease-out; }
+  </style>
+</head>
+
+<body class="bg-background font-body-md text-body-md text-on-surface antialiased w-full min-h-screen m-0 p-0">
+
+  <main class="w-full min-h-screen bg-background px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+    <div class="flex flex-col w-full max-w-7xl mx-auto gap-8 sm:gap-10 pb-12">
+
+      <!-- ═══════════════════════════════════════════════════════ -->
+      <!-- AMBIENT COMIC HERO                                        -->
+      <!-- ═══════════════════════════════════════════════════════ -->
+      <div class="relative w-full overflow-hidden rounded-2xl bg-surface-container-lowest p-6 sm:p-8 lg:p-10 border-2 border-[#1c1b1b] shadow-[6px_6px_0px_#1c1b1b]">
+
+        <div class="absolute inset-0 opacity-[0.035] pointer-events-none"
+             style="background-image: radial-gradient(#1c1b1b 1.5px, transparent 1.5px); background-size: 16px 16px;"></div>
+        <div class="absolute -top-12 -left-12 w-64 h-64 bg-secondary-container/20 rounded-full blur-2xl pointer-events-none"></div>
+        <div class="absolute -top-12 -right-12 w-64 h-64 bg-primary-container/15 rounded-full blur-2xl pointer-events-none"></div>
+
+        <!-- ENCABEZADO TEATRAL -->
+        <div class="relative z-10 flex flex-col items-center text-center gap-4">
+
+          <div class="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container text-on-surface font-label-comic-pill text-label-comic-pill uppercase -rotate-1 border border-[#1c1b1b] shadow-[2px_2px_0px_#1c1b1b]">
+              <span class="material-symbols-outlined text-primary text-[18px]">theater_comedy</span>
+              JUEGO #33 • IMPROVISACIÓN TEATRAL
+            </span>
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-comic-pill text-label-comic-pill uppercase rotate-1 border border-[#1c1b1b] shadow-[2px_2px_0px_#1c1b1b]">
+              <span class="material-symbols-outlined text-[16px]">movie</span>
+              FASE DE ELECCIÓN
+            </span>
+          </div>
+
+          <div class="relative mt-1">
+            <h1 class="font-display-hero text-4xl sm:text-display-hero text-primary tracking-tight uppercase select-none drop-shadow-[3px_3px_0px_#1c1b1b]">
+              HISTORIA ENREDADA
+            </h1>
+            <div class="absolute -right-3 -bottom-3 sm:-right-8 sm:-bottom-2 bg-secondary-container text-on-secondary-container font-label-comic-pill text-label-comic-pill uppercase px-2 py-1 rounded border border-[#1c1b1b] rotate-6 shadow-[2px_2px_0px_#1c1b1b] hidden sm:block">
+              ¡A ESCENA!
+            </div>
+          </div>
+
+          <div class="max-w-2xl flex flex-col items-center gap-1.5">
+            <h2 class="font-headline-lg text-2xl sm:text-headline-lg text-on-surface tracking-tight">
+              Elige una historia
+            </h2>
+            <p class="font-body-lg text-base sm:text-body-lg text-on-surface-variant max-w-xl">
+              Selecciona la historia para comenzar la aventura. Cuatro libretos misteriosos listos para que el público siembre el caos.
+            </p>
+          </div>
+
+          <div class="mt-2 inline-flex items-center gap-2.5 bg-primary text-on-primary px-4 sm:px-6 py-2 rounded-xl border-2 border-[#1c1b1b] shadow-[4px_4px_0px_#1c1b1b] transform hover:-translate-y-0.5 transition-transform">
+            <div class="w-7 h-7 rounded-full bg-surface-container-lowest flex items-center justify-center text-primary border border-[#1c1b1b] shadow-[1px_1px_0px_#1c1b1b]">
+              <span class="material-symbols-outlined text-[18px]">bolt</span>
+            </div>
+            <span class="font-label-comic-pill text-xs sm:text-label-comic-pill uppercase tracking-wider">
+              TURNO: EQUIPO A (RAYOS ESCARLATA) ELIGIENDO LIBRETO
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════ -->
+      <!-- GRID 4 HISTORIAS (2x2)                                    -->
+      <!-- ═══════════════════════════════════════════════════════ -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8" id="story-grid">
+
+        <!-- HISTORIA 01 -->
+        <article class="group relative flex flex-col justify-between rounded-2xl bg-surface-container-lowest p-6 lg:p-8 border-2 border-[#1c1b1b] shadow-[5px_5px_0px_#1c1b1b] hover:shadow-[2px_2px_0px_#1c1b1b] hover:translate-x-[3px] hover:translate-y-[3px] transition-all duration-150">
+          <div class="flex flex-col gap-4">
+            <div class="flex items-center justify-between">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-secondary-container text-on-secondary-container font-label-comic-pill text-label-comic-pill uppercase border border-[#1c1b1b] shadow-[2px_2px_0px_#1c1b1b]">
+                <span class="material-symbols-outlined text-[18px]">menu_book</span>
+                HISTORIA 01
+              </span>
+              <span class="text-on-surface-variant font-label-md text-label-md uppercase tracking-wider bg-surface-container-low px-2 py-1 rounded-md border border-outline-variant/60">
+                Humor Absurdo
+              </span>
+            </div>
+
+            <div class="relative w-full h-44 rounded-xl bg-surface-container-low border border-[#1c1b1b]/30 flex items-center justify-center overflow-hidden shadow-inner group-hover:bg-secondary-container/15 transition-colors">
+              <svg class="w-32 h-32 text-on-surface transform group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" viewBox="0 0 100 100" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+                <circle class="fill-surface-container-lowest stroke-on-surface stroke-[3.5]" cx="28" cy="68" r="18"></circle>
+                <circle class="fill-primary stroke-none" cx="28" cy="68" r="4"></circle>
+                <circle class="fill-surface-container-lowest stroke-on-surface stroke-[3.5]" cx="74" cy="68" r="18"></circle>
+                <circle class="fill-primary stroke-none" cx="74" cy="68" r="4"></circle>
+                <path class="fill-primary/20 stroke-on-surface stroke-[3.5]" d="M28 68 L46 68 L60 48 L40 48 Z"></path>
+                <path class="stroke-on-surface stroke-[3.5]" d="M46 68 L50 40"></path>
+                <path class="stroke-on-surface stroke-[3.5]" d="M60 48 L74 68"></path>
+                <path class="stroke-on-surface stroke-[3]" d="M68 34 L66 40 L60 48"></path>
+                <path class="stroke-on-surface stroke-[4]" d="M62 34 L74 34"></path>
+                <path class="stroke-on-surface stroke-[4]" d="M46 38 L54 38"></path>
+                <path d="M12 60 Q8 68 12 76" stroke-dasharray="3 3"></path>
+                <text fill="#bb0024" font-family="'Bricolage Grotesque', sans-serif" font-size="20" font-weight="800" stroke="none" x="76" y="32">?</text>
+                <text fill="#ffc72c" font-family="'Bricolage Grotesque', sans-serif" font-size="14" font-weight="800" stroke="#1c1b1b" stroke-width="0.5" x="86" y="24">?!</text>
+              </svg>
+              <span class="absolute bottom-2 right-2 bg-surface-container-lowest text-on-surface font-label-comic-pill text-label-comic-pill px-2 py-1 rounded-md border border-[#1c1b1b] shadow-[1px_1px_0px_#1c1b1b]">
+                Giros Repentinos
+              </span>
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <h3 class="font-headline-md text-headline-md text-on-surface group-hover:text-primary transition-colors uppercase">
+                EL PASEO INESPERADO
+              </h3>
+              <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                Una salida tranquila que termina tomando un rumbo muy extraño. Lo que parecía un domingo de sol pronto desafiará toda lógica de orientación.
+              </p>
+            </div>
+          </div>
+          <div class="mt-6 pt-2">
+            <button type="button" onclick="selectStory('Historia 01: El Paseo Inesperado')" class="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-primary text-on-primary font-headline-sm text-headline-sm uppercase tracking-wider border-2 border-[#1c1b1b] shadow-[4px_4px_0px_#1c1b1b] hover:bg-primary-container active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all">
+              <span>ELEGIR ESTA HISTORIA</span>
+              <span class="material-symbols-outlined text-[22px]">arrow_forward</span>
+            </button>
+          </div>
+        </article>
+
+        <!-- HISTORIA 02 -->
+        <article class="group relative flex flex-col justify-between rounded-2xl bg-surface-container-lowest p-6 lg:p-8 border-2 border-[#1c1b1b] shadow-[5px_5px_0px_#1c1b1b] hover:shadow-[2px_2px_0px_#1c1b1b] hover:translate-x-[3px] hover:translate-y-[3px] transition-all duration-150">
+          <div class="flex flex-col gap-4">
+            <div class="flex items-center justify-between">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-secondary-container text-on-secondary-container font-label-comic-pill text-label-comic-pill uppercase border border-[#1c1b1b] shadow-[2px_2px_0px_#1c1b1b]">
+                <span class="material-symbols-outlined text-[18px]">menu_book</span>
+                HISTORIA 02
+              </span>
+              <span class="text-on-surface-variant font-label-md text-label-md uppercase tracking-wider bg-surface-container-low px-2 py-1 rounded-md border border-outline-variant/60">
+                Enredo de Viaje
+              </span>
+            </div>
+
+            <div class="relative w-full h-44 rounded-xl bg-surface-container-low border border-[#1c1b1b]/30 flex items-center justify-center overflow-hidden shadow-inner group-hover:bg-secondary-container/15 transition-colors">
+              <svg class="w-32 h-32 text-on-surface transform group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" viewBox="0 0 100 100" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+                <rect class="fill-surface-container-lowest stroke-on-surface stroke-[3.5]" height="34" rx="4" width="46" x="18" y="44"></rect>
+                <path class="stroke-on-surface stroke-[3.5] fill-none" d="M33 44 V37 Q33 34 36 34 H46 Q49 34 49 37 V44"></path>
+                <path class="stroke-on-surface stroke-[2.5]" d="M28 44 V78 M54 44 V78" stroke-dasharray="2 2"></path>
+                <g transform="translate(48, -8)">
+                  <circle class="fill-secondary-container stroke-on-surface stroke-[3]" cx="56" cy="38" r="20"></circle>
+                  <circle class="fill-surface-bright stroke-on-surface stroke-[1.5]" cx="56" cy="38" r="16"></circle>
+                  <polygon class="fill-primary stroke-on-surface stroke-[1.5]" points="56,24 61,38 56,34 51,38"></polygon>
+                  <polygon class="fill-on-surface stroke-on-surface stroke-[1.5]" points="56,52 61,38 56,34 51,38"></polygon>
+                  <circle class="fill-secondary-container stroke-on-surface stroke-[1.5]" cx="56" cy="38" r="3"></circle>
+                </g>
+                <path class="stroke-primary stroke-[2] fill-none" d="M12 36 Q18 28 26 32 Q34 36 28 44"></path>
+              </svg>
+              <span class="absolute bottom-2 right-2 bg-surface-container-lowest text-on-surface font-label-comic-pill text-label-comic-pill px-2 py-1 rounded-md border border-[#1c1b1b] shadow-[1px_1px_0px_#1c1b1b]">
+                Destinos Insólitos
+              </span>
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <h3 class="font-headline-md text-headline-md text-on-surface group-hover:text-primary transition-colors uppercase">
+                EL VIAJE EQUIVOCADO
+              </h3>
+              <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                Un viaje que comienza normalmente, pero nada sale como estaba planeado. Boletos dudosos, transbordos sin sentido y paradas imposibles de predecir.
+              </p>
+            </div>
+          </div>
+          <div class="mt-6 pt-2">
+            <button type="button" onclick="selectStory('Historia 02: El Viaje Equivocado')" class="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-primary text-on-primary font-headline-sm text-headline-sm uppercase tracking-wider border-2 border-[#1c1b1b] shadow-[4px_4px_0px_#1c1b1b] hover:bg-primary-container active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all">
+              <span>ELEGIR ESTA HISTORIA</span>
+              <span class="material-symbols-outlined text-[22px]">arrow_forward</span>
+            </button>
+          </div>
+        </article>
+
+        <!-- HISTORIA 03 -->
+        <article class="group relative flex flex-col justify-between rounded-2xl bg-surface-container-lowest p-6 lg:p-8 border-2 border-[#1c1b1b] shadow-[5px_5px_0px_#1c1b1b] hover:shadow-[2px_2px_0px_#1c1b1b] hover:translate-x-[3px] hover:translate-y-[3px] transition-all duration-150">
+          <div class="flex flex-col gap-4">
+            <div class="flex items-center justify-between">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-secondary-container text-on-secondary-container font-label-comic-pill text-label-comic-pill uppercase border border-[#1c1b1b] shadow-[2px_2px_0px_#1c1b1b]">
+                <span class="material-symbols-outlined text-[18px]">menu_book</span>
+                HISTORIA 03
+              </span>
+              <span class="text-on-surface-variant font-label-md text-label-md uppercase tracking-wider bg-surface-container-low px-2 py-1 rounded-md border border-outline-variant/60">
+                Comedia Doméstica
+              </span>
+            </div>
+
+            <div class="relative w-full h-44 rounded-xl bg-surface-container-low border border-[#1c1b1b]/30 flex items-center justify-center overflow-hidden shadow-inner group-hover:bg-secondary-container/15 transition-colors">
+              <svg class="w-32 h-32 text-on-surface transform group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" viewBox="0 0 100 100" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+                <rect class="fill-surface-container-high stroke-on-surface stroke-[3.5]" height="70" width="50" x="25" y="16"></rect>
+                <polygon class="fill-on-surface stroke-none" points="30,19 46,24 46,82 30,83"></polygon>
+                <polygon class="fill-surface-container-lowest stroke-on-surface stroke-[3]" points="46,24 71,19 71,83 46,82"></polygon>
+                <circle class="fill-secondary-container stroke-on-surface stroke-[2]" cx="50" cy="54" r="3.5"></circle>
+                <circle class="fill-surface-bright stroke-none" cx="37" cy="45" r="4.5"></circle>
+                <circle class="fill-on-surface stroke-none" cx="38" cy="45" r="2.2"></circle>
+                <circle class="fill-surface-bright stroke-none" cx="43" cy="46" r="4.5"></circle>
+                <circle class="fill-on-surface stroke-none" cx="44" cy="46" r="2.2"></circle>
+                <g transform="translate(48, -8)">
+                  <rect class="fill-primary stroke-on-surface stroke-[2]" height="15" rx="3" width="10" x="68" y="42"></rect>
+                  <circle class="fill-secondary-container" cx="73" cy="49.5" r="2"></circle>
+                  <path class="stroke-primary stroke-[2]" d="M82 43 Q87 48 82 53"></path>
+                  <path class="stroke-primary stroke-[2]" d="M86 39 Q93 48 86 57"></path>
+                </g>
+              </svg>
+              <span class="absolute bottom-2 right-2 bg-surface-container-lowest text-on-surface font-label-comic-pill text-label-comic-pill px-2 py-1 rounded-md border border-[#1c1b1b] shadow-[1px_1px_0px_#1c1b1b]">
+                Tensión Cómica
+              </span>
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <h3 class="font-headline-md text-headline-md text-on-surface group-hover:text-primary transition-colors uppercase">
+                UNA VISITA COMPLICADA
+              </h3>
+              <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                Una visita aparentemente normal que termina convirtiéndose en un problema. Llaman al timbre en el momento menos oportuno y ya no hay vuelta atrás.
+              </p>
+            </div>
+          </div>
+          <div class="mt-6 pt-2">
+            <button type="button" onclick="selectStory('Historia 03: Una Visita Complicada')" class="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-primary text-on-primary font-headline-sm text-headline-sm uppercase tracking-wider border-2 border-[#1c1b1b] shadow-[4px_4px_0px_#1c1b1b] hover:bg-primary-container active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all">
+              <span>ELEGIR ESTA HISTORIA</span>
+              <span class="material-symbols-outlined text-[22px]">arrow_forward</span>
+            </button>
+          </div>
+        </article>
+
+        <!-- HISTORIA 04 -->
+        <article class="group relative flex flex-col justify-between rounded-2xl bg-surface-container-lowest p-6 lg:p-8 border-2 border-[#1c1b1b] shadow-[5px_5px_0px_#1c1b1b] hover:shadow-[2px_2px_0px_#1c1b1b] hover:translate-x-[3px] hover:translate-y-[3px] transition-all duration-150">
+          <div class="flex flex-col gap-4">
+            <div class="flex items-center justify-between">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-secondary-container text-on-secondary-container font-label-comic-pill text-label-comic-pill uppercase border border-[#1c1b1b] shadow-[2px_2px_0px_#1c1b1b]">
+                <span class="material-symbols-outlined text-[18px]">menu_book</span>
+                HISTORIA 04
+              </span>
+              <span class="text-on-surface-variant font-label-md text-label-md uppercase tracking-wider bg-surface-container-low px-2 py-1 rounded-md border border-outline-variant/60">
+                Misión Catastrófica
+              </span>
+            </div>
+
+            <div class="relative w-full h-44 rounded-xl bg-surface-container-low border border-[#1c1b1b]/30 flex items-center justify-center overflow-hidden shadow-inner group-hover:bg-secondary-container/15 transition-colors">
+              <svg class="w-32 h-32 text-on-surface transform group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" viewBox="0 0 100 100" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+                <g transform="rotate(-3 44 51)">
+                  <rect class="fill-surface-container-lowest stroke-on-surface stroke-[3]" height="54" rx="3" width="48" x="20" y="24"></rect>
+                  <path class="stroke-surface-dim stroke-[2.5]" d="M26 34 H48 M26 42 H56 M26 50 H44 M26 58 H52"></path>
+                  <path class="stroke-primary stroke-[3]" d="M26 66 L38 66"></path>
+                </g>
+                <g transform="translate(48, -16)">
+                  <circle class="fill-secondary-container stroke-on-surface stroke-[3]" cx="58" cy="32" r="13"></circle>
+                  <path class="stroke-on-surface stroke-[2.5]" d="M53 43 H63 M55 47 H61"></path>
+                  <path class="stroke-on-surface stroke-[2] fill-none" d="M54 33 Q58 24 62 33"></path>
+                  <path class="stroke-primary stroke-[2.5]" d="M58 12 V16 M40 22 L44 25 M76 22 L72 25"></path>
+                </g>
+                <circle class="fill-surface-bright/80 stroke-on-surface stroke-[3]" cx="42" cy="56" r="14"></circle>
+                <path class="stroke-on-surface stroke-[5]" d="M52 66 L66 80"></path>
+                <path class="stroke-primary stroke-[3]" d="M37 51 L47 61 M47 51 L37 61"></path>
+              </svg>
+              <span class="absolute bottom-2 right-2 bg-surface-container-lowest text-on-surface font-label-comic-pill text-label-comic-pill px-2 py-1 rounded-md border border-[#1c1b1b] shadow-[1px_1px_0px_#1c1b1b]">
+                Final Desternillante
+              </span>
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <h3 class="font-headline-md text-headline-md text-on-surface group-hover:text-primary transition-colors uppercase">
+                EL PLAN PERFECTO
+              </h3>
+              <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                Un plan sencillo que comienza a enredarse de manera inesperada. Todo estaba calculado al milímetro, salvo por un pequeñísimo e hilarante detalle.
+              </p>
+            </div>
+          </div>
+          <div class="mt-6 pt-2">
+            <button type="button" onclick="selectStory('Historia 04: El Plan Perfecto')" class="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-primary text-on-primary font-headline-sm text-headline-sm uppercase tracking-wider border-2 border-[#1c1b1b] shadow-[4px_4px_0px_#1c1b1b] hover:bg-primary-container active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all">
+              <span>ELEGIR ESTA HISTORIA</span>
+              <span class="material-symbols-outlined text-[22px]">arrow_forward</span>
+            </button>
+          </div>
+        </article>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════ -->
+      <!-- FOOTER: PUPI + ESTADO                                     -->
+      <!-- ═══════════════════════════════════════════════════════ -->
+      <div class="flex flex-col gap-4">
+
+        <div class="relative bg-secondary-container text-on-secondary-container rounded-2xl p-6 lg:p-8 border-2 border-[#1c1b1b] shadow-[6px_6px_0px_#1c1b1b] flex flex-col md:flex-row items-center md:items-start gap-6">
+
+          <div class="relative flex-shrink-0">
+            <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-surface-container-lowest p-1.5 border-2 border-[#1c1b1b] shadow-[3px_3px_0px_#1c1b1b] rotate-[-2deg] overflow-hidden flex items-center justify-center">
+              <img class="w-full h-full object-cover rounded-xl"
+                   alt="Pupi, mascota árbitro de CUMPEO, dando un pulgar arriba con camiseta deportiva a rayas rojas y amarillas"
+                   src="https://lh3.googleusercontent.com/aida-public/AB6AXuChuSieljuc67ai2B61oI8jVkMORpcDWe-58LRDR1_bq55ZVolDiVD7dS7Mt0xLW23pWyaEtbDtsgTQgnG0rz1VGtuK_tCvTYU8tffKKHrrJ37vfpDhtSDLM_wMdAtDX4PuDuRAJ7Ue5lQJwf1K18iuo9qnB6ZB_BiDEIiu7cGQPonuEUvBlq3KLSAZpaWPnd4TmnCeU8FHOPYadqMCZ3ABtnKOYwwbTsE97ddwP-h5JCewIkFS3P4Slg">
+            </div>
+            <div class="absolute -bottom-2 -right-2 bg-primary text-on-primary text-[11px] font-label-comic-pill uppercase px-2 py-0.5 rounded-full border border-[#1c1b1b] shadow-[2px_2px_0px_#1c1b1b] rotate-3">
+              ÁRBITRO
+            </div>
+          </div>
+
+          <div class="flex-1 flex flex-col gap-2 text-center md:text-left">
+            <div class="flex items-center justify-center md:justify-start gap-1.5">
+              <span class="material-symbols-outlined text-primary text-[22px]">sports</span>
+              <span class="font-headline-sm text-headline-sm uppercase text-on-secondary-container tracking-tight">Consejo de Pupi Árbitro</span>
+            </div>
+            <p class="font-body-lg text-base sm:text-body-lg text-on-secondary-container font-medium leading-snug">
+              "Cualquiera de las cuatro historias esconde secretos disparatados. ¡No pienses demasiado y elige la que te dé más curiosidad! El público se encargará del resto."
+            </p>
+            <div class="flex flex-wrap items-center justify-center md:justify-start gap-4 pt-1 mt-1">
+              <button type="button" onclick="selectRandomStory()" class="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-surface-container-lowest text-on-surface font-label-comic-pill text-label-comic-pill uppercase border-2 border-[#1c1b1b] shadow-[3px_3px_0px_#1c1b1b] hover:bg-surface-container active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all">
+                <span class="text-primary text-[18px]">🎲</span>
+                <span>Elegir historia al azar</span>
+              </button>
+              <span class="font-body-sm text-body-sm opacity-80 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-primary inline-block"></span>
+                Decisión vinculante para la ronda
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Technical Status Bar -->
+        <footer class="flex flex-wrap items-center justify-between gap-3 px-5 py-3 rounded-xl bg-surface-container-lowest border-2 border-[#1c1b1b] shadow-[3px_3px_0px_#1c1b1b]">
+          <div class="flex items-center gap-2 text-on-surface-variant font-label-md text-xs sm:text-label-md uppercase">
+            <span class="material-symbols-outlined text-tertiary-container text-[18px]">cast_connected</span>
+            <span>Modo Selección de Escenario</span>
+            <span class="text-on-surface-variant/40">•</span>
+            <span class="text-tertiary-container font-bold">Sincronizado con Proyector HDMI</span>
+          </div>
+          <div class="flex items-center gap-2 font-label-comic-pill text-label-comic-pill text-[12px] text-on-surface-variant">
+            <span class="px-2 py-1 bg-surface-container rounded border border-outline-variant/60">SALA #402</span>
+            <span class="px-2 py-1 bg-surface-container rounded border border-outline-variant/60">HOST PRO</span>
+          </div>
+        </footer>
+      </div>
+    </div>
+  </main>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- SCRIPT — Selección de historia                            -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <script>
+    let currentToast = null;
+
+    function selectStory(storyTitle) {
+      // Eliminar toast previo si existe
+      if (currentToast) {
+        currentToast.remove();
+        currentToast = null;
+      }
+
+      const toast = document.createElement('div');
+      toast.className = 'toast-enter fixed bottom-8 left-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl bg-secondary-container text-on-secondary-container border-2 border-[#1c1b1b] shadow-[6px_6px_0px_#1c1b1b]';
+      toast.setAttribute('role', 'status');
+      toast.setAttribute('aria-live', 'polite');
+      toast.style.transform = 'translateX(-50%)';
+
+      toast.innerHTML = `
+        <span class="material-symbols-outlined text-primary text-[28px]">theater_comedy</span>
+        <div class="flex flex-col text-left">
+          <span class="font-label-comic-pill text-label-comic-pill uppercase">¡HISTORIA SELECCIONADA!</span>
+          <span class="font-headline-sm text-headline-sm leading-tight text-on-surface">${storyTitle}</span>
+        </div>
+      `;
+
+      document.body.appendChild(toast);
+      currentToast = toast;
+
+      setTimeout(() => {
+        toast.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(-50%) translateY(20px)';
+        setTimeout(() => {
+          toast.remove();
+          if (currentToast === toast) currentToast = null;
+        }, 400);
+      }, 2400);
+    }
+
+    function selectRandomStory() {
+      const stories = [
+        'Historia 01: El Paseo Inesperado',
+        'Historia 02: El Viaje Equivocado',
+        'Historia 03: Una Visita Complicada',
+        'Historia 04: El Plan Perfecto'
+      ];
+      const randomIdx = Math.floor(Math.random() * stories.length);
+      selectStory(stories[randomIdx]);
+    }
+  </script>
+
+</body>
+</html>
