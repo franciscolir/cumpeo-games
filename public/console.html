@@ -1140,132 +1140,104 @@
   </div>
 
   <!-- RESULTS SCREEN -->
-  <div id="results-screen" class="fixed inset-0 z-[90] hidden overflow-y-auto bg-surface">
-    <div class="flex flex-col w-full min-h-screen px-4 py-6">
-      <div class="flex flex-col w-full max-w-4xl mx-auto gap-5 select-none">
+  <div id="results-screen" class="fixed inset-0 z-[90] hidden bg-surface overflow-hidden">
+    <div class="flex flex-col w-full h-full px-3 py-3 overflow-hidden">
 
-        <!-- Header -->
-        <div class="relative w-full text-center">
-          <div class="absolute -top-2 -left-2 w-12 h-12 bg-secondary-container rounded-full opacity-60 pointer-events-none -rotate-12 border-2 border-on-surface"></div>
-          <div class="absolute top-0 right-6 text-2xl pointer-events-none animate-bounce">🎉</div>
-          <div class="absolute top-8 left-10 text-xl pointer-events-none rotate-12">⭐</div>
-          <div class="flex flex-col items-center gap-2 pt-1">
-            <div class="inline-flex items-center gap-1.5 px-3 py-1 bg-secondary-container text-on-secondary-fixed border-2 border-on-surface rounded-full shadow-[3px_3px_0px_#1c1b1b] -rotate-1">
-              <span class="material-symbols-outlined text-[14px] text-primary" style="font-variation-settings:'FILL'1;">stars</span>
-              <span class="font-label-comic-pill text-[10px] tracking-widest uppercase">FIN DE SESION • GRAN FINAL CUMPEO</span>
-              <span class="material-symbols-outlined text-[14px] text-primary" style="font-variation-settings:'FILL'1;">stars</span>
-            </div>
-            <h1 class="font-display-hero text-[28px] md:text-[40px] text-primary leading-tight tracking-tight uppercase drop-shadow-[2px_2px_0px_#1c1b1b]">
-              ¡TENEMOS UN EQUIPO CAMPEÓN!
-            </h1>
-            <p id="results-summary" class="max-w-xl font-body-sm text-on-surface-variant font-medium"></p>
+      <!-- Header compacto -->
+      <div class="flex items-center justify-between shrink-0 mb-2">
+        <div class="flex items-center gap-2">
+          <div class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-secondary-container text-on-secondary-fixed border-2 border-on-surface rounded-full shadow-[2px_2px_0px_#1c1b1b] -rotate-1">
+            <span class="material-symbols-outlined text-[12px] text-primary" style="font-variation-settings:'FILL'1;">stars</span>
+            <span class="font-label-comic-pill text-[9px] tracking-widest uppercase">GRAN FINAL</span>
+            <span class="material-symbols-outlined text-[12px] text-primary" style="font-variation-settings:'FILL'1;">stars</span>
           </div>
+          <h1 class="font-headline-md text-headline-md text-primary leading-none tracking-tight uppercase drop-shadow-[2px_2px_0px_#1c1b1b]">
+            ¡CAMPEÓN!
+          </h1>
         </div>
+        <span id="results-session-code" class="px-2 py-0.5 bg-primary text-on-primary font-label-comic-pill text-[9px] rounded-full uppercase">SESIÓN</span>
+      </div>
+
+      <!-- Contenido principal: Podio + Panel lateral -->
+      <div class="flex flex-col lg:flex-row gap-3 flex-1 min-h-0 overflow-hidden">
 
         <!-- Podio -->
-        <div class="w-full bg-surface-container-low border-4 border-on-surface rounded-2xl p-4 sm:p-6 shadow-[8px_8px_0px_#1c1b1b] relative">
-          <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-on-primary font-headline-sm text-[11px] px-4 py-0.5 border-2 border-on-surface rounded-full shadow-[4px_4px_0px_#1c1b1b] uppercase tracking-wider whitespace-nowrap">
-            🏆 PODIO DE HONOR CUMPEO FEST 🏆
-          </div>
-          <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-end pt-6">
+        <div class="flex-1 bg-surface-container-low border-3 border-on-surface rounded-xl p-3 shadow-[6px_6px_0px_#1c1b1b] flex flex-col justify-end overflow-hidden">
+          <div class="grid grid-cols-2 gap-2 items-end h-full">
             <!-- 2do lugar -->
-            <div id="results-2nd" class="order-2 md:order-1 md:col-span-4 flex flex-col items-center">
-              <div class="w-full bg-surface border-3 border-on-surface rounded-xl p-3 shadow-[4px_4px_0px_#1c1b1b] flex flex-col items-center text-center mb-2">
-                <div class="w-10 h-10 rounded-full bg-surface-container-highest border-2 border-on-surface flex items-center justify-center -mt-7 shadow-[2px_2px_0px_#1c1b1b]">
-                  <span class="text-lg">🥈</span>
-                </div>
-                <span class="font-label-comic-pill text-[10px] text-tertiary uppercase mt-1">2° LUGAR</span>
-                <h3 id="results-2nd-name" class="font-headline-sm text-headline-sm text-on-surface uppercase leading-none mt-1">-</h3>
-                <div class="my-1.5 px-2 py-0.5 bg-surface-container rounded-full border border-on-surface">
-                  <span id="results-2nd-score" class="font-headline-sm text-headline-sm text-tertiary">0</span>
-                  <span class="font-label-xs text-[9px] text-on-surface-variant uppercase ml-1">PTS</span>
+            <div id="results-2nd" class="flex flex-col items-center justify-end">
+              <div class="w-full bg-surface border-2 border-on-surface rounded-lg p-2 shadow-[3px_3px_0px_#1c1b1b] flex flex-col items-center text-center mb-1.5">
+                <span class="text-base">🥈</span>
+                <span class="font-label-comic-pill text-[9px] text-tertiary uppercase">2° LUGAR</span>
+                <h3 id="results-2nd-name" class="font-headline-sm text-[14px] text-on-surface uppercase leading-none mt-0.5">-</h3>
+                <div class="mt-1 px-2 py-0.5 bg-surface-container rounded-full border border-on-surface">
+                  <span id="results-2nd-score" class="font-headline-sm text-[14px] text-tertiary">0</span>
+                  <span class="text-[8px] text-on-surface-variant uppercase ml-0.5">PTS</span>
                 </div>
               </div>
-              <div class="w-full h-24 bg-tertiary-fixed border-4 border-on-surface rounded-t-xl flex flex-col items-center justify-center shadow-[4px_0px_0px_#1c1b1b]">
-                <span class="font-display-hero text-[36px] leading-none text-on-tertiary-fixed font-black">2</span>
-                <span class="font-label-comic-pill text-[10px] text-on-tertiary-fixed uppercase">PLATA</span>
+              <div class="w-full h-16 bg-tertiary-fixed border-3 border-on-surface rounded-t-lg flex flex-col items-center justify-center shadow-[3px_0px_0px_#1c1b1b]">
+                <span class="font-display-hero text-[28px] leading-none text-on-tertiary-fixed font-black">2</span>
+                <span class="font-label-comic-pill text-[9px] text-on-tertiary-fixed uppercase">PLATA</span>
               </div>
             </div>
             <!-- 1er lugar -->
-            <div id="results-1st" class="order-1 md:order-2 md:col-span-4 flex flex-col items-center z-10">
-              <div class="relative -mb-3 z-20">
-                <span class="material-symbols-outlined text-[48px] text-secondary-container drop-shadow-[3px_3px_0px_#1c1b1b] animate-bounce" style="font-variation-settings:'FILL'1;">military_tech</span>
+            <div id="results-1st" class="flex flex-col items-center justify-end z-10">
+              <div class="relative -mb-2 z-20">
+                <span class="material-symbols-outlined text-[36px] text-secondary-container drop-shadow-[2px_2px_0px_#1c1b1b] animate-bounce" style="font-variation-settings:'FILL'1;">military_tech</span>
               </div>
-              <div class="w-full bg-secondary-fixed border-4 border-on-surface rounded-2xl p-4 shadow-[6px_6px_0px_#1c1b1b] flex flex-col items-center text-center relative overflow-hidden mb-2">
-                <div class="px-2.5 py-0.5 bg-primary text-on-primary font-label-comic-pill text-[10px] rounded-full border-2 border-on-surface uppercase tracking-wider mb-1 rotate-[-2deg] shadow-[2px_2px_0px_#1c1b1b]">
-                  ⚡ CAMPEÓN SUPREMO DE LA NOCHE ⚡
+              <div class="w-full bg-secondary-fixed border-3 border-on-surface rounded-xl p-2.5 shadow-[4px_4px_0px_#1c1b1b] flex flex-col items-center text-center mb-1.5">
+                <div class="px-2 py-0.5 bg-primary text-on-primary font-label-comic-pill text-[8px] rounded-full border border-on-surface uppercase tracking-wider rotate-[-2deg] shadow-[1px_1px_0px_#1c1b1b]">
+                  ⚡ CAMPEÓN ⚡
                 </div>
-                <h2 id="results-1st-name" class="font-headline-md text-headline-md text-primary uppercase leading-tight mt-1">-</h2>
-                <div class="my-2 px-4 py-1 bg-surface rounded-xl border-3 border-on-surface shadow-[3px_3px_0px_#1c1b1b]">
-                  <span id="results-1st-score" class="font-headline-md text-headline-md text-primary leading-none">0</span>
-                  <span class="font-label-comic-pill text-[10px] text-on-surface ml-1">PTS</span>
-                </div>
-              </div>
-              <div class="w-full h-36 bg-secondary-container border-4 border-on-surface rounded-t-xl flex flex-col items-center justify-center shadow-[6px_0px_0px_#1c1b1b]">
-                <span class="font-display-hero text-[48px] leading-none text-on-secondary-fixed font-black">1</span>
-                <span class="font-label-comic-pill text-[11px] text-on-secondary-fixed uppercase tracking-widest">ORO</span>
-              </div>
-            </div>
-            <!-- 3er lugar -->
-            <div id="results-3rd" class="order-3 md:order-3 md:col-span-4 flex flex-col items-center">
-              <div class="w-full bg-surface border-3 border-on-surface rounded-xl p-3 shadow-[4px_4px_0px_#1c1b1b] flex flex-col items-center text-center mb-2">
-                <div class="w-10 h-10 rounded-full bg-surface-container-highest border-2 border-on-surface flex items-center justify-center -mt-7 shadow-[2px_2px_0px_#1c1b1b]">
-                  <span class="text-lg">🥉</span>
-                </div>
-                <span class="font-label-comic-pill text-[10px] text-primary uppercase mt-1">3° LUGAR</span>
-                <h3 id="results-3rd-name" class="font-headline-sm text-headline-sm text-on-surface uppercase leading-none mt-1">-</h3>
-                <div class="my-1.5 px-2 py-0.5 bg-surface-container rounded-full border border-on-surface">
-                  <span id="results-3rd-score" class="font-headline-sm text-headline-sm text-primary">0</span>
-                  <span class="font-label-xs text-[9px] text-on-surface-variant uppercase ml-1">PTS</span>
+                <h2 id="results-1st-name" class="font-headline-sm text-[15px] text-primary uppercase leading-tight mt-1">-</h2>
+                <div class="my-1 px-3 py-0.5 bg-surface rounded-lg border-2 border-on-surface shadow-[2px_2px_0px_#1c1b1b]">
+                  <span id="results-1st-score" class="font-headline-sm text-[16px] text-primary leading-none">0</span>
+                  <span class="text-[9px] text-on-surface ml-0.5">PTS</span>
                 </div>
               </div>
-              <div class="w-full h-20 bg-surface-container-high border-4 border-on-surface rounded-t-xl flex flex-col items-center justify-center shadow-[4px_0px_0px_#1c1b1b]">
-                <span class="font-display-hero text-[30px] leading-none text-on-surface font-black">3</span>
-                <span class="font-label-comic-pill text-[10px] text-on-surface uppercase">BRONCE</span>
+              <div class="w-full h-24 bg-secondary-container border-3 border-on-surface rounded-t-lg flex flex-col items-center justify-center shadow-[4px_0px_0px_#1c1b1b]">
+                <span class="font-display-hero text-[36px] leading-none text-on-secondary-fixed font-black">1</span>
+                <span class="font-label-comic-pill text-[10px] text-on-secondary-fixed uppercase tracking-widest">ORO</span>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Mensaje del árbitro -->
-        <div class="w-full bg-secondary-container border-3 border-on-surface rounded-2xl p-4 shadow-[4px_4px_0px_#1c1b1b] flex flex-col sm:flex-row items-center gap-3">
-          <div class="w-14 h-14 shrink-0 rounded-xl bg-surface-container-lowest border-2 border-on-surface shadow-[2px_2px_0px_#1c1b1b] flex items-center justify-center text-3xl">
-            🦜
-          </div>
-          <div class="flex flex-col text-center sm:text-left">
-            <span class="font-label-comic-pill text-[10px] text-primary uppercase tracking-wider">MENSAJE OFICIAL DEL ÁRBITRO</span>
-            <p class="font-headline-sm text-headline-sm text-on-surface leading-snug mt-0.5">
-              "¡Felicidades a los campeones! El VAR confirma: fue una sesión para la historia."
-            </p>
-          </div>
-        </div>
+        <!-- Panel lateral: Mensaje + Botones -->
+        <div class="lg:w-[280px] shrink-0 flex flex-col gap-2 overflow-hidden">
 
-        <!-- Botonera de cierre -->
-        <div class="w-full bg-surface-container-high border-3 border-on-surface rounded-2xl p-4 shadow-[6px_6px_0px_#1c1b1b] flex flex-col gap-3">
-          <div class="flex items-center justify-between">
-            <span class="font-label-comic-pill text-[10px] text-on-surface-variant uppercase">CABINA DEL CONDUCTOR</span>
-            <span id="results-session-code" class="px-2 py-0.5 bg-primary text-on-primary font-label-comic-pill text-[9px] rounded-full uppercase">SESIÓN</span>
+          <!-- Mensaje del árbitro -->
+          <div class="bg-secondary-container border-2 border-on-surface rounded-xl p-2.5 shadow-[3px_3px_0px_#1c1b1b] flex items-center gap-2 shrink-0">
+            <div class="w-10 h-10 shrink-0 rounded-lg bg-surface-container-lowest border-2 border-on-surface shadow-[2px_2px_0px_#1c1b1b] flex items-center justify-center text-2xl">
+              🦜
+            </div>
+            <div class="flex flex-col">
+              <span class="font-label-comic-pill text-[8px] text-primary uppercase tracking-wider">ÁRBITRO</span>
+              <p id="results-summary" class="font-headline-sm text-[11px] text-on-surface leading-snug">-</p>
+            </div>
           </div>
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            <button onclick="resultsRematch()" class="flex items-center justify-center gap-1.5 py-2.5 px-3 bg-tertiary-fixed hover:bg-tertiary-fixed-dim active:translate-x-1 active:translate-y-1 active:shadow-none transition-all border-3 border-on-surface rounded-xl shadow-[4px_4px_0px_#1c1b1b] text-on-tertiary-fixed cursor-pointer">
-              <span class="material-symbols-outlined text-[18px]">refresh</span>
+
+          <!-- Botonera -->
+          <div class="bg-surface-container-high border-2 border-on-surface rounded-xl p-2.5 shadow-[4px_4px_0px_#1c1b1b] flex flex-col gap-1.5 flex-1 overflow-hidden">
+            <span class="font-label-comic-pill text-[8px] text-on-surface-variant uppercase">ACCIONES</span>
+            <button onclick="resultsRematch()" class="w-full flex items-center gap-2 py-2 px-2.5 bg-tertiary-fixed hover:bg-tertiary-fixed-dim active:translate-x-1 active:translate-y-1 active:shadow-none transition-all border-2 border-on-surface rounded-lg shadow-[3px_3px_0px_#1c1b1b] text-on-tertiary-fixed cursor-pointer">
+              <span class="material-symbols-outlined text-[16px]">refresh</span>
               <span class="font-headline-sm text-[11px] uppercase">REVANCHA</span>
             </button>
-            <button onclick="resultsExport()" class="flex items-center justify-center gap-1.5 py-2.5 px-3 bg-surface hover:bg-surface-container active:translate-x-1 active:translate-y-1 active:shadow-none transition-all border-3 border-on-surface rounded-xl shadow-[4px_4px_0px_#1c1b1b] text-on-surface cursor-pointer">
-              <span class="material-symbols-outlined text-[18px]">download</span>
+            <button onclick="resultsExport()" class="w-full flex items-center gap-2 py-2 px-2.5 bg-surface hover:bg-surface-container active:translate-x-1 active:translate-y-1 active:shadow-none transition-all border-2 border-on-surface rounded-lg shadow-[3px_3px_0px_#1c1b1b] text-on-surface cursor-pointer">
+              <span class="material-symbols-outlined text-[16px]">download</span>
               <span class="font-headline-sm text-[11px] uppercase">EXPORTAR</span>
             </button>
-            <button onclick="resultsHistory()" class="flex items-center justify-center gap-1.5 py-2.5 px-3 bg-surface hover:bg-surface-container active:translate-x-1 active:translate-y-1 active:shadow-none transition-all border-3 border-on-surface rounded-xl shadow-[4px_4px_0px_#1c1b1b] text-on-surface cursor-pointer">
-              <span class="material-symbols-outlined text-[18px]">history</span>
+            <button onclick="resultsHistory()" class="w-full flex items-center gap-2 py-2 px-2.5 bg-surface hover:bg-surface-container active:translate-x-1 active:translate-y-1 active:shadow-none transition-all border-2 border-on-surface rounded-lg shadow-[3px_3px_0px_#1c1b1b] text-on-surface cursor-pointer">
+              <span class="material-symbols-outlined text-[16px]">history</span>
               <span class="font-headline-sm text-[11px] uppercase">HISTORIAL</span>
             </button>
-            <button onclick="resultsGoHome()" class="flex items-center justify-center gap-1.5 py-2.5 px-3 bg-primary hover:bg-primary-container active:translate-x-1 active:translate-y-1 active:shadow-none transition-all border-3 border-on-surface rounded-xl shadow-[4px_4px_0px_#1c1b1b] text-on-primary cursor-pointer">
-              <span class="material-symbols-outlined text-[18px]">home</span>
+            <button onclick="resultsGoHome()" class="w-full flex items-center gap-2 py-2 px-2.5 bg-primary hover:bg-primary-container active:translate-x-1 active:translate-y-1 active:shadow-none transition-all border-2 border-on-surface rounded-lg shadow-[3px_3px_0px_#1c1b1b] text-on-primary cursor-pointer">
+              <span class="material-symbols-outlined text-[16px]">home</span>
               <span class="font-headline-sm text-[11px] uppercase">INICIO</span>
             </button>
           </div>
         </div>
-
       </div>
     </div>
   </div>
