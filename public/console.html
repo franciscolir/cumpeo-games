@@ -193,6 +193,12 @@
 
       <!-- DERECHA: Acciones -->
       <div class="flex items-center gap-1.5 shrink-0">
+        <button type="button" onclick="goHome()"
+                class="flex items-center gap-1.5 bg-surface-container-lowest text-on-surface px-2.5 py-1.5 rounded-lg border-2 border-on-surface shadow-comic-sm hover:bg-surface-container active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all">
+          <span class="material-symbols-outlined text-[18px]">home</span>
+          <span class="font-label-lg text-[12px] uppercase hidden lg:inline">Inicio</span>
+        </button>
+
         <div class="hidden xl:flex items-center gap-1.5 bg-surface-container-low px-2.5 py-1 rounded-lg border-2 border-on-surface">
           <span class="w-2 h-2 rounded-full bg-tertiary border border-on-surface"></span>
           <span class="font-label-md text-[11px] text-on-surface uppercase whitespace-nowrap">HDMI 1 · 60FPS</span>
@@ -755,6 +761,18 @@
           }
         }
       }, 1000);
+    }
+
+    // ==================== NAVIGATION ====================
+    function goHome() {
+      if (sessionData && sessionData.status === 'activo') {
+        if (!confirm('Hay una sesión activa. ¿Seguro que quieres volver al inicio?')) return;
+      }
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage('navigate-to-inicio', '*');
+      } else {
+        window.location.href = '/index.html';
+      }
     }
 
     // ==================== SESSION CONTROLS ====================

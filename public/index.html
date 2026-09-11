@@ -3293,6 +3293,8 @@ function triggerDynamiteTest() {
 window.addEventListener('message', (event) => {
   if (event.data === 'open-games-library') {
     navigateTo('juegos');
+  } else if (event.data === 'navigate-to-inicio') {
+    navigateTo('inicio');
   }
 });
 
