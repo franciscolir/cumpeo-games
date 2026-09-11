@@ -68,13 +68,13 @@ tailwind.config={
       <a class="nav-link flex items-center px-4 py-3 rounded-xl border-2 border-transparent text-on-surface font-label-lg text-label-lg transition-all hover:bg-surface-container hover:text-on-surface hover:border-on-surface hover:comic-shadow-sm" data-path="configuracion" href="#">Configuracion</a>
     </nav>
   </div>
-  <div class="px-2">
+  <div class="px-2" id="sidebar-session-container">
     <div class="bg-surface-container-low border-2 border-on-surface rounded-xl p-3 comic-shadow-sm flex items-center justify-between">
       <div class="flex flex-col">
-        <span class="font-label-md text-label-md text-on-surface-variant uppercase">Sesion Activa</span>
-        <span class="font-headline-sm text-headline-sm text-on-surface">SALA #402</span>
+        <span class="font-label-md text-label-md text-on-surface-variant uppercase" id="sidebar-session-label">Sin sesión</span>
+        <span class="font-headline-sm text-headline-sm text-on-surface" id="sidebar-session-code">-</span>
       </div>
-      <span class="w-3 h-3 rounded-full bg-tertiary border-2 border-on-surface animate-pulse"></span>
+      <span class="w-3 h-3 rounded-full bg-on-surface-variant border-2 border-on-surface" id="sidebar-session-dot"></span>
     </div>
   </div>
 </aside>
@@ -172,9 +172,9 @@ tailwind.config={
               <button id="resume-btn" class="w-full bg-secondary-container text-on-secondary-container border-[3px] border-on-surface rounded-2xl py-3.5 px-6 comic-shadow-md flex items-center justify-between font-headline-sm text-headline-sm uppercase tracking-wide transition-transform active:translate-x-[3px] active:translate-y-[3px] active:shadow-none hover:bg-secondary-fixed cursor-pointer group" type="button">
                 <span class="flex items-center gap-3">
                   <span class="material-symbols-outlined text-[26px]">replay</span>
-                  REANUDAR SESION ANTERIOR
+                  <span id="resume-btn-text">REANUDAR SESION ANTERIOR</span>
                 </span>
-                <span class="font-label-md text-label-md bg-surface-container-lowest px-2 py-0.5 rounded border border-on-surface">SALA #402</span>
+                <span class="font-label-md text-label-md bg-surface-container-lowest px-2 py-0.5 rounded border border-on-surface" id="resume-btn-code">-</span>
               </button>
               <div class="pt-2 flex justify-center gap-4">
                 <a id="explore-library-btn" class="inline-flex items-center gap-1.5 text-on-surface font-label-lg text-label-lg underline decoration-2 underline-offset-4 hover:text-primary-container transition-colors cursor-pointer" href="#">
@@ -2586,6 +2586,89 @@ function renderActiveGameInfo(state) {
   container.innerHTML = '<div class="space-y-3"><h4 class="text-xl font-bold text-on-surface">' + game.name + '</h4><p class="text-on-surface-variant">' + (game.description || 'Sin descripcion') + '</p><div class="flex items-center gap-4 text-sm"><span class="px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container">Estado: ' + (state.status || 'idle') + '</span><span class="px-3 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed">ID: ' + game.id + '</span></div></div>';
 }
 
+// ==================== SESSION MANAGEMENT ====================
+let activeSessionId = null;
+
+async function loadActiveSession() {
+  try {
+    const res = await fetch(API + '/sessions?status=activo,pausado');
+    const sessions = await res.json();
+    
+    if (sessions.length > 0) {
+      const session = sessions[0];
+      activeSessionId = session.id;
+      updateSidebarSession(session);
+      updateResumeButton(session);
+    } else {
+      activeSessionId = null;
+      clearSidebarSession();
+      clearResumeButton();
+    }
+  } catch (err) {
+    console.error('Error loading active session:', err);
+    activeSessionId = null;
+    clearSidebarSession();
+    clearResumeButton();
+  }
+}
+
+function updateSidebarSession(session) {
+  const label = document.getElementById('sidebar-session-label');
+  const code = document.getElementById('sidebar-session-code');
+  const dot = document.getElementById('sidebar-session-dot');
+  
+  if (!label || !code || !dot) return;
+  
+  label.textContent = session.status === 'activo' ? 'En Juego' : 'Pausada';
+  code.textContent = session.code;
+  
+  if (session.status === 'activo') {
+    dot.className = 'w-3 h-3 rounded-full bg-tertiary border-2 border-on-surface animate-pulse';
+  } else {
+    dot.className = 'w-3 h-3 rounded-full bg-secondary-container border-2 border-on-surface';
+  }
+}
+
+function clearSidebarSession() {
+  const label = document.getElementById('sidebar-session-label');
+  const code = document.getElementById('sidebar-session-code');
+  const dot = document.getElementById('sidebar-session-dot');
+  
+  if (!label || !code || !dot) return;
+  
+  label.textContent = 'Sin sesión';
+  code.textContent = '-';
+  dot.className = 'w-3 h-3 rounded-full bg-on-surface-variant border-2 border-on-surface';
+}
+
+function updateResumeButton(session) {
+  const btn = document.getElementById('resume-btn');
+  const text = document.getElementById('resume-btn-text');
+  const code = document.getElementById('resume-btn-code');
+  
+  if (!btn || !text || !code) return;
+  
+  if (session) {
+    text.textContent = session.status === 'activo' 
+      ? 'CONTINUAR SESIÓN EN CURSO' 
+      : 'REANUDAR SESIÓN PAUSADA';
+    code.textContent = session.code;
+    btn.onclick = () => {
+      window.location.href = `/console.html?session=${session.id}`;
+    };
+  } else {
+    clearResumeButton();
+  }
+}
+
+function clearResumeButton() {
+  const text = document.getElementById('resume-btn-text');
+  const code = document.getElementById('resume-btn-code');
+  
+  if (text) text.textContent = 'REANUDAR SESION ANTERIOR';
+  if (code) code.textContent = '-';
+}
+
 function updatePublicScreen() {
   fetch(API + '/state').then(r => r.json()).then(state => {
     const game = state.current_game;
@@ -3304,9 +3387,11 @@ function init() {
   setupEventListeners();
   updatePublicScreen();
   loadState();
+  loadActiveSession();
 }
 
 setInterval(updatePublicScreen, 2000);
+setInterval(loadActiveSession, 5000); // Refresh session status every 5 seconds
 init();
 </script>
 </body>

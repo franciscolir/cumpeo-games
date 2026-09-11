@@ -51,6 +51,28 @@ function generateSessionCode() {
   return `CMP-${num}`;
 }
 
+// List sessions (with optional status filter)
+app.get('/api/sessions', (req, res) => {
+  try {
+    const { status } = req.query;
+    let query = 'SELECT * FROM sessions';
+    const params = [];
+    
+    if (status) {
+      const statuses = status.split(',');
+      query += ` WHERE status IN (${statuses.map(() => '?').join(',')})`;
+      params.push(...statuses);
+    }
+    
+    query += ' ORDER BY created_at DESC LIMIT 10';
+    const sessions = db.prepare(query).all(...params);
+    res.json(sessions);
+  } catch (err) {
+    console.error('Error listing sessions:', err);
+    res.status(500).json({ error: 'Error listing sessions' });
+  }
+});
+
 // Create a new session
 app.post('/api/sessions', (req, res) => {
   try {

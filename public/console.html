@@ -765,9 +765,22 @@
 
     // ==================== NAVIGATION ====================
     function goHome() {
+      // Pausar automáticamente si hay sesión activa
       if (sessionData && sessionData.status === 'activo') {
-        if (!confirm('Hay una sesión activa. ¿Seguro que quieres volver al inicio?')) return;
+        if (!isPaused) {
+          togglePause();
+        }
+        // Guardar estado de pausa en la sesión
+        fetch(`${API}/sessions/${sessionData.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            status: 'activo',
+            progress: { isPaused: true, pausedAt: new Date().toISOString() }
+          })
+        }).catch(err => console.error('Error pausing session:', err));
       }
+      // Navegar al inicio
       if (window.parent && window.parent !== window) {
         window.parent.postMessage('navigate-to-inicio', '*');
       } else {
