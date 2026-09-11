@@ -2713,32 +2713,65 @@ function setupEventListeners() {
     btn.addEventListener('click', async (e) => {
       e.preventDefault();
       e.stopPropagation();
-      const href = btn.getAttribute('data-href');
-      if (href) {
-        window.location.href = href;
-        return;
-      }
       const gameName = btn.getAttribute('data-game');
       if (!gameName) return;
+
       try {
-        const gameRes = await fetch(API + '/games', {
+        // First, get or create the game in the database
+        let gameId;
+        const gamesRes = await fetch(API + '/games');
+        const games = await gamesRes.json();
+        const existingGame = games.find(g => g.name === gameName);
+
+        if (existingGame) {
+          gameId = existingGame.id;
+        } else {
+          // Map game names to file paths
+          const gameFiles = {
+            'Trivia Relampago': 'trivia-relampago.html',
+            'Mimica Explosiva': 'mimica-explosiva.html',
+            'Cancion Incompleta': 'cancion-incompleta.html',
+            'Meme Battle Live': 'meme-battle-live.html',
+            'Pictionary Veloz': 'pictionary-veloz.html',
+            'Duelo de Reflejos': 'duelo-de-reflejos.html'
+          };
+          const gameRes = await fetch(API + '/games', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({
+              name: gameName,
+              description: 'Juego individual',
+              file: gameFiles[gameName] || null
+            })
+          });
+          if (!gameRes.ok) throw new Error('Error creando juego');
+          const gameData = await gameRes.json();
+          gameId = gameData.id;
+        }
+
+        // Create a session for this game
+        const sessionRes = await fetch(API + '/sessions', {
           method: 'POST',
           headers: {'Content-Type':'application/json'},
-          body: JSON.stringify({name: gameName, description: 'Juego individual'})
+          body: JSON.stringify({
+            type: 'individual',
+            game_id: gameId
+          })
         });
-        if (!gameRes.ok) throw new Error('Error creando juego');
-        const gameData = await gameRes.json();
-        const gameId = gameData.id;
-        const stateRes = await fetch(API + '/state', {
+        if (!sessionRes.ok) throw new Error('Error creando sesión');
+        const sessionData = await sessionRes.json();
+
+        // Start the session
+        await fetch(API + `/sessions/${sessionData.id}/start`, {
           method: 'POST',
-          headers: {'Content-Type':'application/json'},
-          body: JSON.stringify({current_game_id: gameId, status: 'idle'})
+          headers: {'Content-Type':'application/json'}
         });
-        if (!stateRes.ok) throw new Error('Error actualizando estado');
-        openDashboard(gameName);
-        await loadState();
+
+        // Open console with session
+        window.location.href = `/console.html?session=${sessionData.id}`;
       } catch (err) {
         console.error('Error al iniciar juego:', err);
+        alert('Error al iniciar el juego. Intenta de nuevo.');
       }
     });
   });

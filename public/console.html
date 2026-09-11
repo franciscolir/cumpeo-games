@@ -123,7 +123,6 @@
     main > :last-child  { margin-bottom: 0 !important; }
     ::-webkit-scrollbar { display: none; }
 
-    /* ═══ TOP BAR — Estado flotante al scrollear ═══ */
     #topbar {
       transition: top .3s ease, left .3s ease, right .3s ease,
                   border-radius .3s ease, box-shadow .3s ease,
@@ -138,6 +137,14 @@
       box-shadow: 3px 3px 0px #1c1b1b;
     }
 
+    #game-iframe {
+      width: 100%;
+      height: 100%;
+      min-height: 640px;
+      border: none;
+      border-radius: 1rem;
+    }
+
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
         animation-duration: 0.001ms !important;
@@ -150,20 +157,16 @@
 
 <body class="bg-background font-body-md text-body-md text-on-surface antialiased min-h-screen">
 
-  <!-- ═══════════════════════════════════════════════════════ -->
-  <!-- TOP BAR — Compacto, una fila, flota al scrollear         -->
-  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- TOP BAR -->
   <div id="topbar"
        class="fixed top-0 left-0 right-0 z-40 h-16
               bg-surface-container-lowest/95 backdrop-blur-md
               border-b-2 border-on-surface
               px-4 lg:px-6 flex items-center">
-
     <div class="w-full flex items-center gap-2 lg:gap-3">
 
-      <!-- ▓ IZQUIERDA: En vivo + Ronda + Timer -->
+      <!-- IZQUIERDA: En vivo + Ronda + Timer -->
       <div class="flex items-center gap-2 shrink-0">
-
         <div class="flex items-center gap-1.5 bg-primary px-2.5 py-1 rounded-full border-2 border-on-surface shadow-comic-sm">
           <span class="w-2 h-2 rounded-full bg-surface-container-lowest animate-ping"></span>
           <span class="font-label-comic-pill text-[11px] text-on-primary uppercase tracking-wider whitespace-nowrap">EN VIVO</span>
@@ -173,7 +176,7 @@
 
         <div class="hidden md:flex items-center gap-1.5 bg-surface-container px-2.5 py-1 rounded-lg border-2 border-on-surface">
           <span class="material-symbols-outlined text-primary text-[16px]" style="font-variation-settings:'FILL' 1;">bolt</span>
-          <span class="font-headline-sm text-[13px] uppercase text-on-surface whitespace-nowrap">R1/4 TRIVIA CÓMIC</span>
+          <span class="font-headline-sm text-[13px] uppercase text-on-surface whitespace-nowrap" id="round-info">R1/1</span>
         </div>
 
         <span class="hidden lg:block w-px h-6 bg-on-surface/20"></span>
@@ -181,16 +184,15 @@
         <div class="flex items-center gap-1.5 bg-secondary-container text-on-secondary-container px-2.5 py-1 rounded-lg border-2 border-on-surface shadow-comic-sm">
           <span class="material-symbols-outlined text-on-secondary-container text-[16px]">timer</span>
           <span class="font-label-comic-pill text-[10px] uppercase tracking-wide hidden sm:inline">REST:</span>
-          <span class="font-display-hero text-[18px] leading-none tracking-tight font-extrabold text-on-secondary-container" id="countdown-timer">03:45</span>
+          <span class="font-display-hero text-[18px] leading-none tracking-tight font-extrabold text-on-secondary-container" id="countdown-timer">00:00</span>
         </div>
       </div>
 
-      <!-- ▓ ESPACIADOR -->
+      <!-- ESPACIADOR -->
       <div class="flex-1"></div>
 
-      <!-- ▓ DERECHA: Acciones -->
+      <!-- DERECHA: Acciones -->
       <div class="flex items-center gap-1.5 shrink-0">
-
         <div class="hidden xl:flex items-center gap-1.5 bg-surface-container-low px-2.5 py-1 rounded-lg border-2 border-on-surface">
           <span class="w-2 h-2 rounded-full bg-tertiary border border-on-surface"></span>
           <span class="font-label-md text-[11px] text-on-surface uppercase whitespace-nowrap">HDMI 1 · 60FPS</span>
@@ -208,79 +210,75 @@
           <span class="font-label-lg text-[12px] uppercase hidden lg:inline">Reglas</span>
         </button>
 
-        <button type="button"
+        <button type="button" id="btn-next-game" onclick="nextGame()"
                 class="flex items-center gap-1.5 bg-primary-container text-on-primary px-3 py-1.5 rounded-lg border-2 border-on-surface shadow-comic-sm hover:opacity-95 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all">
+          <span class="material-symbols-outlined text-[18px]">skip_next</span>
+          <span class="font-label-lg text-[12px] uppercase hidden lg:inline">Siguiente</span>
+        </button>
+
+        <button type="button" onclick="finishSession()"
+                class="flex items-center gap-1.5 bg-error text-on-error px-3 py-1.5 rounded-lg border-2 border-on-surface shadow-comic-sm hover:bg-error-container hover:text-on-error-container active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all">
           <span class="material-symbols-outlined text-[18px]">stop_circle</span>
-          <span class="font-label-lg text-[12px] uppercase hidden lg:inline">Fin Ronda</span>
+          <span class="font-label-lg text-[12px] uppercase hidden lg:inline">Fin</span>
         </button>
       </div>
-
     </div>
   </div>
 
-  <!-- ═══════════════════════════════════════════════════════ -->
-  <!-- MAIN + SIDEBAR                                           -->
-  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- MAIN + SIDEBAR -->
   <div class="pt-20 flex">
 
-    <!-- ▓▓▓ CONTENIDO PRINCIPAL ▓▓▓ -->
+    <!-- CONTENIDO PRINCIPAL -->
     <main class="flex-1 min-w-0 bg-surface px-8 py-8">
       <div class="flex flex-col w-full max-w-[72rem] mx-auto pb-12 gap-6">
 
-        <!-- S3. HERO SCOREBOARD — MODO DEFAULT -->
+        <!-- HERO SCOREBOARD -->
         <section class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
 
           <!-- TEAM A -->
-          <div class="lg:col-span-5 bg-surface-container-lowest rounded-2xl border-3 border-on-surface border-dashed shadow-comic-lg p-5 flex flex-col justify-center items-center relative overflow-hidden min-h-[180px]">
-            <div class="w-16 h-16 rounded-full bg-surface-container border-2 border-on-surface border-dashed flex items-center justify-center mb-3">
-              <span class="material-symbols-outlined text-on-surface-variant text-[32px]">group_add</span>
-            </div>
-            <h3 class="font-headline-md text-headline-md uppercase text-on-surface-variant tracking-tight">BANDO A</h3>
-            <p class="font-body-sm text-body-sm text-on-surface-variant/70 uppercase tracking-wider mt-1">Esperando carga de equipo...</p>
-            <button type="button" class="mt-4 px-4 py-2 rounded-xl bg-surface-container-low hover:bg-surface-container border-2 border-on-surface shadow-comic-sm font-label-md text-label-md uppercase active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center gap-2">
+          <div class="lg:col-span-5 bg-surface-container-lowest rounded-2xl border-3 border-on-surface shadow-comic-lg p-5 flex flex-col justify-center items-center relative overflow-hidden min-h-[180px]" id="team-a-card">
+            <div class="w-16 h-16 rounded-full bg-surface-container border-2 border-on-surface flex items-center justify-center mb-3 text-3xl" id="team-a-avatar">⚡</div>
+            <h3 class="font-headline-md text-headline-md uppercase text-on-surface tracking-tight" id="team-a-name">Equipo A</h3>
+            <div class="font-display-hero text-headline-lg text-primary mt-2" id="team-a-score">0</div>
+            <button type="button" onclick="openScoreModal('A')" class="mt-3 px-4 py-2 rounded-xl bg-surface-container-low hover:bg-surface-container border-2 border-on-surface shadow-comic-sm font-label-md text-label-md uppercase active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center gap-2">
               <span class="material-symbols-outlined text-[18px]">add</span>
-              <span>Cargar Equipo A</span>
+              <span>Puntos</span>
             </button>
           </div>
 
           <!-- VS -->
           <div class="lg:col-span-2 flex flex-col items-center justify-center py-2 px-1">
             <div class="relative flex flex-col items-center gap-2">
-              <div class="w-16 h-16 rounded-full bg-surface-container border-3 border-on-surface border-dashed shadow-comic-lg flex items-center justify-center rotate-[6deg]">
-                <span class="font-display-hero text-headline-lg font-black text-on-surface-variant tracking-tighter">VS</span>
+              <div class="w-16 h-16 rounded-full bg-surface-container border-3 border-on-surface shadow-comic-lg flex items-center justify-center rotate-[6deg]">
+                <span class="font-display-hero text-headline-lg font-black text-on-surface tracking-tighter">VS</span>
               </div>
-              <div class="bg-surface-container-lowest px-3 py-1 rounded-xl border-2 border-on-surface border-dashed shadow-comic-sm text-center">
-                <span class="font-label-comic-pill text-label-comic-pill text-on-surface-variant uppercase font-bold tracking-tight">SIN DATOS</span>
+              <div class="bg-surface-container-lowest px-3 py-1 rounded-xl border-2 border-on-surface shadow-comic-sm text-center">
+                <span class="font-label-comic-pill text-label-comic-pill text-on-surface uppercase font-bold tracking-tight" id="session-status">ESPERANDO</span>
               </div>
             </div>
           </div>
 
           <!-- TEAM B -->
-          <div class="lg:col-span-5 bg-surface-container-lowest rounded-2xl border-3 border-on-surface border-dashed shadow-comic-lg p-5 flex flex-col justify-center items-center relative overflow-hidden min-h-[180px]">
-            <div class="w-16 h-16 rounded-full bg-surface-container border-2 border-on-surface border-dashed flex items-center justify-center mb-3">
-              <span class="material-symbols-outlined text-on-surface-variant text-[32px]">group_add</span>
-            </div>
-            <h3 class="font-headline-md text-headline-md uppercase text-on-surface-variant tracking-tight">BANDO B</h3>
-            <p class="font-body-sm text-body-sm text-on-surface-variant/70 uppercase tracking-wider mt-1">Esperando carga de equipo...</p>
-            <button type="button" class="mt-4 px-4 py-2 rounded-xl bg-surface-container-low hover:bg-surface-container border-2 border-on-surface shadow-comic-sm font-label-md text-label-md uppercase active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center gap-2">
+          <div class="lg:col-span-5 bg-surface-container-lowest rounded-2xl border-3 border-on-surface shadow-comic-lg p-5 flex flex-col justify-center items-center relative overflow-hidden min-h-[180px]" id="team-b-card">
+            <div class="w-16 h-16 rounded-full bg-surface-container border-2 border-on-surface flex items-center justify-center mb-3 text-3xl" id="team-b-avatar">🔥</div>
+            <h3 class="font-headline-md text-headline-md uppercase text-on-surface tracking-tight" id="team-b-name">Equipo B</h3>
+            <div class="font-display-hero text-headline-lg text-tertiary mt-2" id="team-b-score">0</div>
+            <button type="button" onclick="openScoreModal('B')" class="mt-3 px-4 py-2 rounded-xl bg-surface-container-low hover:bg-surface-container border-2 border-on-surface shadow-comic-sm font-label-md text-label-md uppercase active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center gap-2">
               <span class="material-symbols-outlined text-[18px]">add</span>
-              <span>Cargar Equipo B</span>
+              <span>Puntos</span>
             </button>
           </div>
         </section>
 
-        <!-- S4. MAIN ARENA — Contenedor de juego -->
+        <!-- GAME CONTAINER -->
         <section id="game-container"
-                 class="w-full bg-surface-container-lowest rounded-2xl border-3 border-on-surface shadow-comic-lg p-8 min-h-[640px] flex items-center justify-center">
+                 class="w-full bg-surface-container-lowest rounded-2xl border-3 border-on-surface shadow-comic-lg overflow-hidden min-h-[640px] flex items-center justify-center">
 
-          <div class="flex flex-col items-center justify-center text-center gap-5 max-w-lg py-8">
-
-            <!-- Ícono grande comic -->
+          <!-- Empty state (shown when no game loaded) -->
+          <div id="empty-state" class="flex flex-col items-center justify-center text-center gap-5 max-w-lg py-8 p-8">
             <div class="w-32 h-32 rounded-3xl bg-surface-container border-3 border-on-surface border-dashed shadow-comic-lg flex items-center justify-center rotate-[-3deg]">
               <span class="material-symbols-outlined text-on-surface-variant text-[64px]">sports_esports</span>
             </div>
-
-            <!-- Título + subtítulo -->
             <div class="flex flex-col items-center gap-3">
               <span class="px-3.5 py-1.5 rounded-full bg-secondary-container text-on-secondary-container font-label-comic-pill text-label-comic-pill uppercase tracking-wider border-2 border-on-surface shadow-comic-sm rotate-[-1deg]">
                 ⚡ CONTENEDOR DE JUEGO
@@ -289,35 +287,54 @@
                 CARGA UN JUEGO
               </h2>
               <p class="font-body-lg text-body-lg text-on-surface-variant max-w-md mt-1">
-                Selecciona un juego desde la biblioteca para que aparezca aquí en pantalla. El proyector se sincronizará automáticamente.
+                Selecciona un juego desde la biblioteca para que aparezca aquí en pantalla.
               </p>
             </div>
-
-            <!-- Botón principal: navega a la pantalla de juegos -->
-            <a href="#/juegos"
-               onclick="goToGameLibrary(event)"
+            <a href="#/juegos" onclick="goToGameLibrary(event)"
                class="px-8 py-4 rounded-2xl bg-primary text-on-primary border-3 border-on-surface shadow-comic-lg hover:bg-primary-container active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all font-headline-md text-headline-md uppercase tracking-tight flex items-center gap-3 group cursor-pointer">
               <span class="material-symbols-outlined text-[26px] group-hover:rotate-12 transition-transform">play_circle</span>
               <span>CARGAR JUEGO</span>
             </a>
-
-            <!-- Enlace secundario: explorar biblioteca -->
-            <a id="explore-library-btn"
-               href="#/juegos"
-               onclick="goToGameLibrary(event)"
-               class="inline-flex items-center gap-1.5 text-on-surface font-label-lg text-label-lg underline decoration-2 underline-offset-4 hover:text-primary-container transition-colors cursor-pointer">
-              <span class="material-symbols-outlined text-[20px]">sports_esports</span>
-              Explorar biblioteca de juegos individuales
-            </a>
-
           </div>
+
+          <!-- Game iframe (hidden by default) -->
+          <iframe id="game-iframe" class="hidden"></iframe>
         </section>
 
       </div>
     </main>
 
-    <!-- ▓▓▓ SIDEBAR DERECHO ▓▓▓ -->
+    <!-- SIDEBAR DERECHO -->
     <aside class="w-[340px] shrink-0 bg-surface-container-low border-l-2 border-on-surface min-h-[calc(100vh-5rem)] p-4 flex flex-col gap-4 overflow-y-auto">
+
+      <!-- SESSION INFO -->
+      <div class="bg-surface-container-lowest rounded-2xl border-3 border-on-surface shadow-comic-lg p-4 flex flex-col">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-[20px]">sports</span>
+            <h3 class="font-headline-sm text-headline-sm uppercase text-on-surface tracking-tight">SESIÓN</h3>
+          </div>
+          <span class="font-label-md text-xs text-on-surface-variant uppercase" id="session-code">SIN CÓDIGO</span>
+        </div>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between">
+            <span class="text-on-surface-variant">Nombre:</span>
+            <span class="font-bold" id="session-name">-</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-on-surface-variant">Tipo:</span>
+            <span class="font-bold" id="session-type">-</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-on-surface-variant">Juego actual:</span>
+            <span class="font-bold" id="current-game-name">-</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-on-surface-variant">Juegos restantes:</span>
+            <span class="font-bold" id="games-remaining">-</span>
+          </div>
+        </div>
+      </div>
 
       <!-- SOUNDBOARD -->
       <div class="bg-surface-container-lowest rounded-2xl border-3 border-on-surface shadow-comic-lg p-4 flex flex-col">
@@ -359,7 +376,7 @@
         <div class="mt-3 pt-3 border-t-2 border-on-surface/20 flex flex-col gap-2">
           <span class="font-label-comic-pill text-[10px] uppercase text-on-surface-variant">Gatillos:</span>
           <button type="button" onclick="broadcastAlert('¡Ruleta de Castigos activada!')" class="px-2.5 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container border border-on-surface text-[11px] font-label-md uppercase shadow-comic-sm text-left">🎲 Ruleta de Castigos</button>
-          <button type="button" onclick="broadcastAlert('Comodín Robo usado por Titanes')" class="px-2.5 py-1.5 rounded-lg bg-tertiary-fixed text-on-tertiary-fixed hover:bg-tertiary-fixed-dim border border-on-surface text-[11px] font-label-md uppercase shadow-comic-sm text-left">🚩 Comodín Robo</button>
+          <button type="button" onclick="broadcastAlert('Comodín Robo usado')" class="px-2.5 py-1.5 rounded-lg bg-tertiary-fixed text-on-tertiary-fixed hover:bg-tertiary-fixed-dim border border-on-surface text-[11px] font-label-md uppercase shadow-comic-sm text-left">🚩 Comodín Robo</button>
           <button type="button" onclick="broadcastAlert('Modo Muerte Súbita preparado')" class="px-2.5 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container border border-on-surface text-[11px] font-label-md uppercase shadow-comic-sm text-left">⚡ Muerte Súbita</button>
         </div>
       </div>
@@ -371,17 +388,6 @@
             <span class="px-2 py-0.5 rounded-full bg-on-surface text-surface font-label-comic-pill text-[10px] uppercase tracking-wider">TOOLS</span>
             <h3 class="font-headline-sm text-headline-sm uppercase text-on-secondary-container tracking-tight">EXTRAS</h3>
           </div>
-          <span class="px-2 py-0.5 rounded-full bg-primary text-on-primary font-label-comic-pill text-[9px] uppercase border border-on-surface shadow-comic-sm flex items-center gap-1">
-            <span class="w-1.5 h-1.5 rounded-full bg-surface animate-ping"></span>AUTO
-          </span>
-        </div>
-
-        <div class="flex items-center gap-2 bg-surface-container-lowest/80 p-2 rounded-xl border-2 border-on-surface shadow-comic-sm mb-3">
-          <div class="w-10 h-10 shrink-0 rounded-lg border-2 border-on-surface bg-surface-container-lowest shadow-comic-sm overflow-hidden p-0.5 flex items-center justify-center">
-            <img alt="Pupi Guía Cómic" class="w-full h-full object-contain"
-                 src="https://lh3.googleusercontent.com/aida/AEtjO1VteACLim6S9qZ4_4Hm6bycyAb2nt5mYigZbSDMK1YM8U3Eek2O1ltNECB9dXeO0rpDzaEBLL667eu0xuMpsGEXMeRoSE2LgPgRgobfSjFBGZ0-d_K2T0JTAIYOTss1T-PDEKKn4l9SYcPF07eDnYMoIzbqX7hA6leSxExpf5Z48hwTdBpPZa3EbwFWdEYym6SSrg7QWTWGkIjaeEtEdjjB6dwbxBONLq6AR35ji7u5oNjfxv46o5H2sQE">
-          </div>
-          <p class="font-body-sm text-[10px] text-on-surface leading-tight font-medium"><strong>Pupi:</strong> Dispara un extra para animar la sala.</p>
         </div>
 
         <div class="flex flex-col gap-2">
@@ -403,13 +409,6 @@
             <div class="flex items-center gap-2">
               <span class="w-7 h-7 rounded-lg bg-primary-fixed text-on-primary border-2 border-on-surface flex items-center justify-center text-sm group-hover:scale-110 transition-transform">🧨</span>
               <span class="font-headline-sm text-[13px] uppercase text-on-surface leading-none block">DINAMITA</span>
-            </div>
-          </button>
-
-          <button type="button" onclick="broadcastAlert('🎙️ ¡Aplausómetro en vivo!')" class="w-full flex items-center justify-between p-2 bg-surface-container-lowest hover:bg-secondary-fixed rounded-xl border-2 border-on-surface shadow-comic-md active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all text-left group">
-            <div class="flex items-center gap-2">
-              <span class="w-7 h-7 rounded-lg bg-secondary-container border-2 border-on-surface flex items-center justify-center text-sm group-hover:scale-110 transition-transform">🎙️</span>
-              <span class="font-headline-sm text-[13px] uppercase text-on-surface leading-none block">APLAUSÓMETRO</span>
             </div>
           </button>
         </div>
@@ -478,7 +477,7 @@
       <div class="flex items-center justify-between pb-3 border-b-2 border-on-surface">
         <div class="flex items-center gap-2">
           <span class="px-2.5 py-0.5 rounded-full bg-secondary-container font-label-comic-pill text-xs uppercase border border-on-surface">REFERENCIA RÁPIDA</span>
-          <h3 class="font-headline-md text-headline-md uppercase text-on-surface">Reglas de Trivia Cómic</h3>
+          <h3 class="font-headline-md text-headline-md uppercase text-on-surface">Reglas</h3>
         </div>
         <button type="button" aria-label="Cerrar reglas" onclick="toggleRulesModal()" class="w-8 h-8 rounded-lg bg-surface-container border border-on-surface flex items-center justify-center font-bold">✕</button>
       </div>
@@ -502,49 +501,316 @@
   </div>
 
   <script>
+    // ==================== STATE ====================
+    const API = window.location.origin + '/api';
+    let sessionData = null;
+    let currentGameIframe = null;
     let scoreA = 0;
     let scoreB = 0;
     let isPaused = false;
     let pendingTeam = null;
+    let countdownInterval = null;
+    let countdownSeconds = 0;
 
-    // ─── TOP BAR FLOTANTE AL SCROLLEAR ────────────────────
-    (function () {
-      const topbar = document.getElementById('topbar');
-      if (!topbar) return;
+    // ==================== INIT ====================
+    async function init() {
+      const params = new URLSearchParams(window.location.search);
+      const sessionId = params.get('session');
 
-      function onScroll() {
-        const y = window.scrollY || document.documentElement.scrollTop;
-        topbar.classList.toggle('is-scrolled', y > 8);
-      }
-
-      window.addEventListener('scroll', onScroll, { passive: true });
-      onScroll();
-    })();
-
-    // ─── NAVEGACIÓN A BIBLIOTECA DE JUEGOS ────────────────
-    function goToGameLibrary(event) {
-      if (event) event.preventDefault();
-
-      showToast('🎮 Navegando a la biblioteca de juegos...');
-
-      // Abrir biblioteca en el index padre
-      if (window.parent && window.parent !== window) {
-        window.parent.postMessage('open-games-library', '*');
+      if (sessionId) {
+        await loadSession(sessionId);
       } else {
-        // Fallback si no está en iframe
-        window.location.href = '/index.html';
+        showToast('⚠️ No se proporcionó ID de sesión');
       }
-
-      setTimeout(() => {
-        showToast('📚 Biblioteca de juegos abierta');
-      }, 800);
     }
 
-    // ─── POPUP DE PUNTAJE ─────────────────────────────────
+    // ==================== SESSION MANAGEMENT ====================
+    async function loadSession(sessionId) {
+      try {
+        const res = await fetch(`${API}/sessions/${sessionId}`);
+        if (!res.ok) throw new Error('Session not found');
+        sessionData = await res.json();
+
+        // Update UI with session data
+        document.getElementById('session-code').textContent = sessionData.code;
+        document.getElementById('session-name').textContent = sessionData.name;
+        document.getElementById('session-type').textContent = sessionData.type === 'individual' ? 'JUEGO INDIVIDUAL' : 'CIRCUITO';
+        document.getElementById('session-status').textContent = sessionData.status.toUpperCase();
+
+        // Load teams
+        if (sessionData.teams && sessionData.teams.length >= 2) {
+          const teamA = sessionData.teams.find(t => t.team_letter === 'A');
+          const teamB = sessionData.teams.find(t => t.team_letter === 'B');
+
+          if (teamA) {
+            document.getElementById('team-a-name').textContent = teamA.name;
+            document.getElementById('team-a-avatar').textContent = teamA.avatar || '⚡';
+            scoreA = teamA.score || 0;
+            document.getElementById('team-a-score').textContent = scoreA;
+          }
+          if (teamB) {
+            document.getElementById('team-b-name').textContent = teamB.name;
+            document.getElementById('team-b-avatar').textContent = teamB.avatar || '🔥';
+            scoreB = teamB.score || 0;
+            document.getElementById('team-b-score').textContent = scoreB;
+          }
+        }
+
+        // Load current game
+        updateGameInfo();
+
+        // Load the current game if session is active
+        if (sessionData.status === 'activo') {
+          loadCurrentGame();
+        }
+
+        showToast(`✅ Sesión "${sessionData.name}" cargada`);
+      } catch (err) {
+        console.error('Error loading session:', err);
+        showToast('❌ Error al cargar la sesión');
+      }
+    }
+
+    function updateGameInfo() {
+      if (!sessionData) return;
+
+      const currentIdx = sessionData.current_game_index || 0;
+      const games = sessionData.games || [];
+      const currentGame = games[currentIdx];
+
+      if (currentGame) {
+        document.getElementById('current-game-name').textContent = currentGame.game_name;
+        document.getElementById('round-info').textContent = `R${currentIdx + 1}/${games.length}`;
+      }
+
+      const remaining = games.length - currentIdx;
+      document.getElementById('games-remaining').textContent = remaining;
+    }
+
+    // ==================== GAME LOADING ====================
+    function loadCurrentGame() {
+      if (!sessionData || !sessionData.games) return;
+
+      const currentIdx = sessionData.current_game_index || 0;
+      const currentGame = sessionData.games[currentIdx];
+
+      if (!currentGame) {
+        showToast('🏆 ¡Todos los juegos completados!');
+        return;
+      }
+
+      // Get game file path
+      let gameFile = currentGame.game_file;
+      if (!gameFile) {
+        // Fallback mapping for games without file column
+        const gameFileMap = {
+          'Trivia Relampago': 'trivia-relampago.html',
+          'Mimica Explosiva': 'mimica-explosiva.html',
+          'Cancion Incompleta': 'cancion-incompleta.html',
+          'Meme Battle Live': 'meme-battle-live.html',
+          'Pictionary Veloz': 'pictionary-veloz.html',
+          'Duelo de Reflejos': 'duelo-de-reflejos.html'
+        };
+        gameFile = gameFileMap[currentGame.game_name] || `${currentGame.game_name.toLowerCase().replace(/\s+/g, '-')}.html`;
+      }
+      const gamePath = `/games/${gameFile}`;
+
+      // Show iframe, hide empty state
+      const emptyState = document.getElementById('empty-state');
+      const iframe = document.getElementById('game-iframe');
+
+      emptyState.classList.add('hidden');
+      iframe.classList.remove('hidden');
+      iframe.src = gamePath;
+
+      // Store iframe reference
+      currentGameIframe = iframe;
+
+      // Send init data to game when loaded
+      iframe.onload = () => {
+        const initData = {
+          type: 'init',
+          session: {
+            id: sessionData.id,
+            gameName: currentGame.game_name,
+            gameOrder: currentGame.game_order,
+            teams: sessionData.teams.map(t => ({
+              letter: t.team_letter,
+              name: t.name,
+              avatar: t.avatar,
+              cumulativeScore: t.score || 0
+            })),
+            config: sessionData.config || {}
+          }
+        };
+        iframe.contentWindow.postMessage(initData, '*');
+      };
+
+      showToast(`🎮 Cargando: ${currentGame.game_name}`);
+    }
+
+    // ==================== GAME COMMUNICATION ====================
+    window.addEventListener('message', (event) => {
+      const data = event.data;
+      if (!data || !data.type) return;
+
+      switch (data.type) {
+        case 'score-update':
+          handleScoreUpdate(data.localScores);
+          break;
+        case 'game-over':
+          handleGameOver(data);
+          break;
+        case 'timer-update':
+          handleTimerUpdate(data.seconds);
+          break;
+        case 'round-update':
+          handleRoundUpdate(data.current, data.total);
+          break;
+        case 'request-pause':
+          togglePause();
+          break;
+      }
+    });
+
+    function handleScoreUpdate(localScores) {
+      if (!localScores) return;
+
+      // Update cumulative scores
+      const cumulativeA = sessionData?.cumulative_score_a || 0;
+      const cumulativeB = sessionData?.cumulative_score_b || 0;
+
+      scoreA = cumulativeA + (localScores.A || 0);
+      scoreB = cumulativeB + (localScores.B || 0);
+
+      document.getElementById('team-a-score').textContent = scoreA;
+      document.getElementById('team-b-score').textContent = scoreB;
+
+      // Send to game iframe
+      if (currentGameIframe) {
+        currentGameIframe.contentWindow.postMessage({
+          type: 'score-update',
+          cumulativeScores: { A: scoreA, B: scoreB }
+        }, '*');
+      }
+    }
+
+    function handleGameOver(data) {
+      showToast(`🏆 Juego terminado - Ganador: ${data.winner || 'Empate'}`);
+
+      // Save game result to API
+      if (sessionData) {
+        const currentIdx = sessionData.current_game_index || 0;
+        const currentGame = sessionData.games[currentIdx];
+
+        if (currentGame) {
+          fetch(`${API}/sessions/${sessionData.id}/games/${currentGame.id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              local_score_a: data.localScores?.A || 0,
+              local_score_b: data.localScores?.B || 0,
+              winner: data.winner,
+              status: 'finalizado'
+            })
+          });
+        }
+      }
+    }
+
+    function handleTimerUpdate(seconds) {
+      countdownSeconds = seconds;
+      updateTimerDisplay();
+    }
+
+    function handleRoundUpdate(current, total) {
+      document.getElementById('round-info').textContent = `R${current}/${total}`;
+    }
+
+    // ==================== TIMER ====================
+    function updateTimerDisplay() {
+      const mins = Math.floor(countdownSeconds / 60);
+      const secs = countdownSeconds % 60;
+      document.getElementById('countdown-timer').textContent =
+        `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    function startCountdown(seconds) {
+      countdownSeconds = seconds;
+      updateTimerDisplay();
+
+      if (countdownInterval) clearInterval(countdownInterval);
+
+      countdownInterval = setInterval(() => {
+        if (!isPaused && countdownSeconds > 0) {
+          countdownSeconds--;
+          updateTimerDisplay();
+
+          // Send timer update to game
+          if (currentGameIframe) {
+            currentGameIframe.contentWindow.postMessage({
+              type: 'timer-update',
+              seconds: countdownSeconds
+            }, '*');
+          }
+        }
+      }, 1000);
+    }
+
+    // ==================== SESSION CONTROLS ====================
+    async function nextGame() {
+      if (!sessionData) return;
+
+      try {
+        const res = await fetch(`${API}/sessions/${sessionData.id}/next-game`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const result = await res.json();
+
+        if (result.finished) {
+          showToast('🏆 ¡Circuito completado!');
+          document.getElementById('session-status').textContent = 'FINALIZADO';
+        } else {
+          // Reload session to get new game
+          await loadSession(sessionData.id);
+          loadCurrentGame();
+          showToast('➡️ Siguiente juego cargado');
+        }
+      } catch (err) {
+        console.error('Error advancing game:', err);
+        showToast('❌ Error al avanzar al siguiente juego');
+      }
+    }
+
+    async function finishSession() {
+      if (!sessionData) return;
+
+      if (!confirm('¿Estás seguro de finalizar la sesión?')) return;
+
+      try {
+        await fetch(`${API}/sessions/${sessionData.id}/finish`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        showToast('✅ Sesión finalizada');
+        document.getElementById('session-status').textContent = 'FINALIZADO';
+
+        // Hide game iframe
+        document.getElementById('game-iframe').classList.add('hidden');
+        document.getElementById('empty-state').classList.remove('hidden');
+      } catch (err) {
+        console.error('Error finishing session:', err);
+        showToast('❌ Error al finalizar la sesión');
+      }
+    }
+
+    // ==================== SCORE MODAL ====================
     function openScoreModal(team) {
       pendingTeam = team;
       const title = document.getElementById('score-modal-title');
-      title.innerText = team === 'A' ? 'Asignar Puntos — BANDO A' : 'Asignar Puntos — BANDO B';
+      title.innerText = team === 'A' ? 'Asignar Puntos — ' + (sessionData?.teams?.[0]?.name || 'BANDO A') : 'Asignar Puntos — ' + (sessionData?.teams?.[1]?.name || 'BANDO B');
       document.getElementById('score-input').value = 50;
       document.getElementById('score-reason').value = '';
       const modal = document.getElementById('score-modal');
@@ -570,15 +836,28 @@
 
       if (pendingTeam === 'A') {
         scoreA = Math.max(0, scoreA + value);
-        showToast(`Los Rayos: ${value >= 0 ? '+' : ''}${value} PTS${reason ? ' — ' + reason : ''}`);
+        document.getElementById('team-a-score').textContent = scoreA;
+        showToast(`+${value} PTS para ${sessionData?.teams?.[0]?.name || 'Equipo A'}${reason ? ' — ' + reason : ''}`);
       } else {
         scoreB = Math.max(0, scoreB + value);
-        showToast(`Los Titanes: ${value >= 0 ? '+' : ''}${value} PTS${reason ? ' — ' + reason : ''}`);
+        document.getElementById('team-b-score').textContent = scoreB;
+        showToast(`+${value} PTS para ${sessionData?.teams?.[1]?.name || 'Equipo B'}${reason ? ' — ' + reason : ''}`);
       }
+
+      // Send score update to game
+      if (currentGameIframe) {
+        currentGameIframe.contentWindow.postMessage({
+          type: 'console-score-update',
+          team: pendingTeam,
+          points: value,
+          cumulativeScores: { A: scoreA, B: scoreB }
+        }, '*');
+      }
+
       closeScoreModal();
     }
 
-    // ─── CONTROLES GENERALES ──────────────────────────────
+    // ==================== CONTROLS ====================
     function togglePause() {
       isPaused = !isPaused;
       const btn = document.getElementById('btn-pause');
@@ -586,16 +865,23 @@
       if (isPaused) {
         text.innerText = 'Reanudar';
         btn.classList.add('bg-secondary-container');
-        showToast('Partida En Pausa');
+        showToast('⏸ Partida En Pausa');
       } else {
         text.innerText = 'Pausar';
         btn.classList.remove('bg-secondary-container');
-        showToast('Partida Reanudada');
+        showToast('▶ Partida Reanudada');
+      }
+
+      // Send pause/resume to game
+      if (currentGameIframe) {
+        currentGameIframe.contentWindow.postMessage({
+          type: isPaused ? 'pause' : 'resume'
+        }, '*');
       }
     }
 
-    function playSoundFx(fxName) { showToast(`Sonido disparado: 🔊 ${fxName}`); }
-    function broadcastAlert(msg)  { showToast(msg); }
+    function playSoundFx(fxName) { showToast(`🔊 ${fxName}`); }
+    function broadcastAlert(msg) { showToast(msg); }
 
     function toggleRulesModal() {
       const modal = document.getElementById('rules-modal');
@@ -603,6 +889,16 @@
       modal.classList.toggle('hidden');
       modal.classList.toggle('flex');
       modal.setAttribute('aria-hidden', isHidden ? 'false' : 'true');
+    }
+
+    function goToGameLibrary(event) {
+      if (event) event.preventDefault();
+      showToast('🎮 Abriendo biblioteca...');
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage('open-games-library', '*');
+      } else {
+        window.location.href = '/index.html';
+      }
     }
 
     function showToast(msg) {
@@ -617,6 +913,21 @@
         toast.classList.remove('translate-y-0', 'opacity-100');
       }, 2200);
     }
+
+    // ==================== TOP BAR SCROLL ====================
+    (function () {
+      const topbar = document.getElementById('topbar');
+      if (!topbar) return;
+      function onScroll() {
+        const y = window.scrollY || document.documentElement.scrollTop;
+        topbar.classList.toggle('is-scrolled', y > 8);
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+
+    // Start
+    init();
   </script>
 
 </body>

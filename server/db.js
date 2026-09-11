@@ -28,6 +28,7 @@ function initSchema() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
       description TEXT,
+      file TEXT DEFAULT NULL,
       active INTEGER NOT NULL DEFAULT 0,
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
@@ -43,6 +44,80 @@ function initSchema() {
   const res = db.exec('SELECT id FROM game_state WHERE id = 1');
   if (res.length === 0 || res[0].values.length === 0) {
     db.run(`INSERT INTO game_state (id, status) VALUES (1, 'idle')`);
+  }
+
+  // Sessions table
+  db.run(`
+    CREATE TABLE IF NOT EXISTS sessions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      code TEXT NOT NULL UNIQUE,
+      name TEXT NOT NULL,
+      type TEXT NOT NULL DEFAULT 'individual',
+      status TEXT NOT NULL DEFAULT 'activo',
+      config TEXT DEFAULT '{}',
+      progress TEXT DEFAULT '{}',
+      current_game_index INTEGER DEFAULT 0,
+      cumulative_score_a INTEGER DEFAULT 0,
+      cumulative_score_b INTEGER DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      finished_at TEXT
+    );
+  `);
+
+  // Session games (relationship N:N)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS session_games (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      session_id INTEGER NOT NULL,
+      game_id INTEGER NOT NULL,
+      game_order INTEGER NOT NULL,
+      config TEXT DEFAULT '{}',
+      status TEXT DEFAULT 'pendiente',
+      local_score_a INTEGER DEFAULT 0,
+      local_score_b INTEGER DEFAULT 0,
+      winner TEXT,
+      FOREIGN KEY (session_id) REFERENCES sessions(id),
+      FOREIGN KEY (game_id) REFERENCES games(id)
+    );
+  `);
+
+  // Session teams
+  db.run(`
+    CREATE TABLE IF NOT EXISTS session_teams (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      session_id INTEGER NOT NULL,
+      team_letter TEXT NOT NULL,
+      name TEXT NOT NULL,
+      avatar TEXT,
+      score INTEGER DEFAULT 0,
+      FOREIGN KEY (session_id) REFERENCES sessions(id)
+    );
+  `);
+
+  // Session participants (optional)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS session_participants (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      team_id INTEGER NOT NULL,
+      name TEXT NOT NULL,
+      FOREIGN KEY (team_id) REFERENCES session_teams(id)
+    );
+  `);
+
+  // Game play counters (for naming like "Trivia#1", "Trivia#2")
+  db.run(`
+    CREATE TABLE IF NOT EXISTS game_counters (
+      game_id INTEGER PRIMARY KEY,
+      counter INTEGER NOT NULL DEFAULT 0,
+      FOREIGN KEY (game_id) REFERENCES games(id)
+    );
+  `);
+
+  // Add file column to games table if not exists (migration)
+  try {
+    db.run(`ALTER TABLE games ADD COLUMN file TEXT DEFAULT NULL`);
+  } catch (e) {
+    // Column already exists, ignore
   }
 }
 
