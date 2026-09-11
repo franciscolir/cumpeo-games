@@ -946,9 +946,6 @@
       document.getElementById('results-summary').textContent = 
         `Tras ${(sessionData.games || []).length} juego(s), ${winner.name} se corona con ${winnerScore} puntos.`;
 
-      // Hide 3rd place (only 2 teams)
-      document.getElementById('results-3rd').style.display = 'none';
-
       // Show results screen
       document.getElementById('results-screen').classList.remove('hidden');
     }
