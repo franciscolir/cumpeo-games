@@ -257,6 +257,31 @@
         document.getElementById('status-message').textContent = `Turno: ${selectedTeam}`;
       }
     });
+
+    // Sidebar conductor controls
+    const btnAcierto = document.getElementById('btn-veredicto-acierto');
+    const btnFallo = document.getElementById('btn-veredicto-fallo');
+    const btnSiguiente = document.getElementById('btn-siguiente');
+    const btnFinalizar = document.getElementById('btn-finalizar');
+    if (btnAcierto) btnAcierto.addEventListener('click', () => {
+      const points = 50;
+      localScores[selectedTeam] += points;
+      sdk.scoreUpdate(selectedTeam, points);
+      document.getElementById('status-message').textContent = `${selectedTeam} +${points}`;
+    });
+    if (btnFallo) btnFallo.addEventListener('click', () => {
+      document.getElementById('status-message').textContent = `${selectedTeam} fallo`;
+    });
+    if (btnSiguiente) btnSiguiente.addEventListener('click', () => {
+      loadQuestion(currentQuestion + 1);
+    });
+    if (btnFinalizar) btnFinalizar.addEventListener('click', () => {
+      sdk.gameOver({
+        winner: localScores.A >= localScores.B ? 'A' : 'B',
+        localScores,
+        stats: { totalQuestions: questions.length }
+      });
+    });
   </script>
 
 </body>

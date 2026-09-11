@@ -465,10 +465,10 @@
         <h3 class="font-bold text-yellow-300 text-lg text-center">Mando del Conductor</h3>
         <div class="text-xs text-gray-400 text-center">Mecánica: Elige historia, asigna puntos.</div>
         <div class="flex flex-col gap-2">
-          <button class="w-full bg-green-600 hover:bg-green-500 py-2 rounded-xl font-bold">VALIDAR RESPUESTA</button>
-          <button class="w-full bg-red-600 hover:bg-red-500 py-2 rounded-xl font-bold">ANULAR</button>
-          <button class="w-full bg-gray-700 hover:bg-gray-600 py-2 rounded-xl font-bold">SIGUIENTE</button>
-          <button class="w-full bg-gray-900 hover:bg-black py-2 rounded-xl font-bold">FINALIZAR</button>
+          <button id="btn-validar" class="w-full bg-green-600 hover:bg-green-500 py-2 rounded-xl font-bold">VALIDAR RESPUESTA</button>
+          <button id="btn-anular" class="w-full bg-red-600 hover:bg-red-500 py-2 rounded-xl font-bold">ANULAR</button>
+          <button id="btn-siguiente-hist" class="w-full bg-gray-700 hover:bg-gray-600 py-2 rounded-xl font-bold">SIGUIENTE</button>
+          <button id="btn-finalizar-hist" class="w-full bg-gray-900 hover:bg-black py-2 rounded-xl font-bold">FINALIZAR</button>
         </div>
       </aside>
     </div>
@@ -543,6 +543,15 @@
       window.parent.postMessage({type:'game-over', payload:{results}}, '*');
     };
     // Conductor can call updateScore(teamId, points) manually
+    // Sidebar conductor bindings
+    const btnValidar = document.getElementById('btn-validar');
+    const btnAnular = document.getElementById('btn-anular');
+    const btnSigHist = document.getElementById('btn-siguiente-hist');
+    const btnFinHist = document.getElementById('btn-finalizar-hist');
+    if (btnValidar) btnValidar.addEventListener('click', () => { window.updateScore('A', 50); });
+    if (btnAnular) btnAnular.addEventListener('click', () => { /* no action */ });
+    if (btnSigHist) btnSigHist.addEventListener('click', () => { window.parent.postMessage({type:'game:next-round', payload:{}}, '*'); });
+    if (btnFinHist) btnFinHist.addEventListener('click', () => { window.finishGame({winner:'A'}); });
   </script>
 
 </body>
