@@ -50,7 +50,7 @@ tailwind.config={
 </script>
 <title>Cumpeo Games - Conductor</title>
 </head>
-<body class="bg-background font-body-md text-body-md text-on-surface antialiased min-h-screen">
+<body class="bg-background font-body-md text-body-md text-on-surface antialiased h-screen overflow-hidden">
 
 <!-- Sidebar -->
 <aside class="fixed left-0 top-0 h-full w-64 bg-surface-container-lowest border-r-2 border-on-surface z-50 flex flex-col justify-between py-6 px-4">
@@ -80,135 +80,135 @@ tailwind.config={
 </aside>
 
 <!-- Main Wrapper -->
-<div class="pl-64">
+<div class="pl-64 h-full overflow-hidden">
 
   
 
   <!-- Page Content -->
-  <main class="relative  min-h-screen bg-surface px-8 py-8">
+  <main class="relative h-full bg-surface px-4 py-4 overflow-y-auto">
 
     <!-- ==================== SECCION: INICIO ==================== -->
     <section id="page-inicio" class="page-section">
-      <div class="max-w-[72rem] mx-auto w-full flex flex-col gap-12 pb-16">
+      <div class="max-w-[72rem] mx-auto w-full flex flex-col gap-6 pb-4">
 
         <!-- Top Identity Kicker & Headline -->
-        <div class="flex flex-col items-center text-center pt-2">
-          <div class="inline-flex items-center gap-2 bg-secondary-container text-on-secondary-container px-4 py-1.5 rounded-full border-2 border-on-surface comic-shadow-sm -rotate-2 mb-4">
-            <span class="material-symbols-outlined text-base">bolt</span>
-            <span class="font-label-comic-pill text-label-comic-pill uppercase tracking-wider">ESTUDIO DE TRANSMISION OFICIAL!</span>
+        <div class="flex flex-col items-center text-center pt-1">
+          <div class="inline-flex items-center gap-1.5 bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full border-2 border-on-surface comic-shadow-sm -rotate-2 mb-2">
+            <span class="material-symbols-outlined text-sm">bolt</span>
+            <span class="font-label-comic-pill text-[10px] uppercase tracking-wider">ESTUDIO DE TRANSMISION OFICIAL!</span>
           </div>
           <h1 class="font-display-hero text-display-hero text-on-surface tracking-tight uppercase select-none">
             HOLA <span class="text-primary-container inline-block rotate-1 underline decoration-secondary-container decoration-wavy decoration-4">CONDUCTOR</span>!
           </h1>
-          <p class="font-body-lg text-body-lg text-on-surface-variant max-w-xl mt-2 font-medium">
+          <p class="font-body-sm text-body-sm text-on-surface-variant max-w-xl mt-1 font-medium">
             CUMPEO = JUEGOS + CARICATURA + DIVERSION. Disenado para liderar la sala, proyectar risas y mantener la fiesta al limite.
           </p>
         </div>
 
         <!-- Main Hero Pairing: Mascot & Primary Actions Bento -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
 
           <!-- Mascot Column -->
-          <div class="lg:col-span-6 flex flex-col justify-between bg-surface-container-lowest border-2 border-on-surface rounded-3xl p-8 comic-shadow-lg relative overflow-hidden">
-            <div class="absolute -top-10 -right-10 w-44 h-44 rounded-full bg-secondary-container/20 border-2 border-dashed border-on-surface/30 pointer-events-none -z-0"></div>
-            <div class="relative z-10 self-start mb-6">
-              <div class="bg-surface-container-lowest border-2 border-on-surface rounded-2xl p-4 comic-shadow-md max-w-md relative">
+          <div class="lg:col-span-5 flex flex-col justify-between bg-surface-container-lowest border-2 border-on-surface rounded-2xl p-4 comic-shadow-md relative overflow-hidden">
+            <div class="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-secondary-container/20 border-2 border-dashed border-on-surface/30 pointer-events-none -z-0"></div>
+            <div class="relative z-10 self-start mb-3">
+              <div class="bg-surface-container-lowest border-2 border-on-surface rounded-xl p-3 comic-shadow-sm max-w-sm relative">
                 <p class="font-headline-sm text-headline-sm text-on-surface leading-snug">
                   "Listo para animar la fiesta? <span class="text-primary-container">Tu tienes el control total del juego!</span>"
                 </p>
-                <div class="absolute -bottom-3 left-10 w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[14px] border-t-on-surface"></div>
-                <div class="absolute -bottom-[9px] left-[41px] w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-t-[12px] border-t-surface-container-lowest"></div>
+                <div class="absolute -bottom-3 left-8 w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-t-[12px] border-t-on-surface"></div>
+                <div class="absolute -bottom-[9px] left-[33px] w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[10px] border-t-surface-container-lowest"></div>
               </div>
             </div>
-            <div class="relative z-10 flex justify-center items-center py-4 my-auto">
+            <div class="relative z-10 flex justify-center items-center py-2 my-auto">
               <div class="relative group">
                 <div class="absolute inset-0 rounded-full bg-secondary-container/30 filter blur-md scale-95 transition-transform group-hover:scale-105"></div>
-                <img alt="Mascota Arbitro Oficial CUMPEO" class="w-64 h-64 sm:w-72 sm:h-72 object-contain relative z-10 border-2 border-on-surface rounded-3xl bg-surface comic-shadow-md transition-transform duration-300 hover:rotate-2 hover:scale-[1.02]" src="images/pupi-pulgar-arriba.png">
-                <div class="absolute -bottom-3 -right-3 z-20 bg-tertiary-fixed text-on-tertiary-fixed font-label-comic-pill text-label-comic-pill px-3 py-1 rounded-full border-2 border-on-surface comic-shadow-sm rotate-3">
+                <img alt="Mascota Arbitro Oficial CUMPEO" class="w-44 h-44 sm:w-52 sm:h-52 object-contain relative z-10 border-2 border-on-surface rounded-2xl bg-surface comic-shadow-md transition-transform duration-300 hover:rotate-2 hover:scale-[1.02]" src="images/pupi-pulgar-arriba.png">
+                <div class="absolute -bottom-2 -right-2 z-20 bg-tertiary-fixed text-on-tertiary-fixed font-label-comic-pill text-[10px] px-2 py-0.5 rounded-full border-2 border-on-surface comic-shadow-sm rotate-3">
                   ARBITRO VIP
                 </div>
               </div>
             </div>
-            <div class="relative z-10 flex items-center justify-between border-t-2 border-on-surface/10 pt-4 mt-4">
-              <span class="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant flex items-center gap-1.5">
-                <span class="w-2.5 h-2.5 rounded-full bg-tertiary border border-on-surface"></span>
+            <div class="relative z-10 flex items-center justify-between border-t-2 border-on-surface/10 pt-3 mt-3">
+              <span class="font-label-xs text-[10px] uppercase tracking-wider text-on-surface-variant flex items-center gap-1">
+                <span class="w-2 h-2 rounded-full bg-tertiary border border-on-surface"></span>
                 Motor de Juego v2.4 Activo
               </span>
-              <span class="font-label-comic-pill text-label-comic-pill text-on-surface bg-surface-container px-2.5 py-0.5 rounded border border-on-surface">
+              <span class="font-label-comic-pill text-[10px] text-on-surface bg-surface-container px-2 py-0.5 rounded border border-on-surface">
                 60 FPS EN VIVO
               </span>
             </div>
           </div>
 
           <!-- Action Panel Column -->
-          <div class="lg:col-span-6 flex flex-col justify-between gap-6">
-            <div class="bg-surface-container-lowest border-2 border-on-surface rounded-3xl p-8 comic-shadow-lg flex flex-col gap-5">
+          <div class="lg:col-span-7 flex flex-col justify-between gap-3">
+            <div class="bg-surface-container-lowest border-2 border-on-surface rounded-2xl p-4 comic-shadow-md flex flex-col gap-3">
               <div class="flex items-center justify-between">
-                <span class="font-label-comic-pill text-label-comic-pill uppercase tracking-widest text-on-surface-variant">PANEL DE COMANDO</span>
-                <span class="bg-primary-fixed text-on-primary-fixed-variant px-3 py-0.5 rounded-full border border-on-surface font-label-md text-label-md">PASO 1</span>
+                <span class="font-label-comic-pill text-[10px] uppercase tracking-widest text-on-surface-variant">PANEL DE COMANDO</span>
+                <span class="bg-primary-fixed text-on-primary-fixed-variant px-2 py-0.5 rounded-full border border-on-surface font-label-xs text-[10px]">PASO 1</span>
               </div>
-              <h2 class="font-headline-lg text-headline-lg text-on-surface tracking-tight uppercase leading-none">
+              <h2 class="font-headline-md text-headline-md text-on-surface tracking-tight uppercase leading-none">
                 EMPIEZA LA JORNADA
               </h2>
-              <div class="flex items-center gap-4 mb-4">
-                <span class="w-8 h-8 rounded-full bg-primary-fixed/20 flex items-center justify-center text-primary text-sm">
-                  <span class="material-symbols-outlined">star</span>
+              <div class="flex items-center gap-3 mb-2">
+                <span class="w-6 h-6 rounded-full bg-primary-fixed/20 flex items-center justify-center text-primary">
+                  <span class="material-symbols-outlined text-[14px]">star</span>
                 </span>
                 <div>
-                  <p id="current-game-name" class="font-bold text-on-surface truncate">Sin juego</p>
-                  <p id="current-game-status" class="text-on-surface-variant text-sm">Idle</p>
+                  <p id="current-game-name" class="font-bold text-on-surface text-sm truncate">Sin juego</p>
+                  <p id="current-game-status" class="text-on-surface-variant text-xs">Idle</p>
                 </div>
               </div>
-              <p class="font-body-md text-body-md text-on-surface-variant -mt-2">
+              <p class="font-body-sm text-body-sm text-on-surface-variant -mt-1">
                 Elige si deseas armar una nueva rutina de desafios o retomar la partida guardada con los mismos puntajes.
               </p>
-              <button id="create-game-btn" class="w-full bg-primary-container text-on-primary border-[3px] border-on-surface rounded-2xl py-4 px-6 comic-shadow-md flex items-center justify-between font-headline-md text-headline-md tracking-wide uppercase transition-transform active:translate-x-[3px] active:translate-y-[3px] active:shadow-none hover:bg-primary cursor-pointer group" type="button">
-                <span class="flex items-center gap-3">
-                  <span class="material-symbols-outlined text-[32px] group-hover:rotate-12 transition-transform">bolt</span>
+              <button id="create-game-btn" class="w-full bg-primary-container text-on-primary border-[3px] border-on-surface rounded-xl py-3 px-5 comic-shadow-md flex items-center justify-between font-headline-sm text-headline-sm tracking-wide uppercase transition-transform active:translate-x-[3px] active:translate-y-[3px] active:shadow-none hover:bg-primary cursor-pointer group" type="button">
+                <span class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-[24px] group-hover:rotate-12 transition-transform">bolt</span>
                   CREAR CIRCUITO
                 </span>
-                <span class="material-symbols-outlined text-[28px]">arrow_forward</span>
+                <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
               </button>
-              <button id="resume-btn" class="w-full bg-secondary-container text-on-secondary-container border-[3px] border-on-surface rounded-2xl py-3.5 px-6 comic-shadow-md flex items-center justify-between font-headline-sm text-headline-sm uppercase tracking-wide transition-transform active:translate-x-[3px] active:translate-y-[3px] active:shadow-none hover:bg-secondary-fixed cursor-pointer group" type="button">
-                <span class="flex items-center gap-3">
-                  <span class="material-symbols-outlined text-[26px]">replay</span>
+              <button id="resume-btn" class="w-full bg-secondary-container text-on-secondary-container border-[3px] border-on-surface rounded-xl py-2.5 px-5 comic-shadow-md flex items-center justify-between font-headline-sm text-headline-sm uppercase tracking-wide transition-transform active:translate-x-[3px] active:translate-y-[3px] active:shadow-none hover:bg-secondary-fixed cursor-pointer group" type="button">
+                <span class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-[20px]">replay</span>
                   <span id="resume-btn-text">REANUDAR SESION ANTERIOR</span>
                 </span>
-                <span class="font-label-md text-label-md bg-surface-container-lowest px-2 py-0.5 rounded border border-on-surface" id="resume-btn-code">-</span>
+                <span class="font-label-xs text-[10px] bg-surface-container-lowest px-2 py-0.5 rounded border border-on-surface" id="resume-btn-code">-</span>
               </button>
-              <div class="pt-2 flex justify-center gap-4">
-                <a id="explore-library-btn" class="inline-flex items-center gap-1.5 text-on-surface font-label-lg text-label-lg underline decoration-2 underline-offset-4 hover:text-primary-container transition-colors cursor-pointer" href="#">
-                  <span class="material-symbols-outlined text-[20px]">sports_esports</span>
+              <div class="pt-1 flex justify-center gap-3">
+                <a id="explore-library-btn" class="inline-flex items-center gap-1 text-on-surface font-label-sm text-[11px] underline decoration-2 underline-offset-4 hover:text-primary-container transition-colors cursor-pointer" href="#">
+                  <span class="material-symbols-outlined text-[14px]">sports_esports</span>
                   Explorar biblioteca de juegos individuales
                 </a>
-                <button id="toggle-public-btn" class="bg-primary text-on-primary border-[3px] border-on-surface rounded-xl px-4 py-2 comic-shadow-sm flex items-center gap-2">
-                  <span class="material-symbols-outlined text-[20px]">visibility</span>
-                  Vista Publica
+                <button id="toggle-public-btn" class="bg-primary text-on-primary border-[2px] border-on-surface rounded-lg px-3 py-1.5 comic-shadow-sm flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[14px]">visibility</span>
+                  <span class="text-[10px]">Vista Publica</span>
                 </button>
               </div>
             </div>
 
             <!-- Live Room Status Card -->
-            <div class="bg-surface-container-low border-2 border-on-surface rounded-3xl p-6 comic-shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div class="flex flex-col gap-4 w-full">
+            <div class="bg-surface-container-low border-2 border-on-surface rounded-2xl p-3 comic-shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div class="flex flex-col gap-2 w-full">
                 <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full bg-tertiary animate-pulse"></span>
-                    <span class="font-label-comic-pill text-label-comic-pill uppercase tracking-wider text-on-surface">CODIGO DE SALA EN DIRECTO</span>
+                  <div class="flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-tertiary animate-pulse"></span>
+                    <span class="font-label-comic-pill text-[10px] uppercase tracking-wider text-on-surface">CODIGO DE SALA EN DIRECTO</span>
                   </div>
-                  <span class="font-label-md text-label-md bg-secondary-container text-on-secondary-container px-2.5 py-0.5 rounded-full border border-on-surface comic-shadow-sm font-medium">EN VIVO</span>
+                  <span class="font-label-comic-pill text-[10px] bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-full border border-on-surface comic-shadow-sm font-medium">EN VIVO</span>
                 </div>
-                <div class="bg-surface-container-lowest border-2 border-on-surface rounded-2xl p-3 sm:p-4 comic-shadow-sm flex items-center justify-between gap-3">
-                  <div class="flex items-center gap-3">
-                    <span class="material-symbols-outlined text-[28px] text-primary-container hidden sm:inline-block">qr_code_2</span>
-                    <span class="font-display-hero text-headline-lg sm:text-[32px] tracking-widest text-on-surface leading-none select-all">CMP-770</span>
+                <div class="bg-surface-container-lowest border-2 border-on-surface rounded-xl p-2.5 comic-shadow-sm flex items-center justify-between gap-2">
+                  <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[20px] text-primary-container hidden sm:inline-block">qr_code_2</span>
+                    <span class="font-display-hero text-headline-sm sm:text-[24px] tracking-widest text-on-surface leading-none select-all">CMP-770</span>
                   </div>
-                  <button class="px-3.5 py-2 rounded-xl bg-surface-container border-2 border-on-surface comic-shadow-sm flex items-center gap-1.5 font-label-md text-label-md text-on-surface hover:bg-secondary-fixed active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer" title="Copiar Codigo" type="button">
-                    <span class="material-symbols-outlined text-[18px]">content_copy</span>
-                    <span class="copy-text font-label-comic-pill">Copiar</span>
+                  <button class="px-2.5 py-1.5 rounded-lg bg-surface-container border-2 border-on-surface comic-shadow-sm flex items-center gap-1 font-label-xs text-[10px] text-on-surface hover:bg-secondary-fixed active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer" title="Copiar Codigo" type="button">
+                    <span class="material-symbols-outlined text-[14px]">content_copy</span>
+                    <span class="copy-text font-label-comic-pill text-[10px]">Copiar</span>
                   </button>
                 </div>
-                <div class="flex items-center justify-between text-on-surface-variant font-label-md text-label-md">
+                <div class="flex items-center justify-between text-on-surface-variant font-label-xs text-[10px]">
                   <span>0 en espera</span>
                   <span>MODO DIRECTO</span>
                 </div>
@@ -218,41 +218,41 @@ tailwind.config={
         </div>
 
         <!-- Three Feature Badges -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
-          <div class="bg-surface-container-lowest border-2 border-on-surface rounded-2xl p-6 comic-shadow-md flex flex-col gap-3 relative transition-transform hover:-translate-y-1">
-            <div class="w-12 h-12 rounded-xl bg-secondary-container border-2 border-on-surface comic-shadow-sm flex items-center justify-center text-on-secondary-container">
-              <span class="material-symbols-outlined text-[26px]">tune</span>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
+          <div class="bg-surface-container-lowest border-2 border-on-surface rounded-xl p-3 comic-shadow-md flex flex-col gap-2 relative transition-transform hover:-translate-y-1">
+            <div class="w-8 h-8 rounded-lg bg-secondary-container border-2 border-on-surface comic-shadow-sm flex items-center justify-center text-on-secondary-container">
+              <span class="material-symbols-outlined text-[18px]">tune</span>
             </div>
-            <div class="flex flex-col gap-1">
+            <div class="flex flex-col gap-0.5">
               <h3 class="font-headline-sm text-headline-sm text-on-surface uppercase tracking-tight">Control Total</h3>
-              <p class="font-body-md text-body-md text-on-surface-variant">Desktop-first para el conductor: avanza rondas, ajusta cronometros y modera puntajes agilmente.</p>
+              <p class="font-body-xs text-[11px] text-on-surface-variant">Desktop-first para el conductor: avanza rondas, ajusta cronometros y modera puntajes agilmente.</p>
             </div>
-            <div class="mt-auto pt-2">
-              <span class="font-label-comic-pill text-label-comic-pill text-on-surface bg-surface-container px-2 py-0.5 rounded border border-on-surface">MODO ANFITRION</span>
+            <div class="mt-auto pt-1">
+              <span class="font-label-comic-pill text-[9px] text-on-surface bg-surface-container px-1.5 py-0.5 rounded border border-on-surface">MODO ANFITRION</span>
             </div>
           </div>
-          <div class="bg-surface-container-lowest border-2 border-on-surface rounded-2xl p-6 comic-shadow-md flex flex-col gap-3 relative transition-transform hover:-translate-y-1">
-            <div class="w-12 h-12 rounded-xl bg-tertiary-fixed border-2 border-on-surface comic-shadow-sm flex items-center justify-center text-on-tertiary-fixed">
-              <span class="material-symbols-outlined text-[26px]">desktop_windows</span>
+          <div class="bg-surface-container-lowest border-2 border-on-surface rounded-xl p-3 comic-shadow-md flex flex-col gap-2 relative transition-transform hover:-translate-y-1">
+            <div class="w-8 h-8 rounded-lg bg-tertiary-fixed border-2 border-on-surface comic-shadow-sm flex items-center justify-center text-on-tertiary-fixed">
+              <span class="material-symbols-outlined text-[18px]">desktop_windows</span>
             </div>
-            <div class="flex flex-col gap-1">
+            <div class="flex flex-col gap-0.5">
               <h3 class="font-headline-sm text-headline-sm text-on-surface uppercase tracking-tight">Vista Publica Limpia</h3>
-              <p class="font-body-md text-body-md text-on-surface-variant">El publico solo observa el espectaculo: animaciones a pantalla completa, marcadores claros.</p>
+              <p class="font-body-xs text-[11px] text-on-surface-variant">El publico solo observa el espectaculo: animaciones a pantalla completa, marcadores claros.</p>
             </div>
-            <div class="mt-auto pt-2">
-              <span class="font-label-comic-pill text-label-comic-pill text-on-surface bg-surface-container px-2 py-0.5 rounded border border-on-surface">PLUG &amp; PLAY</span>
+            <div class="mt-auto pt-1">
+              <span class="font-label-comic-pill text-[9px] text-on-surface bg-surface-container px-1.5 py-0.5 rounded border border-on-surface">PLUG &amp; PLAY</span>
             </div>
           </div>
-          <div class="bg-surface-container-lowest border-2 border-on-surface rounded-2xl p-6 comic-shadow-md flex flex-col gap-3 relative transition-transform hover:-translate-y-1">
-            <div class="w-12 h-12 rounded-xl bg-primary-fixed border-2 border-on-surface comic-shadow-sm flex items-center justify-center text-on-primary-fixed-variant">
-              <span class="material-symbols-outlined text-[26px]">draw</span>
+          <div class="bg-surface-container-lowest border-2 border-on-surface rounded-xl p-3 comic-shadow-md flex flex-col gap-2 relative transition-transform hover:-translate-y-1">
+            <div class="w-8 h-8 rounded-lg bg-primary-fixed border-2 border-on-surface comic-shadow-sm flex items-center justify-center text-on-primary-fixed-variant">
+              <span class="material-symbols-outlined text-[18px]">draw</span>
             </div>
-            <div class="flex flex-col gap-1">
+            <div class="flex flex-col gap-0.5">
               <h3 class="font-headline-sm text-headline-sm text-on-surface uppercase tracking-tight">Universo Comic</h3>
-              <p class="font-body-md text-body-md text-on-surface-variant">Dinamicas de fiesta potenciadas con vinetas, sonido arcade y humor espontaneo.</p>
+              <p class="font-body-xs text-[11px] text-on-surface-variant">Dinamicas de fiesta potenciadas con vinetas, sonido arcade y humor espontaneo.</p>
             </div>
-            <div class="mt-auto pt-2">
-              <span class="font-label-comic-pill text-label-comic-pill text-on-surface bg-surface-container px-2 py-0.5 rounded border border-on-surface">100% CARICATURA</span>
+            <div class="mt-auto pt-1">
+              <span class="font-label-comic-pill text-[9px] text-on-surface bg-surface-container px-1.5 py-0.5 rounded border border-on-surface">100% CARICATURA</span>
             </div>
           </div>
         </div>
