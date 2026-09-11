@@ -117,11 +117,13 @@
   </script>
 
   <style>
-    html, body { margin: 0; padding: 0; }
+    html, body { margin: 0; padding: 0; height: 100vh; overflow: hidden; }
     body { overscroll-behavior: none; }
     main > :first-child { margin-top: 0 !important; }
     main > :last-child  { margin-bottom: 0 !important; }
-    ::-webkit-scrollbar { display: none; }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #888; border-radius: 2px; }
 
     #topbar {
       transition: top .3s ease, left .3s ease, right .3s ease,
@@ -140,9 +142,42 @@
     #game-iframe {
       width: 100%;
       height: 100%;
-      min-height: 640px;
       border: none;
       border-radius: 1rem;
+    }
+
+    #game-container {
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    #content-wrapper {
+      height: calc(100vh - 4rem);
+      overflow: hidden;
+    }
+
+    @media (max-width: 1023px) {
+      aside {
+        position: fixed;
+        right: 0;
+        top: 4rem;
+        bottom: 0;
+        width: 300px;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+        z-index: 30;
+      }
+      aside.open { transform: translateX(0); }
+      #sidebar-overlay {
+        position: fixed;
+        inset: 0;
+        top: 4rem;
+        background: rgba(0,0,0,0.5);
+        z-index: 29;
+        display: none;
+      }
+      #sidebar-overlay.open { display: block; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -155,7 +190,7 @@
   </style>
 </head>
 
-<body class="bg-background font-body-md text-body-md text-on-surface antialiased min-h-screen">
+<body class="bg-background font-body-md text-body-md text-on-surface antialiased h-screen overflow-hidden">
 
   <!-- TOP BAR -->
   <div id="topbar"
@@ -190,6 +225,12 @@
 
       <!-- ESPACIADOR -->
       <div class="flex-1"></div>
+
+      <!-- BOTÓN SIDEBAR (móvil) -->
+      <button type="button" onclick="toggleSidebar()"
+              class="lg:hidden flex items-center gap-1.5 bg-surface-container-lowest text-on-surface px-2 py-1.5 rounded-lg border-2 border-on-surface shadow-comic-sm hover:bg-surface-container active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all">
+        <span class="material-symbols-outlined text-[18px]">menu</span>
+      </button>
 
       <!-- DERECHA: Acciones -->
       <div class="flex items-center gap-1.5 shrink-0">
@@ -232,45 +273,45 @@
   </div>
 
   <!-- MAIN + SIDEBAR -->
-  <div class="pt-20 flex">
+  <div id="content-wrapper" class="pt-16 h-full flex flex-row overflow-hidden">
 
     <!-- CONTENIDO PRINCIPAL -->
-    <main class="flex-1 min-w-0 bg-surface px-8 py-8">
-      <div class="flex flex-col w-full max-w-[72rem] mx-auto pb-12 gap-6">
+    <main class="flex-1 min-w-0 bg-surface px-3 py-2 overflow-y-auto">
+      <div class="flex flex-col w-full mx-auto gap-3">
 
         <!-- HERO SCOREBOARD -->
-        <section class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
+        <section class="grid grid-cols-3 gap-2 items-stretch">
 
           <!-- TEAM A -->
-          <div class="lg:col-span-5 bg-surface-container-lowest rounded-2xl border-3 border-on-surface shadow-comic-lg p-5 flex flex-col justify-center items-center relative overflow-hidden min-h-[180px]" id="team-a-card">
-            <div class="w-16 h-16 rounded-full bg-surface-container border-2 border-on-surface flex items-center justify-center mb-3 text-3xl" id="team-a-avatar">⚡</div>
-            <h3 class="font-headline-md text-headline-md uppercase text-on-surface tracking-tight" id="team-a-name">Equipo A</h3>
-            <div class="font-display-hero text-headline-lg text-primary mt-2" id="team-a-score">0</div>
-            <button type="button" onclick="openScoreModal('A')" class="mt-3 px-4 py-2 rounded-xl bg-surface-container-low hover:bg-surface-container border-2 border-on-surface shadow-comic-sm font-label-md text-label-md uppercase active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center gap-2">
-              <span class="material-symbols-outlined text-[18px]">add</span>
+          <div class="bg-surface-container-lowest rounded-xl border-2 border-on-surface shadow-comic-md p-2 flex flex-col justify-center items-center relative overflow-hidden" id="team-a-card">
+            <div class="w-10 h-10 rounded-full bg-surface-container border-2 border-on-surface flex items-center justify-center text-xl" id="team-a-avatar">⚡</div>
+            <h3 class="font-headline-sm text-headline-sm uppercase text-on-surface tracking-tight" id="team-a-name">Equipo A</h3>
+            <div class="font-display-hero text-headline-md text-primary" id="team-a-score">0</div>
+            <button type="button" onclick="openScoreModal('A')" class="mt-1 px-3 py-1 rounded-lg bg-surface-container-low hover:bg-surface-container border-2 border-on-surface shadow-comic-sm font-label-sm text-label-sm uppercase active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center gap-1">
+              <span class="material-symbols-outlined text-[14px]">add</span>
               <span>Puntos</span>
             </button>
           </div>
 
           <!-- VS -->
-          <div class="lg:col-span-2 flex flex-col items-center justify-center py-2 px-1">
-            <div class="relative flex flex-col items-center gap-2">
-              <div class="w-16 h-16 rounded-full bg-surface-container border-3 border-on-surface shadow-comic-lg flex items-center justify-center rotate-[6deg]">
-                <span class="font-display-hero text-headline-lg font-black text-on-surface tracking-tighter">VS</span>
+          <div class="flex flex-col items-center justify-center py-1 px-1">
+            <div class="relative flex flex-col items-center gap-1">
+              <div class="w-12 h-12 rounded-full bg-surface-container border-2 border-on-surface shadow-comic-md flex items-center justify-center rotate-[6deg]">
+                <span class="font-display-hero text-headline-sm font-black text-on-surface tracking-tighter">VS</span>
               </div>
-              <div class="bg-surface-container-lowest px-3 py-1 rounded-xl border-2 border-on-surface shadow-comic-sm text-center">
+              <div class="bg-surface-container-lowest px-2 py-0.5 rounded-lg border-2 border-on-surface shadow-comic-sm text-center">
                 <span class="font-label-comic-pill text-label-comic-pill text-on-surface uppercase font-bold tracking-tight" id="session-status">ESPERANDO</span>
               </div>
             </div>
           </div>
 
           <!-- TEAM B -->
-          <div class="lg:col-span-5 bg-surface-container-lowest rounded-2xl border-3 border-on-surface shadow-comic-lg p-5 flex flex-col justify-center items-center relative overflow-hidden min-h-[180px]" id="team-b-card">
-            <div class="w-16 h-16 rounded-full bg-surface-container border-2 border-on-surface flex items-center justify-center mb-3 text-3xl" id="team-b-avatar">🔥</div>
-            <h3 class="font-headline-md text-headline-md uppercase text-on-surface tracking-tight" id="team-b-name">Equipo B</h3>
-            <div class="font-display-hero text-headline-lg text-tertiary mt-2" id="team-b-score">0</div>
-            <button type="button" onclick="openScoreModal('B')" class="mt-3 px-4 py-2 rounded-xl bg-surface-container-low hover:bg-surface-container border-2 border-on-surface shadow-comic-sm font-label-md text-label-md uppercase active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center gap-2">
-              <span class="material-symbols-outlined text-[18px]">add</span>
+          <div class="bg-surface-container-lowest rounded-xl border-2 border-on-surface shadow-comic-md p-2 flex flex-col justify-center items-center relative overflow-hidden" id="team-b-card">
+            <div class="w-10 h-10 rounded-full bg-surface-container border-2 border-on-surface flex items-center justify-center text-xl" id="team-b-avatar">🔥</div>
+            <h3 class="font-headline-sm text-headline-sm uppercase text-on-surface tracking-tight" id="team-b-name">Equipo B</h3>
+            <div class="font-display-hero text-headline-md text-tertiary" id="team-b-score">0</div>
+            <button type="button" onclick="openScoreModal('B')" class="mt-1 px-3 py-1 rounded-lg bg-surface-container-low hover:bg-surface-container border-2 border-on-surface shadow-comic-sm font-label-sm text-label-sm uppercase active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center gap-1">
+              <span class="material-symbols-outlined text-[14px]">add</span>
               <span>Puntos</span>
             </button>
           </div>
@@ -278,27 +319,27 @@
 
         <!-- GAME CONTAINER -->
         <section id="game-container"
-                 class="w-full bg-surface-container-lowest rounded-2xl border-3 border-on-surface shadow-comic-lg overflow-hidden min-h-[640px] flex items-center justify-center">
+                 class="w-full bg-surface-container-lowest rounded-xl border-2 border-on-surface shadow-comic-md overflow-hidden flex items-center justify-center">
 
           <!-- Empty state (shown when no game loaded) -->
-          <div id="empty-state" class="flex flex-col items-center justify-center text-center gap-5 max-w-lg py-8 p-8">
-            <div class="w-32 h-32 rounded-3xl bg-surface-container border-3 border-on-surface border-dashed shadow-comic-lg flex items-center justify-center rotate-[-3deg]">
-              <span class="material-symbols-outlined text-on-surface-variant text-[64px]">sports_esports</span>
+          <div id="empty-state" class="flex flex-col items-center justify-center text-center gap-3 max-w-sm py-4 p-4">
+            <div class="w-20 h-20 rounded-2xl bg-surface-container border-2 border-on-surface border-dashed shadow-comic-md flex items-center justify-center rotate-[-3deg]">
+              <span class="material-symbols-outlined text-on-surface-variant text-[40px]">sports_esports</span>
             </div>
-            <div class="flex flex-col items-center gap-3">
-              <span class="px-3.5 py-1.5 rounded-full bg-secondary-container text-on-secondary-container font-label-comic-pill text-label-comic-pill uppercase tracking-wider border-2 border-on-surface shadow-comic-sm rotate-[-1deg]">
+            <div class="flex flex-col items-center gap-2">
+              <span class="px-2.5 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-comic-pill text-label-comic-pill uppercase tracking-wider border-2 border-on-surface shadow-comic-sm rotate-[-1deg]">
                 ⚡ CONTENEDOR DE JUEGO
               </span>
               <h2 class="font-display-hero-mobile md:font-display-hero text-display-hero-mobile md:text-display-hero text-on-surface uppercase tracking-tight leading-none">
                 CARGA UN JUEGO
               </h2>
-              <p class="font-body-lg text-body-lg text-on-surface-variant max-w-md mt-1">
+              <p class="font-body-sm text-body-sm text-on-surface-variant max-w-xs mt-1">
                 Selecciona un juego desde la biblioteca para que aparezca aquí en pantalla.
               </p>
             </div>
             <a href="#/juegos" onclick="goToGameLibrary(event)"
-               class="px-8 py-4 rounded-2xl bg-primary text-on-primary border-3 border-on-surface shadow-comic-lg hover:bg-primary-container active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all font-headline-md text-headline-md uppercase tracking-tight flex items-center gap-3 group cursor-pointer">
-              <span class="material-symbols-outlined text-[26px] group-hover:rotate-12 transition-transform">play_circle</span>
+               class="px-5 py-2.5 rounded-xl bg-primary text-on-primary border-2 border-on-surface shadow-comic-md hover:bg-primary-container active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all font-headline-sm text-headline-sm uppercase tracking-tight flex items-center gap-2 group cursor-pointer">
+              <span class="material-symbols-outlined text-[20px] group-hover:rotate-12 transition-transform">play_circle</span>
               <span>CARGAR JUEGO</span>
             </a>
           </div>
@@ -310,19 +351,22 @@
       </div>
     </main>
 
+    <!-- SIDEBAR OVERLAY (móvil) -->
+    <div id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
     <!-- SIDEBAR DERECHO -->
-    <aside class="w-[340px] shrink-0 bg-surface-container-low border-l-2 border-on-surface min-h-[calc(100vh-5rem)] p-4 flex flex-col gap-4 overflow-y-auto">
+    <aside class="w-[280px] shrink-0 bg-surface-container-low border-l-2 border-on-surface h-full p-3 flex flex-col gap-3 overflow-y-auto">
 
       <!-- SESSION INFO -->
-      <div class="bg-surface-container-lowest rounded-2xl border-3 border-on-surface shadow-comic-lg p-4 flex flex-col">
-        <div class="flex items-center justify-between mb-3">
-          <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-primary text-[20px]">sports</span>
+      <div class="bg-surface-container-lowest rounded-xl border-2 border-on-surface shadow-comic-md p-3 flex flex-col">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-primary text-[16px]">sports</span>
             <h3 class="font-headline-sm text-headline-sm uppercase text-on-surface tracking-tight">SESIÓN</h3>
           </div>
-          <span class="font-label-md text-xs text-on-surface-variant uppercase" id="session-code">SIN CÓDIGO</span>
+          <span class="font-label-xs text-[10px] text-on-surface-variant uppercase" id="session-code">SIN CÓDIGO</span>
         </div>
-        <div class="space-y-2 text-sm">
+        <div class="space-y-1 text-xs">
           <div class="flex justify-between">
             <span class="text-on-surface-variant">Nombre:</span>
             <span class="font-bold" id="session-name">-</span>
@@ -343,78 +387,78 @@
       </div>
 
       <!-- SOUNDBOARD -->
-      <div class="bg-surface-container-lowest rounded-2xl border-3 border-on-surface shadow-comic-lg p-4 flex flex-col">
-        <div class="flex items-center justify-between mb-3">
-          <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-primary text-[20px]">volume_up</span>
+      <div class="bg-surface-container-lowest rounded-xl border-2 border-on-surface shadow-comic-md p-3 flex flex-col">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-primary text-[16px]">volume_up</span>
             <h3 class="font-headline-sm text-headline-sm uppercase text-on-surface tracking-tight">SOUNDBOARD</h3>
           </div>
-          <span class="font-label-md text-xs text-on-surface-variant uppercase">FX</span>
+          <span class="font-label-xs text-[10px] text-on-surface-variant uppercase">FX</span>
         </div>
 
-        <div class="grid grid-cols-3 gap-2">
-          <button type="button" onclick="playSoundFx('Aplausos')" class="p-2 bg-surface-container hover:bg-secondary-fixed rounded-xl border-2 border-on-surface shadow-comic-md active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex flex-col items-center gap-1 group">
-            <span class="text-xl group-hover:scale-110 transition-transform">👏</span>
-            <span class="font-label-comic-pill text-[10px] uppercase text-on-surface">OVACIÓN</span>
+        <div class="grid grid-cols-3 gap-1.5">
+          <button type="button" onclick="playSoundFx('Aplausos')" class="p-1.5 bg-surface-container hover:bg-secondary-fixed rounded-lg border-2 border-on-surface shadow-comic-sm active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex flex-col items-center gap-0.5 group">
+            <span class="text-lg group-hover:scale-110 transition-transform">👏</span>
+            <span class="font-label-comic-pill text-[8px] uppercase text-on-surface">OVACIÓN</span>
           </button>
-          <button type="button" onclick="playSoundFx('Tambores')" class="p-2 bg-surface-container hover:bg-secondary-fixed rounded-xl border-2 border-on-surface shadow-comic-md active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex flex-col items-center gap-1 group">
-            <span class="text-xl group-hover:scale-110 transition-transform">🥁</span>
-            <span class="font-label-comic-pill text-[10px] uppercase text-on-surface">TENSIÓN</span>
+          <button type="button" onclick="playSoundFx('Tambores')" class="p-1.5 bg-surface-container hover:bg-secondary-fixed rounded-lg border-2 border-on-surface shadow-comic-sm active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex flex-col items-center gap-0.5 group">
+            <span class="text-lg group-hover:scale-110 transition-transform">🥁</span>
+            <span class="font-label-comic-pill text-[8px] uppercase text-on-surface">TENSIÓN</span>
           </button>
-          <button type="button" onclick="playSoundFx('Fanfarria')" class="p-2 bg-secondary-container hover:bg-secondary-fixed rounded-xl border-2 border-on-surface shadow-comic-md active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex flex-col items-center gap-1 group">
-            <span class="text-xl group-hover:scale-110 transition-transform">🎺</span>
-            <span class="font-label-comic-pill text-[10px] uppercase text-on-secondary-container font-extrabold">VICTORIA</span>
+          <button type="button" onclick="playSoundFx('Fanfarria')" class="p-1.5 bg-secondary-container hover:bg-secondary-fixed rounded-lg border-2 border-on-surface shadow-comic-sm active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex flex-col items-center gap-0.5 group">
+            <span class="text-lg group-hover:scale-110 transition-transform">🎺</span>
+            <span class="font-label-comic-pill text-[8px] uppercase text-on-secondary-container font-extrabold">VICTORIA</span>
           </button>
-          <button type="button" onclick="playSoundFx('Sirena')" class="p-2 bg-primary-fixed hover:bg-primary text-on-primary-fixed hover:text-on-primary rounded-xl border-2 border-on-surface shadow-comic-md active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex flex-col items-center gap-1 group">
-            <span class="text-xl group-hover:scale-110 transition-transform">🚨</span>
-            <span class="font-label-comic-pill text-[10px] uppercase font-extrabold">ALERTA</span>
+          <button type="button" onclick="playSoundFx('Sirena')" class="p-1.5 bg-primary-fixed hover:bg-primary text-on-primary-fixed hover:text-on-primary rounded-lg border-2 border-on-surface shadow-comic-sm active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex flex-col items-center gap-0.5 group">
+            <span class="text-lg group-hover:scale-110 transition-transform">🚨</span>
+            <span class="font-label-comic-pill text-[8px] uppercase font-extrabold">ALERTA</span>
           </button>
-          <button type="button" onclick="playSoundFx('Grillos')" class="p-2 bg-surface-container hover:bg-surface-container-high rounded-xl border-2 border-on-surface shadow-comic-md active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex flex-col items-center gap-1 group">
-            <span class="text-xl group-hover:scale-110 transition-transform">🦗</span>
-            <span class="font-label-comic-pill text-[10px] uppercase text-on-surface">INCÓMODO</span>
+          <button type="button" onclick="playSoundFx('Grillos')" class="p-1.5 bg-surface-container hover:bg-surface-container-high rounded-lg border-2 border-on-surface shadow-comic-sm active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex flex-col items-center gap-0.5 group">
+            <span class="text-lg group-hover:scale-110 transition-transform">🦗</span>
+            <span class="font-label-comic-pill text-[8px] uppercase text-on-surface">INCÓMODO</span>
           </button>
-          <button type="button" onclick="playSoundFx('Kaboom')" class="p-2 bg-primary text-on-primary hover:bg-primary-container rounded-xl border-2 border-on-surface shadow-comic-md active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex flex-col items-center gap-1 group">
-            <span class="text-xl group-hover:scale-110 transition-transform">💥</span>
-            <span class="font-label-comic-pill text-[10px] uppercase font-black">KABOOM</span>
+          <button type="button" onclick="playSoundFx('Kaboom')" class="p-1.5 bg-primary text-on-primary hover:bg-primary-container rounded-lg border-2 border-on-surface shadow-comic-sm active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex flex-col items-center gap-0.5 group">
+            <span class="text-lg group-hover:scale-110 transition-transform">💥</span>
+            <span class="font-label-comic-pill text-[8px] uppercase font-black">KABOOM</span>
           </button>
         </div>
 
-        <div class="mt-3 pt-3 border-t-2 border-on-surface/20 flex flex-col gap-2">
-          <span class="font-label-comic-pill text-[10px] uppercase text-on-surface-variant">Gatillos:</span>
-          <button type="button" onclick="broadcastAlert('¡Ruleta de Castigos activada!')" class="px-2.5 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container border border-on-surface text-[11px] font-label-md uppercase shadow-comic-sm text-left">🎲 Ruleta de Castigos</button>
-          <button type="button" onclick="broadcastAlert('Comodín Robo usado')" class="px-2.5 py-1.5 rounded-lg bg-tertiary-fixed text-on-tertiary-fixed hover:bg-tertiary-fixed-dim border border-on-surface text-[11px] font-label-md uppercase shadow-comic-sm text-left">🚩 Comodín Robo</button>
-          <button type="button" onclick="broadcastAlert('Modo Muerte Súbita preparado')" class="px-2.5 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container border border-on-surface text-[11px] font-label-md uppercase shadow-comic-sm text-left">⚡ Muerte Súbita</button>
+        <div class="mt-2 pt-2 border-t-2 border-on-surface/20 flex flex-col gap-1">
+          <span class="font-label-comic-pill text-[8px] uppercase text-on-surface-variant">Gatillos:</span>
+          <button type="button" onclick="broadcastAlert('¡Ruleta de Castigos activada!')" class="px-2 py-1 rounded-md bg-surface-container-low hover:bg-surface-container border border-on-surface text-[10px] font-label-md uppercase shadow-comic-sm text-left">🎲 Ruleta de Castigos</button>
+          <button type="button" onclick="broadcastAlert('Comodín Robo usado')" class="px-2 py-1 rounded-md bg-tertiary-fixed text-on-tertiary-fixed hover:bg-tertiary-fixed-dim border border-on-surface text-[10px] font-label-md uppercase shadow-comic-sm text-left">🚩 Comodín Robo</button>
+          <button type="button" onclick="broadcastAlert('Modo Muerte Súbita preparado')" class="px-2 py-1 rounded-md bg-surface-container-low hover:bg-surface-container border border-on-surface text-[10px] font-label-md uppercase shadow-comic-sm text-left">⚡ Muerte Súbita</button>
         </div>
       </div>
 
       <!-- EXTRAS -->
-      <div class="bg-secondary-container rounded-2xl border-3 border-on-surface shadow-comic-lg p-4 flex flex-col">
+      <div class="bg-secondary-container rounded-xl border-2 border-on-surface shadow-comic-md p-3 flex flex-col">
         <div class="flex items-center justify-between gap-2 mb-2">
-          <div class="flex items-center gap-2">
-            <span class="px-2 py-0.5 rounded-full bg-on-surface text-surface font-label-comic-pill text-[10px] uppercase tracking-wider">TOOLS</span>
+          <div class="flex items-center gap-1.5">
+            <span class="px-1.5 py-0.5 rounded-full bg-on-surface text-surface font-label-comic-pill text-[8px] uppercase tracking-wider">TOOLS</span>
             <h3 class="font-headline-sm text-headline-sm uppercase text-on-secondary-container tracking-tight">EXTRAS</h3>
           </div>
         </div>
 
-        <div class="flex flex-col gap-2">
-          <button type="button" onclick="broadcastAlert('🎱 ¡Tómbola de Nombres lanzada!')" class="w-full flex items-center justify-between p-2 bg-surface-container-lowest hover:bg-surface-container rounded-xl border-2 border-on-surface shadow-comic-md active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all text-left group">
-            <div class="flex items-center gap-2">
-              <span class="w-7 h-7 rounded-lg bg-surface-container border-2 border-on-surface flex items-center justify-center text-sm group-hover:scale-110 transition-transform">🎱</span>
-              <span class="font-headline-sm text-[13px] uppercase text-on-surface leading-none block">TÓMBOLA</span>
+        <div class="flex flex-col gap-1.5">
+          <button type="button" onclick="broadcastAlert('🎱 ¡Tómbola de Nombres lanzada!')" class="w-full flex items-center justify-between p-1.5 bg-surface-container-lowest hover:bg-surface-container rounded-lg border-2 border-on-surface shadow-comic-sm active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all text-left group">
+            <div class="flex items-center gap-1.5">
+              <span class="w-6 h-6 rounded-md bg-surface-container border-2 border-on-surface flex items-center justify-center text-xs group-hover:scale-110 transition-transform">🎱</span>
+              <span class="font-headline-sm text-[11px] uppercase text-on-surface leading-none block">TÓMBOLA</span>
             </div>
           </button>
 
-          <button type="button" onclick="broadcastAlert('🎲 ¡Dados de Rivalidad rodando!')" class="w-full flex items-center justify-between p-2 bg-surface-container-lowest hover:bg-tertiary-fixed rounded-xl border-2 border-on-surface shadow-comic-md active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all text-left group">
-            <div class="flex items-center gap-2">
-              <span class="w-7 h-7 rounded-lg bg-tertiary-fixed text-on-tertiary-fixed border-2 border-on-surface flex items-center justify-center text-sm group-hover:scale-110 transition-transform">🎲</span>
-              <span class="font-headline-sm text-[13px] uppercase text-on-surface leading-none block">DADOS VS</span>
+          <button type="button" onclick="broadcastAlert('🎲 ¡Dados de Rivalidad rodando!')" class="w-full flex items-center justify-between p-1.5 bg-surface-container-lowest hover:bg-tertiary-fixed rounded-lg border-2 border-on-surface shadow-comic-sm active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all text-left group">
+            <div class="flex items-center gap-1.5">
+              <span class="w-6 h-6 rounded-md bg-tertiary-fixed text-on-tertiary-fixed border-2 border-on-surface flex items-center justify-center text-xs group-hover:scale-110 transition-transform">🎲</span>
+              <span class="font-headline-sm text-[11px] uppercase text-on-surface leading-none block">DADOS VS</span>
             </div>
           </button>
 
-          <button type="button" onclick="broadcastAlert('🧨 ¡Dinamita activada! 20s...')" class="w-full flex items-center justify-between p-2 bg-surface-container-lowest hover:bg-primary-fixed rounded-xl border-2 border-on-surface shadow-comic-md active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all text-left group">
-            <div class="flex items-center gap-2">
-              <span class="w-7 h-7 rounded-lg bg-primary-fixed text-on-primary border-2 border-on-surface flex items-center justify-center text-sm group-hover:scale-110 transition-transform">🧨</span>
-              <span class="font-headline-sm text-[13px] uppercase text-on-surface leading-none block">DINAMITA</span>
+          <button type="button" onclick="broadcastAlert('🧨 ¡Dinamita activada! 20s...')" class="w-full flex items-center justify-between p-1.5 bg-surface-container-lowest hover:bg-primary-fixed rounded-lg border-2 border-on-surface shadow-comic-sm active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all text-left group">
+            <div class="flex items-center gap-1.5">
+              <span class="w-6 h-6 rounded-md bg-primary-fixed text-on-primary border-2 border-on-surface flex items-center justify-center text-xs group-hover:scale-110 transition-transform">🧨</span>
+              <span class="font-headline-sm text-[11px] uppercase text-on-surface leading-none block">DINAMITA</span>
             </div>
           </button>
         </div>
@@ -770,6 +814,14 @@
           }
         }
       }, 1000);
+    }
+
+    // ==================== SIDEBAR TOGGLE ====================
+    function toggleSidebar() {
+      const sidebar = document.querySelector('aside');
+      const overlay = document.getElementById('sidebar-overlay');
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('open');
     }
 
     // ==================== NAVIGATION ====================
