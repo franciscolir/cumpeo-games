@@ -172,6 +172,47 @@
       pointer-events: none;
     }
 
+    /* Hero images bounce */
+    @keyframes results-hero-bounce {
+      0%   { transform: translateY(0) scale(1) rotate(0deg); }
+      15%  { transform: translateY(-18px) scale(1.08, 0.92) rotate(-3deg); }
+      30%  { transform: translateY(-28px) scale(1.12, 0.88) rotate(2deg); }
+      45%  { transform: translateY(-10px) scale(0.95, 1.05) rotate(-1deg); }
+      60%  { transform: translateY(-22px) scale(1.06, 0.94) rotate(1deg); }
+      75%  { transform: translateY(-4px) scale(0.98, 1.02) rotate(0deg); }
+      85%  { transform: translateY(-14px) scale(1.03, 0.97) rotate(-1deg); }
+      100% { transform: translateY(0) scale(1) rotate(0deg); }
+    }
+    @keyframes results-hero-bounce-2 {
+      0%   { transform: translateY(0) scale(1); }
+      20%  { transform: translateY(-12px) scale(1.05, 0.95); }
+      40%  { transform: translateY(-20px) scale(1.08, 0.92); }
+      55%  { transform: translateY(-6px) scale(0.97, 1.03); }
+      70%  { transform: translateY(-16px) scale(1.04, 0.96); }
+      85%  { transform: translateY(-2px) scale(0.99, 1.01); }
+      100% { transform: translateY(0) scale(1); }
+    }
+    .results-hero-1st {
+      position: absolute;
+      width: 96px; height: 96px;
+      z-index: 30;
+      border-radius: 50%;
+      border: 4px solid #FFD700;
+      box-shadow: 4px 4px 0px #1c1b1b, 0 0 16px 4px rgba(255,215,0,0.35);
+      object-fit: cover;
+      animation: results-hero-bounce 2.2s ease-in-out infinite;
+    }
+    .results-hero-2nd {
+      position: absolute;
+      width: 80px; height: 80px;
+      z-index: 25;
+      border-radius: 50%;
+      border: 4px solid #C0C0C0;
+      box-shadow: 3px 3px 0px #1c1b1b;
+      object-fit: cover;
+      animation: results-hero-bounce-2 2.8s ease-in-out infinite;
+    }
+
     #topbar {
       transition: top .3s ease, left .3s ease, right .3s ease,
                   border-radius .3s ease, box-shadow .3s ease,
@@ -1246,14 +1287,14 @@
             <div class="absolute top-3 right-20 text-2xl results-anim-float" style="animation-delay:1.5s;">🎊</div>
           </div>
 
+          <!-- Imágenes flotantes sobre el podium -->
+          <img id="results-2nd-img" src="images/A-derrota.png" alt="2do lugar" class="results-hero-2nd" style="left: calc(25% - 40px); top: 8px; animation-delay:0.6s;" />
+          <img id="results-1st-img" src="images/A-victoria.png" alt="Campeón" class="results-hero-1st" style="left: calc(75% - 48px); top: 0px; animation-delay:0.3s;" />
+
           <div class="grid grid-cols-2 gap-2 items-end h-full relative z-10">
             <!-- 2do lugar -->
             <div id="results-2nd" class="results-anim-slide flex flex-col items-center justify-end" style="animation-delay:0.5s;">
               <div class="w-full bg-surface border-2 border-on-surface rounded-lg p-2 shadow-[3px_3px_0px_#1c1b1b] flex flex-col items-center text-center mb-1.5">
-                <!-- Imagen del equipo perdedor -->
-                <div class="w-14 h-14 rounded-full border-2 border-on-surface overflow-hidden mb-1 bg-surface-container-highest shadow-[2px_2px_0px_#1c1b1b]">
-                  <img id="results-2nd-img" src="images/A-derrota.png" alt="2do lugar" class="w-full h-full object-cover" />
-                </div>
                 <span class="font-label-comic-pill text-[9px] text-tertiary uppercase">2° LUGAR</span>
                 <h3 id="results-2nd-name" class="font-headline-sm text-[14px] text-on-surface uppercase leading-none mt-0.5">-</h3>
                 <div class="mt-1 px-2 py-0.5 bg-surface-container rounded-full border border-on-surface">
@@ -1276,10 +1317,6 @@
                 <!-- Badge campeón animado -->
                 <div class="results-anim-badge px-2 py-0.5 bg-primary text-on-primary font-label-comic-pill text-[8px] rounded-full border border-on-surface uppercase tracking-wider rotate-[-2deg] shadow-[1px_1px_0px_#1c1b1b]">
                   ⚡ CAMPEÓN ⚡
-                </div>
-                <!-- Imagen del equipo ganador -->
-                <div class="w-16 h-16 rounded-full border-3 border-primary overflow-hidden mt-1 bg-surface shadow-[3px_3px_0px_#1c1b1b]">
-                  <img id="results-1st-img" src="images/A-victoria.png" alt="Campeón" class="w-full h-full object-cover" />
                 </div>
                 <h2 id="results-1st-name" class="font-headline-sm text-[15px] text-primary uppercase leading-tight mt-1">-</h2>
                 <div class="my-1 px-3 py-0.5 bg-surface rounded-lg border-2 border-on-surface shadow-[2px_2px_0px_#1c1b1b]">
