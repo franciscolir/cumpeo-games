@@ -6,7 +6,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
 <link href="https://fonts.googleapis.com" rel="preconnect">
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;800&family=Plus+Jakarta+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;800&family=Plus+Jakarta+Sans:wght@400;500;700&family=Bangers&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 <style>
 @layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}
@@ -16,6 +16,68 @@
 .comic-shadow-lg{box-shadow:4px 4px 0px #1c1b1b;}
 .comic-modal{animation:comic-pop 0.2s ease-out;}
 @keyframes comic-pop{0%{transform:scale(0.9) rotate(-1deg);opacity:0;}100%{transform:scale(1) rotate(0deg);opacity:1;}}
+
+/* ============================================================
+   MEJORAS DE DISEÑO CÓMIC — Fuente caricatura + botones a mano
+   ============================================================ */
+/* Fuente tipo comic para títulos */
+.font-display-hero,
+h1,
+.headline-comic {
+  font-family: 'Bangers', 'Bricolage Grotesque', cursive !important;
+  letter-spacing: 2px;
+}
+.font-headline-lg,
+.font-headline-md,
+.font-headline-sm {
+  font-family: 'Bangers', 'Bricolage Grotesque', cursive;
+  letter-spacing: 1.2px;
+}
+
+/* Botones irregulares como dibujados a mano */
+button:not([class*="rounded-full"]):not(.no-comic-shape) {
+  border-radius: 12px 22px 14px 20px / 22px 12px 20px 14px !important;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+button:not([class*="rounded-full"]):not(.no-comic-shape):nth-child(even) {
+  border-radius: 20px 12px 22px 14px / 12px 20px 14px 22px !important;
+}
+button[class*="rounded-full"] {
+  border-radius: 9999px !important;
+}
+
+/* Inputs irregulares */
+input[type="text"], input[type="search"], input[type="number"] {
+  border-radius: 10px 18px 12px 16px / 18px 10px 16px 12px !important;
+}
+
+/* Sombras más marcadas en hover para botones */
+button:hover:not(:disabled) {
+  transform: translate(-1px, -1px);
+}
+
+/* Placeholder imagen que no carga */
+.img-fallback {
+  background: linear-gradient(135deg, #ffc72c 0%, #e41b34 100%);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Bangers', cursive;
+  font-weight: 400; color: #1c1b1b;
+  letter-spacing: 1px;
+}
+
+/* Animación fadeIn para tarjetas nuevas */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fadeIn { animation: fadeIn .25s ease-out; }
+
+/* Texto de los badges cómic más grande */
+.font-label-comic-pill {
+  font-family: 'Bangers', 'Bricolage Grotesque', cursive;
+  letter-spacing: 1.5px;
+  font-size: 15px !important;
+}
 </style>
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
@@ -34,10 +96,10 @@ tailwind.config={
     },
     borderRadius:{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},
     spacing:{"gutter-desktop":"2rem","xl":"2rem","container-max":"72rem","2xl":"3rem","gutter-mobile":"1rem","2xs":"0.25rem","3xl":"4rem","xs":"0.5rem","gutter-tablet":"1.5rem","md":"1rem","lg":"1.5rem","sm":"0.75rem"},
-    fontFamily:{"headline-sm":["Bricolage Grotesque"],"label-comic-pill":["Bricolage Grotesque"],"label-md":["Plus Jakarta Sans"],"body-lg":["Plus Jakarta Sans"],"headline-md":["Bricolage Grotesque"],"headline-lg":["Bricolage Grotesque"],"body-md":["Plus Jakarta Sans"],"display-hero":["Bricolage Grotesque"],"label-lg":["Plus Jakarta Sans"],"body-sm":["Plus Jakarta Sans"]},
+    fontFamily:{"headline-sm":["Bricolage Grotesque"],"label-comic-pill":["Bangers","Bricolage Grotesque"],"label-md":["Plus Jakarta Sans"],"body-lg":["Plus Jakarta Sans"],"headline-md":["Bricolage Grotesque"],"headline-lg":["Bricolage Grotesque"],"body-md":["Plus Jakarta Sans"],"display-hero":["Bangers","Bricolage Grotesque"],"label-lg":["Plus Jakarta Sans"],"body-sm":["Plus Jakarta Sans"]},
     fontSize:{
       "headline-sm":["20px",{lineHeight:"26px",letterSpacing:"0em",fontWeight:"700"}],
-      "label-comic-pill":["14px",{lineHeight:"16px",letterSpacing:"0.05em",fontWeight:"800"}],
+      "label-comic-pill":["15px",{lineHeight:"18px",letterSpacing:"0.05em",fontWeight:"400"}],
       "label-md":["13px",{lineHeight:"16px",letterSpacing:"0.04em",fontWeight:"700"}],
       "body-lg":["18px",{lineHeight:"28px",letterSpacing:"-0.01em",fontWeight:"500"}],
       "headline-md":["24px",{lineHeight:"30px",letterSpacing:"-0.01em",fontWeight:"700"}],
@@ -248,7 +310,7 @@ tailwind.config={
             </div>
             <div class="flex flex-col pr-2">
               <span class="font-label-md text-label-md text-on-surface-variant uppercase">Disponibles</span>
-              <span class="font-headline-sm text-headline-sm text-on-surface">6 Dinamicas</span>
+              <span class="font-headline-sm text-headline-sm text-on-surface">9 Dinamicas</span>
             </div>
           </div>
         </div>
@@ -256,11 +318,11 @@ tailwind.config={
         <!-- Filtros y Busqueda -->
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pt-2">
           <div class="flex items-center gap-2.5 overflow-x-auto pb-2 lg:pb-0" id="filter-container">
-            <button class="filter-btn px-4 py-2 rounded-full border-2 border-on-surface bg-primary text-on-primary font-label-comic-pill text-label-comic-pill uppercase comic-shadow-sm transition-all active:translate-x-0.5 active:translate-y-0.5" data-filter="all" type="button">Todos los Juegos (6)</button>
-            <button class="filter-btn px-4 py-2 rounded-full border-2 border-on-surface bg-surface-container-lowest text-on-surface font-label-comic-pill text-label-comic-pill uppercase comic-shadow-sm hover:bg-surface-container transition-all active:translate-x-0.5 active:translate-y-0.5" data-filter="trivia" type="button">Trivias y Preguntas (2)</button>
+            <button class="filter-btn px-4 py-2 rounded-full border-2 border-on-surface bg-primary text-on-primary font-label-comic-pill text-label-comic-pill uppercase comic-shadow-sm transition-all active:translate-x-0.5 active:translate-y-0.5" data-filter="all" type="button">Todos los Juegos (9)</button>
+            <button class="filter-btn px-4 py-2 rounded-full border-2 border-on-surface bg-surface-container-lowest text-on-surface font-label-comic-pill text-label-comic-pill uppercase comic-shadow-sm hover:bg-surface-container transition-all active:translate-x-0.5 active:translate-y-0.5" data-filter="trivia" type="button">Trivias y Preguntas (3)</button>
             <button class="filter-btn px-4 py-2 rounded-full border-2 border-on-surface bg-surface-container-lowest text-on-surface font-label-comic-pill text-label-comic-pill uppercase comic-shadow-sm hover:bg-surface-container transition-all active:translate-x-0.5 active:translate-y-0.5" data-filter="fisico" type="button">Desafios Fisicos (2)</button>
             <button class="filter-btn px-4 py-2 rounded-full border-2 border-on-surface bg-surface-container-lowest text-on-surface font-label-comic-pill text-label-comic-pill uppercase comic-shadow-sm hover:bg-surface-container transition-all active:translate-x-0.5 active:translate-y-0.5" data-filter="musica" type="button">Musica y Sonido (1)</button>
-            <button class="filter-btn px-4 py-2 rounded-full border-2 border-on-surface bg-surface-container-lowest text-on-surface font-label-comic-pill text-label-comic-pill uppercase comic-shadow-sm hover:bg-surface-container transition-all active:translate-x-0.5 active:translate-y-0.5" data-filter="duelos" type="button">Duelos Rapidos (1)</button>
+            <button class="filter-btn px-4 py-2 rounded-full border-2 border-on-surface bg-surface-container-lowest text-on-surface font-label-comic-pill text-label-comic-pill uppercase comic-shadow-sm hover:bg-surface-container transition-all active:translate-x-0.5 active:translate-y-0.5" data-filter="duelos" type="button">Duelos y Competencia (3)</button>
           </div>
           <div class="flex items-center gap-2 w-full lg:w-80 shrink-0">
             <div class="relative w-full">
@@ -437,6 +499,90 @@ tailwind.config={
           <div class="pt-6 mt-6 border-t-2 border-surface-variant flex items-center gap-2">
             <button class="btn-detail flex-1 py-2.5 px-3 rounded-xl border-2 border-on-surface bg-surface-container-lowest text-on-surface font-label-lg text-label-lg uppercase comic-shadow-sm hover:bg-surface-container transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none text-center" type="button">Ver Detalle</button>
             <button class="btn-play flex-1 py-2.5 px-3 rounded-xl border-2 border-on-surface bg-primary text-on-primary font-label-lg text-label-lg uppercase comic-shadow-sm hover:bg-primary-container transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none flex items-center justify-center gap-1" data-game="Historia Enredada" type="button">
+              <span class="material-symbols-outlined text-[18px]">play_arrow</span> Jugar
+            </button>
+          </div>
+        </article>
+
+        <!-- Tarjeta 7: ANTI-TRIVIA -->
+        <article class="game-card flex flex-col justify-between bg-surface-container-lowest border-2 border-on-surface rounded-2xl p-6 comic-shadow-md hover:comic-shadow-lg transition-all duration-200" data-category="trivia">
+          <div class="flex flex-col gap-4">
+            <div class="flex items-start justify-between gap-2">
+              <span class="inline-block bg-secondary-container text-on-secondary-container border-2 border-on-surface font-label-comic-pill text-label-comic-pill px-3 py-1 rounded-full uppercase comic-shadow-sm rotate-[-1deg]">TRIVIA - INVERTIDA</span>
+              <span class="flex items-center gap-1 font-label-md text-label-md text-on-surface-variant bg-surface-container px-2.5 py-1 rounded-lg border border-on-surface">
+                <span class="material-symbols-outlined text-[16px]">timer</span> ~15 min
+              </span>
+            </div>
+            <div class="flex items-center gap-3 pt-1">
+              <div class="w-12 h-12 rounded-xl bg-primary/10 border-2 border-on-surface flex items-center justify-center text-primary shrink-0 comic-shadow-sm">
+                <span class="material-symbols-outlined text-[28px]">question_answer</span>
+              </div>
+              <div>
+                <h2 class="font-headline-md text-headline-md text-on-surface uppercase tracking-tight">Anti-Trivia</h2>
+                <span class="font-label-md text-label-md text-secondary">Preguntas al Reves</span>
+              </div>
+            </div>
+            <p class="font-body-md text-body-md text-on-surface-variant">Encuentra la respuesta INCORRECTA entre las opciones. Trivia invertida que pone a prueba el pensamiento critico.</p>
+          </div>
+          <div class="pt-6 mt-6 border-t-2 border-surface-variant flex items-center gap-2">
+            <button class="btn-detail flex-1 py-2.5 px-3 rounded-xl border-2 border-on-surface bg-surface-container-lowest text-on-surface font-label-lg text-label-lg uppercase comic-shadow-sm hover:bg-surface-container transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none text-center" type="button">Ver Detalle</button>
+            <button class="btn-play flex-1 py-2.5 px-3 rounded-xl border-2 border-on-surface bg-primary text-on-primary font-label-lg text-label-lg uppercase comic-shadow-sm hover:bg-primary-container transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none flex items-center justify-center gap-1" data-game="Anti-Trivia" data-href="games/anti-trivia.html" type="button">
+              <span class="material-symbols-outlined text-[18px]">play_arrow</span> Jugar
+            </button>
+          </div>
+        </article>
+
+        <!-- Tarjeta 8: ENLACES -->
+        <article class="game-card flex flex-col justify-between bg-surface-container-lowest border-2 border-on-surface rounded-2xl p-6 comic-shadow-md hover:comic-shadow-lg transition-all duration-200" data-category="duelos">
+          <div class="flex flex-col gap-4">
+            <div class="flex items-start justify-between gap-2">
+              <span class="inline-block bg-primary-fixed text-on-primary-fixed-variant border-2 border-on-surface font-label-comic-pill text-label-comic-pill px-3 py-1 rounded-full uppercase comic-shadow-sm rotate-[1deg]">LOGICA - CONEXIONES</span>
+              <span class="flex items-center gap-1 font-label-md text-label-md text-on-surface-variant bg-surface-container px-2.5 py-1 rounded-lg border border-on-surface">
+                <span class="material-symbols-outlined text-[16px]">timer</span> ~15 min
+              </span>
+            </div>
+            <div class="flex items-center gap-3 pt-1">
+              <div class="w-12 h-12 rounded-xl bg-error-container border-2 border-on-surface flex items-center justify-center text-primary shrink-0 comic-shadow-sm">
+                <span class="material-symbols-outlined text-[28px]">hub</span>
+              </div>
+              <div>
+                <h2 class="font-headline-md text-headline-md text-on-surface uppercase tracking-tight">Enlaces</h2>
+                <span class="font-label-md text-label-md text-primary font-bold">Conexiones</span>
+              </div>
+            </div>
+            <p class="font-body-md text-body-md text-on-surface-variant">Descubre que tienen en comun cuatro palabras aparentemente desconectadas. Competencia de velocidad y association.</p>
+          </div>
+          <div class="pt-6 mt-6 border-t-2 border-surface-variant flex items-center gap-2">
+            <button class="btn-detail flex-1 py-2.5 px-3 rounded-xl border-2 border-on-surface bg-surface-container-lowest text-on-surface font-label-lg text-label-lg uppercase comic-shadow-sm hover:bg-surface-container transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none text-center" type="button">Ver Detalle</button>
+            <button class="btn-play flex-1 py-2.5 px-3 rounded-xl border-2 border-on-surface bg-primary text-on-primary font-label-lg text-label-lg uppercase comic-shadow-sm hover:bg-primary-container transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none flex items-center justify-center gap-1" data-game="Enlaces" data-href="games/enlaces.html" type="button">
+              <span class="material-symbols-outlined text-[18px]">play_arrow</span> Jugar
+            </button>
+          </div>
+        </article>
+
+        <!-- Tarjeta 9: QUE DICE -->
+        <article class="game-card flex flex-col justify-between bg-surface-container-lowest border-2 border-on-surface rounded-2xl p-6 comic-shadow-md hover:comic-shadow-lg transition-all duration-200" data-category="duelos">
+          <div class="flex flex-col gap-4">
+            <div class="flex items-start justify-between gap-2">
+              <span class="inline-block bg-primary-fixed text-on-primary-fixed-variant border-2 border-on-surface font-label-comic-pill text-label-comic-pill px-3 py-1 rounded-full uppercase comic-shadow-sm rotate-[-1deg]">ADIVINANZAS - COMIC</span>
+              <span class="flex items-center gap-1 font-label-md text-label-md text-on-surface-variant bg-surface-container px-2.5 py-1 rounded-lg border border-on-surface">
+                <span class="material-symbols-outlined text-[16px]">timer</span> ~12 min
+              </span>
+            </div>
+            <div class="flex items-center gap-3 pt-1">
+              <div class="w-12 h-12 rounded-xl bg-secondary-fixed border-2 border-on-surface flex items-center justify-center text-on-surface shrink-0 comic-shadow-sm">
+                <span class="material-symbols-outlined text-[28px]">sentiment_very_dissatisfied</span>
+              </div>
+              <div>
+                <h2 class="font-headline-md text-headline-md text-on-surface uppercase tracking-tight">Que Dice</h2>
+                <span class="font-label-md text-label-md text-secondary">Lectura Labial</span>
+              </div>
+            </div>
+            <p class="font-body-md text-body-md text-on-surface-variant">Adivina que frase o palabra esta diciendo el personaje solo observando sus gestos. Diversión garantizada para todos.</p>
+          </div>
+          <div class="pt-6 mt-6 border-t-2 border-surface-variant flex items-center gap-2">
+            <button class="btn-detail flex-1 py-2.5 px-3 rounded-xl border-2 border-on-surface bg-surface-container-lowest text-on-surface font-label-lg text-label-lg uppercase comic-shadow-sm hover:bg-surface-container transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none text-center" type="button">Ver Detalle</button>
+            <button class="btn-play flex-1 py-2.5 px-3 rounded-xl border-2 border-on-surface bg-primary text-on-primary font-label-lg text-label-lg uppercase comic-shadow-sm hover:bg-primary-container transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none flex items-center justify-center gap-1" data-game="Que Dice" data-href="games/que-dice.html" type="button">
               <span class="material-symbols-outlined text-[18px]">play_arrow</span> Jugar
             </button>
           </div>
@@ -681,229 +827,323 @@ tailwind.config={
       <div class="flex flex-col w-full max-w-[72rem] mx-auto pb-16">
 
         <!-- ==================== PASO 1: PARTICIPANTES ==================== -->
-        <div id="circ-step-1">
-          <!-- Encabezado de Pagina -->
-          <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
-            <div>
-              <div class="inline-flex items-center gap-2 bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full border-2 border-on-surface comic-shadow-sm rotate-[-1.5deg] mb-2.5">
-                <span class="material-symbols-outlined text-[18px]">alt_route</span>
-                <span class="font-label-comic-pill text-label-comic-pill uppercase tracking-wider">CREADOR DE EXPERIENCIAS</span>
-              </div>
-              <h1 class="font-display-hero text-display-hero uppercase tracking-tight text-on-surface leading-none">NUEVO CIRCUITO DE JUEGOS</h1>
-              <p class="font-body-lg text-body-lg text-on-surface-variant mt-2 font-medium">Disena la secuencia de dinamicas para tu evento paso a paso con el ritmo ideal.</p>
+        <!-- ==================== PASO 1: PARTICIPANTES ==================== -->
+<div id="circ-step-1">
+  <!-- Encabezado -->
+  <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+    <div>
+      <div class="inline-flex items-center gap-2 bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full border-2 border-on-surface comic-shadow-sm rotate-[-1.5deg] mb-2.5">
+        <span class="material-symbols-outlined text-[18px]">alt_route</span>
+        <span class="font-label-comic-pill uppercase tracking-wider">CREADOR DE EXPERIENCIAS</span>
+      </div>
+      <h1 class="font-display-hero text-display-hero uppercase tracking-tight text-on-surface leading-none">NUEVO CIRCUITO DE JUEGOS</h1>
+      <p class="font-body-lg text-body-lg text-on-surface-variant mt-2 font-medium">Configura tu circuito y arma la lista de jugadores para comenzar.</p>
+    </div>
+    <div class="hidden lg:flex items-center gap-3 bg-surface-container-lowest px-4 py-2.5 rounded-xl border-2 border-on-surface comic-shadow-sm">
+      <span class="w-3 h-3 rounded-full bg-tertiary border-2 border-on-surface"></span>
+      <div class="flex flex-col">
+        <span class="font-label-md uppercase text-on-surface-variant">Borrador Temporal</span>
+        <span class="font-headline-sm text-on-surface tracking-tight">CIRCUITO #088</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- WIZARD STEPPER -->
+  <div class="relative bg-surface-container-lowest border-2 border-on-surface rounded-2xl p-4 md:p-6 comic-shadow-md mb-8">
+    <div class="hidden md:block absolute top-1/2 left-12 right-12 h-1 bg-surface-variant -translate-y-1/2 z-0"></div>
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 relative z-10">
+      <div class="flex items-center md:flex-col gap-3 p-2.5 md:p-3 rounded-xl bg-primary-container text-on-primary-container border-2 border-on-surface comic-shadow-md transition-transform scale-[1.02]">
+        <div class="w-10 h-10 rounded-xl bg-surface-container-lowest text-primary border-2 border-on-surface flex items-center justify-center font-display-hero text-headline-sm comic-shadow-sm shrink-0">1</div>
+        <div class="flex flex-col md:items-center text-left md:text-center min-w-0">
+          <span class="font-label-comic-pill uppercase tracking-wider">PASO ACTUAL</span>
+          <span class="font-headline-sm uppercase tracking-tight truncate">PARTICIPANTES</span>
+        </div>
+      </div>
+      <div class="flex items-center md:flex-col gap-3 p-2.5 md:p-3 rounded-xl bg-surface-container-low border-2 border-on-surface text-on-surface comic-shadow-sm opacity-90">
+        <div class="w-10 h-10 rounded-xl bg-surface-container-lowest border-2 border-on-surface flex items-center justify-center font-display-hero text-headline-sm shrink-0">2</div>
+        <div class="flex flex-col md:items-center text-left md:text-center min-w-0">
+          <span class="font-label-md text-on-surface-variant uppercase">SIGUIENTE</span>
+          <span class="font-headline-sm uppercase tracking-tight truncate">EQUIPOS</span>
+        </div>
+      </div>
+      <div class="flex items-center md:flex-col gap-3 p-2.5 md:p-3 rounded-xl bg-surface-container-low border-2 border-on-surface text-on-surface comic-shadow-sm opacity-80">
+        <div class="w-10 h-10 rounded-xl bg-surface-container-lowest border-2 border-on-surface flex items-center justify-center font-display-hero text-headline-sm shrink-0">3</div>
+        <div class="flex flex-col md:items-center text-left md:text-center min-w-0">
+          <span class="font-label-md text-on-surface-variant uppercase">DINAMICAS</span>
+          <span class="font-headline-sm uppercase tracking-tight truncate">JUEGOS</span>
+        </div>
+      </div>
+      <div class="flex items-center md:flex-col gap-3 p-2.5 md:p-3 rounded-xl bg-surface-container-low border-2 border-on-surface text-on-surface comic-shadow-sm opacity-80">
+        <div class="w-10 h-10 rounded-xl bg-surface-container-lowest border-2 border-on-surface flex items-center justify-center font-display-hero text-headline-sm shrink-0">4</div>
+        <div class="flex flex-col md:items-center text-left md:text-center min-w-0">
+          <span class="font-label-md text-on-surface-variant uppercase">MODIFICADORES</span>
+          <span class="font-headline-sm uppercase tracking-tight truncate">EXTRAS</span>
+        </div>
+      </div>
+      <div class="col-span-2 sm:col-span-1 flex items-center md:flex-col gap-3 p-2.5 md:p-3 rounded-xl bg-surface-container-low border-2 border-on-surface text-on-surface comic-shadow-sm opacity-80">
+        <div class="w-10 h-10 rounded-xl bg-surface-container-lowest border-2 border-on-surface flex items-center justify-center font-display-hero text-headline-sm shrink-0">5</div>
+        <div class="flex flex-col md:items-center text-left md:text-center min-w-0">
+          <span class="font-label-md text-on-surface-variant uppercase">FINAL</span>
+          <span class="font-headline-sm uppercase tracking-tight truncate">REVISAR</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENIDO PASO 1 -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+    <div class="lg:col-span-8 bg-surface-container-lowest border-2 border-on-surface rounded-2xl p-6 sm:p-8 comic-shadow-lg flex flex-col gap-8 relative">
+
+      <!-- HEADER INTERNO -->
+      <div class="flex flex-wrap items-center justify-between gap-3 border-b-2 border-on-surface pb-5">
+        <div class="flex items-center gap-3">
+          <span class="px-3.5 py-1 bg-secondary-container text-on-secondary-container font-label-comic-pill uppercase rounded-full border-2 border-on-surface comic-shadow-sm rotate-[-1deg]">CONFIGURACION INICIAL</span>
+          <h2 class="font-headline-md uppercase tracking-tight text-on-surface">PASO 1: NOMBRE Y MODALIDAD DEL CIRCUITO</h2>
+        </div>
+        <span class="font-label-md text-on-surface-variant flex items-center gap-1">
+          <span class="material-symbols-outlined text-[18px]">lock</span> Auto-guardado activo
+        </span>
+      </div>
+
+      <!-- NOMBRE -->
+      <div class="flex flex-col gap-2.5">
+        <label class="flex items-center justify-between font-label-lg uppercase tracking-wide text-on-surface" for="circuit-name">
+          <span>1. Nombre del Circuito</span>
+          <span class="font-body-sm text-on-surface-variant font-normal">Max. 45 caracteres</span>
+        </label>
+        <div class="relative">
+          <input class="w-full bg-surface-container-lowest border-2 border-on-surface px-4 py-3.5 font-headline-sm text-on-surface comic-shadow-sm focus:comic-shadow-md focus:outline-none transition-all" id="circuit-name" placeholder="Ej. Cumpleanos Martin - Modo Epico" type="text" value=""/>
+          <div id="name-status" class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 bg-surface-container px-2.5 py-1 rounded-lg border border-on-surface font-label-md text-on-surface-variant">
+            <span class="material-symbols-outlined text-[16px]">edit</span><span>ESCRIBIR</span>
+          </div>
+        </div>
+        <p class="font-body-sm text-on-surface-variant">Este nombre se proyectara en la pantalla gigante y en los dispositivos moviles de los invitados.</p>
+      </div>
+
+      <!-- DURACIÓN -->
+      <div class="flex flex-col gap-3">
+        <label class="font-label-lg uppercase tracking-wide text-on-surface flex items-center gap-2">
+          <span>2. Duracion Estimada / Intensidad</span>
+          <span class="text-primary material-symbols-outlined text-[20px]">timer</span>
+        </label>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5" id="duration-selector">
+          <button class="duration-btn flex flex-col items-center justify-center p-3.5 border-2 border-on-surface bg-surface-container-lowest comic-shadow-sm hover:comic-shadow-md transition-all text-center" data-duration="express" type="button">
+            <span class="font-label-comic-pill uppercase tracking-wider text-on-surface-variant">RAPIDO</span>
+            <span class="font-headline-sm uppercase text-on-surface mt-0.5">Express (30 min)</span>
+            <span class="font-body-sm text-on-surface-variant mt-1">3 a 4 juegos intensos</span>
+          </button>
+          <button class="duration-btn active flex flex-col items-center justify-center p-3.5 border-2 border-on-surface bg-secondary-container text-on-secondary-container comic-shadow-md translate-x-[1px] translate-y-[1px] text-center relative" data-duration="standard" type="button">
+            <span class="absolute -top-3 right-3 bg-primary text-on-primary font-label-comic-pill text-[11px] px-2 py-0.5 rounded-full border border-on-surface rotate-[3deg]">RECOMENDADO</span>
+            <span class="font-label-comic-pill uppercase tracking-wider">EQUILIBRADO</span>
+            <span class="font-headline-sm uppercase mt-0.5">Estandar (45-60 min)</span>
+            <span class="font-body-sm text-on-secondary-container mt-1">5 a 6 rondas dinamicas</span>
+          </button>
+          <button class="duration-btn flex flex-col items-center justify-center p-3.5 border-2 border-on-surface bg-surface-container-lowest comic-shadow-sm hover:comic-shadow-md transition-all text-center" data-duration="marathon" type="button">
+            <span class="font-label-comic-pill uppercase tracking-wider text-on-surface-variant">FIESTA TOTAL</span>
+            <span class="font-headline-sm uppercase text-on-surface mt-0.5">Maraton (90 min)</span>
+            <span class="font-body-sm text-on-surface-variant mt-1">Circuito completo + revancha</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- MODALIDAD -->
+      <div class="flex flex-col gap-3">
+        <label class="font-label-lg uppercase tracking-wide text-on-surface flex items-center justify-between">
+          <span>3. Modo de Participacion de los Invitados</span>
+          <span class="font-label-md text-primary uppercase">OBLIGATORIO</span>
+        </label>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="mode-selector">
+          <div class="mode-card cursor-pointer p-5 border-2 border-on-surface bg-surface-container-lowest comic-shadow-md relative transition-all ring-2 ring-primary bg-primary-fixed/20" id="mode-teams" role="button" tabindex="0">
+            <div class="absolute -top-3.5 left-4 bg-primary text-on-primary font-label-comic-pill px-3 py-0.5 rounded-full border-2 border-on-surface comic-shadow-sm rotate-[-2deg] flex items-center gap-1">
+              <span class="material-symbols-outlined text-[14px]">check</span> MODO ACTIVO
             </div>
-            <div class="hidden lg:flex items-center gap-3 bg-surface-container-lowest px-4 py-2.5 rounded-xl border-2 border-on-surface comic-shadow-sm">
-              <span class="w-3 h-3 rounded-full bg-tertiary border-2 border-on-surface"></span>
+            <div class="flex items-start gap-3 mt-2">
+              <div class="w-12 h-12 rounded-xl bg-primary-container text-on-primary-container border-2 border-on-surface comic-shadow-sm flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-[28px]">groups</span>
+              </div>
               <div class="flex flex-col">
-                <span class="font-label-md text-label-md uppercase text-on-surface-variant">Borrador Temporal</span>
-                <span class="font-headline-sm text-headline-sm text-on-surface tracking-tight">CIRCUITO #088</span>
+                <h3 class="font-headline-md uppercase text-on-surface leading-tight">POR EQUIPOS / BANDOS</h3>
+                <span class="font-label-comic-pill text-primary uppercase mt-0.5">Rivalidad Grupal Epica</span>
               </div>
+            </div>
+            <p class="font-body-md text-on-surface mt-3">Ideal para competencias grupales, mesas o tribunas rivales. Fomenta porras, canticos colectivos y rotacion de capitanes en vivo.</p>
+            <div class="mt-4 pt-3 border-t border-on-surface/20 flex items-center justify-between font-label-md text-on-surface-variant">
+              <span>Configuracion: 2 a 6 Bandos</span>
+              <span class="font-headline-sm text-primary">Recomendado</span>
             </div>
           </div>
-
-          <!-- WIZARD STEPPER -->
-          <div class="relative bg-surface-container-lowest border-2 border-on-surface rounded-2xl p-4 md:p-6 comic-shadow-md mb-8">
-            <div class="hidden md:block absolute top-1/2 left-12 right-12 h-1 bg-surface-variant -translate-y-1/2 z-0"></div>
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 relative z-10">
-              <div class="flex items-center md:flex-col gap-3 p-2.5 md:p-3 rounded-xl bg-primary-container text-on-primary-container border-2 border-on-surface comic-shadow-md transition-transform scale-[1.02]">
-                <div class="w-10 h-10 rounded-xl bg-surface-container-lowest text-primary border-2 border-on-surface flex items-center justify-center font-display-hero text-headline-sm comic-shadow-sm shrink-0">1</div>
-                <div class="flex flex-col md:items-center text-left md:text-center min-w-0">
-                  <span class="font-label-comic-pill text-label-comic-pill uppercase tracking-wider">PASO ACTUAL</span>
-                  <span class="font-headline-sm text-headline-sm uppercase tracking-tight truncate">PARTICIPANTES</span>
-                </div>
+          <div class="mode-card cursor-pointer p-5 border-2 border-on-surface bg-surface-container-lowest comic-shadow-sm hover:comic-shadow-md transition-all relative" id="mode-solo" role="button" tabindex="0">
+            <div class="flex items-start gap-3 mt-2">
+              <div class="w-12 h-12 rounded-xl bg-surface-container text-on-surface border-2 border-on-surface comic-shadow-sm flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-[28px]">person_celebrate</span>
               </div>
-              <div class="flex items-center md:flex-col gap-3 p-2.5 md:p-3 rounded-xl bg-surface-container-low border-2 border-on-surface text-on-surface comic-shadow-sm opacity-90">
-                <div class="w-10 h-10 rounded-xl bg-surface-container-lowest border-2 border-on-surface flex items-center justify-center font-display-hero text-headline-sm shrink-0">2</div>
-                <div class="flex flex-col md:items-center text-left md:text-center min-w-0">
-                  <span class="font-label-md text-label-md text-on-surface-variant uppercase">SIGUIENTE</span>
-                  <span class="font-headline-sm text-headline-sm uppercase tracking-tight truncate">EQUIPOS</span>
-                </div>
-              </div>
-              <div class="flex items-center md:flex-col gap-3 p-2.5 md:p-3 rounded-xl bg-surface-container-low border-2 border-on-surface text-on-surface comic-shadow-sm opacity-80">
-                <div class="w-10 h-10 rounded-xl bg-surface-container-lowest border-2 border-on-surface flex items-center justify-center font-display-hero text-headline-sm shrink-0">3</div>
-                <div class="flex flex-col md:items-center text-left md:text-center min-w-0">
-                  <span class="font-label-md text-label-md text-on-surface-variant uppercase">DINAMICAS</span>
-                  <span class="font-headline-sm text-headline-sm uppercase tracking-tight truncate">JUEGOS</span>
-                </div>
-              </div>
-              <div class="flex items-center md:flex-col gap-3 p-2.5 md:p-3 rounded-xl bg-surface-container-low border-2 border-on-surface text-on-surface comic-shadow-sm opacity-80">
-                <div class="w-10 h-10 rounded-xl bg-surface-container-lowest border-2 border-on-surface flex items-center justify-center font-display-hero text-headline-sm shrink-0">4</div>
-                <div class="flex flex-col md:items-center text-left md:text-center min-w-0">
-                  <span class="font-label-md text-label-md text-on-surface-variant uppercase">MODIFICADORES</span>
-                  <span class="font-headline-sm text-headline-sm uppercase tracking-tight truncate">EXTRAS</span>
-                </div>
-              </div>
-              <div class="col-span-2 sm:col-span-1 flex items-center md:flex-col gap-3 p-2.5 md:p-3 rounded-xl bg-surface-container-low border-2 border-on-surface text-on-surface comic-shadow-sm opacity-80">
-                <div class="w-10 h-10 rounded-xl bg-surface-container-lowest border-2 border-on-surface flex items-center justify-center font-display-hero text-headline-sm shrink-0">5</div>
-                <div class="flex flex-col md:items-center text-left md:text-center min-w-0">
-                  <span class="font-label-md text-label-md text-on-surface-variant uppercase">FINAL</span>
-                  <span class="font-headline-sm text-headline-sm uppercase tracking-tight truncate">REVISAR</span>
-                </div>
+              <div class="flex flex-col">
+                <h3 class="font-headline-md uppercase text-on-surface leading-tight">TODOS CONTRA TODOS</h3>
+                <span class="font-label-comic-pill text-on-surface-variant uppercase mt-0.5">Marcador Individual</span>
               </div>
             </div>
-          </div>
-
-          <!-- CONTENIDO PASO 1 -->
-          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            <div class="lg:col-span-8 bg-surface-container-lowest border-2 border-on-surface rounded-2xl p-6 sm:p-8 comic-shadow-lg flex flex-col gap-8 relative">
-              <div class="flex flex-wrap items-center justify-between gap-3 border-b-2 border-on-surface pb-5">
-                <div class="flex items-center gap-3">
-                  <span class="px-3.5 py-1 bg-secondary-container text-on-secondary-container font-label-comic-pill text-label-comic-pill uppercase rounded-full border-2 border-on-surface comic-shadow-sm rotate-[-1deg]">CONFIGURACION INICIAL</span>
-                  <h2 class="font-headline-md text-headline-md uppercase tracking-tight text-on-surface">PASO 1: NOMBRE Y MODALIDAD DEL CIRCUITO</h2>
-                </div>
-                <span class="font-label-md text-label-md text-on-surface-variant flex items-center gap-1">
-                  <span class="material-symbols-outlined text-[18px]">lock</span> Auto-guardado activo
-                </span>
-              </div>
-              <div class="flex flex-col gap-2.5">
-                <label class="flex items-center justify-between font-label-lg text-label-lg uppercase tracking-wide text-on-surface" for="circuit-name">
-                  <span>1. Nombre del Circuito</span>
-                  <span class="font-body-sm text-body-sm text-on-surface-variant font-normal">Max. 45 caracteres</span>
-                </label>
-                <div class="relative">
-                  <input class="w-full bg-surface-container-lowest border-2 border-on-surface rounded-xl px-4 py-3.5 font-headline-sm text-headline-sm text-on-surface comic-shadow-sm focus:comic-shadow-md focus:outline-none transition-all" id="circuit-name" placeholder="Ej. Cumpleanos Martin - Modo Epico" type="text" value=""/>
-                  <div id="name-status" class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 bg-surface-container px-2.5 py-1 rounded-lg border border-on-surface font-label-md text-label-md text-on-surface-variant">
-                    <span class="material-symbols-outlined text-[16px]">edit</span><span>ESCRIBIR</span>
-                  </div>
-                </div>
-                <p class="font-body-sm text-body-sm text-on-surface-variant">Este nombre se proyectara en la pantalla gigante y en los dispositivos moviles de los invitados.</p>
-              </div>
-              <div class="flex flex-col gap-3">
-                <label class="font-label-lg text-label-lg uppercase tracking-wide text-on-surface flex items-center gap-2">
-                  <span>2. Duracion Estimada / Intensidad</span>
-                  <span class="text-primary material-symbols-outlined text-[20px]">timer</span>
-                </label>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5" id="duration-selector">
-                  <button class="duration-btn flex flex-col items-center justify-center p-3.5 rounded-xl border-2 border-on-surface bg-surface-container-lowest comic-shadow-sm hover:comic-shadow-md transition-all text-center" data-duration="express" type="button">
-                    <span class="font-label-comic-pill text-label-comic-pill uppercase tracking-wider text-on-surface-variant">RAPIDO</span>
-                    <span class="font-headline-sm text-headline-sm uppercase text-on-surface mt-0.5">Express (30 min)</span>
-                    <span class="font-body-sm text-body-sm text-on-surface-variant mt-1">3 a 4 juegos intensos</span>
-                  </button>
-                  <button class="duration-btn active flex flex-col items-center justify-center p-3.5 rounded-xl border-2 border-on-surface bg-secondary-container text-on-secondary-container comic-shadow-md translate-x-[1px] translate-y-[1px] text-center relative" data-duration="standard" type="button">
-                    <span class="absolute -top-3 right-3 bg-primary text-on-primary font-label-comic-pill text-[11px] px-2 py-0.5 rounded-full border border-on-surface rotate-[3deg]">RECOMENDADO</span>
-                    <span class="font-label-comic-pill text-label-comic-pill uppercase tracking-wider">EQUILIBRADO</span>
-                    <span class="font-headline-sm text-headline-sm uppercase mt-0.5">Estandar (45-60 min)</span>
-                    <span class="font-body-sm text-body-sm text-on-secondary-container mt-1">5 a 6 rondas dinamicas</span>
-                  </button>
-                  <button class="duration-btn flex flex-col items-center justify-center p-3.5 rounded-xl border-2 border-on-surface bg-surface-container-lowest comic-shadow-sm hover:comic-shadow-md transition-all text-center" data-duration="marathon" type="button">
-                    <span class="font-label-comic-pill text-label-comic-pill uppercase tracking-wider text-on-surface-variant">FIESTA TOTAL</span>
-                    <span class="font-headline-sm text-headline-sm uppercase text-on-surface mt-0.5">Maraton (90 min)</span>
-                    <span class="font-body-sm text-body-sm text-on-surface-variant mt-1">Circuito completo + revancha</span>
-                  </button>
-                </div>
-              </div>
-              <div class="flex flex-col gap-3">
-                <label class="font-label-lg text-label-lg uppercase tracking-wide text-on-surface flex items-center justify-between">
-                  <span>3. Modo de Participacion de los Invitados</span>
-                  <span class="font-label-md text-label-md text-primary uppercase">OBLIGATORIO</span>
-                </label>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="mode-selector">
-                  <div class="mode-card cursor-pointer p-5 rounded-xl border-2 border-on-surface bg-surface-container-lowest comic-shadow-md relative transition-all ring-2 ring-primary bg-primary-fixed/20" id="mode-teams" role="button" tabindex="0">
-                    <div class="absolute -top-3.5 left-4 bg-primary text-on-primary font-label-comic-pill text-label-comic-pill px-3 py-0.5 rounded-full border-2 border-on-surface comic-shadow-sm rotate-[-2deg] flex items-center gap-1">
-                      <span class="material-symbols-outlined text-[14px]">check</span> MODO ACTIVO
-                    </div>
-                    <div class="flex items-start gap-3 mt-2">
-                      <div class="w-12 h-12 rounded-xl bg-primary-container text-on-primary-container border-2 border-on-surface comic-shadow-sm flex items-center justify-center shrink-0">
-                        <span class="material-symbols-outlined text-[28px]">groups</span>
-                      </div>
-                      <div class="flex flex-col">
-                        <h3 class="font-headline-md text-headline-md uppercase text-on-surface leading-tight">POR EQUIPOS / BANDOS</h3>
-                        <span class="font-label-comic-pill text-label-comic-pill text-primary uppercase mt-0.5">Rivalidad Grupal Epica</span>
-                      </div>
-                    </div>
-                    <p class="font-body-md text-body-md text-on-surface mt-3">Ideal para competencias grupales, mesas o tribunas rivales. Fomenta porras, canticos colectivos y rotacion de capitanes en vivo.</p>
-                    <div class="mt-4 pt-3 border-t border-on-surface/20 flex items-center justify-between font-label-md text-label-md text-on-surface-variant">
-                      <span>Configuracion: 2 a 6 Bandos</span>
-                      <span class="font-headline-sm text-headline-sm text-primary">Recomendado</span>
-                    </div>
-                  </div>
-                  <div class="mode-card cursor-pointer p-5 rounded-xl border-2 border-on-surface bg-surface-container-lowest comic-shadow-sm hover:comic-shadow-md transition-all relative" id="mode-solo" role="button" tabindex="0">
-                    <div class="flex items-start gap-3 mt-2">
-                      <div class="w-12 h-12 rounded-xl bg-surface-container text-on-surface border-2 border-on-surface comic-shadow-sm flex items-center justify-center shrink-0">
-                        <span class="material-symbols-outlined text-[28px]">person_celebrate</span>
-                      </div>
-                      <div class="flex flex-col">
-                        <h3 class="font-headline-md text-headline-md uppercase text-on-surface leading-tight">TODOS CONTRA TODOS</h3>
-                        <span class="font-label-comic-pill text-label-comic-pill text-on-surface-variant uppercase mt-0.5">Marcador Individual</span>
-                      </div>
-                    </div>
-                    <p class="font-body-md text-body-md text-on-surface-variant mt-3">Cada participante suma puntos de manera independiente desde su propio telefono movil.</p>
-                    <div class="mt-4 pt-3 border-t border-on-surface/20 flex items-center justify-between font-label-md text-label-md text-on-surface-variant">
-                      <span>Capacidad: Hasta 200 jugadores</span>
-                      <span class="text-on-surface font-semibold">Modo Arcade</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="lg:col-span-4 flex flex-col gap-6">
-              <div class="bg-secondary-container/30 border-2 border-on-surface rounded-2xl p-6 comic-shadow-md relative overflow-visible">
-                <div class="flex items-center gap-2 mb-3">
-                  <span class="material-symbols-outlined text-primary text-[22px]">tips_and_updates</span>
-                  <span class="font-label-comic-pill text-label-comic-pill uppercase tracking-wider text-on-surface">CONSEJO DEL ARBITRO CUMPEO</span>
-                </div>
-                <div class="relative bg-surface-container-lowest p-4 rounded-xl border-2 border-on-surface comic-shadow-sm mb-4">
-                  <p class="font-headline-sm text-headline-sm uppercase text-on-surface tracking-tight leading-snug">"El modo por bandos genera mucha mas euforia y canticos en eventos grandes!"</p>
-                  <p class="font-body-sm text-body-sm text-on-surface-variant mt-2">Tip de conductor: Si tu evento tiene mas de 15 personas, separarlos en 2 o 3 colores mantiene a todos gritando.</p>
-                  <div class="absolute -bottom-2.5 left-8 w-4 h-4 bg-surface-container-lowest border-r-2 border-b-2 border-on-surface transform rotate-45"></div>
-                </div>
-                <div class="flex items-center gap-4 pt-2">
-                  <div class="w-24 h-24 shrink-0 relative">
-                    <img alt="Mascota Arbitro CUMPEO" class="w-full h-full object-contain filter drop-shadow-[2px_2px_0px_#111111]" src="images/pupi-microfono.png"/>
-                  </div>
-                  <div class="flex flex-col">
-                    <span class="font-headline-sm text-headline-sm uppercase text-on-surface">Pupi Arbitro</span>
-                    <span class="font-label-md text-label-md text-on-surface-variant">Guia de Animacion CUMPEO</span>
-                    <div class="inline-flex items-center gap-1 text-primary mt-1">
-                      <span class="material-symbols-outlined text-[16px]">verified</span>
-                      <span class="font-label-comic-pill text-[12px] uppercase">Listo para pitar</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="bg-surface-container-lowest border-2 border-on-surface rounded-2xl p-5 comic-shadow-sm">
-                <h4 class="font-headline-sm text-headline-sm uppercase text-on-surface border-b-2 border-on-surface pb-2.5 mb-3 flex items-center justify-between">
-                  <span>ESTRUCTURA PREVIA</span>
-                  <span class="material-symbols-outlined text-tertiary">tune</span>
-                </h4>
-                <ul class="space-y-3 font-body-sm text-body-sm text-on-surface">
-                  <li class="flex items-center justify-between">
-                    <span class="text-on-surface-variant">Modalidad elegida:</span>
-                    <span class="font-label-comic-pill text-label-comic-pill uppercase text-primary" id="summary-mode">Por Bandos</span>
-                  </li>
-                  <li class="flex items-center justify-between">
-                    <span class="text-on-surface-variant">Tiempo estimado:</span>
-                    <span class="font-headline-sm text-headline-sm" id="summary-time">45-60 MIN</span>
-                  </li>
-                  <li class="flex items-center justify-between">
-                    <span class="text-on-surface-variant">Siguiente pantalla:</span>
-                    <span class="font-label-md text-label-md uppercase bg-surface-container px-2 py-0.5 rounded border border-on-surface">Paso 2: Nombres de Bandos</span>
-                  </li>
-                </ul>
-                <div class="mt-4 p-3 bg-surface-container-low rounded-xl border border-on-surface flex items-center gap-2.5 text-on-surface-variant">
-                  <span class="material-symbols-outlined text-[20px] text-tertiary">check_box</span>
-                  <span class="font-body-sm text-body-sm">Reglas de puntuacion automaticas segun el ritmo.</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="mt-8 pt-6 border-t-2 border-on-surface flex flex-col-reverse sm:flex-row items-center justify-between gap-4">
-            <div class="flex items-center gap-3 w-full sm:w-auto">
-              <button id="circ-cancel" class="w-full sm:w-auto px-5 py-3 rounded-xl bg-surface-container-lowest border-2 border-on-surface comic-shadow-sm hover:comic-shadow-md text-on-surface font-headline-sm text-headline-sm uppercase tracking-wide active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center justify-center gap-2" type="button">
-                <span class="material-symbols-outlined text-[20px]">arrow_back</span> Cancelar
-              </button>
-              <button id="btn-draft" class="w-full sm:w-auto px-5 py-3 rounded-xl bg-surface-container-low border-2 border-on-surface comic-shadow-sm hover:comic-shadow-md text-on-surface-variant font-label-lg text-label-lg uppercase tracking-wide active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center justify-center gap-1.5" type="button">
-                <span class="material-symbols-outlined text-[18px]">bookmark_border</span> Guardar Borrador
-              </button>
-            </div>
-            <div class="w-full sm:w-auto flex items-center gap-3">
-              <button id="btn-continue" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-primary text-on-primary border-2 border-on-surface comic-shadow-lg hover:translate-x-[-1px] hover:translate-y-[-1px] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-all font-display-hero text-headline-sm uppercase tracking-wider flex items-center justify-center gap-3 group" type="button">
-                <span>CONTINUAR A EQUIPOS (PASO 2)</span>
-                <span class="material-symbols-outlined text-[24px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
-              </button>
+            <p class="font-body-md text-on-surface-variant mt-3">Cada participante suma puntos de manera independiente desde su propio telefono movil.</p>
+            <div class="mt-4 pt-3 border-t border-on-surface/20 flex items-center justify-between font-label-md text-on-surface-variant">
+              <span>Capacidad: Hasta 200 jugadores</span>
+              <span class="text-on-surface font-semibold">Modo Arcade</span>
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- SECCIÓN NUEVA: GESTIÓN DE PARTICIPANTES                       -->
+      <!-- ============================================================ -->
+      <div class="pt-6 mt-2 border-t-2 border-dashed border-on-surface/20 flex flex-col gap-6">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-xl bg-secondary-container border-2 border-on-surface flex items-center justify-center text-2xl comic-shadow-sm rotate-[-3deg]">👥</div>
+            <div>
+              <h3 class="font-headline-md uppercase tracking-tight text-on-surface">Gestión de Participantes</h3>
+              <p class="font-body-sm text-on-surface-variant">Ingresa o importa la lista de invitados para asignarlos a los equipos.</p>
+            </div>
+          </div>
+          <div class="bg-surface-container-lowest px-4 py-2 rounded-xl border-2 border-on-surface comic-shadow-sm flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-tertiary-fixed flex items-center justify-center text-on-tertiary-fixed border border-on-surface">
+              <span class="material-symbols-outlined text-[22px]">verified</span>
+            </div>
+            <div class="flex flex-col">
+              <span class="font-label-md text-on-surface-variant uppercase">Total</span>
+              <span id="participant-count-header" class="font-headline-sm text-on-surface uppercase">0 Registrados</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Formulario agregar -->
+        <form id="add-participant-form" class="flex flex-col sm:flex-row gap-3">
+          <div class="relative flex-1">
+            <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant">person_add</span>
+            <input id="new-participant-input" type="text" placeholder="Escribe el nombre del participante y presiona Enter..." class="w-full pl-11 pr-4 py-3 bg-surface-container-lowest border-2 border-on-surface text-on-surface font-body-md focus:outline-none focus:comic-shadow-md transition-all placeholder:text-outline"/>
+          </div>
+          <button type="submit" class="bg-primary text-on-primary font-headline-sm uppercase px-6 py-3 border-2 border-on-surface comic-shadow-md active:translate-x-[2px] active:translate-y-[2px] active:shadow-none flex items-center justify-center gap-2 shrink-0 cursor-pointer">
+            <span class="material-symbols-outlined text-[20px]">add_circle</span>
+            <span>+ Agregar</span>
+          </button>
+        </form>
+
+        <!-- Acciones masivas -->
+        <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t-2 border-dashed border-on-surface/20">
+          <div class="flex flex-wrap items-center gap-2">
+            <button id="btn-import-room" type="button" class="inline-flex items-center gap-2 px-3.5 py-2 bg-surface-container text-on-surface font-label-md border-2 border-on-surface comic-shadow-sm hover:bg-surface-container-high active:translate-x-[1px] active:translate-y-[1px] cursor-pointer">
+              <span class="material-symbols-outlined text-[16px] text-tertiary">cell_tower</span>
+              <span>Importar sala #402</span>
+            </button>
+            <button id="btn-paste-bulk" type="button" class="inline-flex items-center gap-2 px-3.5 py-2 bg-surface-container text-on-surface font-label-md border-2 border-on-surface comic-shadow-sm hover:bg-surface-container-high active:translate-x-[1px] active:translate-y-[1px] cursor-pointer">
+              <span class="material-symbols-outlined text-[16px]">content_paste</span>
+              <span>Pegar lista</span>
+            </button>
+            <button id="btn-sort" type="button" class="inline-flex items-center gap-2 px-3.5 py-2 bg-surface-container-lowest text-on-surface font-label-md border-2 border-on-surface comic-shadow-sm hover:bg-surface-container active:translate-x-[1px] active:translate-y-[1px] cursor-pointer">
+              <span class="material-symbols-outlined text-[16px]">sort_by_alpha</span>
+              <span>A-Z</span>
+            </button>
+            <button id="btn-clear-all" type="button" class="inline-flex items-center gap-2 px-3.5 py-2 bg-error-container text-error font-label-md border-2 border-on-surface comic-shadow-sm hover:bg-error hover:text-on-error active:translate-x-[1px] active:translate-y-[1px] cursor-pointer">
+              <span class="material-symbols-outlined text-[16px]">delete_sweep</span>
+              <span>Vaciar</span>
+            </button>
+          </div>
+          <span id="quorum-msg" class="font-label-md text-on-surface-variant flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px] text-secondary">info</span>
+            Mínimo 4 jugadores requeridos
+          </span>
+        </div>
+
+        <!-- Encabezado grilla -->
+        <div class="flex items-center justify-between px-1 mt-2">
+          <h4 class="font-headline-sm uppercase text-on-surface flex items-center gap-2">
+            <span>JUGADORES EN LISTA</span>
+            <span id="badge-count" class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-comic-pill text-xs border border-on-surface comic-shadow-sm">0</span>
+          </h4>
+        </div>
+
+        <!-- Grilla -->
+        <div id="participants-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+      </div>
+      <!-- ==================== FIN SECCIÓN PARTICIPANTES ==================== -->
+
+    </div>
+
+    <!-- SIDEBAR DERECHO -->
+    <div class="lg:col-span-4 flex flex-col gap-6">
+      <div class="bg-secondary-container/30 border-2 border-on-surface rounded-2xl p-6 comic-shadow-md relative overflow-visible">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="material-symbols-outlined text-primary text-[22px]">tips_and_updates</span>
+          <span class="font-label-comic-pill uppercase tracking-wider text-on-surface">CONSEJO DEL ARBITRO CUMPEO</span>
+        </div>
+        <div class="relative bg-surface-container-lowest p-4 rounded-xl border-2 border-on-surface comic-shadow-sm mb-4">
+          <p class="font-headline-sm uppercase text-on-surface tracking-tight leading-snug">"El modo por bandos genera mucha mas euforia y canticos en eventos grandes!"</p>
+          <p class="font-body-sm text-on-surface-variant mt-2">Tip de conductor: Si tu evento tiene mas de 15 personas, separarlos en 2 o 3 colores mantiene a todos gritando.</p>
+          <div class="absolute -bottom-2.5 left-8 w-4 h-4 bg-surface-container-lowest border-r-2 border-b-2 border-on-surface transform rotate-45"></div>
+        </div>
+        <div class="flex items-center gap-4 pt-2">
+          <div class="w-24 h-24 shrink-0 relative">
+            <div class="w-full h-full rounded-2xl img-fallback text-3xl comic-shadow-sm">🐶</div>
+          </div>
+          <div class="flex flex-col">
+            <span class="font-headline-sm uppercase text-on-surface">Pupi Arbitro</span>
+            <span class="font-label-md text-on-surface-variant">Guia de Animacion CUMPEO</span>
+            <div class="inline-flex items-center gap-1 text-primary mt-1">
+              <span class="material-symbols-outlined text-[16px]">verified</span>
+              <span class="font-label-comic-pill text-[12px] uppercase">Listo para pitar</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resumen -->
+      <div class="bg-surface-container-lowest border-2 border-on-surface rounded-2xl p-5 comic-shadow-sm">
+        <h4 class="font-headline-sm uppercase text-on-surface border-b-2 border-on-surface pb-2.5 mb-3 flex items-center justify-between">
+          <span>ESTRUCTURA PREVIA</span>
+          <span class="material-symbols-outlined text-tertiary">tune</span>
+        </h4>
+        <ul class="space-y-3 font-body-sm text-on-surface">
+          <li class="flex items-center justify-between">
+            <span class="text-on-surface-variant">Modalidad elegida:</span>
+            <span class="font-label-comic-pill uppercase text-primary" id="summary-mode">Por Bandos</span>
+          </li>
+          <li class="flex items-center justify-between">
+            <span class="text-on-surface-variant">Tiempo estimado:</span>
+            <span class="font-headline-sm" id="summary-time">45-60 MIN</span>
+          </li>
+          <li class="flex items-center justify-between">
+            <span class="text-on-surface-variant">Total jugadores:</span>
+            <span class="font-headline-sm" id="summary-players">0</span>
+          </li>
+          <li class="flex items-center justify-between">
+            <span class="text-on-surface-variant">Siguiente pantalla:</span>
+            <span class="font-label-md uppercase bg-surface-container px-2 py-0.5 rounded border border-on-surface">Paso 2: Bandos</span>
+          </li>
+        </ul>
+        <div class="mt-4 p-3 bg-surface-container-low rounded-xl border border-on-surface flex items-center gap-2.5 text-on-surface-variant" id="quorum-box">
+          <span class="material-symbols-outlined text-[20px] text-tertiary" id="quorum-icon">check_box</span>
+          <span class="font-body-sm" id="quorum-text">Reglas de puntuacion automaticas segun el ritmo.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer Paso 1 -->
+  <div class="mt-8 pt-6 border-t-2 border-on-surface flex flex-col-reverse sm:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-3 w-full sm:w-auto">
+      <button id="circ-cancel" class="w-full sm:w-auto px-5 py-3 bg-surface-container-lowest border-2 border-on-surface comic-shadow-sm hover:comic-shadow-md text-on-surface font-headline-sm uppercase tracking-wide active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer" type="button">
+        <span class="material-symbols-outlined text-[20px]">arrow_back</span> Cancelar
+      </button>
+      <button id="btn-draft" class="w-full sm:w-auto px-5 py-3 bg-surface-container-low border-2 border-on-surface comic-shadow-sm hover:comic-shadow-md text-on-surface-variant font-label-lg uppercase tracking-wide active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center justify-center gap-1.5 cursor-pointer" type="button">
+        <span class="material-symbols-outlined text-[18px]">bookmark_border</span> Guardar Borrador
+      </button>
+    </div>
+    <div class="w-full sm:w-auto flex items-center gap-3">
+      <button id="btn-continue" class="w-full sm:w-auto px-8 py-4 bg-primary text-on-primary border-2 border-on-surface comic-shadow-lg hover:translate-x-[-1px] hover:translate-y-[-1px] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-all font-display-hero text-headline-sm uppercase tracking-wider flex items-center justify-center gap-3 group cursor-pointer" type="button">
+        <span>CONTINUAR A EQUIPOS (PASO 2)</span>
+        <span class="material-symbols-outlined text-[24px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+      </button>
+    </div>
+  </div>
+</div>
 
         <!-- ==================== PASO 4: EXTRAS ==================== -->
         <div id="circ-step-4" class="hidden">
@@ -3016,14 +3256,23 @@ function setupEventListeners() {
 
   // Boton Continuar → Paso 2
   document.getElementById('btn-continue').addEventListener('click', () => {
-    const name = circuitName ? circuitName.value : '';
-    if (!name.trim()) {
-      showComicModal({ icon: 'edit', iconColor: 'text-secondary', title: 'Nombre Requerido', message: 'Escribe un nombre para el circuito antes de continuar.', confirmText: 'OK', confirmClass: 'bg-secondary text-on-secondary', onConfirm: null });
-      return;
-    }
-    document.getElementById('circ-step-1').classList.add('hidden');
-    document.getElementById('circ-step-2').classList.remove('hidden');
-  });
+  const name = circuitName ? circuitName.value : '';
+  if (!name.trim()) {
+    showComicModal({ icon: 'edit', iconColor: 'text-secondary', title: 'Nombre Requerido',
+      message: 'Escribe un nombre para el circuito antes de continuar.',
+      confirmText: 'OK', confirmClass: 'bg-secondary text-on-secondary', onConfirm: null });
+    return;
+  }
+  const totalPlayers = document.querySelectorAll('#participants-grid .participant-card').length;
+  if (totalPlayers < 4) {
+    showComicModal({ icon: 'warning', iconColor: 'text-error', title: 'Quórum Insuficiente',
+      message: 'Necesitas al menos 4 jugadores. Actualmente hay ' + totalPlayers + '.',
+      confirmText: 'OK', confirmClass: 'bg-error text-on-error', onConfirm: null });
+    return;
+  }
+  document.getElementById('circ-step-1').classList.add('hidden');
+  document.getElementById('circ-step-2').classList.remove('hidden');
+});
 
   // Boton Volver al Paso 1
   document.getElementById('circ-back-step2').addEventListener('click', () => {
@@ -3561,7 +3810,191 @@ async function doReplaySession(sessionId) {
     showComicModal({ icon: 'error', iconColor: 'text-error', title: 'Error', message: 'Error al crear la sesión. Intenta de nuevo.', confirmText: 'OK', confirmClass: 'bg-error text-on-error', onConfirm: null });
   }
 }
+// ============================================================
+// GESTIÓN DE PARTICIPANTES (módulo del Paso 1)
+// ============================================================
+(function initParticipantsManager() {
+  const INITIAL_PARTICIPANTS = [
+    { name: 'Martín P.',       status: 'present' },
+    { name: 'Camila Soto',     status: 'present' },
+    { name: 'Lucas Vega',      status: 'present' },
+    { name: 'Valentina R.',    status: 'present' },
+    { name: 'Diego Morales',   status: 'manual'  },
+    { name: 'Sofía Chen',      status: 'present' },
+    { name: 'Mateo Alarcón',   status: 'present' },
+    { name: 'Catalina Díaz',   status: 'present' },
+    { name: 'Joaquín Bravo',   status: 'present' },
+    { name: 'Antonia Muñoz',   status: 'manual'  },
+    { name: 'Gabriel Lagos',   status: 'present' },
+    { name: 'Emilia Morales',  status: 'present' },
+    { name: 'Felipe Torres',   status: 'present' },
+    { name: 'Isidora Silva',   status: 'present' },
+    { name: 'Benjamín Rojas',  status: 'present' },
+    { name: 'Lucía Castro',    status: 'manual'  }
+  ];
 
+  const AVATAR_COLORS = [
+    'bg-primary-fixed text-primary',
+    'bg-secondary-container text-on-surface',
+    'bg-tertiary-fixed text-tertiary',
+    'bg-surface-container-high text-on-surface',
+    'bg-secondary-fixed text-secondary'
+  ];
+
+  const QUORUM_MIN = 4;
+
+  const grid         = document.getElementById('participants-grid');
+  const form         = document.getElementById('add-participant-form');
+  const input        = document.getElementById('new-participant-input');
+  const countBadge   = document.getElementById('badge-count');
+  const headerCount  = document.getElementById('participant-count-header');
+  const clearBtn     = document.getElementById('btn-clear-all');
+  const sortBtn      = document.getElementById('btn-sort');
+  const bulkBtn      = document.getElementById('btn-paste-bulk');
+  const importBtn    = document.getElementById('btn-import-room');
+  const quorumMsg    = document.getElementById('quorum-msg');
+  const quorumBox    = document.getElementById('quorum-box');
+  const quorumIcon   = document.getElementById('quorum-icon');
+  const quorumText   = document.getElementById('quorum-text');
+  const summaryPl    = document.getElementById('summary-players');
+
+  if (!grid) return;
+
+  function getInitials(name) {
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return name.substring(0, 2).toUpperCase();
+  }
+  function randomColor() {
+    return AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)];
+  }
+
+  function createCard(name, status = 'manual') {
+    const card = document.createElement('div');
+    card.className = 'participant-card bg-surface-container-lowest p-3.5 rounded-xl comic-shadow-sm flex items-center justify-between gap-3 transition-transform hover:-translate-y-0.5 animate-fadeIn';
+    const initials = getInitials(name);
+    const colorClass = randomColor();
+    const isPresent = status === 'present';
+    const statusText = isPresent ? 'Presente en sala' : 'Ingreso Manual';
+    const statusColor = isPresent ? 'bg-tertiary' : 'bg-outline';
+    const statusTextColor = isPresent ? 'text-tertiary' : 'text-on-surface-variant';
+
+    card.innerHTML =
+      '<div class="flex items-center gap-3 min-w-0">' +
+        '<div class="w-10 h-10 rounded-full ' + colorClass + ' font-headline-sm text-base flex items-center justify-center shrink-0 comic-shadow-sm">' + initials + '</div>' +
+        '<div class="flex flex-col min-w-0">' +
+          '<span class="font-headline-sm text-on-surface truncate participant-name">' + name + '</span>' +
+          '<span class="font-label-md text-xs ' + statusTextColor + ' flex items-center gap-1">' +
+            '<span class="w-1.5 h-1.5 rounded-full ' + statusColor + '"></span> ' + statusText +
+          '</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="flex items-center gap-1 shrink-0">' +
+        '<button type="button" class="btn-edit w-8 h-8 bg-surface-container text-on-surface hover:bg-surface-container-high flex items-center justify-center transition-colors cursor-pointer" title="Editar">' +
+          '<span class="material-symbols-outlined text-[16px]">edit</span>' +
+        '</button>' +
+        '<button type="button" class="btn-delete w-8 h-8 bg-error-container text-error hover:bg-error hover:text-on-error flex items-center justify-center transition-colors cursor-pointer" title="Eliminar">' +
+          '<span class="material-symbols-outlined text-[16px]">close</span>' +
+        '</button>' +
+      '</div>';
+    return card;
+  }
+
+  function renderAll(list) {
+    grid.innerHTML = '';
+    list.forEach(p => grid.appendChild(createCard(p.name, p.status)));
+    updateCount();
+  }
+
+  function updateCount() {
+    const count = grid.querySelectorAll('.participant-card').length;
+    countBadge.textContent = count;
+    headerCount.textContent = count + ' REGISTRADO' + (count === 1 ? '' : 'S');
+    if (summaryPl) summaryPl.textContent = count;
+
+    if (count >= QUORUM_MIN) {
+      quorumMsg.innerHTML = '<span class="material-symbols-outlined text-[16px] text-tertiary">check_circle</span> Quórum completo';
+      quorumBox.className = 'mt-4 p-3 bg-tertiary/10 rounded-xl border border-on-surface flex items-center gap-2.5 text-tertiary';
+      quorumIcon.textContent = 'check_circle';
+      quorumText.textContent = 'Quórum completado para juego por equipos';
+    } else {
+      const faltan = QUORUM_MIN - count;
+      quorumMsg.innerHTML = '<span class="material-symbols-outlined text-[16px] text-error">warning</span> Faltan ' + faltan + ' jugador' + (faltan === 1 ? '' : 'es');
+      quorumBox.className = 'mt-4 p-3 bg-error-container/40 rounded-xl border border-on-surface flex items-center gap-2.5 text-error';
+      quorumIcon.textContent = 'warning';
+      quorumText.textContent = 'Faltan ' + faltan + ' jugador' + (faltan === 1 ? '' : 'es') + ' para el mínimo de ' + QUORUM_MIN;
+    }
+  }
+
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const val = input.value.trim();
+      if (!val) return;
+      grid.prepend(createCard(val, 'manual'));
+      input.value = '';
+      updateCount();
+    });
+  }
+
+  grid.addEventListener('click', (e) => {
+    const del = e.target.closest('.btn-delete');
+    if (del) {
+      const card = del.closest('.participant-card');
+      if (!card) return;
+      card.classList.add('opacity-0', 'scale-95');
+      setTimeout(() => { card.remove(); updateCount(); }, 150);
+      return;
+    }
+    const ed = e.target.closest('.btn-edit');
+    if (ed) {
+      const card = ed.closest('.participant-card');
+      if (!card) return;
+      const span = card.querySelector('.participant-name');
+      const cur = span.textContent;
+      const nv = prompt('Editar nombre del participante:', cur);
+      if (nv !== null && nv.trim() !== '') {
+        const clean = nv.trim();
+        span.textContent = clean;
+        const av = card.querySelector('.w-10.h-10.rounded-full');
+        if (av) av.textContent = getInitials(clean);
+      }
+    }
+  });
+
+  if (clearBtn) clearBtn.addEventListener('click', () => {
+    if (grid.querySelectorAll('.participant-card').length === 0) return;
+    if (confirm('¿Eliminar todos los participantes de la lista?')) {
+      grid.innerHTML = '';
+      updateCount();
+    }
+  });
+
+  if (sortBtn) sortBtn.addEventListener('click', () => {
+    const cards = Array.from(grid.querySelectorAll('.participant-card'));
+    if (cards.length < 2) return;
+    cards.sort((a, b) => a.querySelector('.participant-name').textContent.toUpperCase()
+                     .localeCompare(b.querySelector('.participant-name').textContent.toUpperCase()));
+    cards.forEach(c => grid.appendChild(c));
+  });
+
+  if (bulkBtn) bulkBtn.addEventListener('click', () => {
+    const sample = prompt('Ingresa nombres separados por coma o salto de línea:');
+    if (!sample) return;
+    const items = sample.split(/[,\n]/).map(s => s.trim()).filter(Boolean);
+    if (items.length === 0) return;
+    items.forEach(n => grid.prepend(createCard(n, 'manual')));
+    updateCount();
+  });
+
+  if (importBtn) importBtn.addEventListener('click', () => {
+    if (!confirm('¿Importar los 16 participantes conectados a la sala #402?')) return;
+    renderAll(INITIAL_PARTICIPANTS);
+  });
+
+  // Init
+  renderAll(INITIAL_PARTICIPANTS);
+})();
 // ==================== INIT ====================
 function init() {
   navigateTo('inicio');

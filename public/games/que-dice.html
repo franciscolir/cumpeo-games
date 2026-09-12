@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;800&family=Plus+Jakarta+Sans:wght@400;500;700&family=Bangers&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script id="tailwind-config">
+tailwind.config={darkMode:"class",theme:{extend:{colors:{"error":"#ba1a1a","on-primary":"#ffffff","secondary":"#775a00","surface-container-highest":"#e5e2e1","inverse-on-surface":"#f3f0ef","primary-container":"#e41b34","secondary-container":"#ffc72c","on-tertiary-fixed-variant":"#00513b","surface":"#fcf9f8","secondary-fixed-dim":"#f6bf22","surface-dim":"#dcd9d9","on-secondary-fixed":"#251a00","on-primary-fixed-variant":"#93001a","on-error-container":"#93000a","background":"#fcf9f8","surface-container-low":"#f6f3f2","surface-tint":"#bf0025","surface-container":"#f0edec","secondary-fixed":"#ffdf99","outline":"#926e6d","error-container":"#ffdad6","inverse-surface":"#313030","inverse-primary":"#ffb3b0","on-primary-container":"#fffbff","on-primary-fixed":"#410006","on-secondary":"#ffffff","tertiary":"#00694d","tertiary-fixed":"#54fdc4","surface-bright":"#fcf9f8","surface-variant":"#e5e2e1","on-tertiary-container":"#f5fff8","on-secondary-container":"#6f5400","surface-container-high":"#ebe7e7","on-secondary-fixed-variant":"#5a4300","on-background":"#1c1b1b","primary-fixed":"#ffdad8","on-surface":"#1c1b1b","on-surface-variant":"#5d3f3e","outline-variant":"#e6bdba","on-error":"#ffffff","on-tertiary":"#ffffff","tertiary-container":"#008562","primary-fixed-dim":"#ffb3b0","primary":"#bb0024","on-tertiary-fixed":"#002116","surface-container-lowest":"#ffffff","tertiary-fixed-dim":"#27e0a9"},borderRadius:{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},spacing:{"container-max":"72rem","2xs":"0.25rem","3xl":"4rem","gutter-mobile":"1rem","xl":"2rem","sm":"0.75rem","lg":"1.5rem","gutter-desktop":"2rem","gutter-tablet":"1.5rem","xs":"0.5rem","2xl":"3rem","md":"1rem"},fontFamily:{"display-hero":["Bangers","Bricolage Grotesque"],"body-lg":["Plus Jakarta Sans"],"headline-md":["Bangers","Bricolage Grotesque"],"label-md":["Plus Jakarta Sans"],"label-comic-pill":["Bangers","Bricolage Grotesque"],"body-sm":["Plus Jakarta Sans"],"label-lg":["Plus Jakarta Sans"],"headline-sm":["Bangers","Bricolage Grotesque"],"body-md":["Plus Jakarta Sans"],"headline-lg":["Bangers","Bricolage Grotesque"]},fontSize:{"display-hero":["56px",{"lineHeight":"60px","letterSpacing":"0.02em","fontWeight":"400"}],"body-lg":["18px",{"lineHeight":"28px","letterSpacing":"-0.01em","fontWeight":"500"}],"headline-md":["28px",{"lineHeight":"32px","letterSpacing":"0.02em","fontWeight":"400"}],"label-md":["13px",{"lineHeight":"16px","letterSpacing":"0.04em","fontWeight":"700"}],"label-comic-pill":["15px",{"lineHeight":"18px","letterSpacing":"0.08em","fontWeight":"400"}],"body-sm":["14px",{"lineHeight":"20px","letterSpacing":"0em","fontWeight":"400"}],"label-lg":["16px",{"lineHeight":"20px","letterSpacing":"0.02em","fontWeight":"700"}],"headline-sm":["24px",{"lineHeight":"28px","letterSpacing":"0.02em","fontWeight":"400"}],"body-md":["16px",{"lineHeight":"24px","letterSpacing":"0em","fontWeight":"400"}],"headline-lg":["40px",{"lineHeight":"46px","letterSpacing":"0.02em","fontWeight":"400"}]}}}};
+</script>
+<style>
+@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}
+::-webkit-scrollbar{display:none;}
+
+/* ═══════════════════════════════════════════════════════════
+   MEJORAS CÓMIC — Botones irregulares dibujados a mano
+   ═══════════════════════════════════════════════════════════ */
+button:not([class*="rounded-full"]):not(.no-comic-shape) {
+  border-radius: 14px 22px 16px 20px / 20px 14px 22px 16px !important;
+  transition: transform .15s ease, box-shadow .15s ease;
+  cursor: pointer;
+}
+button:not([class*="rounded-full"]):not(.no-comic-shape):nth-child(even) {
+  border-radius: 20px 14px 22px 16px / 14px 20px 16px 22px !important;
+}
+button[class*="rounded-full"] { border-radius: 9999px !important; }
+button:hover:not(:disabled) { transform: translate(-1px, -1px); }
+
+select, input[type="text"] {
+  border-radius: 12px 18px 14px 16px / 16px 12px 18px 14px !important;
+}
+
+/* Animaciones nuevas */
+@keyframes popIn {
+  0%   { transform: scale(0.5) rotate(-3deg); opacity: 0; }
+  60%  { transform: scale(1.08) rotate(1deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+.pop-in { animation: popIn .35s ease-out; }
+
+@keyframes shakeWrong {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+.shake-wrong { animation: shakeWrong .4s ease-in-out; }
+
+@keyframes bounceIn {
+  0%   { transform: scale(0) rotate(-12deg); opacity: 0; }
+  60%  { transform: scale(1.2) rotate(3deg); opacity: 1; }
+  100% { transform: scale(1) rotate(-1deg); }
+}
+.bounce-in { animation: bounceIn .5s cubic-bezier(.34,1.56,.64,1); }
+
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 3px 3px 0px #1c1b1b, 0 0 0 0 rgba(0,105,77,.5); }
+  50%      { box-shadow: 3px 3px 0px #1c1b1b, 0 0 0 12px rgba(0,105,77,0); }
+}
+.glow-win { animation: glowPulse 1.5s infinite; }
+
+/* Barra progreso animada */
+.progress-fill { transition: width .8s cubic-bezier(.4,0,.2,1); }
+
+/* Placeholder para imágenes que fallan */
+.img-fallback {
+  background: linear-gradient(135deg, #ffc72c 0%, #e41b34 100%);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Bangers', cursive;
+  color: #1c1b1b; letter-spacing: 2px;
+}
+</style>
+</head>
+<body class="bg-background font-body-md text-on-surface antialiased">
+<div>
+<main class="w-full bg-background min-h-screen px-lg py-xl">
+<div class="flex flex-col w-full gap-lg">
+
+<!-- ═══════════════════════════════════════════════════════════
+     TOP CONTROL STRIP
+     ═══════════════════════════════════════════════════════════ -->
+<div class="w-full bg-surface-container-lowest rounded-xl p-sm flex flex-wrap items-center justify-between gap-sm shadow-[4px_4px_0px_#1c1b1b]">
+  <div class="flex flex-wrap items-center gap-sm">
+    <div class="flex items-center gap-xs px-sm py-2xs bg-primary-container text-on-primary-container rounded-lg shadow-[2px_2px_0px_#1c1b1b]">
+      <span class="material-symbols-outlined text-[18px]">poll</span>
+      <span class="font-label-comic-pill uppercase tracking-wide">JUEGO #37 • ¿QUÉ DICE CUMPEO?</span>
+    </div>
+    <div class="flex items-center gap-2xs px-xs py-2xs bg-surface-container rounded-lg shadow-[2px_2px_0px_#1c1b1b]">
+      <span class="w-2 h-2 rounded-full bg-tertiary animate-pulse"></span>
+      <span class="font-label-md text-on-surface">SALA #402</span>
+    </div>
+    <div id="turnBadge" class="flex items-center gap-xs px-sm py-2xs bg-secondary-fixed text-on-secondary-fixed rounded-lg shadow-[2px_2px_0px_#1c1b1b] -rotate-1">
+      <span class="material-symbols-outlined text-[18px]">record_voice_over</span>
+      <span class="font-label-md">CABINA: <strong id="cabinaName">MATÍAS (RAYOS ESCARLATA)</strong></span>
+      <span id="turnScore" class="px-2xs py-0.5 bg-primary-container text-on-primary font-label-comic-pill rounded">+150 PTS</span>
+    </div>
+  </div>
+  <div class="flex items-center gap-sm">
+    <div class="flex items-center gap-xs px-sm py-2xs bg-secondary-container text-on-secondary-container rounded-lg shadow-[3px_3px_0px_#1c1b1b]">
+      <span id="roundBadge" class="font-label-comic-pill">RONDA 1/3</span>
+      <span class="text-on-secondary-container/40">|</span>
+      <span class="material-symbols-outlined text-[18px]">timer</span>
+      <span id="countdown-timer" class="font-headline-sm tracking-tighter">30s</span>
+    </div>
+    <button id="btnRules" type="button" class="flex items-center gap-2xs px-sm py-2xs bg-surface text-on-surface font-label-comic-pill hover:bg-surface-container-high shadow-[2px_2px_0px_#1c1b1b]">
+      <span class="material-symbols-outlined text-[18px] text-primary">help</span>
+      <span>¿CÓMO SE JUEGA?</span>
+    </button>
+    <div class="flex items-center gap-xs ml-xs pl-xs border-l-[2px] border-on-background">
+      <div class="flex items-center gap-2xs bg-surface-container px-xs py-2xs rounded-lg border-[2px] border-on-background shadow-[2px_2px_0px_#1c1b1b]">
+        <span class="material-symbols-outlined text-[18px] text-primary">category</span>
+        <span class="font-label-comic-pill uppercase text-on-surface text-[12px]">TÓPICO:</span>
+        <select id="topicSelect" class="bg-surface font-label-comic-pill text-on-surface rounded px-xs py-0.5 border border-on-background focus:outline-none cursor-pointer">
+          <option value="comida" selected>🍽️ Comida &amp; Sabores</option>
+          <option value="dilemas">🤔 Dilemas Cotidianos</option>
+          <option value="cultura">🎬 Cultura Pop &amp; Cine</option>
+          <option value="verguenzas">🫣 Vergüenzas Ajenas</option>
+          <option value="gen">📼 Gen 90s vs 2000s</option>
+        </select>
+      </div>
+      <button id="btnAddQuestion" type="button" class="flex items-center gap-xs px-sm py-2xs bg-secondary-container text-on-secondary-container font-headline-sm font-label-comic-pill uppercase rounded-lg border-[3px] border-on-background shadow-[3px_3px_0px_#1c1b1b] hover:bg-secondary-fixed-dim">
+        <span class="material-symbols-outlined text-[18px] text-primary">add_circle</span>
+        <span>+ AGREGAR PREGUNTA</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MAIN DUAL-PANE
+     ═══════════════════════════════════════════════════════════ -->
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-lg items-start">
+
+  <!-- ───────────────────────────────────────────
+       LEFT 8 COLUMNS: ARENA
+       ─────────────────────────────────────────── -->
+  <div class="xl:col-span-8 flex flex-col gap-md">
+
+    <!-- Banner -->
+    <div class="relative bg-surface-container-lowest rounded-xl p-md shadow-[4px_4px_0px_#1c1b1b] overflow-hidden">
+      <div class="absolute -right-6 -bottom-6 w-32 h-32 opacity-10 pointer-events-none bg-[radial-gradient(#1c1b1b_2px,transparent_2px)] [background-size:10px_10px]"></div>
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-sm mb-xs">
+        <div class="inline-flex items-center gap-xs bg-secondary-container text-on-secondary-container px-sm py-2xs rounded-full shadow-[2px_2px_0px_#1c1b1b] -rotate-1">
+          <span class="material-symbols-outlined text-[18px]">forum</span>
+          <span id="topicLabel" class="font-label-comic-pill uppercase">DILEMAS COTIDIANOS IMPOSIBLES</span>
+        </div>
+        <div id="voteStatus" class="flex items-center gap-xs px-sm py-2xs bg-tertiary-container text-on-tertiary-container rounded-lg shadow-[2px_2px_0px_#1c1b1b]">
+          <span class="w-2.5 h-2.5 rounded-full bg-surface-bright animate-ping"></span>
+          <span class="font-label-md">48 VOTOS RECIBIDOS (94% DE SALA) • <strong id="pollStatus">ENCUESTA CERRADA</strong></span>
+        </div>
+      </div>
+      <h1 class="font-display-hero tracking-tight text-on-surface uppercase mt-xs mb-xs leading-none">
+        «¿QUÉ DICE EL PUEBLO DE CUMPEO?»
+      </h1>
+      <p class="font-body-md text-on-surface-variant max-w-2xl">
+        La audiencia votó desde sus smartphones en secreto. ¿Logrará el participante en vivo acertar cuál fue la opción que arrasó en la sala?
+      </p>
+
+      <div class="mt-md bg-secondary-fixed text-on-secondary-fixed rounded-xl p-md shadow-[4px_4px_0px_#1c1b1b] relative">
+        <div class="absolute -top-3 left-6 px-xs py-2xs bg-primary text-on-primary font-label-comic-pill rounded uppercase shadow-[2px_2px_0px_#1c1b1b]">
+          PREGUNTA EN DUELO
+        </div>
+        <p id="questionText" class="font-headline-lg text-center tracking-tight pt-xs text-on-surface">
+          "¿LA PIZZA LLEVA PIÑA O ES UN CRIMEN CONTRA LA HUMANIDAD?"
+        </p>
+      </div>
+    </div>
+
+    <!-- Duelo A vs B -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-md relative">
+      <div class="hidden md:flex absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-primary text-on-primary items-center justify-center font-display-hero text-headline-md shadow-[3px_3px_0px_#1c1b1b] rotate-12">
+        VS
+      </div>
+
+      <!-- OPTION A -->
+      <div id="cardA" class="relative bg-surface-container-lowest rounded-xl p-md flex flex-col justify-between shadow-[4px_4px_0px_#1c1b1b]">
+        <div id="tagPlayer" class="absolute -top-3 right-4 bg-secondary-container text-on-secondary-container px-sm py-2xs rounded-full font-label-comic-pill uppercase shadow-[3px_3px_0px_#1c1b1b] flex items-center gap-xs rotate-2 bounce-in">
+          <span class="material-symbols-outlined text-[16px] text-primary">star</span>
+          <span id="tagPlayerText">¡ELEGIDA POR MATÍAS!</span>
+        </div>
+        <div>
+          <div class="flex items-center justify-between mb-sm">
+            <span class="w-10 h-10 rounded-xl bg-tertiary-container text-on-tertiary-container flex items-center justify-center font-display-hero text-headline-sm shadow-[2px_2px_0px_#1c1b1b]">A</span>
+            <span id="badgeA" class="px-xs py-2xs bg-tertiary text-on-tertiary font-label-comic-pill uppercase rounded shadow-[2px_2px_0px_#1c1b1b]">
+              ★ MAYORÍA POPULAR
+            </span>
+          </div>
+          <h3 id="optionATitle" class="font-headline-md uppercase text-on-surface mb-xs">¡DELICIOSA CON PIÑA!</h3>
+          <p id="optionADesc" class="font-body-sm text-on-surface-variant mb-md">El toque tropical equilibra el queso y realza el sabor italiano auténtico.</p>
+          <div class="w-full h-40 bg-surface-container-low rounded-xl overflow-hidden relative mb-md shadow-inner flex items-center justify-center">
+            <img class="w-full h-full object-cover" id="imgA" alt="Ilustración opción A"
+                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuCczYI84lfGLtnhFO6UVw_EX0fe5QFjMp2Nx15Ss-6EJ1TH3VVW3ZmB3Pr5ac2H8hQBSAOy5Au6FAS5fkfMxfgpT80bcX3Kq6pAUjygrCyhC-PQZlUVU146NR5v87yNz8SzsQH7YzD0grhnPwqvvDN9wiOmIKH0B2HqoeDOukatlrjtXmqStf8ynwKLBQPa9yowQ8l0BM0JhM2TtkYfAjTuvfMm0uCYU1iDzp2Z0BWGUpPJ4bkw4yW3Pg">
+            <div class="absolute bottom-2 left-2 bg-surface-container-lowest/90 px-xs py-2xs rounded font-label-comic-pill text-on-surface">
+              🍕🍍 DULCE &amp; SALADA
+            </div>
+          </div>
+        </div>
+        <div class="flex flex-col gap-xs pt-xs">
+          <div class="flex items-end justify-between">
+            <span class="font-label-md text-on-surface">AUDIENCIA CUMPEO</span>
+            <span class="font-display-hero text-headline-lg text-tertiary leading-none">
+              <span id="pctA">58%</span> <span id="votesA" class="font-body-sm text-on-surface-variant font-normal">(28 Votos)</span>
+            </span>
+          </div>
+          <div class="w-full h-7 bg-surface-container rounded-lg p-1 shadow-[2px_2px_0px_#1c1b1b]">
+            <div id="barA" class="h-full bg-tertiary-container rounded flex items-center justify-end px-xs progress-fill" style="width:58%">
+              <span id="barPctA" class="font-label-comic-pill text-on-tertiary-container">58%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OPTION B -->
+      <div id="cardB" class="relative bg-surface-container-lowest rounded-xl p-md flex flex-col justify-between shadow-[4px_4px_0px_#1c1b1b]">
+        <div>
+          <div class="flex items-center justify-between mb-sm">
+            <span class="w-10 h-10 rounded-xl bg-surface-container-highest text-on-surface flex items-center justify-center font-display-hero text-headline-sm shadow-[2px_2px_0px_#1c1b1b]">B</span>
+            <span id="badgeB" class="px-xs py-2xs bg-surface-container-high text-on-surface-variant font-label-comic-pill uppercase rounded shadow-[2px_2px_0px_#1c1b1b]">
+              OPCIÓN MINORITARIA
+            </span>
+          </div>
+          <h3 id="optionBTitle" class="font-headline-md uppercase text-on-surface mb-xs">¡UN CRIMEN TOTAL!</h3>
+          <p id="optionBDesc" class="font-body-sm text-on-surface-variant mb-md">La fruta caliente sobre salsa de tomate debería estar penada con cárcel.</p>
+          <div class="w-full h-40 bg-surface-container-low rounded-xl overflow-hidden relative mb-md shadow-inner flex items-center justify-center">
+            <img class="w-full h-full object-cover" id="imgB" alt="Ilustración opción B"
+                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuBTZZAbY84-qqa6_eehPFi1sB8jLNui6L03_Yo_FRIX8YM5JMU6Gx9Q0Dh_yZ3-McP4-WXApu9rNt05MEq-bAMzpUmnO-uKQBINGLpuehlg43yXGHgCB6xiqlwtJhRZm8crIybvt7zwYZ2E5DJ-vE6Xft54TMGmMLmI7TEhHGsKtciJba4Y_PC-Z2XtiJobnDCbTI5Tlzor3akpuVOaI98CIvl0Ul7dor6R1SKJ_XjBGrRfD2_iX6CcVA">
+            <div class="absolute bottom-2 left-2 bg-surface-container-lowest/90 px-xs py-2xs rounded font-label-comic-pill text-on-surface">
+              ☠️ SACRILEGIO
+            </div>
+          </div>
+        </div>
+        <div class="flex flex-col gap-xs pt-xs">
+          <div class="flex items-end justify-between">
+            <span class="font-label-md text-on-surface">AUDIENCIA CUMPEO</span>
+            <span class="font-display-hero text-headline-lg text-primary leading-none">
+              <span id="pctB">42%</span> <span id="votesB" class="font-body-sm text-on-surface-variant font-normal">(20 Votos)</span>
+            </span>
+          </div>
+          <div class="w-full h-7 bg-surface-container rounded-lg p-1 shadow-[2px_2px_0px_#1c1b1b]">
+            <div id="barB" class="h-full bg-primary-container rounded flex items-center justify-end px-xs progress-fill" style="width:42%">
+              <span id="barPctB" class="font-label-comic-pill text-on-primary-container">42%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Climax ribbon -->
+    <div id="climaxRibbon" class="relative bg-tertiary text-on-tertiary rounded-xl p-md shadow-[4px_4px_0px_#1c1b1b] flex flex-col md:flex-row items-center justify-between gap-md overflow-hidden">
+      <div class="flex items-center gap-md">
+        <div class="w-14 h-14 shrink-0 rounded-xl bg-secondary-container text-on-secondary-container flex items-center justify-center shadow-[3px_3px_0px_#1c1b1b] rotate-3">
+          <span class="material-symbols-outlined text-[32px]">military_tech</span>
+        </div>
+        <div class="flex flex-col">
+          <div class="flex items-center gap-xs">
+            <span id="ribbonBang" class="px-xs py-0.5 bg-secondary-fixed text-on-secondary-fixed font-label-comic-pill rounded uppercase shadow-[1px_1px_0px_#1c1b1b]">¡BAM! ¡EXACTO!</span>
+            <span class="font-label-comic-pill uppercase tracking-wider text-tertiary-fixed">VEREDICTO VALIDADO</span>
+          </div>
+          <p id="ribbonText" class="font-headline-md tracking-tight leading-tight mt-1">
+            ¡ACIERTO TOTAL! MATÍAS ADIVINÓ LA RESPUESTA DE LA MAYORÍA
+          </p>
+        </div>
+      </div>
+      <div class="shrink-0 flex items-center gap-xs px-md py-sm bg-surface-container-lowest text-on-surface rounded-xl shadow-[3px_3px_0px_#1c1b1b]">
+        <span class="font-label-md text-on-surface-variant uppercase">Puntos Sumados:</span>
+        <span id="ribbonPts" class="font-display-hero text-headline-md text-primary leading-none">+150 PTS</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────────────────────────────────
+       RIGHT 4 COLUMNS: HOST PANEL
+       ─────────────────────────────────────────── -->
+  <div class="xl:col-span-4 flex flex-col gap-md">
+    <div class="bg-surface-container-lowest rounded-xl p-md shadow-[4px_4px_0px_#1c1b1b] flex flex-col gap-md">
+
+      <div class="flex items-center justify-between pb-xs bg-surface-container-low -mx-md -mt-md p-md rounded-t-xl">
+        <div class="flex items-center gap-xs">
+          <span class="material-symbols-outlined text-primary text-[22px]">tune</span>
+          <span class="font-headline-sm uppercase tracking-tight text-on-surface">PANEL DEL CONDUCTOR</span>
+        </div>
+        <span class="px-xs py-2xs bg-primary text-on-primary font-label-comic-pill rounded uppercase shadow-[2px_2px_0px_#1c1b1b]">LIVE HOST</span>
+      </div>
+
+      <!-- Stepper revelación -->
+      <div class="flex flex-col gap-xs">
+        <span class="font-label-md uppercase text-on-surface-variant">Etapas de Revelación (Pantalla Grande):</span>
+        <div id="revealSteps" class="flex flex-col gap-2xs">
+          <button type="button" data-step="1" class="step-btn w-full flex items-center justify-between p-sm rounded-lg bg-surface-container text-on-surface text-left font-label-md shadow-[2px_2px_0px_#1c1b1b] hover:bg-surface-container-high">
+            <span class="flex items-center gap-xs">
+              <span class="w-5 h-5 rounded-full bg-tertiary text-on-tertiary flex items-center justify-center text-[11px] font-bold">1</span>
+              <span>MOSTRAR PREGUNTA &amp; ABRIR VOTACIÓN</span>
+            </span>
+            <span class="material-symbols-outlined text-[18px] text-tertiary">check_circle</span>
+          </button>
+          <button type="button" data-step="2" class="step-btn w-full flex items-center justify-between p-sm rounded-lg bg-surface-container text-on-surface text-left font-label-md shadow-[2px_2px_0px_#1c1b1b] hover:bg-surface-container-high">
+            <span class="flex items-center gap-xs">
+              <span class="w-5 h-5 rounded-full bg-tertiary text-on-tertiary flex items-center justify-center text-[11px] font-bold">2</span>
+              <span>FIJAR PREDICCIÓN DE JUGADOR (OPCIÓN A)</span>
+            </span>
+            <span class="material-symbols-outlined text-[18px] text-tertiary">check_circle</span>
+          </button>
+          <button type="button" data-step="3" class="step-btn w-full flex items-center justify-between p-sm rounded-lg bg-secondary-container text-on-secondary-container text-left font-label-comic-pill shadow-[3px_3px_0px_#1c1b1b] ring-2 ring-on-background">
+            <span class="flex items-center gap-xs">
+              <span class="w-5 h-5 rounded-full bg-on-secondary-container text-secondary-container flex items-center justify-center text-[11px] font-bold">3</span>
+              <span>¡REVELAR BARRAS &amp; PORCENTAJES!</span>
+            </span>
+            <span class="material-symbols-outlined text-[18px]">visibility</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Veredicto -->
+      <div class="flex flex-col gap-xs pt-xs">
+        <span class="font-label-md uppercase text-on-surface-variant">Arbitraje Inmediato:</span>
+        <button id="btnWin" type="button" class="w-full py-sm px-md bg-tertiary text-on-tertiary rounded-xl font-display-hero text-headline-sm tracking-tight flex items-center justify-center gap-xs shadow-[4px_4px_0px_#1c1b1b] hover:bg-tertiary-container">
+          <span class="material-symbols-outlined text-[24px]">sentiment_very_satisfied</span>
+          <span>✓ ¡ADIVINÓ LA MAYORÍA! (+150 PTS)</span>
+        </button>
+        <button id="btnLose" type="button" class="w-full py-sm px-md bg-error text-on-error rounded-xl font-display-hero text-headline-sm tracking-tight flex items-center justify-center gap-xs shadow-[4px_4px_0px_#1c1b1b] hover:bg-error-container hover:text-on-error-container">
+          <span class="material-symbols-outlined text-[24px]">cancel</span>
+          <span>✖ FALLÓ LA PREDICCIÓN (0 PTS)</span>
+        </button>
+      </div>
+
+      <!-- Equipos -->
+      <div class="flex flex-col gap-xs pt-xs">
+        <span class="font-label-md uppercase text-on-surface-variant">Equipo y Participante Activo:</span>
+        <div class="grid grid-cols-2 gap-xs">
+          <button type="button" data-team="rayos" class="team-btn p-xs rounded-lg bg-primary-container text-on-primary-container text-left shadow-[2px_2px_0px_#1c1b1b]">
+            <div class="font-label-comic-pill">RAYOS ESCARLATA</div>
+            <div class="font-body-sm opacity-90">Matías (En Cabina)</div>
+          </button>
+          <button type="button" data-team="titan" class="team-btn p-xs rounded-lg bg-surface-container text-on-surface text-left shadow-[2px_2px_0px_#1c1b1b] hover:bg-surface-container-high">
+            <div class="font-label-comic-pill text-on-surface-variant">TITÁN DORADO</div>
+            <div class="font-body-sm text-on-surface-variant">Camila (Espera)</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Tiempo -->
+      <div class="flex flex-col gap-xs">
+        <span class="font-label-md uppercase text-on-surface-variant">Tiempo de Ronda Móvil:</span>
+        <div class="grid grid-cols-3 gap-xs">
+          <button type="button" data-time="15" class="time-btn py-xs px-2xs bg-surface-container rounded-lg font-label-md text-on-surface shadow-[2px_2px_0px_#1c1b1b] hover:bg-surface-container-high">15s Flash</button>
+          <button type="button" data-time="30" class="time-btn py-xs px-2xs bg-secondary-fixed text-on-secondary-fixed rounded-lg font-label-comic-pill shadow-[2px_2px_0px_#1c1b1b]">30s Normal</button>
+          <button type="button" data-time="45" class="time-btn py-xs px-2xs bg-surface-container rounded-lg font-label-md text-on-surface shadow-[2px_2px_0px_#1c1b1b] hover:bg-surface-container-high">45s Debate</button>
+        </div>
+      </div>
+
+      <!-- Flow -->
+      <div class="flex flex-col gap-xs pt-xs">
+        <button id="btnNext" type="button" class="w-full py-sm px-md bg-secondary-container text-on-secondary-container rounded-xl font-display-hero text-headline-sm uppercase tracking-tight flex items-center justify-center gap-xs shadow-[4px_4px_0px_#1c1b1b] hover:bg-secondary-fixed-dim">
+          <span>SIGUIENTE PREGUNTA</span>
+          <span class="material-symbols-outlined text-[22px]">arrow_forward</span>
+        </button>
+        <div class="grid grid-cols-2 gap-xs">
+          <button id="btnPause" type="button" class="py-xs px-sm bg-surface-container-high text-on-surface rounded-lg font-label-md flex items-center justify-center gap-2xs shadow-[2px_2px_0px_#1c1b1b]">
+            <span class="material-symbols-outlined text-[18px]">pause</span>
+            <span>PAUSAR</span>
+          </button>
+          <button id="btnEnd" type="button" class="py-xs px-sm bg-surface-container-high text-on-surface-variant rounded-lg font-label-md flex items-center justify-center gap-2xs shadow-[2px_2px_0px_#1c1b1b]">
+            <span class="material-symbols-outlined text-[18px]">stop</span>
+            <span>TERMINAR</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Pupi -->
+      <div class="bg-secondary-fixed text-on-secondary-fixed p-sm rounded-xl shadow-[3px_3px_0px_#1c1b1b] flex items-start gap-sm">
+        <div class="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0 shadow-[2px_2px_0px_#1c1b1b] img-fallback">🐶</div>
+        <div class="flex flex-col">
+          <span class="font-label-comic-pill uppercase tracking-wider">TIPS DEL ÁRBITRO PUPI</span>
+          <p class="font-body-sm leading-tight mt-0.5">
+            ¡Atención Conductor! No reveles las barras de porcentajes hasta que Matías haya justificado su voto ante el público en voz alta. ¡Aumenta el suspenso cómico!
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     FOOTER
+     ═══════════════════════════════════════════════════════════ -->
+<div class="w-full bg-surface-container-low rounded-xl px-md py-sm flex flex-wrap items-center justify-between gap-sm shadow-[2px_2px_0px_#1c1b1b]">
+  <div class="flex items-center gap-sm">
+    <div class="flex items-center gap-xs">
+      <span class="w-2.5 h-2.5 rounded-full bg-tertiary"></span>
+      <span class="font-label-md uppercase text-on-surface">SISTEMA DE ENCUESTAS EN TIEMPO REAL</span>
+    </div>
+    <span class="text-on-surface-variant">•</span>
+    <span class="font-body-sm text-on-surface-variant">CUMPEO LIVE V2.4</span>
+  </div>
+  <div class="flex items-center gap-md font-label-comic-pill text-on-surface-variant">
+    <span class="flex items-center gap-2xs text-tertiary">
+      <span class="material-symbols-outlined text-[16px]">speed</span>
+      <span>LATENCIA: 32ms</span>
+    </span>
+    <span class="flex items-center gap-2xs">
+      <span class="material-symbols-outlined text-[16px]">sync_alt</span>
+      <span>WEBSOCKETS: ACTIVOS (48 DISPOSITIVOS)</span>
+    </span>
+  </div>
+</div>
+
+</div>
+</main>
+</div>
+
+<!-- Modal Reglas -->
+<div id="rulesModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+  <div class="bg-white border-[3px] border-black rounded-3xl max-w-md w-full p-5 shadow-[6px_6px_0px_#1c1b1b] pop-in">
+    <div class="flex items-center justify-between pb-3 border-b-2 border-black mb-3">
+      <h3 class="font-headline-sm uppercase tracking-wide">📖 ¿Cómo se juega?</h3>
+      <button id="closeRules" type="button" class="w-8 h-8 border-2 border-black rounded-lg bg-white hover:bg-red-100 flex items-center justify-center">
+        <span class="text-lg font-black">✕</span>
+      </button>
+    </div>
+    <ul class="space-y-2 text-sm font-semibold">
+      <li>📱 <strong>1. Votación:</strong> la audiencia vota desde el móvil.</li>
+      <li>🎤 <strong>2. Predicción:</strong> el participante en cabina adivina la opción ganadora.</li>
+      <li>📊 <strong>3. Revelación:</strong> el conductor revela las barras de porcentaje.</li>
+      <li>✅ <strong>Acierto:</strong> si predijo la mayoría → +150 puntos.</li>
+      <li>❌ <strong>Fallo:</strong> si no → 0 puntos y pasa el turno.</li>
+    </ul>
+    <button id="closeRulesBtn" type="button" class="mt-4 w-full bg-secondary-container border-2 border-black py-2 rounded-xl font-label-comic-pill uppercase shadow-[3px_3px_0px_#1c1b1b]">¡Entendido!</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  // ═══════════════════════════════════════════════════════════
+  // POOL DE PREGUNTAS (demo)
+  // ═══════════════════════════════════════════════════════════
+  const QUESTIONS = [
+    {
+      topic: 'comida',
+      label: 'DILEMAS COTIDIANOS IMPOSIBLES',
+      text: '"¿LA PIZZA LLEVA PIÑA O ES UN CRIMEN CONTRA LA HUMANIDAD?"',
+      a: { title: '¡DELICIOSA CON PIÑA!', desc: 'El toque tropical equilibra el queso y realza el sabor italiano auténtico.', tag: '🍕🍍 DULCE & SALADA', votes: 28 },
+      b: { title: '¡UN CRIMEN TOTAL!',   desc: 'La fruta caliente sobre salsa de tomate debería estar penada con cárcel.',  tag: '☠️ SACRILEGIO',     votes: 20 }
+    },
+    {
+      topic: 'dilemas',
+      label: 'DILEMAS COTIDIANOS IMPOSIBLES',
+      text: '"¿PEDIRLE SALSA EXTRA EN EL RESTORÁN ES DE GENTE CARA DURA?"',
+      a: { title: '¡ES UN DERECHO SAGRADO!', desc: 'La salsa es parte de la experiencia y si es gratis, se pide sin culpa.', tag: '🍟 SALSÓLOGO', votes: 34 },
+      b: { title: '¡MEJOR NO MOLESTAR!', desc: 'Es un pecado social aceptar la salsa cuando el mesero ya te ignoró dos veces.', tag: '🤐 PENA AJENA', votes: 14 }
+    },
+    {
+      topic: 'cultura',
+      label: 'CULTURA POP & CINE',
+      text: '"¿ES EL FINAL DE «TOY STORY 3» EL ADIÓS MÁS TRISTE DEL CINE?"',
+      a: { title: '¡LLORÉ COMO NIÑO!', desc: 'Andy jugando una última vez con sus juguetes rompe a cualquiera.', tag: '😭 DESGARRO TOTAL', votes: 40 },
+      b: { title: '¡NO TANTO!', desc: 'Hay finales más duros y Toy Story 3 cierra bien la trilogía.', tag: '😐 EXAGERADO', votes: 8 }
+    },
+    {
+      topic: 'gen',
+      label: 'GEN 90S VS 2000S',
+      text: '"¿EL CASETE ERA MEJOR QUE EL SPOTIFY DE HOY?"',
+      a: { title: '¡CLARO QUE SÍ!', desc: 'Grabar una canción con paciencia y esperar al DJ era un ritual sagrado.', tag: '📼 ROMÁNTICO', votes: 22 },
+      b: { title: '¡NI COMPARAR!', desc: 'Spotify tiene todo al instante; el casete se enredaba cada 3 canciones.', tag: '📱 PRAGMÁTICO', votes: 26 }
+    },
+    {
+      topic: 'verguenzas',
+      label: 'VERGÜENZAS AJENAS',
+      text: '"¿SE PUEDE LLORAR EN EL TRABAJO O ES UN CRIMEN CORPORATIVO?"',
+      a: { title: '¡HUMANO Y VÁLIDO!', desc: 'Todos tenemos días duros y mostrar emoción debería estar normalizado.', tag: '🫂 EMPÁTICO', votes: 30 },
+      b: { title: '¡A LA CASA!', desc: 'El llanto se guarda para el auto o la ducha; el trabajo no es terapia.', tag: '💼 CORPORATIVO', votes: 18 }
+    }
+  ];
+
+  const TOPIC_LABELS = {
+    comida:     'COMIDA & SABORES',
+    dilemas:    'DILEMAS COTIDIANOS IMPOSIBLES',
+    cultura:    'CULTURA POP & CINE',
+    verguenzas: 'VERGÜENZAS AJENAS',
+    gen:        'GEN 90S VS 2000S'
+  };
+
+  // ═══════════════════════════════════════════════════════════
+  // ESTADO
+  // ═══════════════════════════════════════════════════════════
+  const state = {
+    currentIdx: 0,
+    round: 1,
+    totalRounds: 3,
+    seconds: 30,
+    baseSeconds: 30,
+    timerId: null,
+    paused: false,
+    revealed: false,          // barras visibles
+    currentTeam: 'rayos',
+    scores: { rayos: 150, titan: 0 },
+    votesA: 28,
+    votesB: 20,
+    voteStatus: 'closed'
+  };
+
+  const $ = (id) => document.getElementById(id);
+
+  // ═══════════════════════════════════════════════════════════
+  // RENDER PREGUNTA
+  // ═══════════════════════════════════════════════════════════
+  function renderQuestion(idx) {
+    const q = QUESTIONS[idx];
+    state.votesA = q.a.votes;
+    state.votesB = q.b.votes;
+    state.revealed = false;
+
+    $('questionText').textContent = q.text;
+    $('optionATitle').textContent = q.a.title;
+    $('optionADesc').textContent  = q.a.desc;
+    $('optionBTitle').textContent = q.b.title;
+    $('optionBDesc').textContent  = q.b.desc;
+    $('topicLabel').textContent   = q.label;
+    $('roundBadge').textContent   = 'RONDA ' + state.round + '/' + state.totalRounds;
+
+    // Ocultar barras inicialmente (reto de revelación)
+    setRevealBars(false);
+    renderVotes();
+
+    // El tag "ELEGIDA POR" solo aparece tras fijar la predicción
+    $('tagPlayer').style.display = 'flex';
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // RENDER VOTOS
+  // ═══════════════════════════════════════════════════════════
+  function renderVotes() {
+    const total = state.votesA + state.votesB;
+    const pctA = total > 0 ? Math.round((state.votesA / total) * 100) : 50;
+    const pctB = 100 - pctA;
+
+    $('pctA').textContent   = pctA + '%';
+    $('pctB').textContent   = pctB + '%';
+    $('votesA').textContent = '(' + state.votesA + ' Votos)';
+    $('votesB').textContent = '(' + state.votesB + ' Votos)';
+
+    $('barA').style.width = pctA + '%';
+    $('barB').style.width = pctB + '%';
+    $('barPctA').textContent = pctA + '%';
+    $('barPctB').textContent = pctB + '%';
+
+    $('voteStatus').innerHTML =
+      '<span class="w-2.5 h-2.5 rounded-full bg-surface-bright animate-ping"></span>' +
+      '<span class="font-label-md">' + total + ' VOTOS RECIBIDOS (94% DE SALA) • <strong id="pollStatus">ENCUESTA CERRADA</strong></span>';
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // REVELAR / OCULTAR BARRAS
+  // ═══════════════════════════════════════════════════════════
+  function setRevealBars(show) {
+    const opacity = show ? '1' : '0';
+    $('pctA').style.opacity = opacity;
+    $('pctB').style.opacity = opacity;
+    $('votesA').style.opacity = opacity;
+    $('votesB').style.opacity = opacity;
+    $('barA').parentElement.parentElement.style.opacity = opacity;
+    $('barB').parentElement.parentElement.style.opacity = opacity;
+
+    if (!show) {
+      $('barA').style.width = '0%';
+      $('barB').style.width = '0%';
+    } else {
+      renderVotes();
+    }
+    state.revealed = show;
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // TIMER
+  // ═══════════════════════════════════════════════════════════
+  function renderTimer() {
+    $('countdown-timer').textContent = state.seconds + 's';
+  }
+
+  function startTimer() {
+    stopTimer();
+    state.timerId = setInterval(() => {
+      if (state.paused) return;
+      if (state.seconds <= 0) {
+        stopTimer();
+        $('countdown-timer').textContent = '¡TIEMPO!';
+        return;
+      }
+      state.seconds--;
+      renderTimer();
+    }, 1000);
+  }
+
+  function stopTimer() {
+    if (state.timerId) { clearInterval(state.timerId); state.timerId = null; }
+  }
+
+  function resetTimer() {
+    state.seconds = state.baseSeconds;
+    renderTimer();
+    startTimer();
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // EQUIPOS
+  // ═══════════════════════════════════════════════════════════
+  function setTeam(team) {
+    state.currentTeam = team;
+    const isRayos = team === 'rayos';
+    $('cabinaName').textContent = isRayos ? 'MATÍAS (RAYOS ESCARLATA)' : 'CAMILA (TITÁN DORADO)';
+    $('turnScore').textContent = '+' + state.scores[team] + ' PTS';
+    $('tagPlayerText').textContent = '¡ELEGIDA POR ' + (isRayos ? 'MATÍAS' : 'CAMILA') + '!';
+
+    document.querySelectorAll('.team-btn').forEach(btn => {
+      if (btn.dataset.team === team) {
+        btn.className = 'team-btn p-xs rounded-lg ' +
+          (isRayos ? 'bg-primary-container text-on-primary-container' : 'bg-secondary-container text-on-secondary-container') +
+          ' text-left shadow-[2px_2px_0px_#1c1b1b]';
+      } else {
+        btn.className = 'team-btn p-xs rounded-lg bg-surface-container text-on-surface text-left shadow-[2px_2px_0px_#1c1b1b] hover:bg-surface-container-high';
+      }
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // VEREDICTO
+  // ═══════════════════════════════════════════════════════════
+  function applyWin() {
+    const pts = 150;
+    state.scores[state.currentTeam] += pts;
+    $('turnScore').textContent = '+' + state.scores[state.currentTeam] + ' PTS';
+    $('climaxRibbon').className = 'relative bg-tertiary text-on-tertiary rounded-xl p-md shadow-[4px_4px_0px_#1c1b1b] flex flex-col md:flex-row items-center justify-between gap-md overflow-hidden glow-win';
+    $('ribbonBang').textContent = '¡BAM! ¡EXACTO!';
+    $('ribbonText').textContent = '¡ACIERTO TOTAL! ' + (state.currentTeam === 'rayos' ? 'MATÍAS' : 'CAMILA') + ' ADIVINÓ LA RESPUESTA DE LA MAYORÍA';
+    $('ribbonPts').textContent = '+' + pts + ' PTS';
+    $('ribbonPts').className = 'font-display-hero text-headline-md text-primary leading-none';
+    setRevealBars(true);
+  }
+
+  function applyLose() {
+    $('climaxRibbon').className = 'relative bg-error text-on-error rounded-xl p-md shadow-[4px_4px_0px_#1c1b1b] flex flex-col md:flex-row items-center justify-between gap-md overflow-hidden shake-wrong';
+    $('ribbonBang').textContent = '¡ZAS! ¡FALLO!';
+    $('ribbonText').textContent = (state.currentTeam === 'rayos' ? 'MATÍAS' : 'CAMILA') + ' NO ADIVINÓ LA MAYORÍA DE LA SALA';
+    $('ribbonPts').textContent = '+0 PTS';
+    $('ribbonPts').className = 'font-display-hero text-headline-md leading-none';
+    setRevealBars(true);
+    setTimeout(() => $('climaxRibbon').classList.remove('shake-wrong'), 450);
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // EVENTOS
+  // ═══════════════════════════════════════════════════════════
+  // Steps revelación
+  document.querySelectorAll('.step-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const step = btn.dataset.step;
+      if (step === '3') setRevealBars(true);
+      if (step === '1') setRevealBars(false);
+      document.querySelectorAll('.step-btn').forEach(b => {
+        b.classList.remove('bg-secondary-container','text-on-secondary-container','ring-2','ring-on-background','font-label-comic-pill');
+        b.classList.add('bg-surface-container','text-on-surface','font-label-md');
+      });
+      btn.classList.remove('bg-surface-container','text-on-surface','font-label-md');
+      btn.classList.add('bg-secondary-container','text-on-secondary-container','ring-2','ring-on-background','font-label-comic-pill');
+    });
+  });
+
+  // Veredicto
+  $('btnWin').addEventListener('click', applyWin);
+  $('btnLose').addEventListener('click', applyLose);
+
+  // Equipos
+  document.querySelectorAll('.team-btn').forEach(btn => {
+    btn.addEventListener('click', () => setTeam(btn.dataset.team));
+  });
+
+  // Tiempo
+  document.querySelectorAll('.time-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.baseSeconds = parseInt(btn.dataset.time, 10);
+      resetTimer();
+      document.querySelectorAll('.time-btn').forEach(b => {
+        b.className = b === btn
+          ? 'time-btn py-xs px-2xs bg-secondary-fixed text-on-secondary-fixed rounded-lg font-label-comic-pill shadow-[2px_2px_0px_#1c1b1b]'
+          : 'time-btn py-xs px-2xs bg-surface-container rounded-lg font-label-md text-on-surface shadow-[2px_2px_0px_#1c1b1b] hover:bg-surface-container-high';
+      });
+    });
+  });
+
+  // Pausa
+  $('btnPause').addEventListener('click', () => {
+    state.paused = !state.paused;
+    $('btnPause').innerHTML = state.paused
+      ? '<span class="material-symbols-outlined text-[18px]">play_arrow</span><span>REANUDAR</span>'
+      : '<span class="material-symbols-outlined text-[18px]">pause</span><span>PAUSAR</span>';
+  });
+
+  // Terminar
+  $('btnEnd').addEventListener('click', () => {
+    if (confirm('¿Terminar la partida?\nRayos: ' + state.scores.rayos + ' pts\nTitán: ' + state.scores.titan + ' pts')) {
+      stopTimer();
+      alert('Partida finalizada.');
+    }
+  });
+
+  // Siguiente pregunta
+  $('btnNext').addEventListener('click', () => {
+    state.currentIdx = (state.currentIdx + 1) % QUESTIONS.length;
+    if (state.currentIdx === 0) {
+      state.round = Math.min(state.round + 1, state.totalRounds);
+    }
+    renderQuestion(state.currentIdx);
+    resetTimer();
+    // Reset ribbon
+    $('climaxRibbon').className = 'relative bg-tertiary text-on-tertiary rounded-xl p-md shadow-[4px_4px_0px_#1c1b1b] flex flex-col md:flex-row items-center justify-between gap-md overflow-hidden';
+    $('ribbonBang').textContent = '¡BAM! ¡EXACTO!';
+    $('ribbonText').textContent = 'Esperando veredicto...';
+    $('ribbonPts').textContent = '+150 PTS';
+  });
+
+  // Topic selector
+  $('topicSelect').addEventListener('change', (e) => {
+    const topic = e.target.value;
+    $('topicLabel').textContent = TOPIC_LABELS[topic] || topic.toUpperCase();
+    // Buscar primera pregunta de ese tópico
+    const found = QUESTIONS.findIndex(q => q.topic === topic);
+    if (found >= 0) {
+      state.currentIdx = found;
+      renderQuestion(state.currentIdx);
+      resetTimer();
+    }
+  });
+
+  // Agregar pregunta
+  $('btnAddQuestion').addEventListener('click', () => {
+    const text = prompt('Escribe la nueva pregunta binaria:');
+    if (!text) return;
+    const aTitle = prompt('Título de la opción A:');
+    if (!aTitle) return;
+    const bTitle = prompt('Título de la opción B:');
+    if (!bTitle) return;
+
+    QUESTIONS.push({
+      topic: 'custom',
+      label: 'PREGUNTAS DEL CONDUCTOR',
+      text: '"' + text + '"',
+      a: { title: aTitle, desc: 'Opción A personalizada.', tag: '🅰️ CUSTOM', votes: 15 },
+      b: { title: bTitle, desc: 'Opción B personalizada.', tag: '🅱️ CUSTOM', votes: 15 }
+    });
+    state.currentIdx = QUESTIONS.length - 1;
+    renderQuestion(state.currentIdx);
+    resetTimer();
+    alert('✅ Pregunta agregada. ¡Listo para el duelo!');
+  });
+
+  // Reglas
+  $('btnRules').addEventListener('click', () => {
+    $('rulesModal').classList.remove('hidden');
+    $('rulesModal').classList.add('flex');
+  });
+  $('closeRules').addEventListener('click', () => {
+    $('rulesModal').classList.add('hidden');
+    $('rulesModal').classList.remove('flex');
+  });
+  $('closeRulesBtn').addEventListener('click', () => {
+    $('rulesModal').classList.add('hidden');
+    $('rulesModal').classList.remove('flex');
+  });
+
+  // ═══════════════════════════════════════════════════════════
+  // INIT
+  // ═══════════════════════════════════════════════════════════
+  renderQuestion(0);
+  resetTimer();
+  setTeam('rayos');
+})();
+</script>
+
+</body>
+</html>
