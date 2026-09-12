@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Canción Incompleta — Pantalla 33</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;800&family=Plus+Jakarta+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "error":"#ba1a1a","on-primary":"#ffffff","secondary":"#775a00",
+        "surface-container-highest":"#e5e2e1","inverse-on-surface":"#f3f0ef",
+        "primary-container":"#e41b34","secondary-container":"#ffc72c",
+        "on-tertiary-fixed-variant":"#00513b","surface":"#fcf9f8",
+        "secondary-fixed-dim":"#f6bf22","surface-dim":"#dcd9d9",
+        "on-secondary-fixed":"#251a00","on-primary-fixed-variant":"#93001a",
+        "on-error-container":"#93000a","background":"#fcf9f8",
+        "surface-container-low":"#f6f3f2","surface-tint":"#bf0025",
+        "surface-container":"#f0edec","secondary-fixed":"#ffdf99",
+        "outline":"#926e6d","error-container":"#ffdad6",
+        "inverse-surface":"#313030","inverse-primary":"#ffb3b0",
+        "on-primary-container":"#fffbff","on-primary-fixed":"#410006",
+        "on-secondary":"#ffffff","tertiary":"#00694d",
+        "tertiary-fixed":"#54fdc4","surface-bright":"#fcf9f8",
+        "surface-variant":"#e5e2e1","on-tertiary-container":"#f5fff8",
+        "on-secondary-container":"#6f5400","surface-container-high":"#ebe7e7",
+        "on-secondary-fixed-variant":"#5a4300","on-background":"#1c1b1b",
+        "primary-fixed":"#ffdad8","on-surface":"#1c1b1b",
+        "on-surface-variant":"#5d3f3e","outline-variant":"#e6bdba",
+        "on-error":"#ffffff","on-tertiary":"#ffffff",
+        "tertiary-container":"#008562","primary-fixed-dim":"#ffb3b0",
+        "primary":"#bb0024","on-tertiary-fixed":"#002116",
+        "surface-container-lowest":"#ffffff","tertiary-fixed-dim":"#27e0a9"
+      },
+      borderRadius: {"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},
+      fontFamily: {
+        "display-hero":["Bricolage Grotesque"],
+        "body-md":["Plus Jakarta Sans"],
+        "label-md":["Plus Jakarta Sans"],
+        "label-comic-pill":["Bricolage Grotesque"],
+        "body-sm":["Plus Jakarta Sans"],
+        "headline-sm":["Bricolage Grotesque"],
+        "headline-lg":["Bricolage Grotesque"]
+      },
+      fontSize: {
+        "display-hero":["56px",{"lineHeight":"60px","letterSpacing":"-0.03em","fontWeight":"800"}],
+        "body-md":["16px",{"lineHeight":"24px","fontWeight":"400"}],
+        "label-md":["13px",{"lineHeight":"16px","letterSpacing":"0.04em","fontWeight":"700"}],
+        "label-comic-pill":["14px",{"lineHeight":"16px","letterSpacing":"0.05em","fontWeight":"800"}],
+        "body-sm":["14px",{"lineHeight":"20px","fontWeight":"400"}],
+        "headline-sm":["20px",{"lineHeight":"26px","fontWeight":"700"}],
+        "headline-lg":["36px",{"lineHeight":"44px","letterSpacing":"-0.02em","fontWeight":"700"}]
+      }
+    }
+  }
+};
+</script>
+<style>
+  html, body { margin: 0; padding: 0; }
+  body { overscroll-behavior: none; }
+  ::-webkit-scrollbar { display: none; }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+  }
+  .animate-shake { animation: shake .4s ease-in-out; }
+
+  @keyframes pop-in {
+    0% { transform: scale(0.6); opacity: 0; }
+    60% { transform: scale(1.08); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .animate-pop-in { animation: pop-in .35s ease-out; }
+
+  .scanlines::after {
+    content: ""; position: absolute; inset: 0;
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,.12) 0 1px, transparent 1px 4px);
+    pointer-events: none; z-index: 5;
+  }
+</style>
+</head>
+<body class="bg-background font-body-md text-on-surface antialiased">
+<main class="w-full bg-background min-h-screen px-lg py-xl">
+<div class="flex flex-col w-full max-w-[72rem] mx-auto pb-16 space-y-6">
+
+  <!-- HEADER -->
+  <header class="flex flex-col gap-4">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="px-3 py-1 bg-primary text-on-primary font-label-comic-pill text-label-comic-pill rounded-lg border-2 border-black shadow-[2px_2px_0px_#1c1b1b] uppercase">🎤 Pantalla 33</span>
+        <span class="px-3 py-1 bg-secondary-container text-on-secondary-container font-label-comic-pill text-label-comic-pill rounded-lg border-2 border-black shadow-[2px_2px_0px_#1c1b1b] uppercase">Karaoke Show</span>
+      </div>
+      <div class="flex items-center gap-2 bg-surface-container-high px-3 py-1.5 rounded-lg border-2 border-black shadow-[2px_2px_0px_#1c1b1b]">
+        <span class="w-2.5 h-2.5 rounded-full bg-tertiary animate-pulse"></span>
+        <span class="font-label-md text-label-md uppercase">En vivo</span>
+      </div>
+    </div>
+
+    <div class="relative flex flex-wrap items-end justify-between gap-4 pt-1">
+      <div class="flex items-center gap-3 flex-wrap">
+        <h1 class="font-display-hero text-display-hero text-primary tracking-tight uppercase leading-none drop-shadow-[2px_2px_0px_#1c1b1b]">
+          CANCIÓN INCOMPLETA
+        </h1>
+        <div class="inline-block bg-secondary-container text-on-secondary-container px-3 py-1 rounded-lg shadow-[3px_3px_0px_#1c1b1b] -rotate-3 transition-transform hover:rotate-0">
+          <span class="font-label-comic-pill text-label-comic-pill tracking-widest uppercase">¿TE SABES LA LETRA?</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- GRID PRINCIPAL -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- COLUMNA IZQUIERDA -->
+    <section class="lg:col-span-8 flex flex-col gap-5">
+
+      <!-- PANEL CENTRAL: CANCIÓN ACTUAL -->
+      <div class="bg-surface-container-lowest rounded-2xl shadow-[6px_6px_0px_#1c1b1b] overflow-hidden flex flex-col border-4 border-black">
+        <!-- Metabar -->
+        <div class="bg-inverse-surface text-inverse-on-surface px-4 py-2.5 flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-primary inline-block"></span>
+            <span class="w-3 h-3 rounded-full bg-secondary-container inline-block"></span>
+            <span class="w-3 h-3 rounded-full bg-tertiary-fixed-dim inline-block"></span>
+            <span class="ml-2 font-label-md text-label-md uppercase tracking-wider text-surface-container-highest flex items-center gap-1">
+              <span class="material-symbols-outlined text-[16px] text-primary">music_note</span>
+              CANCIÓN EN CURSO
+            </span>
+          </div>
+          <div class="flex items-center gap-2 bg-inverse-surface/80 px-2.5 py-0.5 rounded text-xs font-mono text-tertiary-fixed">
+            <span class="material-symbols-outlined text-[14px]">tag</span>
+            <span id="track-counter">01 / 06</span>
+          </div>
+        </div>
+
+        <!-- Pantalla: Canción + Equipo + Resultado -->
+        <div class="relative w-full aspect-video bg-inverse-surface overflow-hidden scanlines">
+
+          <!-- Fondo con carátula aleatoria -->
+          <div id="album-art-bg" class="absolute inset-0 bg-cover bg-center opacity-40" style="background-image: url('https://picsum.photos/seed/cancion1/1280/720');"></div>
+
+          <!-- Overlay oscuro -->
+          <div class="absolute inset-0 bg-gradient-to-t from-inverse-surface via-inverse-surface/60 to-inverse-surface/80 pointer-events-none"></div>
+
+          <!-- Contenido central -->
+          <div class="relative z-10 w-full h-full flex flex-col items-center justify-center px-6 text-center gap-6">
+
+            <!-- Equipo activo -->
+            <div id="active-team-pill" class="inline-flex items-center gap-2 bg-primary text-on-primary px-5 py-2 rounded-2xl border-4 border-black shadow-[4px_4px_0px_#1c1b1b] rotate-[-2deg]">
+              <span class="w-3 h-3 rounded-full bg-white animate-pulse"></span>
+              <span class="font-display-hero text-headline-sm uppercase tracking-wider" id="active-team-label">EQUIPO A</span>
+            </div>
+
+            <!-- Número de canción -->
+            <div class="text-secondary-container font-display-hero text-headline-sm uppercase tracking-[0.3em]">
+              CANCIÓN <span id="track-number">01</span>
+            </div>
+
+            <!-- Título de la canción -->
+            <h2 id="track-title" class="font-display-hero text-display-hero text-inverse-on-surface uppercase leading-none drop-shadow-[3px_3px_0px_#1c1b1b]">
+              ES POR TI
+            </h2>
+
+            <!-- Artista -->
+            <p id="track-artist" class="font-body-md text-body-lg text-secondary-fixed-dim uppercase tracking-widest">
+              JUANES
+            </p>
+
+            <!-- Resultado del veredicto -->
+            <div id="verdict-banner" class="hidden mt-4 px-8 py-4 rounded-2xl border-4 border-black shadow-[6px_6px_0px_#1c1b1b] animate-pop-in">
+              <div class="flex items-center gap-3">
+                <span id="verdict-icon" class="material-symbols-outlined text-[48px]"></span>
+                <div class="text-left">
+                  <div id="verdict-title" class="font-display-hero text-headline-lg uppercase leading-none"></div>
+                  <div id="verdict-sub" class="font-label-comic-pill text-label-comic-pill uppercase tracking-wider mt-1"></div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Marca de esquina -->
+          <div class="absolute top-4 right-4 bg-primary text-on-primary px-3 py-1.5 rounded-lg shadow-[3px_3px_0px_#1c1b1b] rotate-2 flex items-center gap-1.5 z-10 pointer-events-none">
+            <span class="material-symbols-outlined text-[18px]">warning</span>
+            <span class="font-label-comic-pill text-label-comic-pill uppercase tracking-wider">¡SE SILENCIA DE GOLPE!</span>
+          </div>
+        </div>
+
+        <!-- Bezel -->
+        <div class="bg-surface-container px-4 py-3 flex flex-wrap items-center justify-between gap-3 border-t-4 border-black">
+          <div class="flex items-center gap-3 flex-wrap">
+            <span class="font-label-comic-pill text-label-comic-pill uppercase text-on-surface-variant">Sintonizador: CANAL KARAOKE HD</span>
+            <span class="px-2 py-0.5 bg-surface-container-highest text-on-surface font-mono text-xs rounded">Reproducción externa</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" id="btn-prev-song" class="w-9 h-9 rounded-lg bg-surface-container-lowest shadow-[2px_2px_0px_#1c1b1b] border-2 border-black flex items-center justify-center hover:bg-secondary-container transition-colors" title="Canción anterior">
+              <span class="material-symbols-outlined text-[18px]">skip_previous</span>
+            </button>
+            <button type="button" id="btn-next-song" class="w-9 h-9 rounded-lg bg-surface-container-lowest shadow-[2px_2px_0px_#1c1b1b] border-2 border-black flex items-center justify-center hover:bg-secondary-container transition-colors" title="Canción siguiente">
+              <span class="material-symbols-outlined text-[18px]">skip_next</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- LYRICS MYSTERY CARD -->
+      <div class="bg-secondary-container rounded-2xl border-4 border-black shadow-[6px_6px_0px_#1c1b1b] p-5 flex flex-col gap-3">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-[26px]">lyrics</span>
+            <h3 class="font-display-hero text-headline-sm uppercase tracking-tight">Letra Misteriosa</h3>
+          </div>
+          <button id="btn-toggle-lyrics" type="button"
+            class="px-3 py-1.5 bg-inverse-surface text-inverse-on-surface font-label-comic-pill text-label-comic-pill uppercase rounded-lg border-2 border-black shadow-[2px_2px_0px_#1c1b1b] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center gap-1">
+            <span class="material-symbols-outlined text-[18px] text-secondary-container">visibility</span>
+            Revelar / Ocultar
+          </button>
+        </div>
+
+        <div id="masked-phrase"
+             class="cursor-pointer select-none bg-primary text-on-primary font-display-hero text-headline-lg uppercase tracking-widest text-center py-6 rounded-xl border-4 border-black shadow-[4px_4px_0px_#1c1b1b] transition-all">
+          [ ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ]
+        </div>
+
+        <div id="revealed-box" class="hidden bg-tertiary-container text-white font-display-hero text-headline-sm uppercase tracking-wide text-center py-4 rounded-xl border-4 border-black shadow-[3px_3px_0px_#1c1b1b]">
+          “...”
+        </div>
+
+        <p class="font-body-sm text-body-sm text-on-secondary-container">
+          Pausa la música con tu equipo externo. El equipo canta el resto. Luego marca CORRECTO o ERROR.
+        </p>
+      </div>
+
+    </section>
+
+    <!-- COLUMNA DERECHA: PANEL DE CONTROL -->
+    <aside class="lg:col-span-4 flex flex-col gap-4 bg-surface-container-lowest p-5 rounded-2xl border-4 border-black shadow-[6px_6px_0px_#1c1b1b]">
+
+      <div class="flex items-center justify-between border-b-4 border-black pb-3">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary text-[24px]">tune</span>
+          <h2 class="font-display-hero text-headline-sm uppercase tracking-tight">PANEL DE CONTROL</h2>
+        </div>
+        <span class="px-2 py-0.5 rounded-full bg-secondary-container text-black font-label-comic-pill text-[11px] border-2 border-black font-black uppercase shadow-[2px_2px_0px_#1c1b1b]">DJ LIVE</span>
+      </div>
+
+      <!-- Equipos -->
+      <div class="flex flex-col gap-2">
+        <label class="font-label-comic-pill text-xs uppercase text-on-surface-variant font-bold flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-[16px]">groups</span> SELECTOR DE EQUIPO
+        </label>
+        <div class="grid grid-cols-2 gap-2 bg-surface-container p-1.5 rounded-xl border-2 border-black">
+          <button type="button" data-team="A" class="team-btn flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg bg-primary text-on-primary font-display-hero text-sm uppercase tracking-wider border-2 border-black shadow-[3px_3px_0px_#1c1b1b]">
+            <span class="w-2.5 h-2.5 rounded-full bg-white inline-block"></span> EQUIPO A
+          </button>
+          <button type="button" data-team="B" class="team-btn flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg bg-surface-container-lowest text-on-surface font-display-hero text-sm uppercase tracking-wider border-2 border-black hover:bg-surface-container-high transition-colors">
+            <span class="w-2.5 h-2.5 rounded-full bg-outline inline-block"></span> EQUIPO B
+          </button>
+        </div>
+      </div>
+
+      <!-- Marcador -->
+      <div class="grid grid-cols-2 gap-2">
+        <div class="bg-surface-container rounded-xl border-2 border-black p-3 text-center">
+          <div class="font-label-comic-pill text-[11px] uppercase text-on-surface-variant">Equipo A</div>
+          <div id="team-a-score" class="font-display-hero text-3xl text-primary transition-all">0</div>
+        </div>
+        <div class="bg-surface-container rounded-xl border-2 border-black p-3 text-center">
+          <div class="font-label-comic-pill text-[11px] uppercase text-on-surface-variant">Equipo B</div>
+          <div id="team-b-score" class="font-display-hero text-3xl text-primary transition-all">0</div>
+        </div>
+      </div>
+
+      <!-- Veredicto -->
+      <div class="flex flex-col gap-2">
+        <label class="font-label-comic-pill text-xs uppercase text-on-surface-variant font-bold flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-[16px]">gavel</span> VEREDICTO DE LETRA
+        </label>
+        <div class="grid grid-cols-2 gap-3">
+          <button type="button" id="btn-hit-verdict"
+            class="flex flex-col items-center justify-center py-3 px-2 rounded-xl bg-[#00a86b] text-white font-display-hero uppercase border-4 border-black shadow-[4px_4px_0px_#1c1b1b] transition-transform active:translate-x-0.5 active:translate-y-0.5 hover:brightness-105">
+            <div class="flex items-center gap-1 text-base font-black">
+              <span class="material-symbols-outlined text-[24px]">check_circle</span> CORRECTO
+            </div>
+            <span class="font-label-comic-pill text-[11px] text-white/90 font-mono">+100 PTS</span>
+          </button>
+          <button type="button" id="btn-fail-verdict"
+            class="flex flex-col items-center justify-center py-3 px-2 rounded-xl bg-primary text-on-primary font-display-hero uppercase border-4 border-black shadow-[4px_4px_0px_#1c1b1b] transition-transform active:translate-x-0.5 active:translate-y-0.5 hover:brightness-105">
+            <div class="flex items-center gap-1 text-base font-black">
+              <span class="material-symbols-outlined text-[24px]">cancel</span> ERROR
+            </div>
+            <span class="font-label-comic-pill text-[11px] text-white/90 font-mono">0 PTS</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Acciones -->
+      <div class="pt-2 border-t-2 border-dashed border-black/30 flex flex-col gap-2.5">
+        <button type="button" id="btn-next-song-action"
+          class="w-full py-3.5 px-4 rounded-xl bg-secondary-container text-on-secondary-container font-display-hero text-base font-black uppercase tracking-wider border-4 border-black shadow-[4px_4px_0px_#1c1b1b] flex items-center justify-center gap-2 hover:brightness-105 transition-all active:translate-x-1 active:translate-y-1 active:shadow-[0px_0px_0px_#1c1b1b]">
+          <span>SIGUIENTE CANCIÓN</span>
+          <span class="material-symbols-outlined text-[22px]">arrow_forward</span>
+        </button>
+        <button type="button" id="btn-end-game"
+          class="w-full py-2.5 px-4 rounded-xl bg-surface-container text-on-surface-variant font-display-hero text-xs uppercase tracking-wider border-2 border-black shadow-[3px_3px_0px_#1c1b1b] flex items-center justify-center gap-1.5 hover:bg-error-container hover:text-error transition-colors">
+          <span class="material-symbols-outlined text-[18px]">stop_circle</span>
+          <span>TERMINAR JUEGO</span>
+        </button>
+      </div>
+
+      <!-- Playlist tray -->
+      <div class="pt-2 border-t-2 border-dashed border-black/30">
+        <label class="font-label-comic-pill text-xs uppercase text-on-surface-variant font-bold flex items-center gap-1.5 mb-2">
+          <span class="material-symbols-outlined text-[16px]">queue_music</span> PLAYLIST
+        </label>
+        <div id="playlist" class="flex flex-col gap-1.5"></div>
+      </div>
+
+    </aside>
+  </div>
+</div>
+</main>
+
+<script>
+(function () {
+  // ============================================================
+  // PLAYLIST — Solo título, artista y frase
+  // ============================================================
+  const PLAYLIST = [
+    { title: 'Es Por Ti',              artist: 'Juanes',         phrase: '...ES POR TI QUE YO RESPiro' },
+    { title: 'La Incondicional',       artist: 'Luis Miguel',    phrase: '...Y SIENTO QUE LA VIDA NOS SEPARA' },
+    { title: 'Antología',              artist: 'Shakira',        phrase: '...Y SIN EMBARGO NO TE OLVIDO' },
+    { title: 'La Camisa Negra',        artist: 'Juanes',         phrase: '...HOY TENGO LA CAMISA NEGRA' },
+    { title: 'Vivir Sin Aire',         artist: 'Maná',           phrase: '...CÓMO QUISIERA QUE ESTUVIERAS AQUÍ' },
+    { title: 'Corazón Partío',         artist: 'Alejandro Sanz', phrase: '...Y ME ENAMORÉ DE TI' },
+  ];
+
+  // ============================================================
+  // ESTADO
+  // ============================================================
+  const state = {
+    currentTrack: 0,
+    activeTeam: 'A',
+    scores: { A: 0, B: 0 },
+    revealed: false,
+  };
+
+  // ============================================================
+  // DOM
+  // ============================================================
+  const $ = (id) => document.getElementById(id);
+  const trackNumber      = $('track-number');
+  const trackTitle       = $('track-title');
+  const trackArtist      = $('track-artist');
+  const trackCounter     = $('track-counter');
+  const albumArtBg       = $('album-art-bg');
+  const activeTeamPill   = $('active-team-pill');
+  const activeTeamLabel  = $('active-team-label');
+  const verdictBanner    = $('verdict-banner');
+  const verdictIcon      = $('verdict-icon');
+  const verdictTitle     = $('verdict-title');
+  const verdictSub       = $('verdict-sub');
+  const maskedPhrase     = $('masked-phrase');
+  const revealedBox      = $('revealed-box');
+  const toggleLyrics     = $('btn-toggle-lyrics');
+  const btnHit           = $('btn-hit-verdict');
+  const btnFail          = $('btn-fail-verdict');
+  const teamAScore       = $('team-a-score');
+  const teamBScore       = $('team-b-score');
+  const playlistEl       = $('playlist');
+
+  const MASKED_PLACEHOLDER = '[ ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ]';
+
+  // ============================================================
+  // RENDER
+  // ============================================================
+  function currentTrack() { return PLAYLIST[state.currentTrack]; }
+
+  function renderTrack() {
+    const track = currentTrack();
+    const num = String(state.currentTrack + 1).padStart(2, '0');
+
+    trackNumber.textContent = num;
+    trackTitle.textContent = track.title.toUpperCase();
+    trackArtist.textContent = track.artist.toUpperCase();
+    trackCounter.textContent = num + ' / ' + String(PLAYLIST.length).padStart(2, '0');
+
+    albumArtBg.style.backgroundImage = 'url(https://picsum.photos/seed/' + encodeURIComponent(track.title) + '/1280/720)';
+
+    // Resetear letra al cambiar de canción
+    revealOff();
+  }
+
+  function renderActiveTeam() {
+    const isA = state.activeTeam === 'A';
+    activeTeamLabel.textContent = 'EQUIPO ' + state.activeTeam;
+    if (isA) {
+      activeTeamPill.className = 'inline-flex items-center gap-2 bg-primary text-on-primary px-5 py-2 rounded-2xl border-4 border-black shadow-[4px_4px_0px_#1c1b1b] rotate-[-2deg]';
+    } else {
+      activeTeamPill.className = 'inline-flex items-center gap-2 bg-secondary-container text-on-secondary-container px-5 py-2 rounded-2xl border-4 border-black shadow-[4px_4px_0px_#1c1b1b] rotate-[-2deg]';
+    }
+  }
+
+  function showVerdict(isCorrect) {
+    verdictBanner.classList.remove('hidden');
+    verdictBanner.classList.remove('animate-pop-in');
+    void verdictBanner.offsetWidth; // reiniciar animación
+    verdictBanner.classList.add('animate-pop-in');
+
+    if (isCorrect) {
+      verdictBanner.className = 'mt-4 px-8 py-4 rounded-2xl border-4 border-black shadow-[6px_6px_0px_#1c1b1b] bg-[#00a86b] text-white animate-pop-in';
+      verdictIcon.textContent = 'check_circle';
+      verdictTitle.textContent = '¡CORRECTO!';
+      verdictSub.textContent = '+100 PTS PARA EQUIPO ' + state.activeTeam;
+    } else {
+      verdictBanner.className = 'mt-4 px-8 py-4 rounded-2xl border-4 border-black shadow-[6px_6px_0px_#1c1b1b] bg-primary text-on-primary animate-pop-in';
+      verdictIcon.textContent = 'cancel';
+      verdictTitle.textContent = '¡ERROR!';
+      verdictSub.textContent = '0 PTS • EQUIPO ' + state.activeTeam;
+    }
+  }
+
+  function renderPlaylist() {
+    playlistEl.innerHTML = '';
+    PLAYLIST.forEach((track, i) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'w-full text-left px-3 py-2 rounded-lg border-2 border-black flex items-center justify-between gap-2 transition-colors ' +
+        (i === state.currentTrack
+          ? 'bg-secondary-container text-on-secondary-container shadow-[2px_2px_0px_#1c1b1b]'
+          : 'bg-surface-container-lowest hover:bg-surface-container');
+      btn.innerHTML =
+        '<span class="font-display-hero text-xs uppercase tracking-tight truncate">' +
+          (i + 1) + '. ' + track.title + ' — ' + track.artist +
+        '</span>' +
+        '<span class="material-symbols-outlined text-[16px]">play_arrow</span>';
+      btn.addEventListener('click', () => loadTrack(i));
+      playlistEl.appendChild(btn);
+    });
+  }
+
+  // ============================================================
+  // REVELAR LETRA
+  // ============================================================
+  function revealOn() {
+    state.revealed = true;
+    revealedBox.classList.remove('hidden');
+    revealedBox.textContent = '“' + currentTrack().phrase + '”';
+    maskedPhrase.textContent = '“' + currentTrack().phrase + '”';
+    maskedPhrase.classList.remove('bg-primary', 'text-on-primary');
+    maskedPhrase.classList.add('bg-tertiary-container', 'text-white');
+  }
+  function revealOff() {
+    state.revealed = false;
+    revealedBox.classList.add('hidden');
+    maskedPhrase.textContent = MASKED_PLACEHOLDER;
+    maskedPhrase.classList.add('bg-primary', 'text-on-primary');
+    maskedPhrase.classList.remove('bg-tertiary-container', 'text-white');
+  }
+  function toggleReveal() {
+    state.revealed ? revealOff() : revealOn();
+  }
+
+  // ============================================================
+  // MARCADOR
+  // ============================================================
+  function bumpScore(team, amount) {
+    state.scores[team] = Math.max(0, state.scores[team] + amount);
+    const el = team === 'A' ? teamAScore : teamBScore;
+    el.textContent = state.scores[team];
+    el.classList.add('scale-125', 'text-tertiary');
+    setTimeout(() => el.classList.remove('scale-125', 'text-tertiary'), 500);
+  }
+
+  function setActiveTeam(team) {
+    state.activeTeam = team;
+    document.querySelectorAll('.team-btn').forEach(btn => {
+      const isA = btn.dataset.team === 'A';
+      const isSelected = btn.dataset.team === team;
+      if (isSelected) {
+        btn.className = 'team-btn flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg ' +
+          (isA ? 'bg-primary text-on-primary ' : 'bg-secondary-container text-on-secondary-container ') +
+          'font-display-hero text-sm uppercase tracking-wider border-2 border-black shadow-[3px_3px_0px_#1c1b1b]';
+      } else {
+        btn.className = 'team-btn flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg bg-surface-container-lowest text-on-surface font-display-hero text-sm uppercase tracking-wider border-2 border-black hover:bg-surface-container-high transition-colors';
+      }
+    });
+    renderActiveTeam();
+  }
+
+  // ============================================================
+  // NAVEGACIÓN DE CANCIONES
+  // ============================================================
+  function loadTrack(index) {
+    state.currentTrack = index;
+    verdictBanner.classList.add('hidden');
+    renderTrack();
+    renderPlaylist();
+  }
+
+  function nextTrack() {
+    loadTrack((state.currentTrack + 1) % PLAYLIST.length);
+  }
+
+  function prevTrack() {
+    loadTrack((state.currentTrack - 1 + PLAYLIST.length) % PLAYLIST.length);
+  }
+
+  // ============================================================
+  // EVENTOS
+  // ============================================================
+  $('btn-next-song').addEventListener('click', nextTrack);
+  $('btn-prev-song').addEventListener('click', prevTrack);
+  $('btn-next-song-action').addEventListener('click', nextTrack);
+
+  toggleLyrics.addEventListener('click', toggleReveal);
+  maskedPhrase.addEventListener('click', toggleReveal);
+
+  btnHit.addEventListener('click', () => {
+    bumpScore(state.activeTeam, 100);
+    showVerdict(true);
+    revealOn();
+  });
+
+  btnFail.addEventListener('click', () => {
+    showVerdict(false);
+    btnFail.classList.add('animate-shake');
+    setTimeout(() => btnFail.classList.remove('animate-shake'), 400);
+  });
+
+  $('btn-end-game').addEventListener('click', () => {
+    if (confirm('¿Terminar la partida de Canción Incompleta?')) {
+      alert('Partida finalizada.\nEquipo A: ' + state.scores.A + '\nEquipo B: ' + state.scores.B);
+    }
+  });
+
+  document.querySelectorAll('.team-btn').forEach(btn => {
+    btn.addEventListener('click', () => setActiveTeam(btn.dataset.team));
+  });
+
+  // ============================================================
+  // INIT
+  // ============================================================
+  renderPlaylist();
+  setActiveTeam('A');
+  renderTrack();
+})();
+</script>
+</body>
+</html>

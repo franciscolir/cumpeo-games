@@ -1,302 +1,539 @@
-<!DOCTYPE html><html lang="es" style=""><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;800&amp;family=Plus+Jakarta+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"error":"#ba1a1a","on-primary":"#ffffff","secondary":"#775a00","surface-container-highest":"#e5e2e1","inverse-on-surface":"#f3f0ef","primary-container":"#e41b34","secondary-container":"#ffc72c","on-tertiary-fixed-variant":"#00513b","surface":"#fcf9f8","secondary-fixed-dim":"#f6bf22","surface-dim":"#dcd9d9","on-secondary-fixed":"#251a00","on-primary-fixed-variant":"#93001a","on-error-container":"#93000a","background":"#fcf9f8","surface-container-low":"#f6f3f2","surface-tint":"#bf0025","surface-container":"#f0edec","secondary-fixed":"#ffdf99","outline":"#926e6d","error-container":"#ffdad6","inverse-surface":"#313030","inverse-primary":"#ffb3b0","on-primary-container":"#fffbff","on-primary-fixed":"#410006","on-secondary":"#ffffff","tertiary":"#00694d","tertiary-fixed":"#54fdc4","surface-bright":"#fcf9f8","surface-variant":"#e5e2e1","on-tertiary-container":"#f5fff8","on-secondary-container":"#6f5400","surface-container-high":"#ebe7e7","on-secondary-fixed-variant":"#5a4300","on-background":"#1c1b1b","primary-fixed":"#ffdad8","on-surface":"#1c1b1b","on-surface-variant":"#5d3f3e","outline-variant":"#e6bdba","on-error":"#ffffff","on-tertiary":"#ffffff","tertiary-container":"#008562","primary-fixed-dim":"#ffb3b0","primary":"#bb0024","on-tertiary-fixed":"#002116","surface-container-lowest":"#ffffff","tertiary-fixed-dim":"#27e0a9"},borderRadius:{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},spacing:{"container-max":"72rem","2xs":"0.25rem","3xl":"4rem","gutter-mobile":"1rem","xl":"2rem","sm":"0.75rem","lg":"1.5rem","gutter-desktop":"2rem","gutter-tablet":"1.5rem","xs":"0.5rem","2xl":"3rem","md":"1rem"},fontFamily:{"display-hero":["Bricolage Grotesque"],"display-hero-mobile":["Bricolage Grotesque"],"body-lg":["Plus Jakarta Sans"],"headline-md":["Bricolage Grotesque"],"label-md":["Plus Jakarta Sans"],"label-comic-pill":["Bricolage Grotesque"],"body-sm":["Plus Jakarta Sans"],"label-lg":["Plus Jakarta Sans"],"headline-sm":["Bricolage Grotesque"],"body-md":["Plus Jakarta Sans"],"headline-lg":["Bricolage Grotesque"],"headline-lg-mobile":["Bricolage Grotesque"]},fontSize:{"display-hero":["56px",{"lineHeight":"60px","letterSpacing":"-0.03em","fontWeight":"800"}],"display-hero-mobile":["38px",{"lineHeight":"42px","letterSpacing":"-0.02em","fontWeight":"800"}],"body-lg":["18px",{"lineHeight":"28px","letterSpacing":"-0.01em","fontWeight":"500"}],"headline-md":["24px",{"lineHeight":"30px","letterSpacing":"-0.01em","fontWeight":"700"}],"label-md":["13px",{"lineHeight":"16px","letterSpacing":"0.04em","fontWeight":"700"}],"label-comic-pill":["14px",{"lineHeight":"16px","letterSpacing":"0.05em","fontWeight":"800"}],"body-sm":["14px",{"lineHeight":"20px","letterSpacing":"0em","fontWeight":"400"}],"label-lg":["16px",{"lineHeight":"20px","letterSpacing":"0.02em","fontWeight":"700"}],"headline-sm":["20px",{"lineHeight":"26px","letterSpacing":"0em","fontWeight":"700"}],"body-md":["16px",{"lineHeight":"24px","letterSpacing":"0em","fontWeight":"400"}],"headline-lg":["36px",{"lineHeight":"44px","letterSpacing":"-0.02em","fontWeight":"700"}],"headline-lg-mobile":["28px",{"lineHeight":"34px","letterSpacing":"-0.01em","fontWeight":"700"}]}}}};</script></head><body class="bg-background font-body-md text-on-surface antialiased"><div class=""><main class="w-full bg-background min-h-screen px-lg py-xl"><div class="flex flex-col w-full gap-lg">
-<!-- 1. CABECERA & CONTEXTO DEL DUELO -->
-<section class="flex flex-col lg:flex-row items-stretch justify-between gap-md w-full">
-<!-- JUGADOR A: ACTIVO -->
-<div class="flex-1 bg-surface-container-lowest p-md rounded-xl shadow-[4px_4px_0px_#1c1b1b] relative overflow-hidden flex flex-col justify-between">
-<div class="absolute -top-3 -right-3 w-16 h-16 bg-primary/10 rounded-full blur-sm"></div>
-<div class="flex items-center justify-between gap-sm mb-xs">
-<div class="flex items-center gap-sm">
-<div class="relative">
-<div class="w-12 h-12 rounded-xl bg-primary-container text-on-primary-container flex items-center justify-center font-headline-sm text-headline-sm shadow-[2px_2px_0px_#1c1b1b]">
-              ⚡
-            </div>
-<span class="absolute -bottom-1 -right-1 flex h-3.5 w-3.5">
-<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-tertiary-container opacity-75"></span>
-<span class="relative inline-flex rounded-full h-3.5 w-3.5 bg-tertiary-container"></span>
-</span>
-</div>
-<div>
-<div class="flex items-center gap-2xs">
-<span class="font-label-comic-pill text-label-comic-pill text-primary uppercase tracking-wider">JUGADOR 1</span>
-<span class="px-xs py-2xs bg-primary text-on-primary text-[10px] font-label-comic-pill uppercase rounded-full -rotate-3">TURNO VIVO</span>
-</div>
-<div class="font-headline-sm text-headline-sm text-on-surface">Julieta González</div>
-<div class="font-label-md text-label-md text-on-surface-variant">Equipo Rayos Escarlata</div>
-</div>
-</div>
-</div>
-</div>
-<!-- HUD CENTRAL / INFO GLOBAL -->
-<div class="flex flex-col items-center justify-center px-lg py-sm bg-secondary-container text-on-secondary-container rounded-xl shadow-[4px_4px_0px_#1c1b1b] text-center min-w-[220px]">
-<span class="px-xs py-2xs bg-surface-container-lowest text-on-surface font-label-comic-pill text-label-comic-pill uppercase rounded-full shadow-[2px_2px_0px_#1c1b1b] -rotate-1 mb-2xs">
-        MODO OFICIAL CUMPEO
-      </span>
-<h1 class="font-headline-md text-headline-md uppercase tracking-tight leading-none text-on-secondary-container">
-        EL ROSCO
-      </h1>
-<div class="font-label-comic-pill text-label-comic-pill text-secondary uppercase tracking-widest mt-2xs">
-        DUELO EN VIVO • VUELTA 1/2
-      </div>
-<!-- Temporizador Alarma Master -->
-<div class="mt-xs inline-flex items-center gap-xs px-sm py-2xs bg-surface-container-lowest text-on-surface rounded-full shadow-[2px_2px_0px_#1c1b1b]">
-<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-<span class="font-label-comic-pill text-label-comic-pill" id="activeLetterHUD">LETRA EN JUEGO: 'S'</span>
-</div>
-</div>
-<!-- JUGADOR B: EN ESPERA -->
-<div class="flex-1 bg-surface-container-lowest p-md rounded-xl shadow-[4px_4px_0px_#1c1b1b] opacity-85 hover:opacity-100 transition-opacity flex flex-col justify-between">
-<div class="flex items-center justify-between gap-sm mb-xs">
-<div class="flex items-center gap-sm">
-<div class="w-12 h-12 rounded-xl bg-surface-container text-on-surface flex items-center justify-center font-headline-sm text-headline-sm shadow-[2px_2px_0px_#1c1b1b]">
-            🛡️
-          </div>
-<div>
-<div class="flex items-center gap-2xs">
-<span class="font-label-comic-pill text-label-comic-pill text-on-surface-variant uppercase tracking-wider">JUGADOR 2</span>
-<span class="px-xs py-2xs bg-surface-container text-on-surface-variant text-[10px] font-label-comic-pill uppercase rounded-full">EN PAUSA</span>
-</div>
-<div class="font-headline-sm text-headline-sm text-on-surface">Mateo Rojas</div>
-<div class="font-label-md text-label-md text-on-surface-variant">Equipo Titán Dorado</div>
-</div>
-</div>
-<div class="text-right">
-<span class="font-label-md text-label-md text-on-surface-variant uppercase block">RELOJ</span>
-<span class="font-headline-lg text-headline-lg text-on-surface tracking-tight">01:12<span class="text-xs font-body-sm text-on-surface-variant">s</span></span>
-</div>
-</div>
-<!-- MARCADORES JUGADOR B -->
-<div class="grid grid-cols-3 gap-xs pt-xs bg-surface-container-low p-xs rounded-lg">
-<div class="flex items-center gap-2xs justify-center bg-tertiary/15 text-tertiary py-2xs px-xs rounded">
-<span class="material-symbols-outlined text-[18px]">check_circle</span>
-<span class="font-label-comic-pill text-label-comic-pill">11 Aciertos</span>
-</div>
-<div class="flex items-center gap-2xs justify-center bg-error/15 text-error py-2xs px-xs rounded">
-<span class="material-symbols-outlined text-[18px]">cancel</span>
-<span class="font-label-comic-pill text-label-comic-pill">1 Fallo</span>
-</div>
-<div class="flex items-center gap-2xs justify-center bg-secondary-container/30 text-on-secondary-container py-2xs px-xs rounded">
-<span class="material-symbols-outlined text-[18px]">fast_forward</span>
-<span class="font-label-comic-pill text-label-comic-pill">8 Pasadas</span>
-</div>
-</div>
-</div>
-</section>
-<!-- 2 & 3. NÚCLEO CENTRAL: ROSCO CIRCULAR + TARJETA DE PREGUNTAS -->
-<section class="relative w-full bg-surface-container-lowest rounded-xl shadow-[4px_4px_0px_#1c1b1b] p-md lg:p-xl flex flex-col min-h-[580px] overflow-hidden justify-center"><div class="absolute inset-0 opacity-5 pointer-events-none" style="background-image: radial-gradient(#1c1b1b 1.5px, transparent 1.5px); background-size: 18px 18px;"></div><div class="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-lg lg:gap-xl items-center w-full max-w-[1200px] mx-auto"><div class="flex items-center justify-center w-full"><div class="relative w-[340px] h-[340px] sm:w-[440px] sm:h-[440px] lg:w-[480px] lg:h-[480px] flex items-center justify-center"><svg class="absolute inset-0 w-full h-full pointer-events-none -rotate-90" viewBox="0 0 580 580"><circle cx="290" cy="290" fill="none" r="248" stroke="#e5e2e1" stroke-dasharray="6 6" stroke-width="2"></circle><circle cx="290" cy="290" fill="none" opacity="0.6" r="248" stroke="#ffc72c" stroke-dasharray="1558" stroke-dashoffset="436" stroke-width="5"></circle></svg><button class="absolute -translate-x-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-full bg-tertiary text-on-tertiary font-headline-sm text-headline-sm flex items-center justify-center shadow-[2px_2px_0px_#1c1b1b] hover:scale-110 transition-transform" style="top: 7.2%; left: 50%;">A</button><button class="absolute -translate-x-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-full bg-tertiary text-on-tertiary font-headline-sm text-headline-sm flex items-center justify-center shadow-[2px_2px_0px_#1c1b1b]" style="top: 9.7%; left: 62.4%;">B</button><button class="absolute -translate-x-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-full bg-tertiary text-on-tertiary font-headline-sm text-headline-sm flex items-center justify-center shadow-[2px_2px_0px_#1c1b1b]" style="top: 15.6%; left: 73.8%;">C</button><button class="absolute -translate-x-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-full bg-tertiary text-on-tertiary font-headline-sm text-headline-sm flex items-center justify-center shadow-[2px_2px_0px_#1c1b1b]" style="top: 24.8%; left: 83.2%;">D</button><button class="absolute -translate-x-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-full bg-tertiary text-on-tertiary font-headline-sm text-headline-sm flex items-center justify-center shadow-[2px_2px_0px_#1c1b1b]" style="top: 36.1%; left: 89.8%;">E</button><button class="absolute -translate-x-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-full bg-error text-on-error font-headline-sm text-headline-sm flex items-center justify-center shadow-[2px_2px_0px_#1c1b1b] relative" style="top: 48.7%; left: 92.7%;">F<span class="absolute -top-1 -right-1 w-4 h-4 bg-on-background text-on-error text-[10px] rounded-full flex items-center justify-center font-bold">✕</span></button><button class="absolute -translate-x-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-full bg-tertiary text-on-tertiary font-headline-sm text-headline-sm flex items-center justify-center shadow-[2px_2px_0px_#1c1b1b]" style="top: 61.3%; left: 91.5%;">G</button><button class="absolute -translate-x-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-full bg-tertiary text-on-tertiary font-headline-sm text-headline-sm flex items-center justify-center shadow-[2px_2px_0px_#1c1b1b]" style="top: 73.1%; left: 85.9%;">H</button><button class="absolute -translate-x-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-full bg-tertiary text-on-tertiary font-headline-sm text-headline-sm flex items-center justify-center shadow-[2px_2px_0px_#1c1b1b]" style="top: 83.2%; left: 76.8%;">I</button><button class="absolute -translate-x-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-full bg-tertiary text-on-tertiary font-headline-sm text-headline-sm flex items-center justify-center shadow-[2px_2px_0px_#1c1b1b]" style="top: 90.5%; left: 65.2%;">J</button><button class="absolute -translate-x-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-full bg-error text-on-error font-headline-sm text-headline-sm flex items-center justify-center shadow-[2px_2px_0px_#1c1b1b] relative" style="top: 92.8%; left: 52.6%;">L<span class="absolute -top-1 -right-1 w-4 h-4 bg-on-background text-on-error text-[10px] rounded-full flex items-center justify-center font-bold">✕</span></button><button class="absolute -translate-x-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-full bg-tertiary text-on-tertiary font-headline-sm text-headline-sm flex items-center justify-center shadow-[2px_2px_0px_#1c1b1b]" style="top: 90.9%; left: 40%;">M</button><button class="absolute -translate-x-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-full bg-tertiary text-on-tertiary font-headline-sm text-headline-sm flex items-center justify-center shadow-[2px_2px_0px_#1c1b1b]" style="top: 84.4%; left: 28.1%;">N</button><button class="absolute -translate-x-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-full bg-tertiary text-on-tertiary font-headline-sm text-headline-sm flex items-center justify-center shadow-[2px_2px_0px_#1c1b1b]" style="top: 74.8%; left: 18.2%;">Ñ</button><button class="absolute -translate-x-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-full bg-tertiary text-on-tertiary font-headline-sm text-headline-sm flex items-center justify-center shadow-[2px_2px_0px_#1c1b1b]" style="top: 63.4%; left: 11.3%;">O</button><button class="absolute -translate-x-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-full bg-tertiary text-on-tertiary font-headline-sm text-headline-sm flex items-center justify-center shadow-[2px_2px_0px_#1c1b1b]" style="top: 50.8%; left: 7.7%;">P</button><button class="absolute -translate-x-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-full bg-secondary-container text-on-secondary-container font-headline-sm text-headline-sm flex items-center justify-center shadow-[2px_2px_0px_#1c1b1b] relative" style="top: 38.3%; left: 8.8%;">Q<span class="absolute -top-1 -right-1 w-4 h-4 bg-on-background text-secondary-container text-[10px] rounded-full flex items-center justify-center font-bold">↷</span></button><button class="absolute -translate-x-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-full bg-secondary-container text-on-secondary-container font-headline-sm text-headline-sm flex items-center justify-center shadow-[2px_2px_0px_#1c1b1b] relative" style="top: 26.6%; left: 14.1%;">R<span class="absolute -top-1 -right-1 w-4 h-4 bg-on-background text-secondary-container text-[10px] rounded-full flex items-center justify-center font-bold">↷</span></button><div class="absolute -translate-x-1/2 -translate-y-1/2 z-20" id="letterNodeS" style="top: 17.0%; left: 23.3%;"><div class="relative"><span class="absolute inset-0 rounded-full bg-primary animate-ping opacity-30"></span><button class="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-full bg-primary text-on-primary font-headline-lg text-headline-lg flex items-center justify-center shadow-[4px_4px_0px_#1c1b1b] scale-110 -rotate-3 transition-transform">S</button></div></div><button class="absolute -translate-x-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-full bg-surface-container text-on-surface font-headline-sm text-headline-sm flex items-center justify-center shadow-[2px_2px_0px_#1c1b1b]" style="top: 10.4%; left: 35.8%;">T</button><button class="absolute -translate-x-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-full bg-surface-container text-on-surface font-headline-sm text-headline-sm flex items-center justify-center shadow-[2px_2px_0px_#1c1b1b]" style="top: 7.8%; left: 49.8%;">U</button><button class="absolute -translate-x-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-full bg-surface-container text-on-surface font-headline-sm text-headline-sm flex items-center justify-center shadow-[2px_2px_0px_#1c1b1b]" style="top: 8.8%; left: 63.8%;">V</button><button class="absolute -translate-x-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-full bg-surface-container text-on-surface font-headline-sm text-headline-sm flex items-center justify-center shadow-[2px_2px_0px_#1c1b1b]" style="top: 14.8%; left: 76.5%;">X</button><button class="absolute -translate-x-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-full bg-surface-container text-on-surface font-headline-sm text-headline-sm flex items-center justify-center shadow-[2px_2px_0px_#1c1b1b]" style="top: 24.3%; left: 86.8%;">Y</button><button class="absolute -translate-x-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-full bg-surface-container text-on-surface font-headline-sm text-headline-sm flex items-center justify-center shadow-[2px_2px_0px_#1c1b1b]" style="top: 36.4%; left: 93%;">Z</button></div></div><div class="flex flex-col items-center justify-center w-full"><div class="w-full max-w-[480px] bg-surface-container-lowest p-md sm:p-lg rounded-2xl shadow-[6px_6px_0px_#1c1b1b] flex flex-col items-center text-center border-2 border-on-background"><div class="flex items-center gap-xs mb-xs flex-wrap justify-center"><span class="px-sm py-2xs bg-primary text-on-primary font-label-comic-pill text-label-comic-pill uppercase rounded-full shadow-[2px_2px_0px_#1c1b1b] -rotate-1">EMPIEZA CON LA 'S'</span><span class="px-xs py-2xs bg-surface-container text-on-surface font-label-md text-label-md rounded">Ciencia &amp; Naturaleza</span><span class="px-xs py-2xs bg-secondary-container text-on-secondary-container font-label-comic-pill text-[11px] rounded">DIFICULTAD MEDIA</span></div><div class="my-xs px-xs"><p class="font-headline-sm text-headline-sm text-on-surface leading-snug" id="questionText">“Fenómeno meteorológico violento caracterizado por vientos giratorios destructivos que se extienden desde una nube hasta el suelo.”</p></div><div class="w-full mt-sm flex flex-col gap-2xs"><div class="relative w-full"><input autocomplete="off" class="w-full bg-surface text-on-surface font-headline-sm text-headline-sm px-md py-sm rounded-xl shadow-[3px_3px_0px_#1c1b1b] focus:shadow-[4px_4px_0px_#1c1b1b] outline-none transition-all pr-10" id="playerAnswerInput" placeholder="Escribe aquí tu respuesta..." type="text" value="Tornado..."><button class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface" id="clearInputBtn"><span class="material-symbols-outlined text-[20px]">backspace</span></button></div><div class="flex items-center justify-between px-xs text-on-surface-variant font-body-sm text-body-sm text-[12px]"><span class="flex items-center gap-2xs text-tertiary-container font-medium"><span class="material-symbols-outlined text-[14px]">check</span> Tolera tildes, mayúsculas y espacios</span><span class="text-on-surface-variant">Pista: 7 Letras</span></div></div><div class="grid grid-cols-2 gap-xs w-full mt-md"><button class="px-sm py-sm bg-tertiary text-on-tertiary font-label-comic-pill text-label-comic-pill uppercase rounded-xl shadow-[4px_4px_0px_#1c1b1b] active:translate-x-1 active:translate-y-1 active:shadow-none hover:-translate-y-0.5 transition-all flex items-center justify-center gap-xs" id="btnSubmitAnswer"><span class="material-symbols-outlined text-[20px]">send</span> ¡RESPONDER!</button><button class="px-sm py-sm bg-secondary-container text-on-secondary-container font-label-comic-pill text-label-comic-pill uppercase rounded-xl shadow-[4px_4px_0px_#1c1b1b] active:translate-x-1 active:translate-y-1 active:shadow-none hover:-translate-y-0.5 transition-all flex items-center justify-center gap-xs" id="btnPassWord"><span class="material-symbols-outlined text-[20px]">skip_next</span> ¡PASAPALABRA!</button></div><div class="mt-xs text-[11px] font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Pulsa <kbd class="px-1.5 py-0.5 bg-surface-container rounded shadow-sm text-on-surface">Enter</kbd> para Enviar • <kbd class="px-1.5 py-0.5 bg-surface-container rounded shadow-sm text-on-surface">Espacio</kbd> para Pasapalabra</div></div></div></div><div class="absolute bottom-md left-md hidden md:flex items-center gap-sm bg-surface-container-low p-sm rounded-xl shadow-[3px_3px_0px_#1c1b1b] max-w-xs z-20"><div class="w-12 h-12 rounded-xl bg-secondary-fixed flex items-center justify-center text-2xl shadow-[2px_2px_0px_#1c1b1b] flex-shrink-0">🦜</div><div class="flex flex-col"><span class="font-label-comic-pill text-label-comic-pill uppercase text-primary leading-tight">Pupi Árbitro</span><span class="font-body-sm text-body-sm text-on-surface text-[12px] leading-snug">"¡Cuidado con la S! Si dudas, pasa la palabra y remátala en la vuelta 2."</span></div></div><div class="absolute bottom-md right-md hidden md:flex flex-col items-end gap-2xs bg-surface-container-low px-md py-sm rounded-xl shadow-[3px_3px_0px_#1c1b1b] z-20"><div class="flex items-center gap-xs"><span class="font-label-comic-pill text-label-comic-pill uppercase text-on-surface">Progreso Vuelta:</span><span class="font-label-comic-pill text-label-comic-pill text-primary">18 / 25</span></div><div class="w-36 h-2.5 bg-surface-container rounded-full overflow-hidden"><div class="bg-tertiary-container h-full rounded-full" style="width: 72%"></div></div></div></section>
-<!-- 4. PANEL DE CONTROL DE ANIMADOR & HERRAMIENTAS EN VIVO -->
-<section class="grid grid-cols-1 md:grid-cols-3 gap-md w-full">
-<!-- PANEL DE VALIDACIÓN MANUAL DEL ANIMADOR -->
-<div class="bg-surface-container-lowest p-md rounded-xl shadow-[4px_4px_0px_#1c1b1b] flex flex-col justify-between gap-sm">
-<div class="flex items-center justify-between">
-<div class="flex items-center gap-xs">
-<span class="material-symbols-outlined text-primary text-[22px]">gavel</span>
-<span class="font-headline-sm text-headline-sm text-on-surface">Veredicto Conductor</span>
-</div>
-<span class="px-xs py-2xs bg-secondary-fixed text-on-secondary-fixed text-[11px] font-label-comic-pill uppercase rounded">MODO ANFITRIÓN</span>
-</div>
-<p class="font-body-sm text-body-sm text-on-surface-variant">
-        Valida respuestas ambiguas o corrige puntuaciones otorgadas por el reconocimiento de voz:
-      </p>
-<div class="flex items-center gap-xs pt-xs">
-<button class="flex-1 py-xs bg-tertiary-container text-on-tertiary-container font-label-comic-pill text-label-comic-pill uppercase rounded-lg shadow-[2px_2px_0px_#1c1b1b] active:translate-x-0.5 active:translate-y-0.5 hover:opacity-90 flex items-center justify-center gap-2xs" id="btnManualHit">
-<span class="material-symbols-outlined text-[18px]">add_task</span>
-          +100 ACIERTO
-        </button>
-<button class="flex-1 py-xs bg-error text-on-error font-label-comic-pill text-label-comic-pill uppercase rounded-lg shadow-[2px_2px_0px_#1c1b1b] active:translate-x-0.5 active:translate-y-0.5 hover:opacity-90 flex items-center justify-center gap-2xs" id="btnManualError">
-<span class="material-symbols-outlined text-[18px]">close</span>
-          FALLO
-        </button>
-<button class="px-sm py-xs bg-surface-container text-on-surface font-label-comic-pill text-label-comic-pill uppercase rounded-lg shadow-[2px_2px_0px_#1c1b1b] active:translate-x-0.5 active:translate-y-0.5 hover:bg-surface-container-high flex items-center justify-center" id="btnToggleTimer">
-<span class="material-symbols-outlined text-[18px]" id="pauseIcon">pause</span>
-</button>
-</div>
-</div>
-<!-- BANCO DE PREGUNTAS Y GESTIÓN DE VUELTA -->
-<div class="bg-surface-container-lowest p-md rounded-xl shadow-[4px_4px_0px_#1c1b1b] flex flex-col justify-between gap-sm">
-<div class="flex items-center justify-between">
-<div class="flex items-center gap-xs">
-<span class="material-symbols-outlined text-secondary text-[22px]">quiz</span>
-<span class="font-headline-sm text-headline-sm text-on-surface">Banco de Definiciones</span>
-</div>
-<span class="font-label-md text-label-md text-on-surface-variant">Solución: <strong>SIROCO</strong></span>
-</div>
-<div class="p-xs bg-surface-container-low rounded-lg font-body-sm text-body-sm text-on-surface flex items-start gap-xs">
-<span class="material-symbols-outlined text-primary text-[18px] flex-shrink-0 mt-0.5">info</span>
-<span class="">Aceptadas como válidas por sinonimia: <em>"Siroco", "Simún", "Surada"</em>. Rechazar si menciona <em>"Huracán"</em>.</span>
-</div>
-<div class="flex items-center justify-between gap-xs pt-xs">
-<button class="px-sm py-xs bg-surface-container text-on-surface font-label-comic-pill text-label-comic-pill uppercase rounded-lg shadow-[2px_2px_0px_#1c1b1b] hover:bg-surface-container-high flex items-center gap-2xs">
-<span class="material-symbols-outlined text-[16px]">sync</span>
-          Cambiar Pregunta
-        </button>
-<button class="px-sm py-xs bg-surface-container text-on-surface font-label-comic-pill text-label-comic-pill uppercase rounded-lg shadow-[2px_2px_0px_#1c1b1b] hover:bg-surface-container-high flex items-center gap-2xs">
-<span class="material-symbols-outlined text-[16px]">swap_horiz</span>
-          Ceder Turno
-        </button>
-</div>
-</div>
-<!-- TRANSMISIÓN & AUDIO FX PARA LA FIESTA -->
-<div class="bg-surface-container-lowest p-md rounded-xl shadow-[4px_4px_0px_#1c1b1b] flex flex-col justify-between gap-sm">
-<div class="flex items-center justify-between">
-<div class="flex items-center gap-xs">
-<span class="material-symbols-outlined text-tertiary text-[22px]">cast_connected</span>
-<span class="font-headline-sm text-headline-sm text-on-surface">Efectos &amp; Proyector</span>
-</div>
-<span class="px-xs py-2xs bg-tertiary-fixed text-on-tertiary-fixed text-[11px] font-label-comic-pill uppercase rounded">HDMI 4K LIVE</span>
-</div>
-<div class="grid grid-cols-2 gap-xs">
-<button class="p-xs bg-surface-container text-on-surface rounded-lg shadow-[2px_2px_0px_#1c1b1b] active:translate-x-0.5 active:translate-y-0.5 hover:bg-tertiary/20 flex items-center justify-center gap-2xs font-label-comic-pill text-[12px] uppercase" onclick="playDemoSound('ding')">
-          🔔 Sonido Ding
-        </button>
-<button class="p-xs bg-surface-container text-on-surface rounded-lg shadow-[2px_2px_0px_#1c1b1b] active:translate-x-0.5 active:translate-y-0.5 hover:bg-error/20 flex items-center justify-center gap-2xs font-label-comic-pill text-[12px] uppercase" onclick="playDemoSound('buzzer')">
-          🚨 Sonido Error
-        </button>
-<button class="p-xs bg-surface-container text-on-surface rounded-lg shadow-[2px_2px_0px_#1c1b1b] active:translate-x-0.5 active:translate-y-0.5 hover:bg-secondary-container/40 flex items-center justify-center gap-2xs font-label-comic-pill text-[12px] uppercase" onclick="playDemoSound('pass')">
-          ⏩ Pasapalabra FX
-        </button>
-<button class="p-xs bg-surface-container text-on-surface rounded-lg shadow-[2px_2px_0px_#1c1b1b] active:translate-x-0.5 active:translate-y-0.5 hover:bg-primary/20 flex items-center justify-center gap-2xs font-label-comic-pill text-[12px] uppercase" onclick="playDemoSound('cheer')">
-          🎉 Aplausos Sala
-        </button>
-</div>
-<div class="flex items-center justify-between pt-xs text-on-surface-variant font-label-md text-label-md">
-<span class="flex items-center gap-2xs">
-<span class="w-2.5 h-2.5 rounded-full bg-tertiary"></span> Proyector Principal Sincronizado
-        </span>
-<button class="text-primary hover:underline font-label-comic-pill text-[12px] uppercase">Ajustar Pantalla</button>
-</div>
-</div>
-</section>
-<!-- MICROINTERACCIÓN INLINE JS: CONTROL DE ROSCO, TEMPORIZADOR Y RESPUESTAS -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Rosco Alfabético - Cumpeo</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <script>
-    (function() {
-      const input = document.getElementById('playerAnswerInput');
-      const submitBtn = document.getElementById('btnSubmitAnswer');
-      const passBtn = document.getElementById('btnPassWord');
-      const clearBtn = document.getElementById('clearInputBtn');
-      const manualHitBtn = document.getElementById('btnManualHit');
-      const manualErrorBtn = document.getElementById('btnManualError');
-      const toggleTimerBtn = document.getElementById('btnToggleTimer');
-      const pauseIcon = document.getElementById('pauseIcon');
-      const letterNode = document.getElementById('letterNodeS');
-      const activeHud = document.getElementById('activeLetterHUD');
-      const questionText = document.getElementById('questionText');
-
-      // Limpiar texto input
-      clearBtn.addEventListener('click', () => {
-        input.value = '';
-        input.focus();
-      });
-
-      // Validar Respuesta
-      function handleAnswer() {
-        const val = input.value.trim().toLowerCase();
-        if (!val) return;
-
-        // Si responde acertado (por ejemplo tornado, siroco o cualquier intento de prueba)
-        if (val.includes('siroco') || val.includes('tornado') || val.includes('sur')) {
-          // Transformar la letra 'S' a Verde Acierto
-          if (letterNode) {
-            letterNode.innerHTML = `
-              <button class="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-full bg-tertiary text-on-tertiary font-headline-lg text-headline-lg flex items-center justify-center shadow-[4px_4px_0px_#1c1b1b] scale-110">
-                S
-              </button>
-            `;
-          }
-          activeHud.textContent = "¡CORRECTO! +100 PTS";
-          questionText.textContent = "¡Acierto registrado! Avanzando automáticamente a la letra 'T'...";
-          setTimeout(() => {
-            activeHud.textContent = "LETRA EN JUEGO: 'T'";
-            questionText.textContent = "EMPIEZA CON LA T: 'Instrumento óptico para observar objetos lejanos, en especial cuerpos celestes.'";
-            input.value = "";
-          }, 1400);
-        } else {
-          // Marca de fallo
-          if (letterNode) {
-            letterNode.innerHTML = `
-              <button class="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-full bg-error text-on-error font-headline-lg text-headline-lg flex items-center justify-center shadow-[4px_4px_0px_#1c1b1b] scale-110">
-                S
-              </button>
-            `;
-          }
-          activeHud.textContent = "FALLO • CAMBIO DE TURNO";
-          questionText.textContent = "Respuesta incorrecta. El turno pasa a Mateo Rojas (Titán Dorado).";
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "primary": "#bb0024",
+          "primary-container": "#e41b34",
+          "secondary-container": "#ffc72c",
+          "on-secondary-container": "#4a3800",
+          "surface": "#fcf9f8",
+          "surface-container": "#f0edec",
+          "surface-container-low": "#f7f4f3",
+          "surface-container-lowest": "#ffffff",
+          "on-surface": "#1c1b1b",
+          "on-surface-variant": "#5d3f3e",
+          "comic-green": "#10b981",
+          "comic-green-dark": "#059669",
+          "comic-red": "#ef4444",
+          "comic-red-dark": "#dc2626",
+          "comic-yellow": "#fbbf24",
+          "comic-yellow-dark": "#f59e0b",
+          "comic-border": "#1c1b1b"
+        },
+        borderRadius: { "xl": "1rem", "2xl": "1.25rem", "3xl": "1.75rem", "full": "9999px" },
+        fontFamily: {
+          "display": ["Bricolage Grotesque", "sans-serif"],
+          "body": ["Plus Jakarta Sans", "sans-serif"]
         }
       }
+    }
+  };
+</script>
+<style>
+  html, body { margin: 0; padding: 0; box-sizing: border-box; }
+  body { overscroll-behavior: none; }
+  ::-webkit-scrollbar { display: none; }
+  .letter-node { transition: transform .15s ease; }
+</style>
+</head>
+<body class="bg-[#fcf9f8] font-body text-on-surface min-h-screen flex items-center justify-center p-3 lg:p-6 overflow-x-hidden antialiased select-none">
 
-      // Función Pasapalabra
-      function handlePass() {
-        if (letterNode) {
-          letterNode.innerHTML = `
-            <button class="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-full bg-secondary-container text-on-secondary-container font-headline-lg text-headline-lg flex items-center justify-center shadow-[4px_4px_0px_#1c1b1b] scale-110">
-              S
-            </button>
-          `;
-        }
-        activeHud.textContent = "PASAPALABRA REGISTRADO";
-        questionText.textContent = "¡Pasapalabra! La letra 'S' volverá en la Vuelta 2. Siguiente letra: 'T'.";
-        input.value = "";
+<div class="w-full max-w-[1520px] mx-auto grid grid-cols-1 xl:grid-cols-12 gap-5 lg:gap-6 items-stretch">
+
+  <!-- COLUMNA IZQUIERDA: ROSCO -->
+  <section class="xl:col-span-7 bg-white rounded-3xl border-[3px] border-comic-border shadow-[6px_6px_0px_#1c1b1b] p-4 sm:p-6 lg:p-8 flex flex-col items-center justify-center relative overflow-hidden min-h-[640px] lg:min-h-[720px]">
+    <div class="absolute inset-0 opacity-[0.04] pointer-events-none" style="background-image: radial-gradient(#1c1b1b 2px, transparent 2px); background-size: 20px 20px;"></div>
+
+    <!-- INSIGNIA HEADER -->
+    <div class="absolute top-4 left-6 flex items-center gap-2 z-20">
+      <span class="w-8 h-8 rounded-lg bg-secondary-container text-comic-border border-[2px] border-comic-border flex items-center justify-center font-display font-extrabold text-sm shadow-[2px_2px_0px_#1c1b1b] -rotate-3">⚡</span>
+      <div>
+        <h2 class="font-display font-extrabold text-xs sm:text-sm tracking-wider uppercase text-comic-border leading-none">EL ROSCO ALFABÉTICO</h2>
+        <p class="font-body text-[10px] text-on-surface-variant font-bold uppercase tracking-wider">Pantalla 31 • Modo Torneo</p>
+      </div>
+    </div>
+
+    <!-- BADGE RONDA / TURNO -->
+    <div class="absolute top-4 right-6 hidden sm:flex items-center gap-2 bg-surface-container px-3 py-1.5 rounded-full border-[2px] border-comic-border shadow-[2px_2px_0px_#1c1b1b] z-20">
+      <span class="w-2.5 h-2.5 rounded-full bg-comic-green animate-pulse"></span>
+      <span class="font-display font-extrabold text-xs tracking-wider uppercase text-comic-border" id="topRoundIndicator">VUELTA 1 • RAYOS ESCARLATA</span>
+    </div>
+
+    <!-- CRONÓMETRO DIGITAL (ahora SÍ existe) -->
+    <div class="absolute top-16 right-6 hidden sm:flex items-center gap-2 z-20">
+      <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-2xl border-[2.5px] border-comic-border shadow-[3px_3px_0px_#1c1b1b]">
+        <span class="flex h-3 w-3 relative items-center justify-center">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-comic-red opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-comic-red"></span>
+        </span>
+        <div class="flex flex-col text-right leading-none">
+          <span class="font-body text-[9px] font-extrabold uppercase text-comic-red tracking-wider">¡TIEMPO!</span>
+          <span id="timerStatusText" class="font-display font-extrabold text-[10px] text-comic-border tracking-tight">Corriendo</span>
+        </div>
+        <div class="px-2 py-0.5 rounded-lg bg-comic-red text-white font-display font-extrabold text-sm sm:text-base border-[1.5px] border-comic-border shadow-[1px_1px_0px_#1c1b1b] flex items-center gap-1">
+          <span class="material-symbols-outlined text-[16px]">timer</span>
+          <span id="secDisplay">48</span><span class="text-[10px]">s</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROSCO CIRCULAR -->
+    <div class="relative w-[420px] h-[420px] sm:w-[500px] sm:h-[500px] md:w-[540px] md:h-[540px] lg:w-[540px] lg:h-[540px] flex items-center justify-center flex-shrink-0 my-auto select-none">
+      <svg class="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 540 540">
+        <circle cx="270" cy="270" fill="none" opacity="0.7" r="222" stroke="#e5e2e1" stroke-dasharray="6 6" stroke-width="2.5"/>
+        <circle class="-rotate-90 origin-center" cx="270" cy="270" fill="none" opacity="0.35" r="222" stroke="#10b981" stroke-dasharray="1395" stroke-dashoffset="640" stroke-linecap="round" stroke-width="4.5"/>
+      </svg>
+
+      <!-- 25 LETRAS (generadas por JS abajo) -->
+      <div id="lettersContainer" class="absolute inset-0"></div>
+
+      <!-- TARJETA CENTRAL -->
+      <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-[230px] h-[230px] sm:w-[260px] sm:h-[260px] md:w-[280px] md:h-[280px] rounded-full bg-white border-[3px] border-comic-border shadow-[4px_4px_0px_#1c1b1b] p-3 sm:p-4 flex flex-col items-center justify-between text-center overflow-hidden">
+        <div class="flex flex-wrap items-center justify-center gap-1.5 pt-1 max-w-[210px]">
+          <span id="activeLetterBadge" class="px-2.5 py-0.5 bg-comic-yellow text-comic-border font-display font-extrabold text-[10px] sm:text-[11px] uppercase rounded-full border-[2px] border-comic-border shadow-[1px_1px_0px_#1c1b1b] -rotate-2 leading-none">
+            CONTIENE LA S
+          </span>
+        </div>
+        <div class="w-full max-w-[190px] sm:max-w-[210px] md:max-w-[220px] px-1 py-1 my-auto flex items-center justify-center">
+          <p class="font-display font-bold text-[11px] sm:text-[12px] md:text-[13px] text-comic-border leading-snug tracking-tight" id="roscoDefinition">
+            "Fenómeno meteorológico violento caracterizado por vientos giratorios destructivos que se extienden desde una nube hasta el suelo."
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEYENDA -->
+    <div class="w-full mt-3 pt-3 border-t-[2px] border-comic-border/10 flex flex-wrap items-center justify-between gap-2 px-2 text-xs font-body">
+      <div class="flex items-center gap-3">
+        <span class="flex items-center gap-1.5 font-bold text-comic-border"><span class="w-3.5 h-3.5 rounded-full bg-comic-green border-[1.5px] border-comic-border"></span> Acertada</span>
+        <span class="flex items-center gap-1.5 font-bold text-comic-border"><span class="w-3.5 h-3.5 rounded-full bg-comic-red border-[1.5px] border-comic-border"></span> Errada</span>
+        <span class="flex items-center gap-1.5 font-bold text-comic-border"><span class="w-3.5 h-3.5 rounded-full bg-comic-yellow border-[1.5px] border-comic-border"></span> En juego</span>
+        <span class="flex items-center gap-1.5 font-bold text-comic-border"><span class="w-3.5 h-3.5 rounded-full bg-white border-[1.5px] border-comic-border"></span> Pendiente</span>
+      </div>
+      <div class="font-display font-bold text-xs uppercase text-on-surface-variant">
+        Total: <span id="countGreen" class="text-comic-green-dark font-extrabold">13 Verdes</span> • <span id="countRed" class="text-comic-red-dark font-extrabold">2 Rojas</span> • <span id="countPending" class="text-comic-border font-extrabold">10 Restantes</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- COLUMNA DERECHA: PANEL CONDUCTOR -->
+  <aside class="xl:col-span-5 flex flex-col gap-4">
+    <div class="bg-white rounded-3xl border-[3px] border-comic-border shadow-[6px_6px_0px_#1c1b1b] p-5 sm:p-6 flex flex-col gap-4 relative overflow-hidden">
+      <div class="flex items-center justify-between border-b-[2px] border-comic-border/15 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-9 h-9 rounded-xl bg-primary text-white border-[2px] border-comic-border flex items-center justify-center font-display shadow-[2px_2px_0px_#1c1b1b]">
+            <span class="material-symbols-outlined text-[20px]">sports_esports</span>
+          </div>
+          <div>
+            <h3 class="font-display font-extrabold text-base sm:text-lg text-comic-border leading-tight uppercase">Panel del Conductor</h3>
+            <p class="font-body text-xs text-on-surface-variant font-semibold">Validación y Gestión en Vivo</p>
+          </div>
+        </div>
+        <span class="px-2.5 py-1 bg-secondary-container text-comic-border font-display font-extrabold text-xs uppercase rounded-lg border-[2px] border-comic-border shadow-[2px_2px_0px_#1c1b1b]">LIVE HOST</span>
+      </div>
+
+      <!-- SOLUCIÓN OFICIAL -->
+      <div class="bg-[#fff9e6] rounded-2xl border-[2.5px] border-comic-border p-3.5 shadow-[3px_3px_0px_#1c1b1b]">
+        <div class="flex items-center justify-between mb-1">
+          <span class="font-body text-xs font-extrabold text-on-surface-variant uppercase tracking-wider flex items-center gap-1">
+            <span class="material-symbols-outlined text-[16px] text-comic-yellow-dark">key</span> Solución Oficial
+          </span>
+          <span class="text-[11px] font-bold text-comic-border/70">Acepta sinónimos</span>
+        </div>
+        <div class="flex items-center justify-between bg-white px-3 py-2 rounded-xl border-[2px] border-comic-border">
+          <span class="font-display font-extrabold text-xl sm:text-2xl text-comic-border tracking-wide" id="officialSolutionText">TORNADO</span>
+          <span class="px-2 py-0.5 rounded-md bg-comic-green/20 text-comic-green-dark font-display font-bold text-xs uppercase">Oficial</span>
+        </div>
+      </div>
+
+      <!-- VEREDICTO -->
+      <div class="flex flex-col gap-2.5">
+        <label class="font-display font-bold text-xs uppercase tracking-wider text-comic-border">Veredicto Inmediato</label>
+        <div class="grid grid-cols-2 gap-2.5">
+          <button class="py-3 px-3 bg-comic-green hover:bg-comic-green-dark text-white rounded-2xl border-[2.5px] border-comic-border shadow-[4px_4px_0px_#1c1b1b] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all flex items-center justify-center gap-2 group" id="btnVerdictCorrect">
+            <span class="material-symbols-outlined text-[24px] font-bold group-hover:scale-110 transition-transform">check_circle</span>
+            <div class="text-left leading-tight">
+              <div class="font-display font-extrabold text-sm sm:text-base uppercase tracking-tight">CORRECTO</div>
+              <div class="font-body text-[10px] font-bold opacity-90">+100 PTS • ACIERTO</div>
+            </div>
+          </button>
+          <button class="py-3 px-3 bg-comic-red hover:bg-comic-red-dark text-white rounded-2xl border-[2.5px] border-comic-border shadow-[4px_4px_0px_#1c1b1b] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all flex items-center justify-center gap-2 group" id="btnVerdictError">
+            <span class="material-symbols-outlined text-[24px] font-bold group-hover:scale-110 transition-transform">cancel</span>
+            <div class="text-left leading-tight">
+              <div class="font-display font-extrabold text-sm sm:text-base uppercase tracking-tight">ERROR</div>
+              <div class="font-body text-[10px] font-bold opacity-90">FALLO REGISTRADO</div>
+            </div>
+          </button>
+        </div>
+
+        <button class="w-full py-3 px-4 bg-secondary-container hover:bg-comic-yellow text-comic-border rounded-2xl border-[2.5px] border-comic-border shadow-[4px_4px_0px_#1c1b1b] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all flex items-center justify-between group" id="btnVerdictPass">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-xl bg-white border-[2px] border-comic-border flex items-center justify-center shadow-[1px_1px_0px_#1c1b1b]">
+              <span class="material-symbols-outlined text-[20px] text-comic-border font-bold group-hover:rotate-45 transition-transform">fast_forward</span>
+            </div>
+            <div class="text-left">
+              <span class="font-display font-extrabold text-base uppercase tracking-tight block leading-tight">¡PASAPALABRA!</span>
+              <span class="font-body text-[11px] font-bold text-comic-border/80">Pasa turno al rival • 3s pausa antes de iniciar</span>
+            </div>
+          </div>
+          <span class="material-symbols-outlined text-[24px] text-comic-border">arrow_forward</span>
+        </button>
+      </div>
+
+      <!-- SELECTOR EQUIPO -->
+      <div class="flex flex-col gap-1.5 pt-1">
+        <label class="font-display font-bold text-xs uppercase tracking-wider text-comic-border flex items-center justify-between">
+          <span>Equipo con Turno Activo</span>
+          <span class="text-[10px] text-on-surface-variant font-bold">Cambio automático o manual</span>
+        </label>
+        <div class="grid grid-cols-2 gap-2 bg-surface-container p-1.5 rounded-2xl border-[2px] border-comic-border">
+          <button class="team-selector-btn py-2 px-2.5 rounded-xl border-[2px] border-comic-border bg-primary text-white shadow-[2px_2px_0px_#1c1b1b] font-display font-extrabold text-xs sm:text-sm uppercase flex items-center justify-center gap-1.5 transition-all" data-team="A">
+            <span class="w-2.5 h-2.5 rounded-full bg-white animate-ping"></span>
+            <span>Rayos Escarlata</span>
+          </button>
+          <button class="team-selector-btn py-2 px-2.5 rounded-xl border-[2px] border-comic-border/40 bg-white text-comic-border hover:bg-surface-container-low font-display font-extrabold text-xs sm:text-sm uppercase flex items-center justify-center gap-1.5 transition-all opacity-70" data-team="B">
+            <span class="w-2 h-2 rounded-full bg-comic-border/40"></span>
+            <span>Titán Dorado</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- RONDAS Y TIEMPO -->
+      <div class="grid grid-cols-2 gap-3 pt-1">
+        <div class="flex flex-col gap-1.5">
+          <label class="font-display font-bold text-xs uppercase tracking-wider text-comic-border">Ronda / Vuelta</label>
+          <div class="grid grid-cols-3 gap-1 bg-surface-container p-1 rounded-xl border-[2px] border-comic-border">
+            <button class="round-btn py-1.5 rounded-lg border-[1.5px] border-comic-border bg-comic-yellow text-comic-border font-display font-extrabold text-xs shadow-[1px_1px_0px_#1c1b1b]" data-round="1">V1</button>
+            <button class="round-btn py-1.5 rounded-lg border-[1.5px] border-comic-border/30 bg-white text-comic-border font-display font-extrabold text-xs hover:bg-surface-container-low" data-round="2">V2</button>
+            <button class="round-btn py-1.5 rounded-lg border-[1.5px] border-comic-border/30 bg-white text-comic-border font-display font-extrabold text-xs hover:bg-surface-container-low" data-round="3">V3</button>
+          </div>
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="font-display font-bold text-xs uppercase tracking-wider text-comic-border">Tiempo Límite</label>
+          <div class="grid grid-cols-3 gap-1 bg-surface-container p-1 rounded-xl border-[2px] border-comic-border">
+            <button class="time-btn py-1.5 rounded-lg border-[1.5px] border-comic-border/30 bg-white text-comic-border font-display font-extrabold text-xs hover:bg-surface-container-low" data-time="60">60s</button>
+            <button class="time-btn py-1.5 rounded-lg border-[1.5px] border-comic-border bg-comic-yellow text-comic-border font-display font-extrabold text-xs shadow-[1px_1px_0px_#1c1b1b]" data-time="90">90s</button>
+            <button class="time-btn py-1.5 rounded-lg border-[1.5px] border-comic-border/30 bg-white text-comic-border font-display font-extrabold text-xs hover:bg-surface-container-low" data-time="120">120s</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTROLES GENERALES -->
+      <div class="grid grid-cols-2 gap-2.5 pt-1">
+        <button class="py-2.5 px-3 bg-surface-container hover:bg-surface-container-high text-comic-border font-display font-extrabold text-xs sm:text-sm uppercase rounded-xl border-[2px] border-comic-border shadow-[3px_3px_0px_#1c1b1b] active:translate-x-0.5 active:translate-y-0.5 flex items-center justify-center gap-1.5 transition-all" id="btnPauseGame">
+          <span class="material-symbols-outlined text-[18px]" id="pauseIcon">pause</span>
+          <span id="pauseBtnText">Pausar Juego</span>
+        </button>
+        <button class="py-2.5 px-3 bg-comic-border hover:bg-black text-white font-display font-extrabold text-xs sm:text-sm uppercase rounded-xl border-[2px] border-comic-border shadow-[3px_3px_0px_#1c1b1b] active:translate-x-0.5 active:translate-y-0.5 flex items-center justify-center gap-1.5 transition-all" id="btnEndGame">
+          <span class="material-symbols-outlined text-[18px] text-comic-red">stop_circle</span>
+          <span>Terminar Juego</span>
+        </button>
+      </div>
+
+      <!-- PIE PUPI -->
+      <div class="mt-1 bg-surface-container-low rounded-xl border-[2px] border-comic-border/20 p-2.5 flex flex-col gap-2 text-xs font-body">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-secondary-container flex items-center justify-center text-lg border border-comic-border flex-shrink-0 shadow-[1px_1px_0px_#1c1b1b]">🦜</div>
+          <div class="flex-1 text-left">
+            <div class="font-display font-extrabold text-[11px] uppercase text-comic-border leading-tight">Arbitraje y Banco de Letras</div>
+            <div class="font-body text-[10px] text-on-surface-variant font-medium">¿Ajustar pistas o redefinir términos?</div>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2 pt-0.5">
+          <button type="button" data-action="edit" class="py-1.5 px-2 bg-white hover:bg-surface-container text-comic-border rounded-lg border-[2px] border-comic-border shadow-[2px_2px_0px_#1c1b1b] active:translate-x-0.5 active:translate-y-0.5 font-display font-extrabold text-[10px] sm:text-[11px] uppercase tracking-wide flex items-center justify-center gap-1 transition-all">
+            <span class="material-symbols-outlined text-[16px]">edit_note</span><span>EDITAR PREGUNTAS</span>
+          </button>
+          <button type="button" data-action="bank" class="py-1.5 px-2 bg-secondary-container hover:bg-comic-yellow text-comic-border rounded-lg border-[2px] border-comic-border shadow-[2px_2px_0px_#1c1b1b] active:translate-x-0.5 active:translate-y-0.5 font-display font-extrabold text-[10px] sm:text-[11px] uppercase tracking-wide flex items-center justify-center gap-1 transition-all">
+            <span class="material-symbols-outlined text-[16px]">folder_open</span><span>BANCO DE PREGUNTAS</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<script>
+(function () {
+  // ---------- DATOS DE LAS 25 LETRAS ----------
+  // Estado inicial: 13 verdes (acertadas), 2 rojas (erradas), 1 amarilla (en juego, la "S"), 10 pendientes (blancas)
+  // NOTA: el español no usa W ni Y en el rosco tradicional, por eso son 25 letras (A-Z sin W, Y).
+  const LETTERS = [
+    { ch: 'A', state: 'green' }, { ch: 'B', state: 'green' }, { ch: 'C', state: 'green' },
+    { ch: 'D', state: 'green' }, { ch: 'E', state: 'green' }, { ch: 'F', state: 'red'   },
+    { ch: 'G', state: 'green' }, { ch: 'H', state: 'green' }, { ch: 'I', state: 'green' },
+    { ch: 'J', state: 'green' }, { ch: 'K', state: 'pending' }, { ch: 'L', state: 'green' },
+    { ch: 'M', state: 'green' }, { ch: 'N', state: 'green' }, { ch: 'Ñ', state: 'green' },
+    { ch: 'O', state: 'green' }, { ch: 'P', state: 'green' }, { ch: 'Q', state: 'pending' },
+    { ch: 'R', state: 'red'   }, { ch: 'S', state: 'active'  }, { ch: 'T', state: 'pending' },
+    { ch: 'U', state: 'pending' }, { ch: 'V', state: 'pending' }, { ch: 'X', state: 'pending' },
+    { ch: 'Z', state: 'pending' }
+  ];
+
+  const RADIUS = 41; // % del contenedor
+  const N = LETTERS.length; // 25
+  const lettersContainer = document.getElementById('lettersContainer');
+  const activeLetterBadge = document.getElementById('activeLetterBadge');
+  const officialSolution = document.getElementById('officialSolutionText');
+  const definitionText = document.getElementById('roscoDefinition');
+  const secDisplay = document.getElementById('secDisplay');
+  const timerStatus = document.getElementById('timerStatusText');
+  const topIndicator = document.getElementById('topRoundIndicator');
+  const countGreen = document.getElementById('countGreen');
+  const countRed = document.getElementById('countRed');
+  const countPending = document.getElementById('countPending');
+
+  const pauseIcon = document.getElementById('pauseIcon');
+  const pauseBtnText = document.getElementById('pauseBtnText');
+
+  // ---------- ESTADO ----------
+  let seconds = 48;
+  let isPaused = false;
+  let currentRound = 1;
+  let currentTeam = 'A';
+  let timerInterval = null;
+
+  // ---------- RENDER DEL ROSCO ----------
+  function stateClasses(state) {
+    switch (state) {
+      case 'green':   return 'bg-comic-green text-white';
+      case 'red':     return 'bg-comic-red text-white';
+      case 'active':  return 'bg-comic-yellow text-comic-border';
+      default:        return 'bg-white text-comic-border';
+    }
+  }
+
+  function sizeForState(state) {
+    return state === 'active'
+      ? 'w-11 h-11 sm:w-14 sm:h-14 md:w-16 md:h-16 text-lg sm:text-2xl scale-110 ring-4 ring-comic-yellow/50'
+      : 'w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 text-sm sm:text-base md:text-lg';
+  }
+
+  function renderLetters() {
+    lettersContainer.innerHTML = '';
+    LETTERS.forEach((item, i) => {
+      const angleDeg = (360 / N) * i;          // A = 0°, B = 14.4°, ...
+      const angleRad = (angleDeg - 90) * Math.PI / 180; // -90 para que A quede arriba
+      const left = 50 + RADIUS * Math.cos(angleRad);
+      const top  = 50 + RADIUS * Math.sin(angleRad);
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'absolute -translate-x-1/2 -translate-y-1/2 letter-node';
+      wrapper.style.top = top + '%';
+      wrapper.style.left = left + '%';
+      wrapper.dataset.idx = i;
+
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.dataset.letter = item.ch;
+      btn.className = `${sizeForState(item.state)} rounded-full ${stateClasses(item.state)} font-display font-extrabold flex items-center justify-center border-[2.5px] border-comic-border shadow-[2px_2px_0px_#1c1b1b] transition-transform hover:scale-110`;
+      if (item.state === 'active') {
+        btn.classList.remove('border-[2.5px]');
+        btn.classList.add('border-[3.5px]', '-rotate-6');
       }
-
-      submitBtn.addEventListener('click', handleAnswer);
-      passBtn.addEventListener('click', handlePass);
-
-      // Atajos de teclado en el input
-      input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          handleAnswer();
-        } else if (e.key === ' ' && input.value.trim() === '') {
-          e.preventDefault();
-          handlePass();
-        }
-      });
-
-      // Botón Play / Pausa cronómetro eliminado, tiempo gestionado por consola
-
-
-      // Botones manuales conductor
-      manualHitBtn.addEventListener('click', () => {
-        // Emitir puntaje a consola, UI local removida
-        window.parent.postMessage({type:'score-update', payload:{teamId:'A', points:100}}, '*');
-      });
-      manualErrorBtn.addEventListener('click', () => {
-        // Sin UI local de fallos
-      });
-
-      // Helper de efectos de audio de broma / feedback
-      window.playDemoSound = function(type) {
-        // Micro-animación en el HUD central para confirmar clic táctil
-        activeHud.classList.add('scale-105');
-        setTimeout(() => activeHud.classList.remove('scale-105'), 200);
-      };
-    })();
-  </script>
-
-  <script src="/games/_shared/game-sdk.js"></script>
-  <script>
-    window.addEventListener('message', (e) => {
-      const {type, payload} = e.data || {};
-      if (type === 'game:init') { window.__cumpeoSession = payload; }
-      if (type === 'game:next-round') { console.log('next-round', payload); }
+      btn.textContent = item.ch;
+      btn.addEventListener('click', () => focusLetter(i));
+      wrapper.appendChild(btn);
+      lettersContainer.appendChild(wrapper);
     });
-    window.updateScore = (teamId, points) => {
-      window.parent.postMessage({type:'score-update', payload:{teamId, points}}, '*');
-    };
-    window.finishGame = (results) => {
-      window.parent.postMessage({type:'game-over', payload:{results}}, '*');
-    };
-  </script>
-<aside class="lg:col-span-2 bg-surface-container-lowest rounded-2xl border-2 border-[#1c1b1b] p-4 space-y-4 mt-4 lg:mt-0">
-  <h3 class="font-bold text-yellow-300 text-lg text-center">Mando del Conductor</h3>
-  <div class="text-xs text-gray-400 text-center">Control centralizado por consola</div>
-  <div class="flex flex-col gap-2">
-    <button class="w-full bg-green-600 hover:bg-green-500 py-2 rounded-xl font-bold">+100 ACIERTO</button>
-    <button class="w-full bg-red-600 hover:bg-red-500 py-2 rounded-xl font-bold">FALLO</button>
-    <button class="w-full bg-gray-700 hover:bg-gray-600 py-2 rounded-xl font-bold">SIGUIENTE LETRA</button>
-    <button class="w-full bg-gray-900 hover:bg-black py-2 rounded-xl font-bold">FINALIZAR</button>
-  </div>
-</aside>
-</div></main></div>
+  }
 
-</body></html>
+  function setLetterState(ch, newState) {
+    const item = LETTERS.find(l => l.ch === ch);
+    if (!item) return;
+    item.state = newState;
+    renderLetters();
+    updateCounts();
+  }
+
+  function focusLetter(idx) {
+    // Pone la letra clicada como activa y la anterior vuelve a pendiente (si era activa)
+    LETTERS.forEach((l, i) => {
+      if (l.state === 'active' && i !== idx) l.state = 'pending';
+    });
+    LETTERS[idx].state = 'active';
+    activeLetterBadge.textContent = 'CONTIENE LA ' + LETTERS[idx].ch;
+    renderLetters();
+    updateCounts();
+  }
+
+  function updateCounts() {
+    const g = LETTERS.filter(l => l.state === 'green').length;
+    const r = LETTERS.filter(l => l.state === 'red').length;
+    const a = LETTERS.filter(l => l.state === 'active').length;
+    const p = LETTERS.filter(l => l.state === 'pending').length;
+    countGreen.textContent = g + ' Verdes';
+    countRed.textContent = r + ' Rojas';
+    // "Restantes" = pendientes + la activa
+    countPending.textContent = (p + a) + ' Restantes';
+  }
+
+  // ---------- CRONÓMETRO ----------
+  function stopTimer() {
+    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  }
+
+  function startTimer() {
+    stopTimer();
+    timerInterval = setInterval(() => {
+      if (isPaused) return;
+      if (seconds > 0) {
+        seconds--;
+        secDisplay.textContent = seconds < 10 ? '0' + seconds : String(seconds);
+        if (seconds <= 10) secDisplay.parentElement.classList.add('text-comic-red', 'animate-pulse');
+        else secDisplay.parentElement.classList.remove('text-comic-red', 'animate-pulse');
+      } else {
+        stopTimer();
+        timerStatus.textContent = '¡Tiempo!';
+      }
+    }, 1000);
+  }
+
+  function setSeconds(s) {
+    seconds = s;
+    secDisplay.textContent = s < 10 ? '0' + s : String(s);
+    secDisplay.parentElement.classList.remove('text-comic-red', 'animate-pulse');
+    timerStatus.textContent = isPaused ? 'En Pausa' : 'Corriendo';
+    startTimer();
+  }
+
+  // ---------- BOTONES ----------
+  document.getElementById('btnVerdictCorrect').addEventListener('click', () => {
+    const active = LETTERS.find(l => l.state === 'active');
+    if (active) setLetterState(active.ch, 'green');
+    definitionText.textContent = '¡CORRECTO! +100 puntos asignados al equipo activo.';
+    officialSolution.textContent = 'ACIERTO (+100)';
+    setTimeout(() => {
+      definitionText.textContent = '"Instrumento óptico que permite observar objetos lejanos con gran detalle."';
+      officialSolution.textContent = 'TELESCOPIO';
+    }, 1500);
+  });
+
+  document.getElementById('btnVerdictError').addEventListener('click', () => {
+    const active = LETTERS.find(l => l.state === 'active');
+    if (active) setLetterState(active.ch, 'red');
+    definitionText.textContent = '¡FALLO REGISTRADO! El turno rota al equipo rival.';
+    officialSolution.textContent = 'FALLO';
+  });
+
+  document.getElementById('btnVerdictPass').addEventListener('click', () => {
+    isPaused = true;
+    timerStatus.textContent = 'Pausa de 3s...';
+    definitionText.textContent = '¡PASAPALABRA! 3 segundos de cortesía antes de transferir el turno...';
+    setTimeout(() => {
+      isPaused = false;
+      timerStatus.textContent = 'Corriendo';
+      currentTeam = currentTeam === 'A' ? 'B' : 'A';
+      updateTeamUI(currentTeam);
+      definitionText.textContent = '"Instrumento musical de cuerda frotada compuesto por una caja de resonancia y cuatro cuerdas."';
+      officialSolution.textContent = 'VIOLÍN';
+    }, 3000);
+  });
+
+  document.getElementById('btnPauseGame').addEventListener('click', () => {
+    isPaused = !isPaused;
+    pauseIcon.textContent = isPaused ? 'play_arrow' : 'pause';
+    pauseBtnText.textContent = isPaused ? 'Reanudar' : 'Pausar Juego';
+    timerStatus.textContent = isPaused ? 'En Pausa' : 'Corriendo';
+  });
+
+  document.getElementById('btnEndGame').addEventListener('click', () => {
+    if (confirm('¿Confirmar fin de la partida de El Rosco?')) {
+      isPaused = true;
+      stopTimer();
+      timerStatus.textContent = 'Finalizado';
+      definitionText.textContent = '¡PARTIDA FINALIZADA! Consultando tablero general de puntuaciones.';
+    }
+  });
+
+  // ---------- EQUIPOS ----------
+  const teamBtns = document.querySelectorAll('.team-selector-btn');
+
+  const TEAM_STYLES = {
+    A: {
+      active:  'bg-primary text-white border-comic-border shadow-[2px_2px_0px_#1c1b1b]',
+      label:   'RAYOS ESCARLATA'
+    },
+    B: {
+      active:  'bg-comic-yellow-dark text-comic-border border-comic-border shadow-[2px_2px_0px_#1c1b1b]',
+      label:   'TITÁN DORADO'
+    }
+  };
+
+  function updateTeamUI(team) {
+    teamBtns.forEach(b => {
+      const t = b.dataset.team;
+      const isSelected = t === team;
+      b.className = `team-selector-btn py-2 px-2.5 rounded-xl border-[2px] font-display font-extrabold text-xs sm:text-sm uppercase flex items-center justify-center gap-1.5 transition-all ${
+        isSelected
+          ? TEAM_STYLES[t].active
+          : 'bg-white text-comic-border border-comic-border/40 hover:bg-surface-container-low opacity-70'
+      }`;
+      const dot = b.querySelector('span:first-child');
+      if (dot) dot.className = isSelected ? 'w-2.5 h-2.5 rounded-full bg-white animate-ping' : 'w-2 h-2 rounded-full bg-comic-border/40';
+    });
+    topIndicator.textContent = `VUELTA ${currentRound} • ${TEAM_STYLES[team].label}`;
+  }
+
+  teamBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentTeam = btn.dataset.team;
+      updateTeamUI(currentTeam);
+    });
+  });
+
+  // ---------- RONDAS ----------
+  const roundBtns = document.querySelectorAll('.round-btn');
+  roundBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentRound = btn.dataset.round;
+      roundBtns.forEach(b => {
+        b.className = b === btn
+          ? 'round-btn py-1.5 rounded-lg border-[1.5px] border-comic-border bg-comic-yellow text-comic-border font-display font-extrabold text-xs shadow-[1px_1px_0px_#1c1b1b]'
+          : 'round-btn py-1.5 rounded-lg border-[1.5px] border-comic-border/30 bg-white text-comic-border font-display font-extrabold text-xs hover:bg-surface-container-low';
+      });
+      topIndicator.textContent = `VUELTA ${currentRound} • ${TEAM_STYLES[currentTeam].label}`;
+    });
+  });
+
+  // ---------- TIEMPOS ----------
+  const timeBtns = document.querySelectorAll('.time-btn');
+  timeBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      setSeconds(parseInt(btn.dataset.time, 10));
+      timeBtns.forEach(b => {
+        b.className = b === btn
+          ? 'time-btn py-1.5 rounded-lg border-[1.5px] border-comic-border bg-comic-yellow text-comic-border font-display font-extrabold text-xs shadow-[1px_1px_0px_#1c1b1b]'
+          : 'time-btn py-1.5 rounded-lg border-[1.5px] border-comic-border/30 bg-white text-comic-border font-display font-extrabold text-xs hover:bg-surface-container-low';
+      });
+    });
+  });
+
+  // ---------- BOTONES "EDITAR/BANCO" ----------
+  document.querySelectorAll('button[data-action]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const action = btn.dataset.action;
+      if (action === 'edit')  alert('Abrir editor de preguntas (pendiente de integrar).');
+      if (action === 'bank')  alert('Abrir banco de preguntas (pendiente de integrar).');
+    });
+  });
+
+  // ---------- INIT ----------
+  renderLetters();
+  updateCounts();
+  startTimer();
+})();
+</script>
+
+</body>
+</html>
