@@ -134,6 +134,11 @@ function initSchema() {
       db.run(`UPDATE games SET file = ? WHERE file = ?`, [newFile, oldFile]);
     } catch (e) { /* ignore */ }
   });
+
+  // Remove duplicate session codes (keep only the most recent)
+  try {
+    db.run(`DELETE FROM sessions WHERE id NOT IN (SELECT MAX(id) FROM sessions GROUP BY code)`);
+  } catch (e) { /* ignore */ }
 }
 
 function save() {

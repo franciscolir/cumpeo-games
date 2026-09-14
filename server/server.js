@@ -47,8 +47,14 @@ app.post('/api/state', (req, res) => {
 
 // Generate unique session code
 function generateSessionCode() {
-  const num = Math.floor(100 + Math.random() * 900);
-  return `CMP-${num}`;
+  let code;
+  let tries = 0;
+  do {
+    const num = Math.floor(100000 + Math.random() * 900000);
+    code = `CMP-${num}`;
+    tries++;
+  } while (tries < 10 && db.prepare('SELECT id FROM sessions WHERE code = ?').get(code));
+  return code;
 }
 
 // List sessions (with optional status filter)
