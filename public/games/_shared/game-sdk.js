@@ -11,11 +11,15 @@ class GameSDK {
   constructor() {
     this.sessionData = null;
     this.localScores = { A: 0, B: 0 };
+    this.currentRound = 1;
+    this.totalRounds = 5;
+    this.timePerRound = 60;
     this.callbacks = {
       init: null,
       pause: null,
       resume: null,
-      nextRound: null
+      nextRound: null,
+      timeUp: null
     };
     this._setupListener();
   }
@@ -28,7 +32,6 @@ class GameSDK {
       switch (data.type) {
         case 'init':
           this.sessionData = data.session;
-          // Initialize local scores with cumulative scores
           this.localScores = { A: 0, B: 0 };
           if (this.callbacks.init) {
             this.callbacks.init(this.sessionData);
@@ -89,6 +92,14 @@ class GameSDK {
   }
 
   /**
+   * Register time up callback
+   * @param {Function} callback - Called when time runs out
+   */
+  onTimeUp(callback) {
+    this.callbacks.timeUp = callback;
+  }
+
+  /**
    * Update local scores and send to console
    * @param {Object} localScores - { A: number, B: number }
    */
@@ -140,11 +151,21 @@ class GameSDK {
    * @param {number} total - Total rounds
    */
   updateRound(current, total) {
+    this.currentRound = current;
+    this.totalRounds = total;
     this._send({
       type: 'round-update',
       current,
       total
     });
+  }
+
+  /**
+   * Set time per round
+   * @param {number} seconds - Seconds per round
+   */
+  setTimePerRound(seconds) {
+    this.timePerRound = seconds;
   }
 
   /**
@@ -165,6 +186,48 @@ class GameSDK {
       event: eventName,
       data
     });
+  }
+
+  /**
+   * Get questions from localStorage
+   * @param {string} gameType - Game type identifier
+   * @returns {Array} Questions array
+   */
+  getQuestions(gameType) {
+    const key = `cumpeo_${gameType}_questions`;
+    const data = localStorage.getItem(key);
+    return data ? JSON.parse(data) : [];
+  }
+
+  /**
+   * Save questions to localStorage
+   * @param {string} gameType - Game type identifier
+   * @param {Array} questions - Questions array
+   */
+  saveQuestions(gameType, questions) {
+    const key = `cumpeo_${gameType}_questions`;
+    localStorage.setItem(key, JSON.stringify(questions));
+  }
+
+  /**
+   * Get image sets from localStorage
+   * @param {string} gameType - Game type identifier
+   * @returns {Array} Image sets array
+   */
+  getImageSets(gameType) {
+    const key = `cumpeo_${gameType}_image_sets`;
+    const data = localStorage.getItem(key);
+    return data ? JSON.parse(data) : [];
+  }
+
+  /**
+   * Save image sets to localStorage
+   * @param {string} gameType - Game type identifier
+   * @param {Array} sets - Image sets array
+   */
+  saveImageSets(gameType, sets) {
+    const key = `cumpeo_${gameType}_image_sets`;
+    localStorage.setItem(key, JSON.stringify(sets));
   }
 
   _send(message) {

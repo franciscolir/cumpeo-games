@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>¿Qué Dice? - CUMPEO</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Bricolage+Grotesque:opsz,wght@12..96,700;800&family=Plus+Jakarta+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <link href="../_shared/game-styles.css" rel="stylesheet">
+  <link href="styles.css" rel="stylesheet">
+</head>
+<body class="bg-surface">
+
+  <!-- MODALES -->
+  <div id="start-modal" class="hidden"></div>
+  <div id="pause-modal" class="hidden"></div>
+  <div id="turn-modal" class="hidden"></div>
+  <div id="end-modal" class="hidden"></div>
+  <div id="results-modal" class="hidden"></div>
+
+  <div class="game-layout">
+
+    <!-- AREA DE JUEGO (8 columnas) -->
+    <section id="game-area" class="game-area">
+      
+      <!-- RELOJ -->
+      <div id="clock" class="clock-container hidden">
+        <span class="material-symbols-outlined" style="margin-right: 0.5rem;">timer</span>
+        <span id="clock-value" class="clock-value">00:00</span>
+      </div>
+
+      <!-- CONTENIDO DEL JUEGO -->
+      <div id="game-content" class="flex-1 flex flex-col items-center justify-center">
+        
+        <!-- Estado inicial -->
+        <div id="waiting-state" class="text-center">
+          <h1 style="font-family: 'Bangers', cursive; font-size: 3rem; color: #1c1b1b;">🗣️ ¿QUÉ DICE? 🗣️</h1>
+          <p style="color: #5d3f3e; font-size: 1.1rem;">¡Adivina quién dijo la frase!</p>
+          <p style="color: #5d3f3e; font-size: 0.9rem; margin-top: 0.5rem;">Esperando que el conductor inicie el juego...</p>
+        </div>
+
+        <!-- Frase (oculta al inicio) -->
+        <div id="quote-container" class="hidden w-full">
+          
+          <!-- Header de la frase -->
+          <div class="quote-header">
+            <div class="turn-indicator" id="turn-indicator">
+              <span class="turn-dot"></span>
+              <span id="turn-text">TURNO: EQUIPO A</span>
+            </div>
+            <div class="score-display">
+              <span class="score-badge team-a">🔴 <span id="score-a">0</span> PTS</span>
+              <span class="score-badge team-b">🟡 <span id="score-b">0</span> PTS</span>
+            </div>
+          </div>
+
+          <!-- Número de frase -->
+          <div class="quote-number">
+            <span>FRASE</span>
+            <span id="quote-index">1/5</span>
+          </div>
+
+          <!-- La frase -->
+          <div class="quote-box">
+            <span class="quote-mark">"</span>
+            <p id="quote-text" class="quote-text">Cargando frase...</p>
+            <span class="quote-mark">"</span>
+          </div>
+
+          <!-- Opciones de respuesta -->
+          <div id="options-container" class="options-grid">
+            <button class="option-btn" data-index="0">
+              <span class="option-letter">A</span>
+              <span class="option-text" id="option-0">-</span>
+            </button>
+            <button class="option-btn" data-index="1">
+              <span class="option-letter">B</span>
+              <span class="option-text" id="option-1">-</span>
+            </button>
+            <button class="option-btn" data-index="2">
+              <span class="option-letter">C</span>
+              <span class="option-text" id="option-2">-</span>
+            </button>
+            <button class="option-btn" data-index="3">
+              <span class="option-letter">D</span>
+              <span class="option-text" id="option-3">-</span>
+            </button>
+          </div>
+
+          <!-- Feedback -->
+          <div id="result-container" class="hidden text-center" style="margin-top: 1.5rem;">
+            <div id="result-box" class="result-box">
+              ¡Correcto! +100 pts
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- AREA CONDUCTOR (4 columnas) -->
+    <aside id="conductor-area" class="conductor-area">
+      <div class="conductor-panel">
+        
+        <!-- Título -->
+        <div style="text-align: center; margin-bottom: 1.5rem;">
+          <h3 style="font-family: 'Bangers', cursive; font-size: 1.5rem; color: #1c1b1b;">PANEL DEL CONDUCTOR</h3>
+          <p style="font-size: 0.75rem; color: #5d3f3e;">¿Qué Dice? - Adivina quién dijo</p>
+        </div>
+
+        <!-- BOTÓN EMPECEMOS -->
+        <button id="btn-start" class="btn-primary" style="width: 100%; margin-bottom: 1rem;">
+          <span class="material-symbols-outlined" style="margin-right: 0.5rem;">play_arrow</span>
+          EMPECEMOS
+        </button>
+
+        <!-- RESPUESTA CORRECTA -->
+        <div class="solution-box">
+          <div class="solution-header">
+            <span class="material-symbols-outlined" style="font-size: 1rem;">key</span>
+            <span>Autor de la Frase</span>
+          </div>
+          <div class="solution-content">
+            <span id="official-author">CARGANDO...</span>
+            <span class="solution-badge">Oficial</span>
+          </div>
+        </div>
+
+        <!-- SELECTOR EQUIPO -->
+        <div style="margin-bottom: 1rem;">
+          <label class="select-label">Equipo Activo</label>
+          <div class="team-selector">
+            <button class="team-btn active" data-team="A">EQUIPO A</button>
+            <button class="team-btn" data-team="B">EQUIPO B</button>
+          </div>
+        </div>
+
+        <!-- SELECTORES -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+          <div class="select-container">
+            <label class="select-label">Rondas</label>
+            <select id="rounds-select" class="select-input">
+              <option value="3">3 Rondas</option>
+              <option value="5" selected>5 Rondas</option>
+              <option value="7">7 Rondas</option>
+            </select>
+          </div>
+          <div class="select-container">
+            <label class="select-label">Tiempo/Pregunta</label>
+            <select id="time-select" class="select-input">
+              <option value="15">15 seg</option>
+              <option value="20" selected>20 seg</option>
+              <option value="30">30 seg</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- CONTROLES -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+          <button id="btn-pause" class="btn-secondary" style="width: 100%;">
+            <span class="material-symbols-outlined" style="font-size: 1rem;">pause</span> PAUSAR
+          </button>
+          <button id="btn-end" class="btn-danger" style="width: 100%;">
+            <span class="material-symbols-outlined" style="font-size: 1rem;">stop</span> TERMINAR
+          </button>
+        </div>
+
+        <!-- SIGUIENTE -->
+        <button id="btn-next" class="btn-secondary" style="width: 100%; margin-bottom: 1rem;">
+          <span class="material-symbols-outlined" style="font-size: 1rem;">skip_next</span> SIGUIENTE
+        </button>
+
+        <!-- SECCIÓN FRASES -->
+        <div class="questions-section">
+          <button id="btn-toggle-questions" class="questions-toggle">
+            <span class="material-symbols-outlined">format_quote</span>
+            FRASES
+          </button>
+          <div id="questions-panel" class="questions-panel hidden">
+            <div id="questions-list"></div>
+            <button id="btn-add-quote" class="btn-secondary" style="width: 100%; margin-top: 0.5rem;">
+              + AGREGAR FRASE
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- MODAL EDITAR FRASE -->
+  <div id="edit-quote-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h3 style="font-family: 'Bangers', cursive; font-size: 1.5rem; margin-bottom: 1rem;">EDITAR FRASE</h3>
+      <input type="hidden" id="edit-quote-index" value="-1">
+      <div style="margin-bottom: 1rem;">
+        <label class="select-label">La frase</label>
+        <textarea id="edit-quote-text" class="select-input" style="width: 100%; min-height: 80px;" placeholder="Escribe la frase famosa..."></textarea>
+      </div>
+      <div style="margin-bottom: 1rem;">
+        <label class="select-label">Autor correcto</label>
+        <input type="text" id="edit-quote-author" class="select-input" style="width: 100%;" placeholder="¿Quién lo dijo?">
+      </div>
+      <div style="margin-bottom: 1rem;">
+        <label class="select-label">Opción incorrecta 1</label>
+        <input type="text" id="edit-quote-wrong1" class="select-input" style="width: 100%;" placeholder="Opción incorrecta">
+      </div>
+      <div style="margin-bottom: 1rem;">
+        <label class="select-label">Opción incorrecta 2</label>
+        <input type="text" id="edit-quote-wrong2" class="select-input" style="width: 100%;" placeholder="Opción incorrecta">
+      </div>
+      <div style="margin-bottom: 1rem;">
+        <label class="select-label">Opción incorrecta 3</label>
+        <input type="text" id="edit-quote-wrong3" class="select-input" style="width: 100%;" placeholder="Opción incorrecta">
+      </div>
+      <div style="display: flex; gap: 0.5rem;">
+        <button id="btn-save-quote" class="btn-primary" style="flex: 1;">GUARDAR</button>
+        <button id="btn-cancel-quote" class="btn-secondary" style="flex: 1;">CANCELAR</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../_shared/game-sdk.js"></script>
+  <script src="../_shared/game-start-modal.js"></script>
+  <script src="game.js"></script>
+
+</body>
+</html>

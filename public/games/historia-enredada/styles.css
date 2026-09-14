@@ -1,0 +1,376 @@
+/* ═══════════════════════════════════════════════════════════
+   HISTORIA ENREDADA - ESTILOS ESPECÍFICOS
+   ═══════════════════════════════════════════════════════════ */
+
+/* Header de la historia */
+.story-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: white;
+  border: 3px solid #1c1b1b;
+  border-radius: 0.75rem;
+  box-shadow: 3px 3px 0px #1c1b1b;
+}
+
+.turn-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #ffdad6;
+  border: 2px solid #1c1b1b;
+  border-radius: 0.5rem;
+  font-family: 'Bangers', cursive;
+  font-size: 1rem;
+  color: #1c1b1b;
+}
+
+.turn-dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  background: #ba1a1a;
+  border-radius: 50%;
+  animation: pulse 1s infinite;
+}
+
+.score-display {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.score-badge {
+  padding: 0.5rem 1rem;
+  border: 2px solid #1c1b1b;
+  border-radius: 0.5rem;
+  font-family: 'Bangers', cursive;
+  font-size: 1rem;
+  box-shadow: 2px 2px 0px #1c1b1b;
+}
+
+.score-badge.team-a {
+  background: #ffdad6;
+  color: #ba1a1a;
+}
+
+.score-badge.team-b {
+  background: #fff9e6;
+  color: #775a00;
+}
+
+/* Título de la historia */
+.story-title-box {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: #ffc72c;
+  border: 3px solid #1c1b1b;
+  border-radius: 0.75rem;
+  font-family: 'Bangers', cursive;
+  font-size: 1.5rem;
+  color: #1c1b1b;
+  margin-bottom: 1rem;
+  box-shadow: 3px 3px 0px #1c1b1b;
+  text-align: center;
+  justify-content: center;
+}
+
+/* Instrucciones */
+.instructions-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: #e7f3ff;
+  border: 2px solid #0050a0;
+  border-radius: 0.5rem;
+  color: #0050a0;
+  font-weight: 700;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+/* Caja de texto de la historia */
+.story-text-box {
+  background: white;
+  border: 3px solid #1c1b1b;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  box-shadow: 3px 3px 0px #1c1b1b;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.story-text {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 1.125rem;
+  line-height: 1.8;
+  color: #1c1b1b;
+}
+
+.story-sentence {
+  margin-bottom: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+}
+
+.story-sentence.start {
+  background: #ffc72c20;
+  border-left: 4px solid #ffc72c;
+  font-style: italic;
+}
+
+.story-sentence.team-a {
+  background: #ffdad6;
+  border-left: 4px solid #ba1a1a;
+}
+
+.story-sentence.team-b {
+  background: #fff9e6;
+  border-left: 4px solid #775a00;
+}
+
+.story-sentence.current {
+  background: #00856220;
+  border-left: 4px solid #008562;
+  animation: fadeInScale 0.3s ease;
+}
+
+/* Input de oración */
+.answer-input-container {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.sentence-input {
+  flex: 1;
+  padding: 1rem 1.25rem;
+  font-size: 1rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  border: 3px solid #1c1b1b;
+  border-radius: 0.75rem;
+  background: #f6f3f2;
+  color: #1c1b1b;
+  box-shadow: 3px 3px 0px #1c1b1b;
+}
+
+.sentence-input:focus {
+  outline: none;
+  border-color: #ffc72c;
+  background: white;
+}
+
+.sentence-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-submit {
+  width: 3.5rem;
+  height: 3.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #008562;
+  color: white;
+  border: 3px solid #1c1b1b;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  box-shadow: 3px 3px 0px #1c1b1b;
+  transition: all 0.15s;
+}
+
+.btn-submit:hover:not(:disabled) {
+  background: #00694d;
+}
+
+.btn-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Controles de la historia */
+.story-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.btn-correct {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: #008562;
+  color: white;
+  border: 3px solid #1c1b1b;
+  border-radius: 0.75rem;
+  font-family: 'Bangers', cursive;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 3px 3px 0px #1c1b1b;
+  transition: all 0.15s;
+}
+
+.btn-correct:hover {
+  background: #00694d;
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0px #1c1b1b;
+}
+
+.btn-correct:active {
+  transform: translate(3px, 3px);
+  box-shadow: none;
+}
+
+.btn-funny {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: #ffc72c;
+  color: #1c1b1b;
+  border: 3px solid #1c1b1b;
+  border-radius: 0.75rem;
+  font-family: 'Bangers', cursive;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 3px 3px 0px #1c1b1b;
+  transition: all 0.15s;
+}
+
+.btn-funny:hover {
+  background: #ffdf99;
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0px #1c1b1b;
+}
+
+.btn-funny:active {
+  transform: translate(3px, 3px);
+  box-shadow: none;
+}
+
+.btn-skip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: #f6f3f2;
+  color: #1c1b1b;
+  border: 3px solid #1c1b1b;
+  border-radius: 0.75rem;
+  font-family: 'Bangers', cursive;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 3px 3px 0px #1c1b1b;
+  transition: all 0.15s;
+}
+
+.btn-skip:hover {
+  background: #e8e4e2;
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0px #1c1b1b;
+}
+
+.btn-skip:active {
+  transform: translate(3px, 3px);
+  box-shadow: none;
+}
+
+/* Selector de equipo */
+.team-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  background: #f0edec;
+  padding: 0.375rem;
+  border: 2px solid #1c1b1b;
+  border-radius: 0.5rem;
+}
+
+.team-btn {
+  padding: 0.5rem;
+  border: 2px solid #1c1b1b;
+  border-radius: 0.5rem;
+  font-family: 'Bangers', cursive;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  background: white;
+  color: #1c1b1b;
+}
+
+.team-btn.active {
+  background: #bb0024;
+  color: white;
+  box-shadow: 2px 2px 0px #1c1b1b;
+}
+
+.team-btn:hover:not(.active) {
+  background: #f6f3f2;
+}
+
+/* Preguntas/Comienzos en panel */
+.question-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem;
+  background: white;
+  border: 2px solid #1c1b1b;
+  border-radius: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.question-item-text {
+  font-size: 0.875rem;
+  color: #1c1b1b;
+  flex: 1;
+  margin-right: 0.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.question-item-actions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.question-item-btn {
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #1c1b1b;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.question-item-btn.edit {
+  background: #ffc72c;
+}
+
+.question-item-btn.edit:hover {
+  background: #ffdf99;
+}
+
+.question-item-btn.delete {
+  background: #ffdad6;
+}
+
+.question-item-btn.delete:hover {
+  background: #ba1a1a;
+  color: white;
+}

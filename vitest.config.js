@@ -7,8 +7,9 @@ export default defineConfig({
     include: ['tests/**/*.test.js'],
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'html'],
-      include: ['server/**/*.js'],
+      reporter: ['text', 'html', 'lcov'],
+      include: ['server/**/*.js', 'public/games/_shared/**/*.js'],
+      exclude: ['node_modules/**', 'tests/**'],
     },
   },
 });

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anti-Trivia - CUMPEO</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Bricolage+Grotesque:opsz,wght@12..96,700;800&family=Plus+Jakarta+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <link href="../_shared/game-styles.css" rel="stylesheet">
+  <link href="styles.css" rel="stylesheet">
+</head>
+<body class="bg-surface">
+
+  <!-- MODALES -->
+  <div id="start-modal" class="hidden"></div>
+  <div id="pause-modal" class="hidden"></div>
+  <div id="turn-modal" class="hidden"></div>
+  <div id="end-modal" class="hidden"></div>
+  <div id="results-modal" class="hidden"></div>
+
+  <div class="game-layout">
+
+    <!-- AREA DE JUEGO (8 columnas) -->
+    <section id="game-area" class="game-area">
+      
+      <!-- RELOJ -->
+      <div id="clock" class="clock-container hidden">
+        <span class="material-symbols-outlined" style="margin-right: 0.5rem;">timer</span>
+        <span id="clock-value" class="clock-value">00:00</span>
+      </div>
+
+      <!-- CONTENIDO DEL JUEGO -->
+      <div id="game-content" class="flex-1 flex flex-col items-center justify-center">
+        
+        <!-- Estado inicial -->
+        <div id="waiting-state" class="text-center">
+          <h1 style="font-family: 'Bangers', cursive; font-size: 3rem; color: #1c1b1b;">🔄 ANTI-TRIVIA 🔄</h1>
+          <p style="color: #5d3f3e; font-size: 1.1rem;">¡Encuentra la respuesta INCORRECTA!</p>
+          <p style="color: #5d3f3e; font-size: 0.9rem; margin-top: 0.5rem;">Esperando que el conductor inicie el juego...</p>
+        </div>
+
+        <!-- Pregunta (oculta al inicio) -->
+        <div id="question-container" class="hidden w-full">
+          <div class="question-card">
+            <div class="question-header">
+              <span class="question-badge">PREGUNTA</span>
+              <span id="question-number" class="question-number">1/5</span>
+            </div>
+            <h2 id="question-text" class="question-text">¿Cargando pregunta...</h2>
+            
+            <p class="question-instruction">
+              <span class="material-symbols-outlined" style="font-size: 1rem;">warning</span>
+              Selecciona la respuesta INCORRECTA
+            </p>
+            
+            <div id="answers-container" class="answers-grid">
+              <button class="answer-btn" data-index="0">
+                <span class="answer-letter">A</span>
+                <span class="answer-text" id="answer-0">-</span>
+              </button>
+              <button class="answer-btn" data-index="1">
+                <span class="answer-letter">B</span>
+                <span class="answer-text" id="answer-1">-</span>
+              </button>
+              <button class="answer-btn" data-index="2">
+                <span class="answer-letter">C</span>
+                <span class="answer-text" id="answer-2">-</span>
+              </button>
+              <button class="answer-btn" data-index="3">
+                <span class="answer-letter">D</span>
+                <span class="answer-text" id="answer-3">-</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Feedback de resultado -->
+          <div id="result-container" class="hidden text-center" style="margin-top: 1.5rem;">
+            <div id="result-box" class="result-box">
+              ¡Correcto! +50 pts
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- AREA CONDUCTOR (4 columnas) -->
+    <aside id="conductor-area" class="conductor-area">
+      <div class="conductor-panel">
+        
+        <!-- Título -->
+        <div style="text-align: center; margin-bottom: 1.5rem;">
+          <h3 style="font-family: 'Bangers', cursive; font-size: 1.5rem; color: #1c1b1b;">PANEL DEL CONDUCTOR</h3>
+          <p style="font-size: 0.75rem; color: #5d3f3e;">Anti-Trivia - La trivia invertida</p>
+        </div>
+
+        <!-- BOTÓN EMPECEMOS -->
+        <button id="btn-start" class="btn-primary" style="width: 100%; margin-bottom: 1rem;">
+          <span class="material-symbols-outlined" style="margin-right: 0.5rem;">play_arrow</span>
+          EMPECEMOS
+        </button>
+
+        <!-- RESPUESTA CORRECTA -->
+        <div class="solution-box">
+          <div class="solution-header">
+            <span class="material-symbols-outlined" style="font-size: 1rem;">key</span>
+            <span>Respuesta Correcta</span>
+          </div>
+          <div class="solution-content">
+            <span id="official-solution">CARGANDO...</span>
+            <span class="solution-badge">Oficial</span>
+          </div>
+        </div>
+
+        <!-- VEREDICTO -->
+        <div style="margin-bottom: 1rem;">
+          <label class="select-label">Veredicto Manual</label>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+            <button id="btn-correct" class="btn-correct">
+              <span class="material-symbols-outlined">check_circle</span>
+              BONUS +100
+            </button>
+            <button id="btn-error" class="btn-error">
+              <span class="material-symbols-outlined">cancel</span>
+              ERROR
+            </button>
+          </div>
+        </div>
+
+        <!-- SELECTOR EQUIPO -->
+        <div style="margin-bottom: 1rem;">
+          <label class="select-label">Equipo Activo</label>
+          <div class="team-selector">
+            <button class="team-btn active" data-team="A">EQUIPO A</button>
+            <button class="team-btn" data-team="B">EQUIPO B</button>
+          </div>
+        </div>
+
+        <!-- SELECTORES -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+          <div class="select-container">
+            <label class="select-label">Rondas</label>
+            <select id="rounds-select" class="select-input">
+              <option value="3">3 Rondas</option>
+              <option value="5" selected>5 Rondas</option>
+              <option value="7">7 Rondas</option>
+            </select>
+          </div>
+          <div class="select-container">
+            <label class="select-label">Tiempo/Pregunta</label>
+            <select id="time-select" class="select-input">
+              <option value="15">15 seg</option>
+              <option value="20" selected>20 seg</option>
+              <option value="30">30 seg</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- CONTROLES -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+          <button id="btn-pause" class="btn-secondary" style="width: 100%;">
+            <span class="material-symbols-outlined" style="font-size: 1rem;">pause</span> PAUSAR
+          </button>
+          <button id="btn-end" class="btn-danger" style="width: 100%;">
+            <span class="material-symbols-outlined" style="font-size: 1rem;">stop</span> TERMINAR
+          </button>
+        </div>
+
+        <!-- SIGUIENTE -->
+        <button id="btn-next" class="btn-secondary" style="width: 100%; margin-bottom: 1rem;">
+          <span class="material-symbols-outlined" style="font-size: 1rem;">skip_next</span> SIGUIENTE
+        </button>
+
+        <!-- SECCIÓN PREGUNTAS -->
+        <div class="questions-section">
+          <button id="btn-toggle-questions" class="questions-toggle">
+            <span class="material-symbols-outlined">quiz</span>
+            PREGUNTAS
+          </button>
+          <div id="questions-panel" class="questions-panel hidden">
+            <div id="questions-list"></div>
+            <button id="btn-add-question" class="btn-secondary" style="width: 100%; margin-top: 0.5rem;">
+              + AGREGAR PREGUNTA
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- MODAL EDITAR PREGUNTA -->
+  <div id="edit-question-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h3 style="font-family: 'Bangers', cursive; font-size: 1.5rem; margin-bottom: 1rem;">EDITAR PREGUNTA</h3>
+      <input type="hidden" id="edit-question-index" value="-1">
+      <div style="margin-bottom: 1rem;">
+        <label class="select-label">Pregunta</label>
+        <input type="text" id="edit-question-text" class="select-input" style="width: 100%;" placeholder="Escribe la pregunta...">
+      </div>
+      <div style="margin-bottom: 1rem;">
+        <label class="select-label">Respuesta CORRECTA (la que NO se debe elegir)</label>
+        <input type="text" id="edit-answer-correct" class="select-input" style="width: 100%;" placeholder="Respuesta correcta">
+      </div>
+      <div style="margin-bottom: 1rem;">
+        <label class="select-label">Opción Incorrecta 1 (válida para elegir)</label>
+        <input type="text" id="edit-answer-wrong1" class="select-input" style="width: 100%;" placeholder="Opción incorrecta">
+      </div>
+      <div style="margin-bottom: 1rem;">
+        <label class="select-label">Opción Incorrecta 2 (válida para elegir)</label>
+        <input type="text" id="edit-answer-wrong2" class="select-input" style="width: 100%;" placeholder="Opción incorrecta">
+      </div>
+      <div style="margin-bottom: 1rem;">
+        <label class="select-label">Opción Incorrecta 3 (válida para elegir)</label>
+        <input type="text" id="edit-answer-wrong3" class="select-input" style="width: 100%;" placeholder="Opción incorrecta">
+      </div>
+      <div style="display: flex; gap: 0.5rem;">
+        <button id="btn-save-question" class="btn-primary" style="flex: 1;">GUARDAR</button>
+        <button id="btn-cancel-question" class="btn-secondary" style="flex: 1;">CANCELAR</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../_shared/game-sdk.js"></script>
+  <script src="../_shared/game-start-modal.js"></script>
+  <script src="game.js"></script>
+
+</body>
+</html>

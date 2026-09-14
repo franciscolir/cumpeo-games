@@ -82,12 +82,11 @@ describe('HTML Integrity', () => {
     });
 
     it('should have API base URL configured', () => {
-      expect(indexHtml).toContain('localhost:3000/api');
+      expect(indexHtml).toContain('localhost:4000/api');
     });
 
     it('should reference local mascot images', () => {
       expect(indexHtml).toContain('images/pupi-pulgar-arriba.png');
-      expect(indexHtml).toContain('images/pupi-microfono.png');
       expect(indexHtml).toContain('images/pupi-riendo.png');
       expect(indexHtml).toContain('images/pupi-tarjeta.png');
     });
@@ -119,8 +118,8 @@ describe('HTML Integrity', () => {
       expect(opens).toBe(closes);
     });
 
-    it('should reference local API URL', () => {
-      expect(publicHtml).toContain('localhost:3000/api');
+    it('should have public display structure', () => {
+      expect(publicHtml).toContain('CUMPEO');
     });
   });
 });

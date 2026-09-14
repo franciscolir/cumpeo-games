@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>El Rosco Alfabético - CUMPEO</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Bricolage+Grotesque:opsz,wght@12..96,700;800&family=Plus+Jakarta+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <link href="../_shared/game-styles.css" rel="stylesheet">
+  <link href="styles.css" rel="stylesheet">
+</head>
+<body class="bg-surface">
+
+  <!-- MODALES -->
+  <div id="start-modal" class="hidden"></div>
+  <div id="pause-modal" class="hidden"></div>
+  <div id="turn-modal" class="hidden"></div>
+  <div id="end-modal" class="hidden"></div>
+  <div id="results-modal" class="hidden"></div>
+
+  <div class="game-layout">
+
+    <!-- AREA DE JUEGO (8 columnas) -->
+    <section id="game-area" class="game-area">
+      
+      <!-- RELOJ -->
+      <div id="clock" class="clock-container hidden">
+        <span class="material-symbols-outlined" style="margin-right: 0.5rem;">timer</span>
+        <span id="clock-value" class="clock-value">00:00</span>
+      </div>
+
+      <!-- CONTENIDO DEL JUEGO -->
+      <div id="game-content" class="flex-1 flex flex-col items-center justify-center">
+        
+        <!-- Estado inicial -->
+        <div id="waiting-state" class="text-center">
+          <h1 style="font-family: 'Bangers', cursive; font-size: 3rem; color: #1c1b1b;">🎯 EL ROSCO ALFABÉTICO 🎯</h1>
+          <p style="color: #5d3f3e; font-size: 1.1rem;">Esperando que el conductor inicie el juego...</p>
+        </div>
+
+        <!-- Rosco (oculto al inicio) -->
+        <div id="rosco-container" class="hidden w-full">
+          
+          <!-- Header del rosco -->
+          <div class="rosco-header">
+            <div class="rosco-badge">
+              <span class="material-symbols-outlined">emoji_events</span>
+              <span id="round-indicator">RONDA 1</span>
+            </div>
+            <div class="rosco-badge team-badge">
+              <span id="team-indicator">EQUIPO A</span>
+            </div>
+          </div>
+
+          <!-- Rosco circular -->
+          <div class="rosco-circular">
+            <svg class="rosco-svg" viewBox="0 0 400 400">
+              <circle cx="200" cy="200" r="180" fill="none" stroke="#e5e2e1" stroke-width="2" stroke-dasharray="6 6"/>
+              <circle id="rosco-progress" cx="200" cy="200" r="180" fill="none" stroke="#008562" stroke-width="4" stroke-dasharray="1131" stroke-dashoffset="640" stroke-linecap="round" transform="rotate(-90 200 200)"/>
+            </svg>
+            
+            <!-- Letras del rosco -->
+            <div id="letters-container" class="letters-container"></div>
+            
+            <!-- Tarjeta central -->
+            <div class="rosco-central">
+              <div class="rosco-letter-badge" id="active-letter-badge">S</div>
+              <p class="rosco-definition" id="rosco-definition">
+                "Fenómeno meteorológico violento caracterizado por vientos giratorios destructivos que se extienden desde una nube hasta el suelo."
+              </p>
+            </div>
+          </div>
+
+          <!-- Leyenda -->
+          <div class="rosco-legend">
+            <div class="legend-items">
+              <span class="legend-item"><span class="legend-dot green"></span> Acertada</span>
+              <span class="legend-item"><span class="legend-dot red"></span> Errada</span>
+              <span class="legend-item"><span class="legend-dot yellow"></span> En juego</span>
+              <span class="legend-item"><span class="legend-dot white"></span> Pendiente</span>
+            </div>
+            <div class="legend-counts">
+              <span id="count-green">0 Verdes</span> • <span id="count-red">0 Rojas</span> • <span id="count-pending">25 Restantes</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- AREA CONDUCTOR (4 columnas) -->
+    <aside id="conductor-area" class="conductor-area">
+      <div class="conductor-panel">
+        
+        <!-- Título -->
+        <div style="text-align: center; margin-bottom: 1.5rem;">
+          <h3 style="font-family: 'Bangers', cursive; font-size: 1.5rem; color: #1c1b1b;">PANEL DEL CONDUCTOR</h3>
+          <p style="font-size: 0.75rem; color: #5d3f3e;">Rosco Alfabético - Pasapalabra</p>
+        </div>
+
+        <!-- BOTÓN EMPECEMOS -->
+        <button id="btn-start" class="btn-primary" style="width: 100%; margin-bottom: 1rem;">
+          <span class="material-symbols-outlined" style="margin-right: 0.5rem;">play_arrow</span>
+          EMPECEMOS
+        </button>
+
+        <!-- SOLUCIÓN OFICIAL -->
+        <div class="solution-box">
+          <div class="solution-header">
+            <span class="material-symbols-outlined" style="font-size: 1rem;">key</span>
+            <span>Solución Oficial</span>
+          </div>
+          <div class="solution-content">
+            <span id="official-solution">TORNADO</span>
+            <span class="solution-badge">Oficial</span>
+          </div>
+        </div>
+
+        <!-- VEREDICTO -->
+        <div style="margin-bottom: 1rem;">
+          <label class="select-label">Veredicto</label>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+            <button id="btn-correct" class="btn-correct">
+              <span class="material-symbols-outlined">check_circle</span>
+              CORRECTO +100
+            </button>
+            <button id="btn-error" class="btn-error">
+              <span class="material-symbols-outlined">cancel</span>
+              ERROR
+            </button>
+          </div>
+          <button id="btn-pass" class="btn-pass" style="width: 100%; margin-top: 0.5rem;">
+            <span class="material-symbols-outlined">fast_forward</span>
+            ¡PASAPALABRA!
+          </button>
+        </div>
+
+        <!-- SELECTOR EQUIPO -->
+        <div style="margin-bottom: 1rem;">
+          <label class="select-label">Equipo Activo</label>
+          <div class="team-selector">
+            <button class="team-btn active" data-team="A">EQUIPO A</button>
+            <button class="team-btn" data-team="B">EQUIPO B</button>
+          </div>
+        </div>
+
+        <!-- SELECTORES -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+          <div class="select-container">
+            <label class="select-label">Rondas</label>
+            <select id="rounds-select" class="select-input">
+              <option value="1">1 Ronda</option>
+              <option value="2">2 Rondas</option>
+              <option value="3" selected>3 Rondas</option>
+            </select>
+          </div>
+          <div class="select-container">
+            <label class="select-label">Tiempo</label>
+            <select id="time-select" class="select-input">
+              <option value="60">60 seg</option>
+              <option value="90" selected>90 seg</option>
+              <option value="120">120 seg</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- CONTROLES -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+          <button id="btn-pause" class="btn-secondary" style="width: 100%;">
+            <span class="material-symbols-outlined" style="font-size: 1rem;">pause</span> PAUSAR
+          </button>
+          <button id="btn-end" class="btn-danger" style="width: 100%;">
+            <span class="material-symbols-outlined" style="font-size: 1rem;">stop</span> TERMINAR
+          </button>
+        </div>
+
+        <!-- SECCIÓN PREGUNTAS -->
+        <div class="questions-section">
+          <button id="btn-toggle-questions" class="questions-toggle">
+            <span class="material-symbols-outlined">quiz</span>
+            PREGUNTAS
+          </button>
+          <div id="questions-panel" class="questions-panel hidden">
+            <div id="questions-list"></div>
+            <button id="btn-add-question" class="btn-secondary" style="width: 100%; margin-top: 0.5rem;">
+              + AGREGAR LETRA
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- MODAL EDITAR PREGUNTA -->
+  <div id="edit-question-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h3 style="font-family: 'Bangers', cursive; font-size: 1.5rem; margin-bottom: 1rem;">EDITAR LETRA</h3>
+      <input type="hidden" id="edit-question-index" value="-1">
+      <div style="margin-bottom: 1rem;">
+        <label class="select-label">Letra</label>
+        <select id="edit-letter" class="select-input" style="width: 100%;"></select>
+      </div>
+      <div style="margin-bottom: 1rem;">
+        <label class="select-label">Definición</label>
+        <textarea id="edit-definition" class="select-input" style="width: 100%; min-height: 80px;" placeholder="Escribe la definición..."></textarea>
+      </div>
+      <div style="margin-bottom: 1rem;">
+        <label class="select-label">Respuesta Correcta</label>
+        <input type="text" id="edit-answer" class="select-input" style="width: 100%;" placeholder="Respuesta correcta">
+      </div>
+      <div style="margin-bottom: 1rem;">
+        <label class="select-label">Sinónimos (separados por coma)</label>
+        <input type="text" id="edit-synonyms" class="select-input" style="width: 100%;" placeholder="sinónimo1, sinónimo2">
+      </div>
+      <div style="display: flex; gap: 0.5rem;">
+        <button id="btn-save-question" class="btn-primary" style="flex: 1;">GUARDAR</button>
+        <button id="btn-cancel-question" class="btn-secondary" style="flex: 1;">CANCELAR</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../_shared/game-sdk.js"></script>
+  <script src="../_shared/game-start-modal.js"></script>
+  <script src="game.js"></script>
+
+</body>
+</html>

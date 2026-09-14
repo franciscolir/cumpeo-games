@@ -1,0 +1,339 @@
+/* ═══════════════════════════════════════════════════════════
+   ROSCO ALFABÉTICO - ESTILOS ESPECÍFICOS
+   ═══════════════════════════════════════════════════════════ */
+
+/* Header del rosco */
+.rosco-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: white;
+  border: 3px solid #1c1b1b;
+  border-radius: 0.75rem;
+  box-shadow: 3px 3px 0px #1c1b1b;
+}
+
+.rosco-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: 'Bangers', cursive;
+  font-size: 1rem;
+  color: #1c1b1b;
+}
+
+.team-badge {
+  background: #ffc72c;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 2px solid #1c1b1b;
+}
+
+/* Rosco circular */
+.rosco-circular {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  aspect-ratio: 1;
+  margin: 0 auto;
+}
+
+.rosco-svg {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.letters-container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+/* Letras del rosco */
+.letter-node {
+  position: absolute;
+  transform: translate(-50%, -50%);
+}
+
+.letter-btn {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Bangers', cursive;
+  font-size: 1.25rem;
+  border: 3px solid #1c1b1b;
+  box-shadow: 2px 2px 0px #1c1b1b;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.letter-btn:hover {
+  transform: scale(1.1);
+}
+
+.letter-btn.pending {
+  background: white;
+  color: #1c1b1b;
+}
+
+.letter-btn.active {
+  background: #ffc72c;
+  color: #1c1b1b;
+  width: 4rem;
+  height: 4rem;
+  font-size: 1.5rem;
+  box-shadow: 4px 4px 0px #1c1b1b;
+  animation: pulseScale 1s infinite;
+}
+
+.letter-btn.green {
+  background: #008562;
+  color: white;
+}
+
+.letter-btn.red {
+  background: #ba1a1a;
+  color: white;
+}
+
+/* Tarjeta central */
+.rosco-central {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 55%;
+  height: 55%;
+  background: white;
+  border: 4px solid #1c1b1b;
+  border-radius: 50%;
+  box-shadow: 4px 4px 0px #1c1b1b;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  text-align: center;
+}
+
+.rosco-letter-badge {
+  font-family: 'Bangers', cursive;
+  font-size: 2rem;
+  color: #1c1b1b;
+  background: #ffc72c;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 2px solid #1c1b1b;
+  margin-bottom: 0.5rem;
+}
+
+.rosco-definition {
+  font-size: 0.875rem;
+  color: #1c1b1b;
+  line-height: 1.3;
+  max-width: 200px;
+}
+
+/* Leyenda */
+.rosco-legend {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: white;
+  border: 2px solid #1c1b1b;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+}
+
+.legend-items {
+  display: flex;
+  gap: 1rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-weight: 600;
+  color: #1c1b1b;
+}
+
+.legend-dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  border: 2px solid #1c1b1b;
+}
+
+.legend-dot.green { background: #008562; }
+.legend-dot.red { background: #ba1a1a; }
+.legend-dot.yellow { background: #ffc72c; }
+.legend-dot.white { background: white; }
+
+.legend-counts {
+  font-weight: 700;
+  color: #5d3f3e;
+}
+
+/* Solución oficial */
+.solution-box {
+  background: #fff9e6;
+  border: 3px solid #1c1b1b;
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  box-shadow: 3px 3px 0px #1c1b1b;
+}
+
+.solution-header {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #5d3f3e;
+  margin-bottom: 0.5rem;
+}
+
+.solution-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  padding: 0.5rem 0.75rem;
+  border: 2px solid #1c1b1b;
+  border-radius: 0.5rem;
+  font-family: 'Bangers', cursive;
+  font-size: 1.5rem;
+  color: #1c1b1b;
+}
+
+.solution-badge {
+  font-size: 0.625rem;
+  background: #00856220;
+  color: #00694d;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/* Botones de veredicto */
+.btn-correct {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: #008562;
+  color: white;
+  border: 3px solid #1c1b1b;
+  border-radius: 0.75rem;
+  font-family: 'Bangers', cursive;
+  font-size: 0.875rem;
+  cursor: pointer;
+  box-shadow: 3px 3px 0px #1c1b1b;
+  transition: all 0.15s;
+}
+
+.btn-correct:hover {
+  background: #00694d;
+}
+
+.btn-correct:active {
+  transform: translate(3px, 3px);
+  box-shadow: none;
+}
+
+.btn-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: #ba1a1a;
+  color: white;
+  border: 3px solid #1c1b1b;
+  border-radius: 0.75rem;
+  font-family: 'Bangers', cursive;
+  font-size: 0.875rem;
+  cursor: pointer;
+  box-shadow: 3px 3px 0px #1c1b1b;
+  transition: all 0.15s;
+}
+
+.btn-error:hover {
+  background: #8c1515;
+}
+
+.btn-error:active {
+  transform: translate(3px, 3px);
+  box-shadow: none;
+}
+
+.btn-pass {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: #ffc72c;
+  color: #1c1b1b;
+  border: 3px solid #1c1b1b;
+  border-radius: 0.75rem;
+  font-family: 'Bangers', cursive;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 3px 3px 0px #1c1b1b;
+  transition: all 0.15s;
+}
+
+.btn-pass:hover {
+  background: #ffdf99;
+}
+
+.btn-pass:active {
+  transform: translate(3px, 3px);
+  box-shadow: none;
+}
+
+/* Selector de equipo */
+.team-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  background: #f0edec;
+  padding: 0.375rem;
+  border: 2px solid #1c1b1b;
+  border-radius: 0.5rem;
+}
+
+.team-btn {
+  padding: 0.5rem;
+  border: 2px solid #1c1b1b;
+  border-radius: 0.5rem;
+  font-family: 'Bangers', cursive;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  background: white;
+  color: #1c1b1b;
+}
+
+.team-btn.active {
+  background: #bb0024;
+  color: white;
+  box-shadow: 2px 2px 0px #1c1b1b;
+}
+
+.team-btn:hover:not(.active) {
+  background: #f6f3f2;
+}

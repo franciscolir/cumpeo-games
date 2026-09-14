@@ -5,14 +5,14 @@ export default defineConfig({
   timeout: 30000,
   retries: 1,
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL: 'http://localhost:4000',
     headless: true,
     screenshot: 'only-on-failure',
   },
   webServer: {
     command: 'node server/server.js',
-    port: 3000,
-    timeout: 10000,
+    port: 4000,
+    timeout: 15000,
     reuseExistingServer: true,
   },
 });
