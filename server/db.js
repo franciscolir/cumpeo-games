@@ -139,6 +139,11 @@ function initSchema() {
   try {
     db.run(`DELETE FROM sessions WHERE id NOT IN (SELECT MAX(id) FROM sessions GROUP BY code)`);
   } catch (e) { /* ignore */ }
+
+  // Fix game file paths: remove 'games/' prefix if present
+  try {
+    db.run(`UPDATE games SET file = REPLACE(file, 'games/', '') WHERE file LIKE 'games/%'`);
+  } catch (e) { /* ignore */ }
 }
 
 function save() {

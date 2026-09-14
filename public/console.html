@@ -774,7 +774,7 @@
         };
         gameFile = gameFileMap[currentGame.game_name] || `${currentGame.game_name.toLowerCase().replace(/\s+/g, '-')}/index.html`;
       }
-      const gamePath = `/games/${gameFile}`;
+      const gamePath = gameFile.startsWith('games/') ? `/${gameFile}` : `/games/${gameFile}`;
 
       const emptyState = document.getElementById('empty-state');
       const iframe = document.getElementById('game-iframe');
