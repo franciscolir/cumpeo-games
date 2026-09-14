@@ -119,6 +119,21 @@ function initSchema() {
   } catch (e) {
     // Column already exists, ignore
   }
+
+  // Migrate old game file paths to new modular structure
+  const oldFileMap = {
+    'trivia-relampago.html': 'trivia-relampago/index.html',
+    'memorice.html': 'memorice/index.html',
+    'sing.html': 'cancion-incompleta/index.html',
+    'rosco.html': 'rosco/index.html',
+    'pictionary.html': 'pictionary/index.html',
+    'historia-enredada.html': 'historia-enredada/index.html'
+  };
+  Object.entries(oldFileMap).forEach(([oldFile, newFile]) => {
+    try {
+      db.run(`UPDATE games SET file = ? WHERE file = ?`, [newFile, oldFile]);
+    } catch (e) { /* ignore */ }
+  });
 }
 
 function save() {

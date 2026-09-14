@@ -762,14 +762,17 @@
       let gameFile = currentGame.game_file;
       if (!gameFile) {
         const gameFileMap = {
-          'Trivia Relampago': 'trivia-relampago.html',
-          'Memorice': 'memorice.html',
-          'Cancion Incompleta': 'sing.html',
-          'Rosco': 'rosco.html',
-          'Pictionary Veloz': 'pictionary.html',
-          'Historia Enredada': 'historia-enredada.html'
+          'Trivia Relampago': 'trivia-relampago/index.html',
+          'Memorice': 'memorice/index.html',
+          'Cancion Incompleta': 'cancion-incompleta/index.html',
+          'Rosco': 'rosco/index.html',
+          'Pictionary Veloz': 'pictionary/index.html',
+          'Historia Enredada': 'historia-enredada/index.html',
+          'Anti-Trivia': 'anti-trivia/index.html',
+          'Enlaces': 'enlaces/index.html',
+          'Que Dice': 'que-dice/index.html'
         };
-        gameFile = gameFileMap[currentGame.game_name] || `${currentGame.game_name.toLowerCase().replace(/\s+/g, '-')}.html`;
+        gameFile = gameFileMap[currentGame.game_name] || `${currentGame.game_name.toLowerCase().replace(/\s+/g, '-')}/index.html`;
       }
       const gamePath = `/games/${gameFile}`;
 
