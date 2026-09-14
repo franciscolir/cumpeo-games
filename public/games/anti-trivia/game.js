@@ -1,66 +1,56 @@
 /**
  * ANTI-TRIVIA - Game Logic
  * La trivia invertida: Encuentra la respuesta INCORRECTA
+ * Cada ronda utiliza un set diferente de preguntas (sin repetir).
  */
-
 (function() {
   'use strict';
 
-  // ==================== GAME STATE ====================
-  const sdk = new GameSDK();
-  let localScores = { A: 0, B: 0 };
-  let currentQuestion = 0;
-  let currentRound = 1;
-  let totalRounds = 5;
-  let timePerQuestion = 20;
-  let isPaused = false;
-  let isStarted = false;
-  let selectedTeam = 'A';
-  let timerInterval = null;
-  let timeRemaining = 0;
+  const core = GameCore.create({
+    gameName: 'anti-trivia',
+    defaultRounds: 5,
+    defaultTime: 20,
+    warningThreshold: 5,
+    onTimeUp: () => {
+      const buttons = document.querySelectorAll('.answer-btn');
+      buttons.forEach(btn => btn.disabled = true);
+      const q = currentQuestions[currentQuestion];
+      const shuffledIndices = JSON.parse(answersContainer.dataset.shuffled);
+      buttons.forEach((btn, i) => { if (shuffledIndices[i] === q.correct) btn.classList.add('selected-correct'); });
+      resultContainer.classList.remove('hidden');
+      resultBox.textContent = '¡TIEMPO AGOTADO!';
+      resultBox.className = 'result-box error';
+      setTimeout(() => nextQuestion(), 2000);
+    },
+    onGetHiddenContainer: () => $('waiting-state'),
+    onNext: () => nextQuestion(),
+    onStart: startGame,
+    extraStats: () => ({ totalRounds: core.state.totalRounds, usedSets: usedSetIndices.length })
+  });
 
-  // Default questions - la respuesta correcta es la que NO se debe elegir
-  const defaultQuestions = [
+  const { sdk, state, $ } = core;
+
+  // ==================== GAME-SPECIFIC STATE ====================
+  let currentQuestion = 0;
+  let currentQuestions = [];
+  let usedSetIndices = [];
+
+  const defaultSets = [
     {
-      text: "¿Cuál es la capital de Chile?",
-      answers: ["Santiago", "Buenos Aires", "Lima", "Bogotá"],
-      correct: 0, // Santiago es correcta, las otras son incorrectas
-      correctText: "Santiago"
-    },
-    {
-      text: "¿Quién pintó la Mona Lisa?",
-      answers: ["Picasso", "Da Vinci", "Van Gogh", "Monet"],
-      correct: 1, // Da Vinci es correcto, las otras son incorrectas
-      correctText: "Da Vinci"
-    },
-    {
-      text: "¿Cuántos días tiene un año bisiesto?",
-      answers: ["364", "365", "366", "367"],
-      correct: 2, // 366 es correcto, las otras son incorrectas
-      correctText: "366"
-    },
-    {
-      text: "¿Cuál es el planeta más grande del sistema solar?",
-      answers: ["Saturno", "Júpiter", "Neptuno", "Urano"],
-      correct: 1, // Júpiter es correcto, las otras son incorrectas
-      correctText: "Júpiter"
-    },
-    {
-      text: "¿En qué año llegó el hombre a la Luna?",
-      answers: ["1967", "1968", "1969", "1970"],
-      correct: 2, // 1969 es correcto, las otras son incorrectas
-      correctText: "1969"
+      name: 'Cultura General',
+      questions: [
+        { text: "¿Cuál es la capital de Chile?", answers: ["Santiago", "Buenos Aires", "Lima", "Bogotá"], correct: 0, correctText: "Santiago" },
+        { text: "¿Quién pintó la Mona Lisa?", answers: ["Picasso", "Da Vinci", "Van Gogh", "Monet"], correct: 1, correctText: "Da Vinci" },
+        { text: "¿Cuántos días tiene un año bisiesto?", answers: ["364", "365", "366", "367"], correct: 2, correctText: "366" },
+        { text: "¿Cuál es el planeta más grande del sistema solar?", answers: ["Saturno", "Júpiter", "Neptuno", "Urano"], correct: 1, correctText: "Júpiter" },
+        { text: "¿En qué año llegó el hombre a la Luna?", answers: ["1967", "1968", "1969", "1970"], correct: 2, correctText: "1969" }
+      ]
     }
   ];
 
-  let questions = [...defaultQuestions];
+  let sets = JSON.parse(JSON.stringify(defaultSets));
 
-  // ==================== DOM ELEMENTS ====================
-  const $ = (id) => document.getElementById(id);
-  
-  const clockEl = $('clock');
-  const clockValueEl = $('clock-value');
-  const waitingState = $('waiting-state');
+  // ==================== DOM ====================
   const questionContainer = $('question-container');
   const questionText = $('question-text');
   const questionNumber = $('question-number');
@@ -70,194 +60,263 @@
   const officialSolution = $('official-solution');
   const roundsSelect = $('rounds-select');
   const timeSelect = $('time-select');
-  const questionsList = $('questions-list');
-  const questionsPanel = $('questions-panel');
+  const setsList = $('sets-list');
+  const roundSetSelect = $('round-set-select');
+  const currentSetDisplay = $('current-set-display');
+  const currentSetName = $('current-set-name');
+  const currentSetProgress = $('current-set-progress');
+  const setSelector = $('set-selector');
+  const btnNext = $('btn-next');
 
-  // ==================== SDK INITIALIZATION ====================
-  sdk.init((sessionData) => {
-    console.log('Session data received:', sessionData);
-    if (sessionData.teams) {
-      const teamA = sessionData.teams.find(t => t.letter === 'A');
-      const teamB = sessionData.teams.find(t => t.letter === 'B');
-      if (teamA) localScores.A = teamA.cumulativeScore || 0;
-      if (teamB) localScores.B = teamB.cumulativeScore || 0;
-    }
-  });
+  // ==================== SETS MANAGEMENT ====================
+  function loadSets() {
+    const saved = sdk.getQuestions('anti-trivia-sets');
+    if (saved.length > 0) sets = saved;
+  }
 
-  sdk.onPause(() => {
-    isPaused = true;
-    pauseTimer();
-    showPauseModal();
-  });
+  function saveSets() {
+    sdk.saveQuestions('anti-trivia-sets', sets);
+  }
 
-  sdk.onResume(() => {
-    isPaused = false;
-    resumeTimer();
-    hidePauseModal();
-  });
+  function renderSets() {
+    setsList.innerHTML = '';
+    sets.forEach((set, index) => {
+      const isUsed = usedSetIndices.includes(index);
+      const div = document.createElement('div');
+      div.className = 'question-item' + (isUsed ? ' used' : '');
+      div.innerHTML = `
+        <span class="question-item-text">${isUsed ? '✓ ' : ''}${set.name} (${set.questions.length} preguntas)</span>
+        <div class="question-item-actions">
+          <button class="question-item-btn edit" data-index="${index}"><span class="material-symbols-outlined" style="font-size: 1rem;">edit</span></button>
+          <button class="question-item-btn delete" data-index="${index}"><span class="material-symbols-outlined" style="font-size: 1rem;">delete</span></button>
+        </div>
+      `;
+      setsList.appendChild(div);
+    });
+    updateRoundSetSelect();
+  }
 
-  sdk.onNextRound(() => {
-    nextQuestion();
-  });
-
-  // ==================== TIMER ====================
-  function startTimer() {
-    timeRemaining = timePerQuestion;
-    updateClockDisplay();
-    clockEl.classList.remove('hidden');
-    
-    timerInterval = setInterval(() => {
-      if (isPaused) return;
-      
-      timeRemaining--;
-      updateClockDisplay();
-      sdk.updateTimer(timeRemaining);
-      
-      if (timeRemaining <= 0) {
-        pauseTimer();
+  function updateRoundSetSelect() {
+    roundSetSelect.innerHTML = '<option value="">— Seleccionar set —</option>';
+    sets.forEach((set, index) => {
+      if (!usedSetIndices.includes(index)) {
+        const opt = document.createElement('option');
+        opt.value = index;
+        opt.textContent = `${set.name} (${set.questions.length} preguntas)`;
+        roundSetSelect.appendChild(opt);
       }
-    }, 1000);
+    });
   }
 
-  function pauseTimer() {
-    if (timerInterval) {
-      clearInterval(timerInterval);
-      timerInterval = null;
-    }
-  }
-
-  function resumeTimer() {
-    if (timeRemaining > 0 && !timerInterval) {
-      timerInterval = setInterval(() => {
-        if (isPaused) return;
-        
-        timeRemaining--;
-        updateClockDisplay();
-        sdk.updateTimer(timeRemaining);
-        
-        if (timeRemaining <= 0) {
-          pauseTimer();
-        }
-      }, 1000);
-    }
-  }
-
-  function updateClockDisplay() {
-    const mins = Math.floor(timeRemaining / 60);
-    const secs = timeRemaining % 60;
-    clockValueEl.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    
-    if (timeRemaining <= 5) {
-      clockValueEl.classList.add('clock-warning');
+  function openEditSet(index = -1) {
+    const modal = $('edit-set-modal');
+    $('edit-set-index').value = index;
+    if (index >= 0) {
+      $('edit-set-name').value = sets[index].name;
+      editingSetQuestions = JSON.parse(JSON.stringify(sets[index].questions));
     } else {
-      clockValueEl.classList.remove('clock-warning');
+      $('edit-set-name').value = '';
+      editingSetQuestions = [];
+    }
+    renderSetQuestions();
+    modal.classList.remove('hidden');
+  }
+
+  let editingSetQuestions = [];
+
+  function renderSetQuestions() {
+    const list = $('set-questions-list');
+    list.innerHTML = '';
+    editingSetQuestions.forEach((q, i) => {
+      const div = document.createElement('div');
+      div.className = 'question-item';
+      div.innerHTML = `
+        <span class="question-item-text">${i + 1}. ${q.text}</span>
+        <div class="question-item-actions">
+          <button class="question-item-btn edit" data-index="${i}"><span class="material-symbols-outlined" style="font-size: 1rem;">edit</span></button>
+          <button class="question-item-btn delete" data-index="${i}"><span class="material-symbols-outlined" style="font-size: 1rem;">delete</span></button>
+        </div>
+      `;
+      list.appendChild(div);
+    });
+  }
+
+  function openEditSetQuestion(index = -1) {
+    const modal = $('edit-set-question-modal');
+    $('edit-set-question-index').value = index;
+    if (index >= 0) {
+      const q = editingSetQuestions[index];
+      $('edit-sq-text').value = q.text;
+      $('edit-sq-correct').value = q.answers[q.correct];
+      const wrongAnswers = q.answers.filter((_, i) => i !== q.correct);
+      $('edit-sq-wrong1').value = wrongAnswers[0] || '';
+      $('edit-sq-wrong2').value = wrongAnswers[1] || '';
+      $('edit-sq-wrong3').value = wrongAnswers[2] || '';
+    } else {
+      $('edit-sq-text').value = '';
+      $('edit-sq-correct').value = '';
+      $('edit-sq-wrong1').value = '';
+      $('edit-sq-wrong2').value = '';
+      $('edit-sq-wrong3').value = '';
+    }
+    modal.classList.remove('hidden');
+  }
+
+  function saveSetQuestion() {
+    const index = parseInt($('edit-set-question-index').value);
+    const text = $('edit-sq-text').value.trim();
+    const correct = $('edit-sq-correct').value.trim();
+    const wrong1 = $('edit-sq-wrong1').value.trim();
+    const wrong2 = $('edit-sq-wrong2').value.trim();
+    const wrong3 = $('edit-sq-wrong3').value.trim();
+    if (!text || !correct) { alert('La pregunta y respuesta correcta son obligatorias'); return; }
+    const answers = [correct, wrong1, wrong2, wrong3].filter(a => a);
+    const question = { text, answers, correct: 0, correctText: correct };
+    if (index >= 0) editingSetQuestions[index] = question;
+    else editingSetQuestions.push(question);
+    renderSetQuestions();
+    $('edit-set-question-modal').classList.add('hidden');
+  }
+
+  function deleteSetQuestion(index) {
+    if (confirm('¿Eliminar esta pregunta?')) {
+      editingSetQuestions.splice(index, 1);
+      renderSetQuestions();
+    }
+  }
+
+  function saveSet() {
+    const index = parseInt($('edit-set-index').value);
+    const name = $('edit-set-name').value.trim();
+    if (!name) { alert('El nombre del set es obligatorio'); return; }
+    if (editingSetQuestions.length === 0) { alert('El set debe tener al menos una pregunta'); return; }
+    const set = { name, questions: JSON.parse(JSON.stringify(editingSetQuestions)) };
+    if (index >= 0) sets[index] = set;
+    else sets.push(set);
+    saveSets();
+    renderSets();
+    $('edit-set-modal').classList.add('hidden');
+  }
+
+  function deleteSet(index) {
+    if (confirm('¿Eliminar este set?')) {
+      sets.splice(index, 1);
+      saveSets();
+      renderSets();
     }
   }
 
   // ==================== GAME LOGIC ====================
   function startGame() {
-    // Load questions from localStorage or use defaults
-    const savedQuestions = sdk.getQuestions('anti-trivia');
-    if (savedQuestions.length > 0) {
-      questions = savedQuestions;
+    loadSets();
+
+    const selectedSetIndex = roundSetSelect.value;
+    if (selectedSetIndex === '') {
+      alert('Selecciona un set para esta ronda');
+      return;
     }
-    
-    // Get settings from selectors
-    totalRounds = parseInt(roundsSelect.value);
-    timePerQuestion = parseInt(timeSelect.value);
-    
+
+    const selectedSet = sets[parseInt(selectedSetIndex)];
+    currentQuestions = JSON.parse(JSON.stringify(selectedSet.questions));
     currentQuestion = 0;
-    currentRound = 1;
-    localScores = { A: 0, B: 0 };
-    isStarted = true;
-    
-    sdk.updateRound(currentRound, totalRounds);
-    sdk.setTimePerRound(timePerQuestion);
-    
-    // Show game
-    waitingState.classList.add('hidden');
+
+    state.totalRounds = parseInt(roundsSelect.value);
+    state.timePerUnit = parseInt(timeSelect.value);
+    state.currentRound = 1;
+    state.localScores = { A: 0, B: 0 };
+    state.isStarted = true;
+
+    usedSetIndices = [parseInt(selectedSetIndex)];
+
+    sdk.updateRound(state.currentRound, state.totalRounds);
+    sdk.setTimePerRound(state.timePerUnit);
+    core.updateScoreDisplay();
+    $('waiting-state').classList.add('hidden');
     questionContainer.classList.remove('hidden');
-    
+
+    currentSetDisplay.style.display = '';
+    currentSetName.textContent = selectedSet.name;
+    currentSetProgress.textContent = `1/${currentQuestions.length}`;
+
+    setSelector.style.display = 'none';
+
+    core.setButtonsDisabled(false);
     loadQuestion();
-    startTimer();
+    core.startTimer();
+  }
+
+  function startNextRound() {
+    const selectedSetIndex = roundSetSelect.value;
+    if (selectedSetIndex === '') {
+      core.endGame();
+      return;
+    }
+
+    const selectedSet = sets[parseInt(selectedSetIndex)];
+    currentQuestions = JSON.parse(JSON.stringify(selectedSet.questions));
+    currentQuestion = 0;
+
+    usedSetIndices.push(parseInt(selectedSetIndex));
+
+    sdk.updateRound(state.currentRound, state.totalRounds);
+    currentSetName.textContent = selectedSet.name;
+    currentSetProgress.textContent = `1/${currentQuestions.length}`;
+
+    setSelector.style.display = 'none';
+    currentSetDisplay.style.display = '';
+
+    loadQuestion();
+    core.startTimer();
   }
 
   function loadQuestion() {
-    if (currentQuestion >= questions.length) {
-      // Cycle back to first question if more rounds
-      currentQuestion = 0;
+    if (currentQuestion >= currentQuestions.length) {
+      currentSetProgress.textContent = `${currentQuestions.length}/${currentQuestions.length}`;
+      core.pauseTimer();
+      return;
     }
-
-    const q = questions[currentQuestion];
+    const q = currentQuestions[currentQuestion];
     questionText.textContent = q.text;
-    questionNumber.textContent = `${currentQuestion + 1}/${questions.length}`;
-    
-    // Show correct answer in solution box
+    questionNumber.textContent = `${currentQuestion + 1}/${currentQuestions.length}`;
     officialSolution.textContent = q.correctText || q.answers[q.correct];
-    
-    // Shuffle answers for display (but keep track of which are wrong)
+    currentSetProgress.textContent = `${currentQuestion + 1}/${currentQuestions.length}`;
+
     const shuffledIndices = [0, 1, 2, 3].sort(() => Math.random() - 0.5);
-    const answers = q.answers;
-    
-    document.getElementById('answer-0').textContent = answers[shuffledIndices[0]];
-    document.getElementById('answer-1').textContent = answers[shuffledIndices[1]];
-    document.getElementById('answer-2').textContent = answers[shuffledIndices[2]];
-    document.getElementById('answer-3').textContent = answers[shuffledIndices[3]];
-    
-    // Store shuffled indices for reference
+    document.getElementById('answer-0').textContent = q.answers[shuffledIndices[0]];
+    document.getElementById('answer-1').textContent = q.answers[shuffledIndices[1]];
+    document.getElementById('answer-2').textContent = q.answers[shuffledIndices[2]];
+    document.getElementById('answer-3').textContent = q.answers[shuffledIndices[3]];
+
     answersContainer.dataset.shuffled = JSON.stringify(shuffledIndices);
     answersContainer.dataset.correctIndex = q.correct;
 
-    // Reset buttons
-    document.querySelectorAll('.answer-btn').forEach(btn => {
-      btn.classList.remove('correct', 'wrong', 'selected-correct');
-      btn.disabled = false;
-    });
-
-    // Hide result
+    document.querySelectorAll('.answer-btn').forEach(btn => { btn.classList.remove('correct', 'wrong', 'selected-correct'); btn.disabled = false; });
     resultContainer.classList.add('hidden');
-    
-    // Reset timer
-    pauseTimer();
-    timeRemaining = timePerQuestion;
-    updateClockDisplay();
-    startTimer();
+
+    core.pauseTimer();
+    state.timeRemaining = state.timePerUnit;
+    core.updateClockDisplay();
+    core.updateTimerBar();
+    core.startTimer();
   }
 
   function selectAnswer(displayIndex) {
-    if (isPaused || !isStarted) return;
-
-    const q = questions[currentQuestion];
+    if (state.isPaused || !state.isStarted) return;
+    const q = currentQuestions[currentQuestion];
     const shuffledIndices = JSON.parse(answersContainer.dataset.shuffled);
     const actualIndex = shuffledIndices[displayIndex];
-    
-    // In anti-trivia, selecting the CORRECT answer is WRONG
-    // Selecting a WRONG answer is CORRECT
     const isCorrectAnswer = actualIndex === q.correct;
-    
     const buttons = document.querySelectorAll('.answer-btn');
 
-    // Disable all buttons
     buttons.forEach(btn => btn.disabled = true);
-
-    // Show which was the correct answer (the one to NOT pick)
-    buttons.forEach((btn, i) => {
-      if (shuffledIndices[i] === q.correct) {
-        btn.classList.add('selected-correct');
-      }
-    });
-
-    // Show result
+    buttons.forEach((btn, i) => { if (shuffledIndices[i] === q.correct) btn.classList.add('selected-correct'); });
     resultContainer.classList.remove('hidden');
 
     if (!isCorrectAnswer) {
-      // Player picked a WRONG answer = CORRECT in anti-trivia!
-      localScores[selectedTeam] += 50;
-      sdk.updateScore(localScores);
-      resultBox.textContent = '¡Correcto! +50 pts';
+      core.addCorrectPoints(state.selectedTeam);
+      resultBox.textContent = `¡Correcto! +${state.correctPoints} pts`;
       resultBox.className = 'result-box success';
     } else {
-      // Player picked the CORRECT answer = WRONG in anti-trivia!
       buttons[displayIndex].classList.add('wrong');
       resultBox.textContent = `¡Incorrecto! Esa era la respuesta correcta`;
       resultBox.className = 'result-box error';
@@ -265,237 +324,61 @@
   }
 
   function addBonusPoints(points) {
-    localScores[selectedTeam] += points;
-    sdk.updateScore(localScores);
+    state.localScores[state.selectedTeam] += points;
+    sdk.updateScore(state.localScores);
+    core.updateScoreDisplay();
   }
 
   function nextQuestion() {
     currentQuestion++;
-    if (currentQuestion >= questions.length) {
-      currentRound++;
-      if (currentRound > totalRounds) {
-        endGame();
-        return;
-      }
-      sdk.updateRound(currentRound, totalRounds);
-      currentQuestion = 0;
+    if (currentQuestion >= currentQuestions.length) {
+      state.currentRound++;
+      if (state.currentRound > state.totalRounds) { core.endGame(); return; }
+      sdk.updateRound(state.currentRound, state.totalRounds);
+      updateRoundSetSelect();
+      setSelector.style.display = '';
+      currentSetDisplay.style.display = 'none';
+      return;
     }
     loadQuestion();
   }
 
-  function endGame() {
-    pauseTimer();
-    isStarted = false;
-    
-    const winner = localScores.A > localScores.B ? 'A' :
-                   localScores.B > localScores.A ? 'B' : 'empate';
-
-    showResultsScreen({
-      winner: winner,
-      scores: localScores
-    }, () => {
-      sdk.gameOver({
-        winner: winner,
-        localScores: localScores,
-        stats: {
-          totalRounds: totalRounds,
-          finalScoreA: localScores.A,
-          finalScoreB: localScores.B
-        }
-      });
-      
-      // Reset to waiting state
-      waitingState.classList.remove('hidden');
-      questionContainer.classList.add('hidden');
-      clockEl.classList.add('hidden');
-    });
-  }
-
-  // ==================== QUESTIONS MANAGEMENT ====================
-  function renderQuestions() {
-    questionsList.innerHTML = '';
-    questions.forEach((q, index) => {
-      const div = document.createElement('div');
-      div.className = 'question-item';
-      div.innerHTML = `
-        <span class="question-item-text">${index + 1}. ${q.text}</span>
-        <div class="question-item-actions">
-          <button class="question-item-btn edit" data-index="${index}">
-            <span class="material-symbols-outlined" style="font-size: 1rem;">edit</span>
-          </button>
-          <button class="question-item-btn delete" data-index="${index}">
-            <span class="material-symbols-outlined" style="font-size: 1rem;">delete</span>
-          </button>
-        </div>
-      `;
-      questionsList.appendChild(div);
-    });
-  }
-
-  function openEditQuestion(index = -1) {
-    const modal = $('edit-question-modal');
-    $('edit-question-index').value = index;
-    
-    if (index >= 0) {
-      const q = questions[index];
-      $('edit-question-text').value = q.text;
-      $('edit-answer-correct').value = q.answers[q.correct];
-      
-      const wrongAnswers = q.answers.filter((_, i) => i !== q.correct);
-      $('edit-answer-wrong1').value = wrongAnswers[0] || '';
-      $('edit-answer-wrong2').value = wrongAnswers[1] || '';
-      $('edit-answer-wrong3').value = wrongAnswers[2] || '';
-    } else {
-      $('edit-question-text').value = '';
-      $('edit-answer-correct').value = '';
-      $('edit-answer-wrong1').value = '';
-      $('edit-answer-wrong2').value = '';
-      $('edit-answer-wrong3').value = '';
-    }
-    
-    modal.classList.remove('hidden');
-  }
-
-  function saveQuestion() {
-    const index = parseInt($('edit-question-index').value);
-    const text = $('edit-question-text').value.trim();
-    const correct = $('edit-answer-correct').value.trim();
-    const wrong1 = $('edit-answer-wrong1').value.trim();
-    const wrong2 = $('edit-answer-wrong2').value.trim();
-    const wrong3 = $('edit-answer-wrong3').value.trim();
-
-    if (!text || !correct) {
-      alert('La pregunta y respuesta correcta son obligatorias');
-      return;
-    }
-
-    const answers = [correct, wrong1, wrong2, wrong3].filter(a => a);
-    const question = {
-      text: text,
-      answers: answers,
-      correct: 0,
-      correctText: correct
-    };
-
-    if (index >= 0) {
-      questions[index] = question;
-    } else {
-      questions.push(question);
-    }
-
-    sdk.saveQuestions('anti-trivia', questions);
-    renderQuestions();
-    $('edit-question-modal').classList.add('hidden');
-  }
-
-  function deleteQuestion(index) {
-    if (confirm('¿Eliminar esta pregunta?')) {
-      questions.splice(index, 1);
-      sdk.saveQuestions('anti-trivia', questions);
-      renderQuestions();
-    }
-  }
-
   // ==================== EVENT LISTENERS ====================
-  
-  // Start button
-  $('btn-start').addEventListener('click', () => {
-    showStartModal(() => {
-      startGame();
-    });
-  });
-
-  // Pause button
-  $('btn-pause').addEventListener('click', () => {
-    if (isPaused) {
-      isPaused = false;
-      resumeTimer();
-      hidePauseModal();
-      $('btn-pause').innerHTML = '<span class="material-symbols-outlined" style="font-size: 1rem;">pause</span> PAUSAR';
-    } else {
-      isPaused = true;
-      pauseTimer();
-      showPauseModal();
-      $('btn-pause').innerHTML = '<span class="material-symbols-outlined" style="font-size: 1rem;">play</span> CONTINUAR';
-    }
-  });
-
-  // End button
-  $('btn-end').addEventListener('click', () => {
-    showEndConfirmModal(() => {
-      endGame();
-    });
-  });
-
-  // Next button
-  $('btn-next').addEventListener('click', () => {
-    nextQuestion();
-  });
-
-  // Verdict buttons
+  btnNext.addEventListener('click', nextQuestion);
   $('btn-correct').addEventListener('click', () => addBonusPoints(100));
-  $('btn-error').addEventListener('click', () => {
-    // No points added
-  });
+  $('btn-error').addEventListener('click', () => {});
 
-  // Answer buttons
   document.querySelectorAll('.answer-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const index = parseInt(btn.dataset.index);
-      selectAnswer(index);
-    });
+    btn.addEventListener('click', () => selectAnswer(parseInt(btn.dataset.index)));
   });
 
-  // Team selection with spacebar
-  document.addEventListener('keydown', (e) => {
-    if (e.code === 'Space' && isStarted) {
-      e.preventDefault();
-      selectedTeam = selectedTeam === 'A' ? 'B' : 'A';
-      showTurnModal(`Equipo ${selectedTeam}`, 1500);
-    }
-  });
+  // Sets management
+  $('btn-add-set').addEventListener('click', () => openEditSet(-1));
 
-  // Rounds/Time selectors
-  roundsSelect.addEventListener('change', () => {
-    totalRounds = parseInt(roundsSelect.value);
-    sdk.updateRound(currentRound, totalRounds);
-  });
-
-  timeSelect.addEventListener('change', () => {
-    timePerQuestion = parseInt(timeSelect.value);
-    sdk.setTimePerRound(timePerQuestion);
-  });
-
-  // Questions panel toggle
-  $('btn-toggle-questions').addEventListener('click', () => {
-    questionsPanel.classList.toggle('hidden');
-    if (!questionsPanel.classList.contains('hidden')) {
-      renderQuestions();
-    }
-  });
-
-  // Add question button
-  $('btn-add-question').addEventListener('click', () => {
-    openEditQuestion(-1);
-  });
-
-  // Questions list delegation
-  questionsList.addEventListener('click', (e) => {
+  setsList.addEventListener('click', (e) => {
     const editBtn = e.target.closest('.question-item-btn.edit');
     const deleteBtn = e.target.closest('.question-item-btn.delete');
-    
-    if (editBtn) {
-      openEditQuestion(parseInt(editBtn.dataset.index));
-    }
-    if (deleteBtn) {
-      deleteQuestion(parseInt(deleteBtn.dataset.index));
-    }
+    if (editBtn) openEditSet(parseInt(editBtn.dataset.index));
+    if (deleteBtn) deleteSet(parseInt(deleteBtn.dataset.index));
   });
 
-  // Edit question modal
-  $('btn-save-question').addEventListener('click', saveQuestion);
-  $('btn-cancel-question').addEventListener('click', () => {
-    $('edit-question-modal').classList.add('hidden');
+  $('btn-save-set').addEventListener('click', saveSet);
+  $('btn-cancel-set').addEventListener('click', () => $('edit-set-modal').classList.add('hidden'));
+
+  $('btn-add-set-question').addEventListener('click', () => openEditSetQuestion(-1));
+
+  $('set-questions-list').addEventListener('click', (e) => {
+    const editBtn = e.target.closest('.question-item-btn.edit');
+    const deleteBtn = e.target.closest('.question-item-btn.delete');
+    if (editBtn) openEditSetQuestion(parseInt(editBtn.dataset.index));
+    if (deleteBtn) deleteSetQuestion(parseInt(deleteBtn.dataset.index));
   });
+
+  $('btn-save-set-question').addEventListener('click', saveSetQuestion);
+  $('btn-cancel-set-question').addEventListener('click', () => $('edit-set-question-modal').classList.add('hidden'));
+
+  // Init
+  loadSets();
+  renderSets();
 
 })();

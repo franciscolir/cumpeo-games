@@ -374,3 +374,122 @@
   background: #ba1a1a;
   color: white;
 }
+
+/* Story Cards */
+.story-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.story-card {
+  background: white;
+  border: 3px solid #1c1b1b;
+  border-radius: 1rem;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.15s;
+  box-shadow: 3px 3px 0px #1c1b1b;
+}
+
+.story-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0px #1c1b1b;
+}
+
+.story-card-image {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+}
+
+.story-card-placeholder {
+  width: 100%;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  background: #f6f3f2;
+}
+
+.story-card-body {
+  padding: 1rem;
+}
+
+.story-card-title {
+  font-family: 'Bangers', cursive;
+  font-size: 1.25rem;
+  color: #1c1b1b;
+  margin: 0 0 0.25rem 0;
+}
+
+.story-card-desc {
+  font-size: 0.85rem;
+  color: #5d3f3e;
+  margin: 0 0 0.5rem 0;
+}
+
+.story-card-chars {
+  font-size: 0.75rem;
+  color: #999;
+  margin: 0;
+  font-style: italic;
+}
+
+/* Color Space Display */
+.color-space-display {
+  background: white;
+  border: 3px solid #1c1b1b;
+  border-radius: 1rem;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  box-shadow: 4px 4px 0px #1c1b1b;
+}
+
+.color-space-badge {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-family: 'Bangers', cursive;
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+}
+
+.color-space-description {
+  font-size: 0.9rem;
+  color: #5d3f3e;
+  margin-bottom: 0.75rem;
+  font-style: italic;
+}
+
+.color-space-input-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Color Space Editor in Config */
+.color-space-editor-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  padding: 0.5rem;
+  background: #f6f3f2;
+  border: 2px solid #1c1b1b;
+  border-radius: 0.5rem;
+}
+
+.color-space-editor-item .select-input {
+  font-size: 0.85rem;
+}
+
+/* Color Word in Story */
+.story-sentence.color-word {
+  border-left: 4px solid;
+  padding-left: 0.75rem;
+  margin: 0.5rem 0;
+  font-style: italic;
+  background: #f6f3f2;
+  border-radius: 0 0.5rem 0.5rem 0;
+}

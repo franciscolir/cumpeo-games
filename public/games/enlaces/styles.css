@@ -364,3 +364,120 @@
   background: #ba1a1a;
   color: white;
 }
+
+/* Set Cards */
+.set-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+  padding: 1rem;
+}
+
+/* Board Content */
+.board-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  width: 100%;
+  margin: 1rem 0;
+}
+
+.fixed-column {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.group-column {
+  background: #f6f3f2;
+  border: 3px solid #1c1b1b;
+  border-radius: 1rem;
+  min-height: 300px;
+  box-shadow: 4px 4px 0px #1c1b1b;
+}
+
+.group-column.drag-over {
+  background: #ffc72c;
+  border-color: #0050a0;
+}
+
+.group-column-header {
+  background: #1c1b1b;
+  color: white;
+  padding: 0.75rem;
+  font-family: 'Bangers', cursive;
+  font-size: 1.25rem;
+  text-align: center;
+  border-radius: 0.75rem 0.75rem 0 0;
+}
+
+.group-column-items {
+  padding: 0.75rem;
+  min-height: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.mobile-column {
+  background: white;
+  border: 3px solid #1c1b1b;
+  border-radius: 1rem;
+  box-shadow: 4px 4px 0px #1c1b1b;
+  padding: 1rem;
+}
+
+.mobile-items {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 0.5rem;
+}
+
+.mobile-item {
+  padding: 0.75rem;
+  background: #fff;
+  border: 3px solid #1c1b1b;
+  border-radius: 0.75rem;
+  font-family: 'Bangers', cursive;
+  font-size: 1.125rem;
+  text-align: center;
+  cursor: grab;
+  transition: all 0.15s;
+  box-shadow: 3px 3px 0px #1c1b1b;
+}
+
+.mobile-item:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0px #1c1b1b;
+}
+
+.mobile-item.correct {
+  background: #008562;
+  color: white;
+  border-color: #008562;
+  opacity: 0.8;
+}
+
+.mobile-item.wrong {
+  animation: shake 0.3s;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.board-controls {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+/* Solution */
+.solution-content {
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: #5d3f3e;
+  text-align: center;
+}

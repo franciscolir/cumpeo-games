@@ -309,6 +309,12 @@
   margin-bottom: 0.5rem;
 }
 
+.question-item.used {
+  opacity: 0.5;
+  background: #f0f0f0;
+  border-color: #999;
+}
+
 .question-item-text {
   font-size: 0.875rem;
   color: #1c1b1b;
