@@ -20,13 +20,89 @@
 
   <div class="game-layout">
 
+    <!-- CONFIG VIEW -->
+    <div id="config-view" class="config-view">
+      <div class="config-card">
+        <button id="btn-close-config" class="config-close-btn">✕ CERRAR</button>
+        <h2>⚙️ CONFIGURACIÓN</h2>
+
+    <div class="config-section">
+      <div class="config-section-title">Tiempo y Rondas</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+        <div class="select-container">
+          <label class="select-label">Tiempo/Canción</label>
+          <select id="config-time-select" class="select-input">
+            <option value="30">30 seg</option>
+            <option value="45" selected>45 seg</option>
+            <option value="60">60 seg</option>
+          </select>
+        </div>
+        <div class="select-container">
+          <label class="select-label">Rondas</label>
+          <select id="config-rounds-select" class="select-input">
+            <option value="3">3 Rondas</option>
+            <option value="5" selected>5 Rondas</option>
+            <option value="7">7 Rondas</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="config-section">
+      <div class="config-section-title">Puntaje</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+        <div class="select-container">
+          <label class="select-label">Puntos por correcta</label>
+          <select id="config-correct-points" class="select-input">
+            <option value="50">50 pts</option>
+            <option value="100" selected>100 pts</option>
+            <option value="150">150 pts</option>
+            <option value="200">200 pts</option>
+            <option value="300">300 pts</option>
+          </select>
+        </div>
+        <div class="select-container">
+          <label class="select-label">Penalización</label>
+          <div style="display:flex; align-items:center; gap:0.75rem; margin-top:0.25rem;">
+            <input type="checkbox" id="config-penalty-toggle" style="width:1.2rem; height:1.2rem; cursor:pointer;">
+            <label for="config-penalty-toggle" style="font-size:0.85rem; cursor:pointer;">Restar por incorrecta</label>
+          </div>
+          <select id="config-penalty-points" class="select-input" style="margin-top:0.5rem;">
+            <option value="10">-10 pts</option>
+            <option value="25" selected>-25 pts</option>
+            <option value="50">-50 pts</option>
+            <option value="100">-100 pts</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+        <div class="config-section">
+          <div class="config-section-title">Canciones</div>
+          <div id="config-questions-list"></div>
+          <button id="config-btn-add-song" class="btn-secondary" style="width:100%; margin-top:0.5rem;">
+            + AGREGAR CANCIÓN
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- AREA DE JUEGO (8 columnas) -->
     <section id="game-area" class="game-area">
       
-      <!-- RELOJ -->
-      <div id="clock" class="clock-container hidden">
-        <span class="material-symbols-outlined" style="margin-right: 0.5rem;">timer</span>
-        <span id="clock-value" class="clock-value">00:00</span>
+      <!-- TIMER ROW: reloj + barra de mecha -->
+      <div id="timer-row" class="timer-row hidden">
+        <div class="clock-container">
+          <span class="material-symbols-outlined" style="margin-right:0.25rem;">timer</span>
+          <span id="clock-value" class="clock-value">00:00</span>
+        </div>
+        <div class="timer-bar-wrapper">
+          <span class="timer-dynamite">💣</span>
+          <div id="timer-bar-fill" class="timer-bar-fill" style="width:100%"></div>
+        </div>
+        <div class="timer-scoreboard">
+          <span class="score-badge team-a">🔴 <span id="score-a">0</span></span>
+          <span class="score-badge team-b">🟡 <span id="score-b">0</span></span>
+        </div>
       </div>
 
       <!-- CONTENIDO DEL JUEGO -->
@@ -106,18 +182,6 @@
     <!-- AREA CONDUCTOR (4 columnas) -->
     <aside id="conductor-area" class="conductor-area">
       <div class="conductor-panel">
-        
-        <!-- Título -->
-        <div style="text-align: center; margin-bottom: 1.5rem;">
-          <h3 style="font-family: 'Bangers', cursive; font-size: 1.5rem; color: #1c1b1b;">PANEL DEL CONDUCTOR</h3>
-          <p style="font-size: 0.75rem; color: #5d3f3e;">Canción Incompleta - ¡Completa la letra!</p>
-        </div>
-
-        <!-- BOTÓN EMPECEMOS -->
-        <button id="btn-start" class="btn-primary" style="width: 100%; margin-bottom: 1rem;">
-          <span class="material-symbols-outlined" style="margin-right: 0.5rem;">play_arrow</span>
-          EMPECEMOS
-        </button>
 
         <!-- SOLUCIÓN OFICIAL -->
         <div class="solution-box">
@@ -132,7 +196,7 @@
         </div>
 
         <!-- SELECTOR EQUIPO -->
-        <div style="margin-bottom: 1rem;">
+        <div class="btn-disabled" style="margin-bottom: 1rem;">
           <label class="select-label">Equipo Activo</label>
           <div class="team-selector">
             <button class="team-btn active" data-team="A">EQUIPO A</button>
@@ -161,7 +225,7 @@
         </div>
 
         <!-- CONTROLES -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+        <div id="game-controls" class="btn-disabled" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
           <button id="btn-pause" class="btn-secondary" style="width: 100%;">
             <span class="material-symbols-outlined" style="font-size: 1rem;">pause</span> PAUSAR
           </button>
@@ -171,12 +235,12 @@
         </div>
 
         <!-- SIGUIENTE CANCIÓN -->
-        <button id="btn-next" class="btn-secondary" style="width: 100%; margin-bottom: 1rem;">
+        <button id="btn-next" class="btn-secondary btn-disabled" style="width: 100%; margin-bottom: 1rem;">
           <span class="material-symbols-outlined" style="font-size: 1rem;">skip_next</span> SIGUIENTE
         </button>
 
         <!-- SECCIÓN CANCIONES -->
-        <div class="questions-section">
+        <div id="questions-section" class="questions-section btn-disabled">
           <button id="btn-toggle-questions" class="questions-toggle">
             <span class="material-symbols-outlined">queue_music</span>
             CANCIONES
@@ -188,6 +252,17 @@
             </button>
           </div>
         </div>
+
+        <!-- BOTÓN CONFIGURAR (siempre habilitado) -->
+        <button id="btn-config" class="btn-config" style="width: 100%; margin-bottom: 0.5rem;">
+          <span class="material-symbols-outlined" style="font-size: 1rem;">settings</span> CONFIGURAR
+        </button>
+
+        <!-- BOTÓN EMPECEMOS -->
+        <button id="btn-start" class="btn-primary" style="width: 100%;">
+          <span class="material-symbols-outlined" style="margin-right: 0.5rem;">play_arrow</span>
+          EMPECEMOS
+        </button>
 
       </div>
     </aside>
@@ -224,6 +299,7 @@
 
   <script src="../_shared/game-sdk.js"></script>
   <script src="../_shared/game-start-modal.js"></script>
+  <script src="../_shared/game-core.js"></script>
   <script src="game.js"></script>
 
 </body>

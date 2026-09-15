@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Pictionary Veloz — Juego de dibujo y descripción en vivo para CUMPEO">
+  <title>CUMPEO — Pictionary Veloz (Dibuja y Describe)</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              red: '#ff3344',
+              yellow: '#ffcc00',
+              blue: '#00d2d3',
+              dark: '#18181b',
+              light: '#fcf9f8',
+              surface: '#f6f3f2'
+            }
+          },
+          fontFamily: {
+            comic: ['"Bricolage Grotesque"', 'sans-serif'],
+            sans: ['"Plus Jakarta Sans"', 'sans-serif']
+          },
+          boxShadow: {
+            'comic': '4px 4px 0px #18181b',
+            'comic-lg': '6px 6px 0px #18181b',
+            'comic-xl': '8px 8px 0px #18181b',
+            'comic-sm': '2px 2px 0px #18181b'
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    .border-comic { border: 3px solid #18181b; }
+    .border-comic-thick { border: 4px solid #18181b; }
+
+    @keyframes pulse-timer {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.04); }
+    }
+    .animate-urgent { animation: pulse-timer 1s infinite ease-in-out; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-[#f8f5f2] text-zinc-900 font-sans min-h-screen flex flex-col p-4 md:p-6 select-none">
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- MAIN                                             -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <main class="w-full max-w-7xl mx-auto flex-1 grid grid-cols-1 lg:grid-cols-10 gap-6 items-start">
+
+    <!-- ═ COLUMNA IZQUIERDA (cols 1-8) ═ -->
+    <section class="lg:col-span-8 bg-white rounded-3xl border-comic-thick shadow-comic-xl p-5 md:p-6 flex flex-col relative overflow-hidden">
+
+      <div class="flex items-center justify-between gap-3 border-b-4 border-zinc-900 pb-4 mb-5">
+        <div>
+          <span class="bg-zinc-100 text-zinc-700 text-xs font-black uppercase px-2.5 py-1 rounded-md border-2 border-zinc-900">
+            DESAFÍO ACTIVO
+          </span>
+          <h2 class="font-comic text-2xl md:text-3xl font-black text-zinc-900 tracking-tight mt-1">
+            ¡DESCRIBE O DIBUJA SIN DECIR EL NOMBRE!
+          </h2>
+        </div>
+      </div>
+
+      <!-- MARCO IMAGEN (Picsum API) -->
+      <div class="relative bg-zinc-900 rounded-2xl border-comic-thick p-2 overflow-hidden shadow-inner flex flex-col items-center justify-center min-h-[380px] md:min-h-[420px] group">
+
+        <div class="w-full h-full max-h-[400px] flex items-center justify-center bg-zinc-800 rounded-xl overflow-hidden relative">
+          <!-- Imagen inyectada por API -->
+          <img id="pictionary-image"
+               alt="Imagen del concepto a adivinar"
+               class="w-full h-full object-contain transition-all duration-500 group-hover:scale-105 opacity-0"
+               src="">
+
+          <!-- Loader -->
+          <div id="pictionary-image-loader"
+               class="absolute inset-0 flex flex-col items-center justify-center gap-2 pointer-events-none">
+            <svg class="w-10 h-10 text-white/70 animate-spin" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-opacity="0.25"/>
+              <path d="M22 12a10 10 0 0 0-10-10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+            <span class="text-[10px] uppercase text-white/60 tracking-wider font-bold">Cargando imagen…</span>
+          </div>
+
+          <!-- Botón nueva imagen -->
+          <button type="button" id="btn-new-image" aria-label="Cargar nueva imagen"
+                  class="absolute top-2 right-2 z-10 px-2.5 py-1 rounded-lg bg-white/90 hover:bg-white border-2 border-zinc-900 shadow-comic-sm text-[10px] font-black uppercase active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all">
+            🎲 Nueva
+          </button>
+        </div>
+
+      </div>
+
+      <!-- BARRA DE PROGRESO -->
+      <div class="mt-5">
+        <div class="flex items-center justify-between text-xs font-black uppercase text-zinc-600 mb-1.5">
+          <span>TIEMPO RESTANTE DE LA IMAGEN <span id="image-index">#1</span></span>
+          <span class="text-brand-red flex items-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-brand-red animate-ping"></span>
+            AUTO-AVANCE AL EXPIRAR (00:00)
+          </span>
+        </div>
+        <div class="w-full bg-zinc-200 h-4 rounded-full border-comic overflow-hidden p-0.5">
+          <div class="bg-gradient-to-r from-brand-yellow via-orange-500 to-brand-red h-full rounded-full transition-all duration-1000"
+               id="progress-bar" style="width: 100%"></div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ═ COLUMNA DERECHA (cols 9-10) ═ -->
+    <aside class="lg:col-span-2 flex flex-col gap-5" aria-label="Panel de configuración de ronda">
+
+      <!-- ═ CARD: BOTONES DE ACCIÓN (todos del mismo tamaño) ═ -->
+      <div class="bg-white rounded-3xl border-comic-thick shadow-comic p-4 flex flex-col gap-3">
+
+        <!-- BOTÓN 1: CORRECTO -->
+        <button type="button" id="btn-hit"
+                class="w-full h-14 bg-emerald-500 hover:bg-emerald-600 text-white font-comic text-base font-black uppercase tracking-wide rounded-2xl border-comic shadow-comic active:translate-y-1 active:shadow-none transition-all flex items-center justify-center gap-2 leading-none">
+          <span aria-hidden="true">✓</span>
+          <span>CORRECTO</span>
+        </button>
+
+        <!-- BOTÓN 2: SIGUIENTE -->
+        <button type="button" id="btn-next"
+                class="w-full h-14 bg-brand-yellow hover:bg-amber-400 text-zinc-900 font-comic text-base font-black uppercase tracking-wide rounded-2xl border-comic shadow-comic active:translate-y-1 active:shadow-none transition-all flex items-center justify-center gap-2 leading-none">
+          <span>SIGUIENTE</span>
+          <span aria-hidden="true">→</span>
+        </button>
+
+        <!-- BOTÓN 3: PAUSAR (solo pausa, no suma tiempo) -->
+<button type="button" id="btn-pause"
+        class="w-full h-14 bg-zinc-100 hover:bg-zinc-200 text-zinc-900 font-comic text-base font-black uppercase tracking-wide rounded-2xl border-comic shadow-comic active:translate-y-1 active:shadow-none transition-all flex items-center justify-center gap-2 leading-none">
+  <span id="pause-icon" aria-hidden="true">⏸️</span>
+  <span id="pause-text">PAUSAR</span>
+</button>
+
+        <!-- BOTÓN 4: TERMINAR (mismo tamaño que el resto) -->
+        <button type="button" id="btn-finish"
+                class="w-full h-14 bg-zinc-900 hover:bg-zinc-800 text-white font-comic text-base font-black uppercase tracking-wide rounded-2xl border-comic shadow-comic active:translate-y-1 active:shadow-none transition-all flex items-center justify-center gap-2 leading-none">
+          <span aria-hidden="true">■</span>
+          <span>TERMINAR</span>
+        </button>
+
+      </div>
+
+      <!-- ═ CARD: AJUSTES ═ -->
+      <div class="bg-white rounded-3xl border-comic-thick shadow-comic p-5">
+        <div class="flex items-center justify-between border-b-2 border-zinc-200 pb-3 mb-4">
+          <h3 class="font-comic text-xl font-black text-zinc-900 flex items-center gap-2">
+            <span aria-hidden="true">⚙️</span> AJUSTES
+          </h3>
+        </div>
+
+        <!-- CONTROL 1: CANTIDAD -->
+        <div class="mb-4">
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="text-xs font-black uppercase text-zinc-700">Imágenes por Ronda:</label>
+            <span class="text-xs font-black text-zinc-900" id="images-count">6</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" id="btn-minus-images"
+                    class="w-10 h-10 bg-zinc-100 hover:bg-zinc-200 rounded-xl border-comic font-black text-xl flex items-center justify-center active:scale-95"
+                    aria-label="Menos imágenes">
+              −
+            </button>
+            <div class="grid grid-cols-4 gap-1.5 flex-1" id="images-options">
+              <button type="button" data-count="4" class="py-1.5 rounded-lg border-2 border-zinc-900 bg-zinc-100 hover:bg-zinc-200 font-bold text-xs">4</button>
+              <button type="button" data-count="6" class="py-1.5 rounded-lg border-comic bg-brand-yellow font-black text-xs shadow-comic-sm">6</button>
+              <button type="button" data-count="8" class="py-1.5 rounded-lg border-2 border-zinc-900 bg-zinc-100 hover:bg-zinc-200 font-bold text-xs">8</button>
+              <button type="button" data-count="10" class="py-1.5 rounded-lg border-2 border-zinc-900 bg-zinc-100 hover:bg-zinc-200 font-bold text-xs">10</button>
+            </div>
+            <button type="button" id="btn-plus-images"
+                    class="w-10 h-10 bg-zinc-100 hover:bg-zinc-200 rounded-xl border-comic font-black text-xl flex items-center justify-center active:scale-95"
+                    aria-label="Más imágenes">
+              +
+            </button>
+          </div>
+        </div>
+
+      <!-- CONTROL 2: TIEMPO -->
+<div class="mb-4 pt-3 border-t border-zinc-100">
+  <div class="flex items-center justify-between mb-1.5">
+    <label class="text-xs font-black uppercase text-zinc-700">Segundos por Imagen:</label>
+    <span class="text-xs font-black text-zinc-900" id="seconds-value">20</span>
+  </div>
+  <div class="grid grid-cols-3 gap-2" id="seconds-options">
+    <button type="button" data-seconds="10" class="py-1.5 rounded-xl border-2 border-zinc-900 bg-zinc-100 text-xs font-bold hover:bg-zinc-200">10s</button>
+    <button type="button" data-seconds="20" class="py-1.5 rounded-xl border-comic bg-zinc-900 text-white text-xs font-bold shadow-comic-sm">20s</button>
+    <button type="button" data-seconds="30" class="py-1.5 rounded-xl border-2 border-zinc-900 bg-zinc-100 text-xs font-bold hover:bg-zinc-200">30s</button>
+  </div>
+</div>
+
+        <!-- TOGGLE AUTO -->
+        <div class="pt-3 border-t border-zinc-100 flex items-center justify-between">
+          <div>
+            <span class="text-xs font-black uppercase text-zinc-800 block">Auto-pasar imagen:</span>
+            <span class="text-[10px] text-zinc-500">Cambia al agotarse el contador</span>
+          </div>
+          <button type="button" id="toggle-auto" role="switch" aria-checked="true"
+                  class="w-12 h-6 bg-emerald-500 rounded-full border-2 border-zinc-900 flex items-center justify-end px-1 cursor-pointer transition-colors"
+                  aria-label="Activar o desactivar auto-pasar">
+            <span class="w-4 h-4 bg-white rounded-full border-2 border-zinc-900 pointer-events-none"></span>
+          </button>
+        </div>
+      </div>
+
+    </aside>
+  </main>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- SCRIPT                                           -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <script>
+    (function () {
+      // ─── ESTADO ─────────────────────────────────────
+      let imageCount       = 6;
+      let secondsPerImage  = 20;   // ✅ antes no estaba definido
+      let timeLeft         = secondsPerImage; // ✅ antes no estaba definido
+      let timerInterval    = null; // ✅ antes no estaba definido
+      let autoPass         = true;
+      let isPaused         = false;
+      let totalPoints      = 150;
+      let currentImageIdx  = 1;
+
+      // ─── REFERENCIAS DOM ────────────────────────────
+      const progressBar     = document.getElementById('progress-bar');
+      const imagesCountEl   = document.getElementById('images-count');
+      const secondsValueEl  = document.getElementById('seconds-value');
+      const imageIndexEl    = document.getElementById('image-index');
+      const pauseBtn        = document.getElementById('btn-pause');
+      const pauseIcon       = document.getElementById('pause-icon');
+      const pauseText       = document.getElementById('pause-text');
+      const toggleAuto      = document.getElementById('toggle-auto');
+      const btnHit          = document.getElementById('btn-hit');
+      const btnNext         = document.getElementById('btn-next');
+      const btnFinish       = document.getElementById('btn-finish');
+      const btnNewImage     = document.getElementById('btn-new-image');
+
+      // ─── PICTIONARY IMAGE LOADER (Picsum API) ───────
+      const imgEl    = document.getElementById('pictionary-image');
+      const loaderEl = document.getElementById('pictionary-image-loader');
+
+      async function loadPictionaryImage() {
+        const showLoader = () => loaderEl.classList.remove('hidden');
+        const hideLoader = () => loaderEl.classList.add('hidden');
+
+        const applyImage = (url) => {
+          const preload = new Image();
+          const onDone = () => {
+            imgEl.src = url;
+            imgEl.classList.remove('opacity-0');
+            hideLoader();
+          };
+          preload.onload  = onDone;
+          preload.onerror = onDone; // fallback: mostramos igual
+          preload.src = url;
+        };
+
+        try {
+          showLoader();
+          imgEl.classList.add('opacity-0');
+
+          // Página aleatoria del catálogo → variedad real
+          const page = Math.floor(Math.random() * 10) + 1;
+          const res  = await fetch(`https://picsum.photos/v2/list?page=${page}&limit=30`);
+          if (!res.ok) throw new Error('Picsum API error: ' + res.status);
+
+          const list = await res.json();
+          const pick = list[Math.floor(Math.random() * list.length)];
+          const url  = `https://picsum.photos/id/${pick.id}/800/600`;
+
+          applyImage(url);
+        } catch (err) {
+          console.warn('Fallback imagen Picsum:', err);
+          // Fallback: random directo con seed para evitar caché
+          applyImage(`https://picsum.photos/800/600?random=${Date.now()}`);
+        }
+      }
+
+      // ─── TIMER ──────────────────────────────────────
+      function updateTimerDisplay() {
+        if (!progressBar) return;
+        const pct = Math.max(0, Math.min(100, (timeLeft / secondsPerImage) * 100));
+        progressBar.style.width = pct + '%';
+        if (pct < 25) {
+          progressBar.classList.add('animate-urgent');
+        } else {
+          progressBar.classList.remove('animate-urgent');
+        }
+      }
+
+      function startTimer() {
+        clearInterval(timerInterval);
+        updateTimerDisplay();
+        timerInterval = setInterval(() => {
+          if (isPaused) return;
+          timeLeft = Math.max(0, timeLeft - 1);
+          updateTimerDisplay();
+          if (timeLeft === 0) {
+            if (autoPass) handleNext();
+            else clearInterval(timerInterval);
+          }
+        }, 1000);
+      }
+
+      function resetTimer() {
+        clearInterval(timerInterval);
+        timeLeft = secondsPerImage;
+        updateTimerDisplay();
+        startTimer();
+      }
+
+      // ─── BOTONES PRINCIPALES ────────────────────────
+      function handleHit() {
+        totalPoints += 150;
+        if (btnHit) {
+          btnHit.classList.add('scale-95');
+          setTimeout(() => btnHit.classList.remove('scale-95'), 150);
+        }
+        handleNext();
+      }
+
+      function handleNext() {
+        clearInterval(timerInterval);
+        timeLeft = secondsPerImage;
+        currentImageIdx++;
+        if (imageIndexEl) imageIndexEl.textContent = '#' + currentImageIdx;
+        loadPictionaryImage();
+        updateTimerDisplay();
+        startTimer();
+      }
+
+      if (btnHit)  btnHit.addEventListener('click', handleHit);
+      if (btnNext) btnNext.addEventListener('click', handleNext);
+      if (btnNewImage) btnNewImage.addEventListener('click', () => loadPictionaryImage());
+
+     // ─── PAUSA (solo pausa / reanuda, no suma tiempo) ──
+if (pauseBtn) {
+  pauseBtn.addEventListener('click', () => {
+    isPaused = !isPaused;
+    if (isPaused) {
+      if (pauseIcon) pauseIcon.textContent = '▶️';
+      if (pauseText) pauseText.textContent = 'REANUDAR';
+      pauseBtn.classList.add('bg-brand-yellow', 'hover:bg-amber-400');
+      pauseBtn.classList.remove('bg-zinc-100', 'hover:bg-zinc-200');
+    } else {
+      if (pauseIcon) pauseIcon.textContent = '⏸️';
+      if (pauseText) pauseText.textContent = 'PAUSAR';
+      pauseBtn.classList.remove('bg-brand-yellow', 'hover:bg-amber-400');
+      pauseBtn.classList.add('bg-zinc-100', 'hover:bg-zinc-200');
+    }
+  });
+}
+      // ─── CANTIDAD DE IMÁGENES ───────────────────────
+      document.querySelectorAll('#images-options button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('#images-options button').forEach(b => {
+            b.className = 'py-1.5 rounded-lg border-2 border-zinc-900 bg-zinc-100 hover:bg-zinc-200 font-bold text-xs';
+          });
+          btn.className = 'py-1.5 rounded-lg border-comic bg-brand-yellow font-black text-xs shadow-comic-sm';
+          imageCount = parseInt(btn.dataset.count, 10);
+          if (imagesCountEl) imagesCountEl.textContent = imageCount;
+        });
+      });
+
+      const btnMinus = document.getElementById('btn-minus-images');
+      const btnPlus  = document.getElementById('btn-plus-images');
+
+      if (btnMinus) {
+        btnMinus.addEventListener('click', () => {
+          imageCount = Math.max(4, imageCount - 1);
+          if (imagesCountEl) imagesCountEl.textContent = imageCount;
+        });
+      }
+      if (btnPlus) {
+        btnPlus.addEventListener('click', () => {
+          imageCount = Math.min(10, imageCount + 1);
+          if (imagesCountEl) imagesCountEl.textContent = imageCount;
+        });
+      }
+
+      // ─── TIEMPO POR IMAGEN ──────────────────────────
+      document.querySelectorAll('#seconds-options button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('#seconds-options button').forEach(b => {
+            b.className = 'py-1.5 rounded-xl border-2 border-zinc-900 bg-zinc-100 text-xs font-bold hover:bg-zinc-200';
+          });
+          btn.className = 'py-1.5 rounded-xl border-comic bg-zinc-900 text-white text-xs font-bold shadow-comic-sm';
+          secondsPerImage = parseInt(btn.dataset.seconds, 10);
+          if (secondsValueEl) secondsValueEl.textContent = secondsPerImage;
+          resetTimer();
+        });
+      });
+
+      // ─── TOGGLE AUTO-PASS ───────────────────────────
+      if (toggleAuto) {
+        toggleAuto.addEventListener('click', () => {
+          autoPass = !autoPass;
+          toggleAuto.setAttribute('aria-checked', autoPass);
+          toggleAuto.classList.toggle('bg-emerald-500', autoPass);
+          toggleAuto.classList.toggle('bg-zinc-300', !autoPass);
+          toggleAuto.classList.toggle('justify-end', autoPass);
+          toggleAuto.classList.toggle('justify-start', !autoPass);
+        });
+      }
+
+      // ─── TERMINAR JUEGO ─────────────────────────────
+      if (btnFinish) {
+        btnFinish.addEventListener('click', () => {
+          if (confirm('¿Terminar la partida y volver al panel?')) {
+            window.finishGame?.({ totalPoints, imageCount });
+          }
+        });
+      }
+
+      // ─── ARRANQUE ───────────────────────────────────
+      loadPictionaryImage();
+      updateTimerDisplay();
+      startTimer();
+
+      // Exponer para debug / refresco manual
+      window.loadPictionaryImage = loadPictionaryImage;
+    })();
+  </script>
+
+  <script src="/games/_shared/game-sdk.js"></script>
+  <script>
+    window.addEventListener('message', (e) => {
+      const {type, payload} = e.data || {};
+      if (type === 'game:init') { window.__cumpeoSession = payload; }
+      if (type === 'game:next-round') { console.log('next-round', payload); }
+    });
+    window.updateScore = (teamId, points) => {
+      window.parent.postMessage({type:'score-update', payload:{teamId, points}}, '*');
+    };
+    window.finishGame = (results) => {
+      window.parent.postMessage({type:'game-over', payload:{results}}, '*');
+    };
+  </script>
+
+</body>
+</html>

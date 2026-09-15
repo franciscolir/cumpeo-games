@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>CUMPEO — Canción Incompleta</title>
+
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;800&family=Plus+Jakarta+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "error": "#ba1a1a",
+            "on-primary": "#ffffff",
+            "secondary": "#775a00",
+            "surface-container-highest": "#e5e2e1",
+            "inverse-on-surface": "#f3f0ef",
+            "primary-container": "#e41b34",
+            "secondary-container": "#ffc72c",
+            "on-tertiary-fixed-variant": "#00513b",
+            "surface": "#fcf9f8",
+            "secondary-fixed-dim": "#f6bf22",
+            "surface-dim": "#dcd9d9",
+            "on-secondary-fixed": "#251a00",
+            "on-primary-fixed-variant": "#93001a",
+            "on-error-container": "#93000a",
+            "background": "#fcf9f8",
+            "surface-container-low": "#f6f3f2",
+            "surface-tint": "#bf0025",
+            "surface-container": "#f0edec",
+            "secondary-fixed": "#ffdf99",
+            "outline": "#926e6d",
+            "error-container": "#ffdad6",
+            "inverse-surface": "#313030",
+            "inverse-primary": "#ffb3b0",
+            "on-primary-container": "#fffbff",
+            "on-primary-fixed": "#410006",
+            "on-secondary": "#ffffff",
+            "tertiary": "#00694d",
+            "tertiary-fixed": "#54fdc4",
+            "surface-bright": "#fcf9f8",
+            "surface-variant": "#e5e2e1",
+            "on-tertiary-container": "#f5fff8",
+            "on-secondary-container": "#6f5400",
+            "surface-container-high": "#ebe7e7",
+            "on-secondary-fixed-variant": "#5a4300",
+            "on-background": "#1c1b1b",
+            "primary-fixed": "#ffdad8",
+            "on-surface": "#1c1b1b",
+            "on-surface-variant": "#5d3f3e",
+            "outline-variant": "#e6bdba",
+            "on-error": "#ffffff",
+            "on-tertiary": "#ffffff",
+            "tertiary-container": "#008562",
+            "primary-fixed-dim": "#ffb3b0",
+            "primary": "#bb0024",
+            "on-tertiary-fixed": "#002116",
+            "surface-container-lowest": "#ffffff",
+            "tertiary-fixed-dim": "#27e0a9"
+          },
+          borderRadius: {
+            DEFAULT: "0.25rem",
+            lg: "0.5rem",
+            xl: "0.75rem",
+            "2xl": "1rem",
+            full: "9999px"
+          },
+          spacing: {
+            "container-max": "72rem",
+            "2xs": "0.25rem",
+            "3xl": "4rem",
+            "gutter-mobile": "1rem",
+            "xl": "2rem",
+            "sm": "0.75rem",
+            "lg": "1.5rem",
+            "gutter-desktop": "2rem",
+            "gutter-tablet": "1.5rem",
+            "xs": "0.5rem",
+            "2xl": "3rem",
+            "md": "1rem"
+          },
+          fontFamily: {
+            "display-hero": ["Bricolage Grotesque", "sans-serif"],
+            "display-hero-mobile": ["Bricolage Grotesque", "sans-serif"],
+            "body-lg": ["Plus Jakarta Sans", "sans-serif"],
+            "headline-md": ["Bricolage Grotesque", "sans-serif"],
+            "label-md": ["Plus Jakarta Sans", "sans-serif"],
+            "label-comic-pill": ["Bricolage Grotesque", "sans-serif"],
+            "body-sm": ["Plus Jakarta Sans", "sans-serif"],
+            "label-lg": ["Plus Jakarta Sans", "sans-serif"],
+            "headline-sm": ["Bricolage Grotesque", "sans-serif"],
+            "body-md": ["Plus Jakarta Sans", "sans-serif"],
+            "headline-lg": ["Bricolage Grotesque", "sans-serif"],
+            "headline-lg-mobile": ["Bricolage Grotesque", "sans-serif"]
+          },
+          fontSize: {
+            "display-hero": ["56px", { lineHeight: "60px", letterSpacing: "-0.03em", fontWeight: "800" }],
+            "display-hero-mobile": ["38px", { lineHeight: "42px", letterSpacing: "-0.02em", fontWeight: "800" }],
+            "body-lg": ["18px", { lineHeight: "28px", letterSpacing: "-0.01em", fontWeight: "500" }],
+            "headline-md": ["24px", { lineHeight: "30px", letterSpacing: "-0.01em", fontWeight: "700" }],
+            "label-md": ["13px", { lineHeight: "16px", letterSpacing: "0.04em", fontWeight: "700" }],
+            "label-comic-pill": ["14px", { lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "800" }],
+            "body-sm": ["14px", { lineHeight: "20px", fontWeight: "400" }],
+            "label-lg": ["16px", { lineHeight: "20px", letterSpacing: "0.02em", fontWeight: "700" }],
+            "headline-sm": ["20px", { lineHeight: "26px", fontWeight: "700" }],
+            "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+            "headline-lg": ["36px", { lineHeight: "44px", letterSpacing: "-0.02em", fontWeight: "700" }],
+            "headline-lg-mobile": ["28px", { lineHeight: "34px", letterSpacing: "-0.01em", fontWeight: "700" }]
+          },
+          keyframes: {
+            shake: {
+              '0%, 100%': { transform: 'translateX(0)' },
+              '25%': { transform: 'translateX(-4px)' },
+              '75%': { transform: 'translateX(4px)' }
+            }
+          },
+          animation: {
+            shake: 'shake 0.4s ease-in-out'
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    html, body { margin: 0; padding: 0; }
+    body { overscroll-behavior: none; }
+    main > :first-child { margin-top: 0 !important; }
+    main > :last-child  { margin-bottom: 0 !important; }
+    ::-webkit-scrollbar { display: none; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-background font-body-md text-body-md text-on-surface antialiased">
+
+  <main class="w-full bg-background min-h-screen px-lg py-xl">
+    <div class="flex flex-col w-full max-w-[72rem] mx-auto pb-16 space-y-6">
+
+     
+
+      <!-- ═══════════════════════════════════════════════ -->
+      <!-- MAIN ARENA GRID                                  -->
+      <!-- ═══════════════════════════════════════════════ -->
+      <div class="grid grid-cols-1 lg:grid-cols-10 gap-6">
+
+        <!-- ═ COLUMNA IZQUIERDA: TV + LETRA (cols 1-8) ═ -->
+        <section class="lg:col-span-8 flex flex-col gap-5">
+
+          <!-- TV Stage -->
+          <div class="bg-surface-container-lowest rounded-2xl shadow-comic-xl overflow-hidden flex flex-col">
+
+            <!-- Video Metabar -->
+            <div class="bg-inverse-surface text-inverse-on-surface px-4 py-2.5 flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-primary inline-block"></span>
+                <span class="w-3 h-3 rounded-full bg-secondary-container inline-block"></span>
+                <span class="w-3 h-3 rounded-full bg-tertiary-fixed-dim inline-block"></span>
+                <span class="ml-2 font-label-md text-label-md uppercase tracking-wider text-surface-container-highest flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[16px] text-primary">play_circle</span>
+                  STREAM YOUTUBE PRO #402
+                </span>
+              </div>
+
+            </div>
+
+            <!-- Video Screen -->
+            <div class="relative w-full aspect-video bg-inverse-surface overflow-hidden group">
+              <img class="w-full h-full object-cover opacity-85 group-hover:scale-105 transition-transform duration-700 ease-out"
+                   alt="Escenario pop art"
+                   id="video-poster"
+                   src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfgPlNZexKnPV_7hPU7Ip0RIZQc8ZLtnVXbgL3gKR4n3kNOplksCz58gPf9a7vBptO7WQ1UAUhHLCPhPpeOXa6yz-IdEzfCIRTQgLitl3dPfACZKqigiWmycrrvlEahJoSlgTyxz-DJCDNKeBVSaDbphSqa0nkkfluHUdJJLVhsM43unx1Qx_LSvbBKqxjLjXEz-WVipVcNU4LaZ3AvXHP50hcMJqk7ttkEVbUlQwcJt8CxbGvOlfVEw">
+
+              <div class="absolute inset-0 bg-gradient-to-t from-inverse-surface via-transparent to-inverse-surface/40"></div>
+
+              <div class="absolute top-4 left-4 flex items-center gap-2 bg-inverse-surface/85 backdrop-blur px-3 py-1 rounded-md">
+                <span class="material-symbols-outlined text-primary text-[20px]">smart_display</span>
+                <div class="flex flex-col">
+                  <span class="font-headline-sm text-headline-sm text-inverse-on-surface leading-none">Chayanne — Torero</span>
+                  <span class="font-label-md text-label-md text-surface-container-highest opacity-75 leading-tight">Audio Oficial Remasterizado • 2002</span>
+                </div>
+              </div>
+
+              <div class="absolute top-4 right-4 bg-primary text-on-primary px-3 py-1.5 rounded-lg shadow-comic-md rotate-2 flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[18px]">warning</span>
+                <span class="font-label-comic-pill text-label-comic-pill uppercase tracking-wider">¡SE SILENCIA DE GOLPE!</span>
+              </div>
+
+              <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <button type="button"
+                        class="pointer-events-auto group/btn flex items-center justify-center w-24 h-24 rounded-full bg-secondary-container shadow-comic-lg transition-transform active:translate-x-1 active:translate-y-1 active:shadow-none hover:scale-110"
+                        id="play-trigger-btn"
+                        aria-label="Reproducir canción">
+                  <span class="material-symbols-outlined text-on-secondary-container text-[52px] ml-2 group-hover/btn:scale-110 transition-transform" id="play-icon">play_arrow</span>
+                </button>
+              </div>
+
+              <!-- Alerta de corte -->
+              <div class="hidden absolute bottom-16 left-6 right-6 bg-secondary-container text-on-secondary-container p-3 rounded-xl shadow-comic-lg items-center justify-between animate-bounce" id="cut-alert">
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-primary text-[28px]">volume_off</span>
+                  <div>
+                    <div class="font-headline-sm text-headline-sm uppercase">¡SILENCIO ABRUPTO ACTIVADO!</div>
+                    <div class="font-body-sm text-body-sm">¡El micrófono pasa a la mesa! El equipo debe continuar la letra.</div>
+                  </div>
+                </div>
+                <span class="font-display-hero text-headline-lg text-primary">00:09</span>
+              </div>
+
+              <!-- HUD Retro -->
+              <div class="absolute bottom-0 inset-x-0 bg-inverse-surface/90 backdrop-blur px-4 py-2.5 flex flex-col gap-1.5">
+                <div class="relative w-full h-4 bg-inverse-surface rounded-full overflow-hidden flex items-center">
+                  <div class="h-full bg-primary-container w-[62%] transition-all duration-300" id="track-progress"></div>
+                  <div class="absolute left-[74%] top-0 bottom-0 w-2 bg-secondary-container shadow-[0_0_8px_#ffc72c] z-10 flex items-center justify-center">
+                    <span class="text-[10px] text-on-secondary-container font-black">!</span>
+                  </div>
+                  <div class="absolute left-[74%] top-[-22px] -translate-x-1/2 bg-primary text-on-primary px-1.5 py-0.5 rounded text-[10px] font-label-comic-pill uppercase tracking-wider">
+                    CORTE
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-between text-inverse-on-surface font-mono text-xs">
+                  <div class="flex items-center gap-3">
+                    <span class="text-tertiary-fixed font-bold" id="current-timestamp">01:03</span>
+                    <span>/</span>
+                    <span class="text-surface-container-highest">01:45</span>
+                    <span class="text-secondary-fixed-dim font-bold ml-2">Punto de Silencio: 01:14</span>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-[18px] text-secondary-container">volume_up</span>
+                    <span class="font-body-sm text-body-sm">100% DJ MASTER</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- TV Bezel -->
+            <div class="bg-surface-container px-4 py-3 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <span class="font-label-comic-pill text-label-comic-pill uppercase text-on-surface-variant">Sintonizador: CANAL KARAOKE HD</span>
+                <span class="px-2 py-0.5 bg-surface-container-highest text-on-surface font-mono text-xs rounded">URL: youtu.be/k_X8N1pLm0</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <button type="button" class="w-8 h-8 rounded-lg bg-surface-container-lowest shadow-comic-sm flex items-center justify-center hover:bg-secondary-container transition-colors" title="Reiniciar canción" aria-label="Reiniciar">
+                  <span class="material-symbols-outlined text-[18px]">replay</span>
+                </button>
+                <button type="button" class="w-8 h-8 rounded-lg bg-surface-container-lowest shadow-comic-sm flex items-center justify-center hover:bg-secondary-container transition-colors" title="Rebobinar 5 seg" aria-label="Rebobinar">
+                  <span class="material-symbols-outlined text-[18px]">replay_5</span>
+                </button>
+                <button type="button" class="w-8 h-8 rounded-lg bg-surface-container-lowest shadow-comic-sm flex items-center justify-center hover:bg-secondary-container transition-colors" title="Adelantar 5 seg" aria-label="Adelantar">
+                  <span class="material-symbols-outlined text-[18px]">forward_5</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+         
+        </section>
+
+        <!-- ═ COLUMNA DERECHA: CONTROL TOWER (cols 9-10) ═ -->
+        <section class="lg:col-span-2 flex flex-col gap-5">
+
+          <!-- VEREDICTO DEL CONDUCTOR -->
+          <div class="bg-surface-container-lowest rounded-2xl shadow-comic-lg p-4 flex flex-col gap-3">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary text-[22px]">gavel</span>
+              <span class="font-headline-sm text-headline-sm uppercase">VEREDICTO DEL CONDUCTOR</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" id="btn-hit"
+                      class="py-3 px-3 bg-tertiary text-on-tertiary rounded-xl border-2 border-on-surface shadow-comic-md font-label-comic-pill text-label-comic-pill uppercase active:translate-x-0.5 active:translate-y-0.5 active:shadow-none hover:opacity-90 transition-all flex items-center justify-center gap-1.5">
+                <span class="material-symbols-outlined text-[20px]">check_circle</span>
+                ACIERTO +100
+              </button>
+              <button type="button" id="btn-fail"
+                      class="py-3 px-3 bg-error text-on-error rounded-xl border-2 border-on-surface shadow-comic-md font-label-comic-pill text-label-comic-pill uppercase active:translate-x-0.5 active:translate-y-0.5 active:shadow-none hover:opacity-90 transition-all flex items-center justify-center gap-1.5">
+                <span class="material-symbols-outlined text-[20px]">cancel</span>
+                FALLO
+              </button>
+            </div>
+
+            <button type="button" id="btn-instant-cut"
+                    class="w-full py-2.5 px-3 bg-primary text-on-primary rounded-xl border-2 border-on-surface shadow-comic-md font-label-comic-pill text-label-comic-pill uppercase active:translate-x-0.5 active:translate-y-0.5 active:shadow-none hover:opacity-90 transition-all flex items-center justify-center gap-1.5">
+              <span class="material-symbols-outlined text-[20px]">volume_off</span>
+              CORTE INSTANTÁNEO DE AUDIO
+            </button>
+          </div>
+
+          <!-- CONTROLES DE LETRA -->
+          <div class="bg-surface-container-lowest rounded-2xl shadow-comic-lg p-4 flex flex-col gap-3">
+           
+
+            <button type="button" id="btn-next-song"
+                    class="w-full py-2.5 px-3 bg-surface-container text-on-surface rounded-xl border-2 border-on-surface shadow-comic-sm font-label-comic-pill text-label-comic-pill uppercase active:translate-x-0.5 active:translate-y-0.5 active:shadow-none hover:bg-surface-container-high transition-all flex items-center justify-center gap-1.5">
+              <span class="material-symbols-outlined text-[18px]">skip_next</span>
+              SIGUIENTE CANCIÓN
+            </button>
+          </div>
+
+          <!-- INFO PISTA ACTUAL -->
+          <div class="bg-inverse-surface text-inverse-on-surface rounded-2xl shadow-comic-lg p-4 flex flex-col gap-2">
+            <span class="font-label-comic-pill text-label-comic-pill uppercase text-secondary-fixed-dim">PISTA EN REPRODUCCIÓN</span>
+            <div class="font-headline-sm text-headline-sm text-surface-container-lowest">Chayanne — Torero</div>
+            <div class="font-body-sm text-body-sm opacity-75">Álbum: Grandes Éxitos • 2002</div>
+            <div class="mt-2 pt-2 border-t border-inverse-on-surface/20 flex items-center justify-between font-mono text-xs">
+              <span class="text-tertiary-fixed">ID: k_X8N1pLm0</span>
+              <span class="text-surface-container-highest">105s total</span>
+            </div>
+          </div>
+        </section>
+      </div>
+
+    </div>
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!-- SCRIPT                                           -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <script>
+      (function () {
+        // ─── Referencias DOM (con optional chaining) ─────
+        const playBtn         = document.getElementById('play-trigger-btn');
+        const playIcon        = document.getElementById('play-icon');
+        const cutAlert        = document.getElementById('cut-alert');
+        const trackProgress   = document.getElementById('track-progress');
+        const timeDisplay     = document.getElementById('current-timestamp');
+        const toggleLyricsBtn = document.getElementById('btn-toggle-lyrics');
+        const maskedPhrase    = document.getElementById('masked-phrase');
+        const revealedBox     = document.getElementById('revealed-box');
+        const btnHit          = document.getElementById('btn-hit');
+        const btnFail         = document.getElementById('btn-fail');
+        const instantCutBtn   = document.getElementById('btn-instant-cut');
+        const scoreTeamB      = document.getElementById('team-b-score');
+        const nextSongBtn     = document.getElementById('btn-next-song');
+        const btnLoadTrack    = document.getElementById('btn-load-track');
+
+        let isPlaying = false;
+
+        function triggerCut() {
+          isPlaying = false;
+          if (playIcon) playIcon.textContent = 'play_arrow';
+          if (cutAlert) cutAlert.classList.remove('hidden');
+          if (cutAlert) cutAlert.classList.add('flex');
+          if (trackProgress) trackProgress.style.width = '74%';
+        }
+
+        // ─── Play / Pause ─────────────────────────────────
+        if (playBtn) {
+          playBtn.addEventListener('click', () => {
+            isPlaying = !isPlaying;
+            if (isPlaying) {
+              if (playIcon) playIcon.textContent = 'pause';
+              if (cutAlert) {
+                cutAlert.classList.add('hidden');
+                cutAlert.classList.remove('flex');
+              }
+            } else {
+              if (playIcon) playIcon.textContent = 'play_arrow';
+            }
+          });
+        }
+
+        // ─── Corte instantáneo ────────────────────────────
+        if (instantCutBtn) instantCutBtn.addEventListener('click', triggerCut);
+
+        // ─── Toggle letra ─────────────────────────────────
+        function toggleReveal() {
+          if (!revealedBox || !maskedPhrase) return;
+          const isHidden = revealedBox.classList.contains('hidden');
+          if (isHidden) {
+            revealedBox.classList.remove('hidden');
+            revealedBox.classList.add('flex');
+            maskedPhrase.textContent = '...TODO ME PARECE UNA BENDICIÓN';
+            maskedPhrase.classList.remove('bg-primary', 'text-on-primary');
+            maskedPhrase.classList.add('bg-tertiary-container', 'text-on-tertiary-container');
+          } else {
+            revealedBox.classList.add('hidden');
+            revealedBox.classList.remove('flex');
+            maskedPhrase.textContent = '[ ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ]';
+            maskedPhrase.classList.add('bg-primary', 'text-on-primary');
+            maskedPhrase.classList.remove('bg-tertiary-container', 'text-on-tertiary-container');
+          }
+        }
+
+        if (toggleLyricsBtn) toggleLyricsBtn.addEventListener('click', toggleReveal);
+        if (maskedPhrase) maskedPhrase.addEventListener('click', toggleReveal);
+
+        // ─── Acierto / Fallo ──────────────────────────────
+        if (btnHit) {
+          btnHit.addEventListener('click', () => {
+            // Emitir puntaje a consola
+            window.parent.postMessage({type:'score-update', payload:{teamId:'B', points:100}}, '*');
+            toggleReveal();
+          });
+        }
+
+        if (btnFail) {
+          btnFail.addEventListener('click', () => {
+            btnFail.classList.add('animate-shake');
+            setTimeout(() => btnFail.classList.remove('animate-shake'), 400);
+          });
+        }
+
+        // ─── Siguiente canción ────────────────────────────
+        if (nextSongBtn) {
+          nextSongBtn.addEventListener('click', () => {
+            seconds = 45;
+            updateTimeDisplay(seconds);
+            if (trackProgress) trackProgress.style.width = '42%';
+            if (cutAlert) {
+              cutAlert.classList.add('hidden');
+              cutAlert.classList.remove('flex');
+            }
+            if (revealedBox && !revealedBox.classList.contains('hidden')) toggleReveal();
+          });
+        }
+
+        // ─── Cargar pista ─────────────────────────────────
+        if (btnLoadTrack) {
+          btnLoadTrack.addEventListener('click', () => {
+            const url = document.getElementById('youtube-url-input')?.value?.trim();
+            const cut = document.getElementById('cut-time-input')?.value?.trim();
+            if (!url) {
+              alert('Pega un enlace de YouTube primero');
+              return;
+            }
+            alert(`Cargando pista: ${url}${cut ? ' • Corte en ' + cut : ''}`);
+          });
+        }
+      })();
+    </script>
+  </main>
+
+  <script src="/games/_shared/game-sdk.js"></script>
+  <script>
+    // SDK compatibility shim for legacy Canción Incompleta
+    window.addEventListener('message', (e) => {
+      const {type, payload} = e.data || {};
+      if (type === 'game:init') {
+        window.__cumpeoSession = payload;
+        // optional: expose for legacy code
+        window.sessionId = payload.sessionId;
+      }
+      if (type === 'game:next-round') {
+        // proceed to next round in legacy UI
+        console.log('next-round', payload);
+      }
+    });
+    // expose minimal API expected by console
+    window.updateScore = (teamId, points) => {
+      window.parent.postMessage({type:'score-update', payload:{teamId, points}}, '*');
+    };
+    window.finishGame = (results) => {
+      window.parent.postMessage({type:'game-over', payload:{results}}, '*');
+    };
+  </script>
+
+</body>
+</html>

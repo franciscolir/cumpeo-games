@@ -1,60 +1,37 @@
 /**
  * TRIVIA RELÁMPAGO - Game Logic
  */
-
 (function() {
   'use strict';
 
-  // ==================== GAME STATE ====================
-  const sdk = new GameSDK();
-  let localScores = { A: 0, B: 0 };
-  let currentQuestion = 0;
-  let currentRound = 1;
-  let totalRounds = 5;
-  let timePerQuestion = 15;
-  let isPaused = false;
-  let isStarted = false;
-  let selectedTeam = 'A';
-  let timerInterval = null;
-  let timeRemaining = 0;
+  const core = GameCore.create({
+    gameName: 'trivia',
+    defaultRounds: 5,
+    defaultTime: 15,
+    warningThreshold: 5,
+    onTimeUp: onTimeUp,
+    onGetHiddenContainer: () => $('waiting-state'),
+    onNext: () => nextQuestion(),
+    onStart: startGame,
+    extraStats: () => ({ totalRounds: core.state.totalRounds })
+  });
 
-  // Default questions
+  const { sdk, state, $ } = core;
+
+  // ==================== GAME-SPECIFIC STATE ====================
+  let currentQuestion = 0;
+
   const defaultQuestions = [
-    {
-      text: "¿Cuál es la capital de Chile?",
-      answers: ["Santiago", "Buenos Aires", "Lima", "Bogotá"],
-      correct: 0
-    },
-    {
-      text: "¿Quién pintó la Mona Lisa?",
-      answers: ["Picasso", "Da Vinci", "Van Gogh", "Monet"],
-      correct: 1
-    },
-    {
-      text: "¿Cuántos días tiene un año bisiesto?",
-      answers: ["364", "365", "366", "367"],
-      correct: 2
-    },
-    {
-      text: "¿Cuál es el planeta más grande del sistema solar?",
-      answers: ["Saturno", "Júpiter", "Neptuno", "Urano"],
-      correct: 1
-    },
-    {
-      text: "¿En qué año llegó el hombre a la Luna?",
-      answers: ["1967", "1968", "1969", "1970"],
-      correct: 2
-    }
+    { text: "¿Cuál es la capital de Chile?", answers: ["Santiago", "Buenos Aires", "Lima", "Bogotá"], correct: 0 },
+    { text: "¿Quién pintó la Mona Lisa?", answers: ["Picasso", "Da Vinci", "Van Gogh", "Monet"], correct: 1 },
+    { text: "¿Cuántos días tiene un año bisiesto?", answers: ["364", "365", "366", "367"], correct: 2 },
+    { text: "¿Cuál es el planeta más grande del sistema solar?", answers: ["Saturno", "Júpiter", "Neptuno", "Urano"], correct: 1 },
+    { text: "¿En qué año llegó el hombre a la Luna?", answers: ["1967", "1968", "1969", "1970"], correct: 2 }
   ];
 
   let questions = [...defaultQuestions];
 
-  // ==================== DOM ELEMENTS ====================
-  const $ = (id) => document.getElementById(id);
-  
-  const clockEl = $('clock');
-  const clockValueEl = $('clock-value');
-  const waitingState = $('waiting-state');
+  // ==================== DOM ====================
   const questionContainer = $('question-container');
   const questionText = $('question-text');
   const answersContainer = $('answers-container');
@@ -63,179 +40,89 @@
   const roundsSelect = $('rounds-select');
   const timeSelect = $('time-select');
   const questionsList = $('questions-list');
-  const questionsPanel = $('questions-panel');
-
-  // ==================== SDK INITIALIZATION ====================
-  sdk.init((sessionData) => {
-    console.log('Session data received:', sessionData);
-    if (sessionData.teams) {
-      const teamA = sessionData.teams.find(t => t.letter === 'A');
-      const teamB = sessionData.teams.find(t => t.letter === 'B');
-      if (teamA) localScores.A = teamA.cumulativeScore || 0;
-      if (teamB) localScores.B = teamB.cumulativeScore || 0;
-    }
-  });
-
-  sdk.onPause(() => {
-    isPaused = true;
-    pauseTimer();
-    showPauseModal();
-  });
-
-  sdk.onResume(() => {
-    isPaused = false;
-    resumeTimer();
-    hidePauseModal();
-  });
-
-  sdk.onNextRound(() => {
-    nextQuestion();
-  });
-
-  // ==================== TIMER ====================
-  function startTimer() {
-    timeRemaining = timePerQuestion;
-    updateClockDisplay();
-    clockEl.classList.remove('hidden');
-    
-    timerInterval = setInterval(() => {
-      if (isPaused) return;
-      
-      timeRemaining--;
-      updateClockDisplay();
-      sdk.updateTimer(timeRemaining);
-      
-      if (timeRemaining <= 0) {
-        pauseTimer();
-        // Time up - wait for conductor action
-      }
-    }, 1000);
-  }
-
-  function pauseTimer() {
-    if (timerInterval) {
-      clearInterval(timerInterval);
-      timerInterval = null;
-    }
-  }
-
-  function resumeTimer() {
-    if (timeRemaining > 0 && !timerInterval) {
-      timerInterval = setInterval(() => {
-        if (isPaused) return;
-        
-        timeRemaining--;
-        updateClockDisplay();
-        sdk.updateTimer(timeRemaining);
-        
-        if (timeRemaining <= 0) {
-          pauseTimer();
-        }
-      }, 1000);
-    }
-  }
-
-  function updateClockDisplay() {
-    const mins = Math.floor(timeRemaining / 60);
-    const secs = timeRemaining % 60;
-    clockValueEl.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    
-    if (timeRemaining <= 5) {
-      clockValueEl.classList.add('clock-warning');
-    } else {
-      clockValueEl.classList.remove('clock-warning');
-    }
-  }
+  const gameControls = $('game-controls');
+  const extraPoints = $('extra-points');
+  const btnNext = $('btn-next');
 
   // ==================== GAME LOGIC ====================
+  function onTimeUp() {
+    resultContainer.classList.remove('hidden');
+    resultBox.textContent = '¡TIEMPO AGOTADO!';
+    resultBox.className = 'result-box error';
+    document.querySelectorAll('.answer-btn').forEach(btn => btn.disabled = true);
+  }
+
   function startGame() {
-    // Load questions from localStorage or use defaults
     const savedQuestions = sdk.getQuestions('trivia');
-    if (savedQuestions.length > 0) {
-      questions = savedQuestions;
-    }
-    
-    // Get settings from selectors
-    totalRounds = parseInt(roundsSelect.value);
-    timePerQuestion = parseInt(timeSelect.value);
-    
+    if (savedQuestions.length > 0) questions = savedQuestions;
+
+    state.totalRounds = parseInt(roundsSelect.value);
+    state.timePerUnit = parseInt(timeSelect.value);
     currentQuestion = 0;
-    currentRound = 1;
-    localScores = { A: 0, B: 0 };
-    isStarted = true;
-    
-    sdk.updateRound(currentRound, totalRounds);
-    sdk.setTimePerRound(timePerQuestion);
-    
-    // Show game
-    waitingState.classList.add('hidden');
+    state.currentRound = 1;
+    state.localScores = { A: 0, B: 0 };
+    state.isStarted = true;
+
+    sdk.updateRound(state.currentRound, state.totalRounds);
+    sdk.setTimePerRound(state.timePerUnit);
+
+    $('waiting-state').classList.add('hidden');
     questionContainer.classList.remove('hidden');
-    
+
+    core.setButtonsDisabled(false);
+    core.updateScoreDisplay();
     loadQuestion();
-    startTimer();
+    core.startTimer();
   }
 
   function loadQuestion() {
-    if (currentQuestion >= questions.length) {
-      // Cycle back to first question if more rounds
-      currentQuestion = 0;
-    }
+    if (currentQuestion >= questions.length) currentQuestion = 0;
 
     const q = questions[currentQuestion];
     questionText.textContent = q.text;
-    
-    // Shuffle answers for this question
+
     const shuffledIndices = [0, 1, 2, 3].sort(() => Math.random() - 0.5);
     const answers = q.answers;
-    
+
     document.getElementById('answer-0').textContent = answers[shuffledIndices[0]];
     document.getElementById('answer-1').textContent = answers[shuffledIndices[1]];
     document.getElementById('answer-2').textContent = answers[shuffledIndices[2]];
     document.getElementById('answer-3').textContent = answers[shuffledIndices[3]];
-    
-    // Store correct index after shuffle
+
     answersContainer.dataset.correct = shuffledIndices.indexOf(q.correct);
 
-    // Reset buttons
     document.querySelectorAll('.answer-btn').forEach(btn => {
       btn.classList.remove('correct', 'wrong');
       btn.disabled = false;
     });
 
-    // Hide result
     resultContainer.classList.add('hidden');
-    
-    // Reset timer
-    pauseTimer();
-    timeRemaining = timePerQuestion;
-    updateClockDisplay();
-    startTimer();
+
+    core.pauseTimer();
+    state.timeRemaining = state.timePerUnit;
+    core.updateClockDisplay();
+    core.updateTimerBar();
+    core.startTimer();
   }
 
   function selectAnswer(index) {
-    if (isPaused || !isStarted) return;
+    if (state.isPaused || !state.isStarted) return;
 
     const correctIndex = parseInt(answersContainer.dataset.correct);
     const buttons = document.querySelectorAll('.answer-btn');
     const isCorrect = index === correctIndex;
 
-    // Disable all buttons
     buttons.forEach(btn => btn.disabled = true);
-
-    // Highlight correct answer
     buttons[correctIndex].classList.add('correct');
-
-    // Show result
     resultContainer.classList.remove('hidden');
 
     if (isCorrect) {
-      localScores[selectedTeam] += 50;
-      sdk.updateScore(localScores);
-      resultBox.textContent = '¡Correcto! +50 pts';
+      core.addCorrectPoints(state.selectedTeam);
+      resultBox.textContent = `¡Correcto! +${state.correctPoints} pts`;
       resultBox.className = 'result-box success';
     } else {
       buttons[index].classList.add('wrong');
-      resultBox.textContent = `Incorrecto!`;
+      resultBox.textContent = 'Incorrecto!';
       resultBox.className = 'result-box error';
     }
   }
@@ -243,50 +130,15 @@
   function nextQuestion() {
     currentQuestion++;
     if (currentQuestion >= questions.length) {
-      currentRound++;
-      if (currentRound > totalRounds) {
-        endGame();
+      state.currentRound++;
+      if (state.currentRound > state.totalRounds) {
+        core.endGame();
         return;
       }
-      sdk.updateRound(currentRound, totalRounds);
+      sdk.updateRound(state.currentRound, state.totalRounds);
       currentQuestion = 0;
     }
     loadQuestion();
-  }
-
-  function addPoints(points) {
-    localScores[selectedTeam] += points;
-    sdk.updateScore(localScores);
-  }
-
-  function endGame() {
-    pauseTimer();
-    isStarted = false;
-    
-    const winner = localScores.A > localScores.B ? 'A' :
-                   localScores.B > localScores.A ? 'B' : 'empate';
-
-    // Show results screen
-    showResultsScreen({
-      winner: winner,
-      scores: localScores
-    }, () => {
-      // On close
-      sdk.gameOver({
-        winner: winner,
-        localScores: localScores,
-        stats: {
-          totalRounds: totalRounds,
-          finalScoreA: localScores.A,
-          finalScoreB: localScores.B
-        }
-      });
-      
-      // Reset to waiting state
-      waitingState.classList.remove('hidden');
-      questionContainer.classList.add('hidden');
-      clockEl.classList.add('hidden');
-    });
   }
 
   // ==================== QUESTIONS MANAGEMENT ====================
@@ -296,13 +148,13 @@
       const div = document.createElement('div');
       div.className = 'question-item';
       div.innerHTML = `
-        <span class="question-item-text">${index + 1}. ${q.text}</span>
-        <div class="question-item-actions">
-          <button class="question-item-btn edit" data-index="${index}">
-            <span class="material-symbols-outlined" style="font-size: 1rem;">edit</span>
+        <span style="flex:1; font-size:0.9rem;">${index + 1}. ${q.text}</span>
+        <div style="display:flex; gap:0.25rem;">
+          <button class="question-item-btn edit" data-index="${index}" style="background:#f0edec; border:2px solid #1c1b1b; border-radius:0.3rem; padding:0.25rem 0.5rem; cursor:pointer;">
+            <span class="material-symbols-outlined" style="font-size:0.9rem;">edit</span>
           </button>
-          <button class="question-item-btn delete" data-index="${index}">
-            <span class="material-symbols-outlined" style="font-size: 1rem;">delete</span>
+          <button class="question-item-btn delete" data-index="${index}" style="background:#ffdad6; border:2px solid #1c1b1b; border-radius:0.3rem; padding:0.25rem 0.5rem; cursor:pointer;">
+            <span class="material-symbols-outlined" style="font-size:0.9rem;">delete</span>
           </button>
         </div>
       `;
@@ -313,12 +165,11 @@
   function openEditQuestion(index = -1) {
     const modal = $('edit-question-modal');
     $('edit-question-index').value = index;
-    
+
     if (index >= 0) {
       const q = questions[index];
       $('edit-question-text').value = q.text;
       $('edit-answer-correct').value = q.answers[q.correct];
-      
       const wrongAnswers = q.answers.filter((_, i) => i !== q.correct);
       $('edit-answer-wrong1').value = wrongAnswers[0] || '';
       $('edit-answer-wrong2').value = wrongAnswers[1] || '';
@@ -330,7 +181,7 @@
       $('edit-answer-wrong2').value = '';
       $('edit-answer-wrong3').value = '';
     }
-    
+
     modal.classList.remove('hidden');
   }
 
@@ -348,11 +199,7 @@
     }
 
     const answers = [correct, wrong1, wrong2, wrong3].filter(a => a);
-    const question = {
-      text: text,
-      answers: answers,
-      correct: 0
-    };
+    const question = { text, answers, correct: 0 };
 
     if (index >= 0) {
       questions[index] = question;
@@ -374,107 +221,41 @@
   }
 
   // ==================== EVENT LISTENERS ====================
-  
-  // Start button
-  $('btn-start').addEventListener('click', () => {
-    showStartModal(() => {
-      startGame();
-    });
-  });
-
-  // Pause button
-  $('btn-pause').addEventListener('click', () => {
-    if (isPaused) {
-      isPaused = false;
-      resumeTimer();
-      hidePauseModal();
-      $('btn-pause').innerHTML = '<span class="material-symbols-outlined" style="font-size: 1rem;">pause</span> PAUSAR';
-    } else {
-      isPaused = true;
-      pauseTimer();
-      showPauseModal();
-      $('btn-pause').innerHTML = '<span class="material-symbols-outlined" style="font-size: 1rem;">play</span> CONTINUAR';
-    }
-  });
-
-  // End button
-  $('btn-end').addEventListener('click', () => {
-    showEndConfirmModal(() => {
-      endGame();
-    });
-  });
-
-  // Next button
-  $('btn-next').addEventListener('click', () => {
-    nextQuestion();
-  });
-
-  // Points buttons
   document.querySelectorAll('.btn-points').forEach(btn => {
     btn.addEventListener('click', () => {
-      const points = parseInt(btn.dataset.points);
-      addPoints(points);
+      core.addCorrectPoints(state.selectedTeam);
     });
   });
 
-  // Answer buttons
   document.querySelectorAll('.answer-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const index = parseInt(btn.dataset.index);
-      selectAnswer(index);
-    });
+    btn.addEventListener('click', () => selectAnswer(parseInt(btn.dataset.index)));
   });
 
-  // Team selection with spacebar
-  document.addEventListener('keydown', (e) => {
-    if (e.code === 'Space' && isStarted) {
-      e.preventDefault();
-      selectedTeam = selectedTeam === 'A' ? 'B' : 'A';
-      showTurnModal(`Equipo ${selectedTeam}`, 1500);
-    }
-  });
+  btnNext.addEventListener('click', nextQuestion);
 
-  // Rounds/Time selectors
   roundsSelect.addEventListener('change', () => {
-    totalRounds = parseInt(roundsSelect.value);
-    sdk.updateRound(currentRound, totalRounds);
+    state.totalRounds = parseInt(roundsSelect.value);
+    sdk.updateRound(state.currentRound, state.totalRounds);
   });
 
   timeSelect.addEventListener('change', () => {
-    timePerQuestion = parseInt(timeSelect.value);
-    sdk.setTimePerRound(timePerQuestion);
+    state.timePerUnit = parseInt(timeSelect.value);
+    sdk.setTimePerRound(state.timePerUnit);
   });
 
-  // Questions panel toggle
-  $('btn-toggle-questions').addEventListener('click', () => {
-    questionsPanel.classList.toggle('hidden');
-    if (!questionsPanel.classList.contains('hidden')) {
-      renderQuestions();
-    }
-  });
+  $('btn-add-question').addEventListener('click', () => openEditQuestion(-1));
 
-  // Add question button
-  $('btn-add-question').addEventListener('click', () => {
-    openEditQuestion(-1);
-  });
-
-  // Questions list delegation
   questionsList.addEventListener('click', (e) => {
     const editBtn = e.target.closest('.question-item-btn.edit');
     const deleteBtn = e.target.closest('.question-item-btn.delete');
-    
-    if (editBtn) {
-      openEditQuestion(parseInt(editBtn.dataset.index));
-    }
-    if (deleteBtn) {
-      deleteQuestion(parseInt(deleteBtn.dataset.index));
-    }
+    if (editBtn) openEditQuestion(parseInt(editBtn.dataset.index));
+    if (deleteBtn) deleteQuestion(parseInt(deleteBtn.dataset.index));
   });
 
-  // Edit question modal
   $('btn-save-question').addEventListener('click', saveQuestion);
-  $('btn-cancel-question').addEventListener('click', () => {
-    $('edit-question-modal').classList.add('hidden');
-  });
+  $('btn-cancel-question').addEventListener('click', () => $('edit-question-modal').classList.add('hidden'));
+
+  const savedQuestions = sdk.getQuestions('trivia');
+  if (savedQuestions.length > 0) questions = savedQuestions;
 
 })();

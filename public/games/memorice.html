@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CUMPEO — Memorice Cómic (16 Cartas)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;600;700;800;900&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      background-color: #fcf9f8;
+      color: #1f1b1b;
+      margin: 0;
+      padding: 0;
+    }
+    .font-mono-code { font-family: 'Space Mono', monospace; }
+    .comic-border-sm { border: 2.5px solid #1f1b1b; }
+    .comic-border { border: 3.5px solid #1f1b1b; }
+    .comic-border-thick { border: 4.5px solid #1f1b1b; }
+    .comic-shadow { box-shadow: 4px 4px 0px #1f1b1b; }
+    .comic-shadow-sm { box-shadow: 2.5px 2.5px 0px #1f1b1b; }
+    .comic-shadow-lg { box-shadow: 6px 6px 0px #1f1b1b; }
+    .halftone-bg {
+      background-color: #fcf9f8;
+      background-image: radial-gradient(#dcd9d9 1.5px, transparent 1.5px);
+      background-size: 14px 14px;
+    }
+    .perspective-card { perspective: 1000px; }
+    .card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-style: preserve-3d;
+      cursor: pointer;
+    }
+    .card-inner.flipped { transform: rotateY(180deg); }
+    .card-inner.matched { transform: rotateY(180deg); cursor: default; }
+    .card-face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .card-front { background-color: #ffffff; transform: rotateY(0deg); }
+    .card-back { background-color: #fff9e6; transform: rotateY(180deg); }
+
+    @keyframes pulse-matched {
+      0%, 100% { transform: rotateY(180deg) scale(1); }
+      50% { transform: rotateY(180deg) scale(1.06); }
+    }
+    .matched-anim { animation: pulse-matched 0.5s ease-out; }
+
+    @keyframes shake-wrong {
+      0%, 100% { transform: rotateY(180deg) translateX(0); }
+      20%, 60% { transform: rotateY(180deg) translateX(-8px); }
+      40%, 80% { transform: rotateY(180deg) translateX(8px); }
+    }
+    .shake-anim { animation: shake-wrong 0.4s ease-in-out; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+      }
+    }
+  </style>
+</head>
+<body class="halftone-bg min-h-screen flex flex-col p-4 md:p-6 select-none">
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- TOP APP BAR                                      -->
+  <!-- ═══════════════════════════════════════════════ -->
+  
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- MAIN                                             -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <main class="w-full max-w-7xl mx-auto flex-1 grid grid-cols-1 lg:grid-cols-10 gap-5 items-start">
+
+    <!-- ═ COLUMNA IZQUIERDA (cols 1-8) ═ -->
+    <section class="lg:col-span-8 flex flex-col gap-4">
+
+      
+      <!-- GRID 16 CARTAS -->
+      <div class="bg-white comic-border-thick comic-shadow-lg rounded-2xl p-4 sm:p-6">
+        <div id="memory-grid" class="grid grid-cols-4 gap-3 sm:gap-4 max-w-2xl mx-auto aspect-square">
+
+          <!-- Card 1 -->
+          <div class="perspective-card aspect-square relative w-full h-full" onclick="flipCard(0)">
+            <div id="card-inner-0" class="card-inner comic-border comic-shadow-sm rounded-2xl w-full h-full">
+              <div class="card-face card-front p-2 bg-gradient-to-br from-white via-amber-50 to-amber-100">
+                <span class="absolute top-2 left-2 text-[10px] font-black text-neutral-400">#01</span>
+                <div class="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-white comic-border-sm flex items-center justify-center text-xl sm:text-2xl font-black text-neutral-900 comic-shadow-sm">1</div>
+                <span class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-amber-800 mt-1 sm:mt-2">CUMPEO</span>
+              </div>
+              <div class="card-face card-back p-2 comic-border-sm bg-red-100 flex-col justify-center">
+                <div class="text-3xl sm:text-4xl mb-0.5">💥</div>
+                <div class="text-xs sm:text-sm font-black uppercase tracking-wider text-neutral-900">¡BOOM!</div>
+                <span class="text-[9px] font-bold text-red-600">Dinamita</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="perspective-card aspect-square relative w-full h-full" onclick="flipCard(1)">
+            <div id="card-inner-1" class="card-inner comic-border comic-shadow-sm rounded-2xl w-full h-full">
+              <div class="card-face card-front p-2 bg-gradient-to-br from-white via-amber-50 to-amber-100">
+                <span class="absolute top-2 left-2 text-[10px] font-black text-neutral-400">#02</span>
+                <div class="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-white comic-border-sm flex items-center justify-center text-xl sm:text-2xl font-black text-neutral-900 comic-shadow-sm">2</div>
+                <span class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-amber-800 mt-1 sm:mt-2">CUMPEO</span>
+              </div>
+              <div class="card-face card-back p-2 comic-border-sm bg-yellow-100 flex-col justify-center">
+                <div class="text-3xl sm:text-4xl mb-0.5">⚡</div>
+                <div class="text-xs sm:text-sm font-black uppercase tracking-wider text-neutral-900">RAYO</div>
+                <span class="text-[9px] font-bold text-amber-700">Poder Flash</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3 (matched) -->
+          <div class="perspective-card aspect-square relative w-full h-full" onclick="flipCard(2)">
+            <div id="card-inner-2" class="card-inner comic-border comic-shadow-sm rounded-2xl w-full h-full flipped matched">
+              <div class="card-face card-front p-2 bg-gradient-to-br from-white via-amber-50 to-amber-100">
+                <span class="absolute top-2 left-2 text-[10px] font-black text-neutral-400">#03</span>
+                <div class="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-white comic-border-sm flex items-center justify-center text-xl sm:text-2xl font-black text-neutral-900 comic-shadow-sm">3</div>
+                <span class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-amber-800 mt-1 sm:mt-2">CUMPEO</span>
+              </div>
+              <div class="card-face card-back p-2 comic-border-sm bg-teal-100 flex-col justify-center ring-4 ring-emerald-400">
+                <div class="text-3xl sm:text-4xl mb-0.5">🎲</div>
+                <div class="text-xs sm:text-sm font-black uppercase tracking-wider text-neutral-900">DADOS VS</div>
+                <span class="text-[9px] font-bold text-emerald-700 font-black">✓ ¡PAR #1!</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 4 -->
+          <div class="perspective-card aspect-square relative w-full h-full" onclick="flipCard(3)">
+            <div id="card-inner-3" class="card-inner comic-border comic-shadow-sm rounded-2xl w-full h-full">
+              <div class="card-face card-front p-2 bg-gradient-to-br from-white via-amber-50 to-amber-100">
+                <span class="absolute top-2 left-2 text-[10px] font-black text-neutral-400">#04</span>
+                <div class="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-white comic-border-sm flex items-center justify-center text-xl sm:text-2xl font-black text-neutral-900 comic-shadow-sm">4</div>
+                <span class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-amber-800 mt-1 sm:mt-2">CUMPEO</span>
+              </div>
+              <div class="card-face card-back p-2 comic-border-sm bg-purple-100 flex-col justify-center">
+                <div class="text-3xl sm:text-4xl mb-0.5">🐶</div>
+                <div class="text-xs sm:text-sm font-black uppercase tracking-wider text-neutral-900">PUPI</div>
+                <span class="text-[9px] font-bold text-purple-700">Mascota</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 5 -->
+          <div class="perspective-card aspect-square relative w-full h-full" onclick="flipCard(4)">
+            <div id="card-inner-4" class="card-inner comic-border comic-shadow-sm rounded-2xl w-full h-full">
+              <div class="card-face card-front p-2 bg-gradient-to-br from-white via-amber-50 to-amber-100">
+                <span class="absolute top-2 left-2 text-[10px] font-black text-neutral-400">#05</span>
+                <div class="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-white comic-border-sm flex items-center justify-center text-xl sm:text-2xl font-black text-neutral-900 comic-shadow-sm">5</div>
+                <span class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-amber-800 mt-1 sm:mt-2">CUMPEO</span>
+              </div>
+              <div class="card-face card-back p-2 comic-border-sm bg-orange-100 flex-col justify-center">
+                <div class="text-3xl sm:text-4xl mb-0.5">🎰</div>
+                <div class="text-xs sm:text-sm font-black uppercase tracking-wider text-neutral-900">TÓMBOLA</div>
+                <span class="text-[9px] font-bold text-orange-700">Sorteo</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 6 (matched) -->
+          <div class="perspective-card aspect-square relative w-full h-full" onclick="flipCard(5)">
+            <div id="card-inner-5" class="card-inner comic-border comic-shadow-sm rounded-2xl w-full h-full flipped matched">
+              <div class="card-face card-front p-2 bg-gradient-to-br from-white via-amber-50 to-amber-100">
+                <span class="absolute top-2 left-2 text-[10px] font-black text-neutral-400">#06</span>
+                <div class="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-white comic-border-sm flex items-center justify-center text-xl sm:text-2xl font-black text-neutral-900 comic-shadow-sm">6</div>
+                <span class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-amber-800 mt-1 sm:mt-2">CUMPEO</span>
+              </div>
+              <div class="card-face card-back p-2 comic-border-sm bg-teal-100 flex-col justify-center ring-4 ring-emerald-400">
+                <div class="text-3xl sm:text-4xl mb-0.5">🎲</div>
+                <div class="text-xs sm:text-sm font-black uppercase tracking-wider text-neutral-900">DADOS VS</div>
+                <span class="text-[9px] font-bold text-emerald-700 font-black">✓ ¡PAR #1!</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 7 -->
+          <div class="perspective-card aspect-square relative w-full h-full" onclick="flipCard(6)">
+            <div id="card-inner-6" class="card-inner comic-border comic-shadow-sm rounded-2xl w-full h-full">
+              <div class="card-face card-front p-2 bg-gradient-to-br from-white via-amber-50 to-amber-100">
+                <span class="absolute top-2 left-2 text-[10px] font-black text-neutral-400">#07</span>
+                <div class="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-white comic-border-sm flex items-center justify-center text-xl sm:text-2xl font-black text-neutral-900 comic-shadow-sm">7</div>
+                <span class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-amber-800 mt-1 sm:mt-2">CUMPEO</span>
+              </div>
+              <div class="card-face card-back p-2 comic-border-sm bg-red-100 flex-col justify-center">
+                <div class="text-3xl sm:text-4xl mb-0.5">💥</div>
+                <div class="text-xs sm:text-sm font-black uppercase tracking-wider text-neutral-900">¡BOOM!</div>
+                <span class="text-[9px] font-bold text-red-600">Dinamita</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 8 (matched) -->
+          <div class="perspective-card aspect-square relative w-full h-full" onclick="flipCard(7)">
+            <div id="card-inner-7" class="card-inner comic-border comic-shadow-sm rounded-2xl w-full h-full flipped matched">
+              <div class="card-face card-front p-2 bg-gradient-to-br from-white via-amber-50 to-amber-100">
+                <span class="absolute top-2 left-2 text-[10px] font-black text-neutral-400">#08</span>
+                <div class="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-white comic-border-sm flex items-center justify-center text-xl sm:text-2xl font-black text-neutral-900 comic-shadow-sm">8</div>
+                <span class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-amber-800 mt-1 sm:mt-2">CUMPEO</span>
+              </div>
+              <div class="card-face card-back p-2 comic-border-sm bg-yellow-200 flex-col justify-center ring-4 ring-emerald-400">
+                <div class="text-3xl sm:text-4xl mb-0.5">🏆</div>
+                <div class="text-xs sm:text-sm font-black uppercase tracking-wider text-neutral-900">TROFEO</div>
+                <span class="text-[9px] font-bold text-amber-900 font-black">✓ ¡PAR #2!</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 9 -->
+          <div class="perspective-card aspect-square relative w-full h-full" onclick="flipCard(8)">
+            <div id="card-inner-8" class="card-inner comic-border comic-shadow-sm rounded-2xl w-full h-full">
+              <div class="card-face card-front p-2 bg-gradient-to-br from-white via-amber-50 to-amber-100">
+                <span class="absolute top-2 left-2 text-[10px] font-black text-neutral-400">#09</span>
+                <div class="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-white comic-border-sm flex items-center justify-center text-xl sm:text-2xl font-black text-neutral-900 comic-shadow-sm">9</div>
+                <span class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-amber-800 mt-1 sm:mt-2">CUMPEO</span>
+              </div>
+              <div class="card-face card-back p-2 comic-border-sm bg-pink-100 flex-col justify-center">
+                <div class="text-3xl sm:text-4xl mb-0.5">🔔</div>
+                <div class="text-xs sm:text-sm font-black uppercase tracking-wider text-neutral-900">CAMPANA</div>
+                <span class="text-[9px] font-bold text-pink-700">Pulsador</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 10 -->
+          <div class="perspective-card aspect-square relative w-full h-full" onclick="flipCard(9)">
+            <div id="card-inner-9" class="card-inner comic-border comic-shadow-sm rounded-2xl w-full h-full">
+              <div class="card-face card-front p-2 bg-gradient-to-br from-white via-amber-50 to-amber-100">
+                <span class="absolute top-2 left-2 text-[10px] font-black text-neutral-400">#10</span>
+                <div class="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-white comic-border-sm flex items-center justify-center text-xl sm:text-2xl font-black text-neutral-900 comic-shadow-sm">10</div>
+                <span class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-amber-800 mt-1 sm:mt-2">CUMPEO</span>
+              </div>
+              <div class="card-face card-back p-2 comic-border-sm bg-purple-100 flex-col justify-center">
+                <div class="text-3xl sm:text-4xl mb-0.5">🐶</div>
+                <div class="text-xs sm:text-sm font-black uppercase tracking-wider text-neutral-900">PUPI</div>
+                <span class="text-[9px] font-bold text-purple-700">Mascota</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 11 (matched) -->
+          <div class="perspective-card aspect-square relative w-full h-full" onclick="flipCard(10)">
+            <div id="card-inner-10" class="card-inner comic-border comic-shadow-sm rounded-2xl w-full h-full flipped matched">
+              <div class="card-face card-front p-2 bg-gradient-to-br from-white via-amber-50 to-amber-100">
+                <span class="absolute top-2 left-2 text-[10px] font-black text-neutral-400">#11</span>
+                <div class="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-white comic-border-sm flex items-center justify-center text-xl sm:text-2xl font-black text-neutral-900 comic-shadow-sm">11</div>
+                <span class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-amber-800 mt-1 sm:mt-2">CUMPEO</span>
+              </div>
+              <div class="card-face card-back p-2 comic-border-sm bg-yellow-200 flex-col justify-center ring-4 ring-emerald-400">
+                <div class="text-3xl sm:text-4xl mb-0.5">🏆</div>
+                <div class="text-xs sm:text-sm font-black uppercase tracking-wider text-neutral-900">TROFEO</div>
+                <span class="text-[9px] font-bold text-amber-900 font-black">✓ ¡PAR #2!</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 12 (matched) -->
+          <div class="perspective-card aspect-square relative w-full h-full" onclick="flipCard(11)">
+            <div id="card-inner-11" class="card-inner comic-border comic-shadow-sm rounded-2xl w-full h-full flipped matched">
+              <div class="card-face card-front p-2 bg-gradient-to-br from-white via-amber-50 to-amber-100">
+                <span class="absolute top-2 left-2 text-[10px] font-black text-neutral-400">#12</span>
+                <div class="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-white comic-border-sm flex items-center justify-center text-xl sm:text-2xl font-black text-neutral-900 comic-shadow-sm">12</div>
+                <span class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-amber-800 mt-1 sm:mt-2">CUMPEO</span>
+              </div>
+              <div class="card-face card-back p-2 comic-border-sm bg-blue-100 flex-col justify-center ring-4 ring-emerald-400">
+                <div class="text-3xl sm:text-4xl mb-0.5">🎵</div>
+                <div class="text-xs sm:text-sm font-black uppercase tracking-wider text-neutral-900">TRIVIA POP</div>
+                <span class="text-[9px] font-bold text-blue-700 font-black">✓ ¡PAR #3!</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 13 -->
+          <div class="perspective-card aspect-square relative w-full h-full" onclick="flipCard(12)">
+            <div id="card-inner-12" class="card-inner comic-border comic-shadow-sm rounded-2xl w-full h-full">
+              <div class="card-face card-front p-2 bg-gradient-to-br from-white via-amber-50 to-amber-100">
+                <span class="absolute top-2 left-2 text-[10px] font-black text-neutral-400">#13</span>
+                <div class="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-white comic-border-sm flex items-center justify-center text-xl sm:text-2xl font-black text-neutral-900 comic-shadow-sm">13</div>
+                <span class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-amber-800 mt-1 sm:mt-2">CUMPEO</span>
+              </div>
+              <div class="card-face card-back p-2 comic-border-sm bg-yellow-100 flex-col justify-center">
+                <div class="text-3xl sm:text-4xl mb-0.5">⚡</div>
+                <div class="text-xs sm:text-sm font-black uppercase tracking-wider text-neutral-900">RAYO</div>
+                <span class="text-[9px] font-bold text-amber-700">Poder Flash</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 14 -->
+          <div class="perspective-card aspect-square relative w-full h-full" onclick="flipCard(13)">
+            <div id="card-inner-13" class="card-inner comic-border comic-shadow-sm rounded-2xl w-full h-full">
+              <div class="card-face card-front p-2 bg-gradient-to-br from-white via-amber-50 to-amber-100">
+                <span class="absolute top-2 left-2 text-[10px] font-black text-neutral-400">#14</span>
+                <div class="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-white comic-border-sm flex items-center justify-center text-xl sm:text-2xl font-black text-neutral-900 comic-shadow-sm">14</div>
+                <span class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-amber-800 mt-1 sm:mt-2">CUMPEO</span>
+              </div>
+              <div class="card-face card-back p-2 comic-border-sm bg-pink-100 flex-col justify-center">
+                <div class="text-3xl sm:text-4xl mb-0.5">🔔</div>
+                <div class="text-xs sm:text-sm font-black uppercase tracking-wider text-neutral-900">CAMPANA</div>
+                <span class="text-[9px] font-bold text-pink-700">Pulsador</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 15 -->
+          <div class="perspective-card aspect-square relative w-full h-full" onclick="flipCard(14)">
+            <div id="card-inner-14" class="card-inner comic-border comic-shadow-sm rounded-2xl w-full h-full">
+              <div class="card-face card-front p-2 bg-gradient-to-br from-white via-amber-50 to-amber-100">
+                <span class="absolute top-2 left-2 text-[10px] font-black text-neutral-400">#15</span>
+                <div class="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-white comic-border-sm flex items-center justify-center text-xl sm:text-2xl font-black text-neutral-900 comic-shadow-sm">15</div>
+                <span class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-amber-800 mt-1 sm:mt-2">CUMPEO</span>
+              </div>
+              <div class="card-face card-back p-2 comic-border-sm bg-orange-100 flex-col justify-center">
+                <div class="text-3xl sm:text-4xl mb-0.5">🎰</div>
+                <div class="text-xs sm:text-sm font-black uppercase tracking-wider text-neutral-900">TÓMBOLA</div>
+                <span class="text-[9px] font-bold text-orange-700">Sorteo</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 16 (matched) -->
+          <div class="perspective-card aspect-square relative w-full h-full" onclick="flipCard(15)">
+            <div id="card-inner-15" class="card-inner comic-border comic-shadow-sm rounded-2xl w-full h-full flipped matched">
+              <div class="card-face card-front p-2 bg-gradient-to-br from-white via-amber-50 to-amber-100">
+                <span class="absolute top-2 left-2 text-[10px] font-black text-neutral-400">#16</span>
+                <div class="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-white comic-border-sm flex items-center justify-center text-xl sm:text-2xl font-black text-neutral-900 comic-shadow-sm">16</div>
+                <span class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-amber-800 mt-1 sm:mt-2">CUMPEO</span>
+              </div>
+              <div class="card-face card-back p-2 comic-border-sm bg-blue-100 flex-col justify-center ring-4 ring-emerald-400">
+                <div class="text-3xl sm:text-4xl mb-0.5">🎵</div>
+                <div class="text-xs sm:text-sm font-black uppercase tracking-wider text-neutral-900">TRIVIA POP</div>
+                <span class="text-[9px] font-bold text-blue-700 font-black">✓ ¡PAR #3!</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    
+        
+      </div>
+    </section>
+
+    <!-- ═ SIDEBAR DERECHO (cols 9-10) ═ -->
+    <aside class="lg:col-span-2 flex flex-col gap-4">
+
+      <!-- MANDO DEL CONDUCTOR -->
+      <div class="bg-white comic-border-thick comic-shadow rounded-2xl p-5 flex flex-col gap-4">
+        <div class="flex items-center justify-between border-b-2 border-neutral-200 pb-3">
+          <span class="text-xs font-black uppercase tracking-wider text-neutral-500">MANDO DEL CONDUCTOR</span>
+        </div>
+
+        <!-- Adjudicar puntaje -->
+        <div class="space-y-2">
+          <div class="text-xs font-black uppercase text-neutral-700">Adjudicar Puntaje Directo:</div>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" onclick="addPoints('rayos', 50)"
+                    class="bg-amber-300 hover:bg-amber-400 text-neutral-900 comic-border-sm comic-shadow-sm py-2.5 px-2 rounded-xl font-black text-xs uppercase flex items-center justify-center gap-1.5 cursor-pointer active:translate-y-0.5 transition-all">
+              <span aria-hidden="true">⚡</span> +50 Los Rayos
+            </button>
+            <button type="button" onclick="addPoints('titanes', 50)"
+                    class="bg-teal-300 hover:bg-teal-400 text-neutral-900 comic-border-sm comic-shadow-sm py-2.5 px-2 rounded-xl font-black text-xs uppercase flex items-center justify-center gap-1.5 cursor-pointer active:translate-y-0.5 transition-all">
+              <span aria-hidden="true">🛡️</span> +50 Los Titanes
+            </button>
+          </div>
+
+          <button type="button" onclick="switchTurn()"
+                  class="w-full bg-neutral-100 hover:bg-neutral-200 text-neutral-900 comic-border-sm py-2 rounded-xl font-black text-xs uppercase cursor-pointer flex items-center justify-center gap-2 active:translate-y-0.5 transition-all">
+            <span aria-hidden="true">⇄</span> Transferir Turno de Equipo
+          </button>
+        </div>
+
+       
+
+     
+
+      <!-- ACCIONES -->
+      <div class="flex flex-col gap-2">
+        <button type="button" onclick="revealAllCards()"
+                class="w-full bg-white hover:bg-neutral-100 text-neutral-900 comic-border comic-shadow-sm py-2.5 rounded-xl font-black text-xs uppercase cursor-pointer flex items-center justify-center gap-2 active:translate-y-0.5 transition-all">
+          <span aria-hidden="true">👀</span> Revelar Todo 3 Segundos (Extra Comodín)
+        </button>
+        <button type="button" id="btn-finish"
+                class="w-full bg-[#ff3344] hover:bg-red-600 text-white comic-border comic-shadow py-3 rounded-xl font-black text-sm uppercase cursor-pointer flex items-center justify-center gap-2 active:translate-y-0.5 transition-all">
+          <span aria-hidden="true">🏁</span> Finalizar Juego y Volver al Circuito
+        </button>
+          <button type="button" onclick="resetGame()" class="bg-white hover:bg-neutral-50 comic-border-sm comic-shadow-sm px-3 py-1.5 rounded-xl font-black text-xs uppercase cursor-pointer active:translate-y-0.5">
+            ↺ REINICIAR TABLERO
+          </button>
+        
+      </div>
+
+    </aside>
+  </main>
+
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- SCRIPT                                           -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <script>
+    // ─── DATOS ────────────────────────────────────────
+    const cardData = [
+      { id: 1,  icon: '💥', name: '¡BOOM!',    subtitle: 'Dinamita',    pairId: 'A', bg: 'bg-red-100' },
+      { id: 2,  icon: '⚡', name: 'RAYO',       subtitle: 'Poder Flash', pairId: 'B', bg: 'bg-yellow-100' },
+      { id: 3,  icon: '🎲', name: 'DADOS VS',   subtitle: 'Duelo',       pairId: 'C', bg: 'bg-teal-100' },
+      { id: 4,  icon: '🐶', name: 'PUPI',       subtitle: 'Mascota',     pairId: 'D', bg: 'bg-purple-100' },
+      { id: 5,  icon: '🎰', name: 'TÓMBOLA',    subtitle: 'Sorteo',      pairId: 'E', bg: 'bg-orange-100' },
+      { id: 6,  icon: '🎲', name: 'DADOS VS',   subtitle: 'Duelo',       pairId: 'C', bg: 'bg-teal-100' },
+      { id: 7,  icon: '💥', name: '¡BOOM!',    subtitle: 'Dinamita',    pairId: 'A', bg: 'bg-red-100' },
+      { id: 8,  icon: '🏆', name: 'TROFEO',     subtitle: 'Podio',       pairId: 'F', bg: 'bg-yellow-200' },
+      { id: 9,  icon: '🔔', name: 'CAMPANA',    subtitle: 'Pulsador',    pairId: 'G', bg: 'bg-pink-100' },
+      { id: 10, icon: '🐶', name: 'PUPI',       subtitle: 'Mascota',     pairId: 'D', bg: 'bg-purple-100' },
+      { id: 11, icon: '🏆', name: 'TROFEO',     subtitle: 'Podio',       pairId: 'F', bg: 'bg-yellow-200' },
+      { id: 12, icon: '🎵', name: 'TRIVIA POP', subtitle: 'Música',      pairId: 'H', bg: 'bg-blue-100' },
+      { id: 13, icon: '⚡', name: 'RAYO',       subtitle: 'Poder Flash', pairId: 'B', bg: 'bg-yellow-100' },
+      { id: 14, icon: '🔔', name: 'CAMPANA',    subtitle: 'Pulsador',    pairId: 'G', bg: 'bg-pink-100' },
+      { id: 15, icon: '🎰', name: 'TÓMBOLA',    subtitle: 'Sorteo',      pairId: 'E', bg: 'bg-orange-100' },
+      { id: 16, icon: '🎵', name: 'TRIVIA POP', subtitle: 'Música',      pairId: 'H', bg: 'bg-blue-100' }
+    ];
+
+    // ─── ESTADO ───────────────────────────────────────
+    let flippedCards  = [];
+    let isProcessing  = false;
+    let pairsCount    = 3;
+    let attempts      = 5;
+    let currentTurn   = 'rayos';
+
+    // ─── TOAST ────────────────────────────────────────
+    function showToast(msg) {
+      let toast = document.getElementById('toast-mem');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toast-mem';
+        toast.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-neutral-900 text-white px-5 py-3 rounded-xl comic-border comic-shadow font-black text-sm uppercase transition-all duration-300 opacity-0 translate-y-4';
+        toast.style.pointerEvents = 'none';
+        document.body.appendChild(toast);
+      }
+      toast.textContent = msg;
+      toast.classList.remove('opacity-0', 'translate-y-4');
+      toast.classList.add('opacity-100', 'translate-y-0');
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-4');
+        toast.classList.remove('opacity-100', 'translate-y-0');
+      }, 2200);
+    }
+
+    // ─── TIMER ELIMINADO: gestionado por consola ───
+
+    // ─── FLIP ─────────────────────────────────────────
+    function flipCard(index) {
+      const cardEl = document.getElementById('card-inner-' + index);
+      if (!cardEl) return;
+      if (cardEl.classList.contains('matched')) return;
+      if (cardEl.classList.contains('flipped')) return;
+      if (isProcessing) return;
+
+      cardEl.classList.add('flipped');
+      flippedCards.push({ index, data: cardData[index], el: cardEl });
+
+      if (flippedCards.length === 2) {
+        attempts++;
+        const attemptsBadge = document.getElementById('attempts-badge');
+        if (attemptsBadge) attemptsBadge.textContent = attempts;
+        checkPair();
+      }
+    }
+
+    function checkPair() {
+      isProcessing = true;
+      const [card1, card2] = flippedCards;
+
+      if (card1.data.pairId === card2.data.pairId) {
+        setTimeout(() => {
+          card1.el.classList.add('matched', 'matched-anim');
+          card2.el.classList.add('matched', 'matched-anim');
+          pairsCount++;
+          const pairsBadge = document.getElementById('pairs-found-badge');
+          if (pairsBadge) pairsBadge.textContent = pairsCount + ' / 8';
+
+          addPoints(currentTurn, 50);
+
+          flippedCards = [];
+          isProcessing = false;
+
+          if (pairsCount === 8) {
+            showToast('🏆 ¡Felicidades! Todos los pares descubiertos');
+          }
+        }, 400);
+      } else {
+        setTimeout(() => {
+          card1.el.classList.add('shake-anim');
+          card2.el.classList.add('shake-anim');
+          setTimeout(() => {
+            card1.el.classList.remove('flipped', 'shake-anim');
+            card2.el.classList.remove('flipped', 'shake-anim');
+            flippedCards = [];
+            isProcessing = false;
+          }, 650);
+        }, 700);
+      }
+    }
+
+    // ─── PUNTAJE ──────────────────────────────────────
+    function addPoints(team, pts) {
+      // Puntaje gestionado por consola
+      window.parent.postMessage({type:'score-update', payload:{teamId: team, points: pts}}, '*');
+    }
+
+    // ─── CAMBIO DE TURNO ──────────────────────────────
+    function switchTurn() {
+      currentTurn = (currentTurn === 'rayos') ? 'titanes' : 'rayos';
+      const badge = document.getElementById('turn-badge');
+      if (badge) badge.textContent = currentTurn === 'rayos' ? 'RAYOS' : 'TITANES';
+      showToast('Turno transferido a: ' + (currentTurn === 'rayos' ? 'Los Rayos' : 'Los Titanes'));
+    }
+
+    // ─── REVELAR TODO ─────────────────────────────────
+    function revealAllCards() {
+      for (let i = 0; i < 16; i++) {
+        const el = document.getElementById('card-inner-' + i);
+        if (el && !el.classList.contains('matched')) el.classList.add('flipped');
+      }
+      showToast('👀 Mostrando todas las cartas por 3 segundos');
+      setTimeout(() => {
+        for (let i = 0; i < 16; i++) {
+          const el = document.getElementById('card-inner-' + i);
+          if (el && !el.classList.contains('matched')) el.classList.remove('flipped');
+        }
+      }, 3000);
+    }
+
+    // ─── RESET ────────────────────────────────────────
+    function resetGame() {
+      for (let i = 0; i < 16; i++) {
+        const el = document.getElementById('card-inner-' + i);
+        if (el) el.classList.remove('flipped', 'matched', 'matched-anim', 'shake-anim');
+      }
+      pairsCount    = 0;
+      attempts      = 0;
+      flippedCards  = [];
+      isProcessing  = false;
+      timeLeft      = 48;
+
+      const pairsBadge    = document.getElementById('pairs-found-badge');
+      const attemptsBadge = document.getElementById('attempts-badge');
+      if (pairsBadge)    pairsBadge.textContent = '0 / 8';
+      if (attemptsBadge) attemptsBadge.textContent = '0';
+
+      showToast('↺ Tablero reiniciado');
+    }
+
+    // ─── FINALIZAR ────────────────────────────────────
+    document.getElementById('btn-finish')?.addEventListener('click', () => {
+      if (confirm('¿Finalizar el juego y volver al circuito?')) {
+        showToast('🏁 Juego finalizado');
+      }
+    });
+
+    // ─── INIT ─────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+      // Timer gestionado por consola
+    });
+  </script>
+
+  <script src="/games/_shared/game-sdk.js"></script>
+  <script>
+    window.addEventListener('message', (e) => {
+      const {type, payload} = e.data || {};
+      if (type === 'game:init') { window.__cumpeoSession = payload; }
+      if (type === 'game:next-round') { console.log('next-round', payload); }
+    });
+    window.updateScore = (teamId, points) => {
+      window.parent.postMessage({type:'score-update', payload:{teamId, points}}, '*');
+    };
+    window.finishGame = (results) => {
+      window.parent.postMessage({type:'game-over', payload:{results}}, '*');
+    };
+  </script>
+
+</body>
+</html>

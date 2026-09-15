@@ -1,5 +1,11 @@
 node_modules/
-db/*.sqlite
-.env
+dist/
+coverage/
 test-results/
-images/
+playwright-report/
+blob-report/
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp

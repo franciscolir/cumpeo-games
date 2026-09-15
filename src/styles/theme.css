@@ -1,0 +1,13 @@
+:root {
+  color-scheme: light;
+  --app-bg: #fcf9f8;
+  --app-fg: #1c1b1b;
+  --shadow-comic-color: #1c1b1b;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --app-bg: #1c1b1b;
+  --app-fg: #fcf9f8;
+  --shadow-comic-color: #000000;
+}
