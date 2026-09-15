@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html class="h-full" lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <meta name="description" content="CUMPEO Móvil: envía mensajes, responde encuestas y comparte fotos en vivo.">
+  <meta name="theme-color" content="#FFE600">
+  <meta name="color-scheme" content="light">
+  <title>CUMPEO Móvil</title>
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='12' fill='%23FFE600'/><text x='50' y='74' font-size='68' text-anchor='middle' font-family='Arial,sans-serif' font-weight='bold' fill='%23000'>M</text></svg>">
+
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,900&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+
+  <!--
+    ✅ Listo para Supabase: descomentar cuando se migre.
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+      window.__SB_URL__ = 'https://xxxxxxxx.supabase.co';
+      window.__SB_KEY__ = 'eyJhbGciOi...';
+    </script>
+  -->
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            comicYellow: '#FFE600',
+            comicRed: '#FF3344',
+            comicBlue: '#00D2FF',
+            comicGreen: '#00E676',
+            comicOrange: '#FF7A00'
+          },
+          fontFamily: {
+            comic: ['Bangers', 'cursive'],
+            grotesque: ['"Bricolage Grotesque"', 'sans-serif'],
+            tech: ['"Space Grotesk"', 'sans-serif']
+          },
+          borderWidth: { '3': '3px' },
+          boxShadow: {
+            'pop-sm': '3px 3px 0px #000000',
+            'pop': '5px 5px 0px #000000',
+            'pop-lg': '8px 8px 0px #000000'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    .comic-dots-pattern {
+      background-color: #f7f3eb;
+      background-image: radial-gradient(#d1c7b7 1.5px, transparent 1.5px), radial-gradient(#d1c7b7 1.5px, #f7f3eb 1.5px);
+      background-size: 24px 24px;
+      background-position: 0 0, 12px 12px;
+    }
+    .pulse-dot { animation: live-pulse 1.8s ease-in-out infinite; }
+    @keyframes live-pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%      { opacity: 0.5; transform: scale(0.9); }
+    }
+    @keyframes value-flash {
+      0%   { background-color: #FFE600; transform: scale(1.05); }
+      100% { background-color: transparent; transform: scale(1); }
+    }
+    .value-flash { animation: value-flash 0.9s ease-out; }
+
+    @keyframes slide-in-up {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .tab-panel-active { animation: slide-in-up 0.25s ease-out; }
+
+    .conn-dot { transition: background-color 0.3s ease; }
+
+    /* Ajustes móviles */
+    html, body { -webkit-tap-highlight-color: transparent; }
+    textarea, input { font-size: 16px; } /* evita zoom en iOS */
+
+    @media (prefers-reduced-motion: reduce) {
+      .pulse-dot, .tab-panel-active { animation: none !important; }
+    }
+  </style>
+</head>
+
+<body class="comic-dots-pattern min-h-screen min-h-[100svh] overflow-x-hidden text-neutral-900 flex flex-col font-grotesque">
+
+  <!-- =========================================================
+       ONBOARDING — pide nombre la primera vez
+       ========================================================= -->
+  <div id="onboarding" data-role="onboarding"
+       class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="w-full max-w-sm bg-white border-4 border-black shadow-[12px_12px_0_#000] p-5 flex flex-col gap-4">
+      <div class="text-center">
+        <span class="inline-block bg-comicRed text-white font-comic text-5xl px-4 py-1 border-3 border-black shadow-pop-sm uppercase tracking-wider transform -rotate-2">
+          CUMPEO
+        </span>
+      </div>
+      <div class="text-center">
+        <p class="font-comic text-2xl uppercase leading-none">¿CÓMO TE LLAMAS?</p>
+        <p class="text-[11px] font-bold text-neutral-600 uppercase tracking-wide mt-1">
+          Identifica este dispositivo. No es una cuenta.
+        </p>
+      </div>
+      <form id="onboarding-form" class="flex flex-col gap-3" autocomplete="off">
+        <input
+          id="onboarding-name"
+          data-role="onboarding-name"
+          type="text"
+          maxlength="20"
+          autocomplete="off"
+          placeholder="Tu nombre o apodo"
+          class="w-full border-3 border-black px-3 py-2.5 font-bold text-base shadow-pop-sm focus:outline-none focus:ring-2 focus:ring-comicYellow">
+        <button type="submit"
+          class="w-full bg-comicYellow border-3 border-black px-4 py-3 font-comic text-2xl uppercase tracking-wider shadow-pop active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-transform">
+          ¡ENTRAR!
+        </button>
+      </form>
+      <p class="text-[10px] font-bold text-center text-neutral-500 uppercase">
+        Se guardará en este navegador
+      </p>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       HEADER
+       ========================================================= -->
+  <header class="w-full bg-white border-b-4 border-black px-3 py-2 flex items-center justify-between gap-2 shadow-[0_4px_0_#000] z-20 shrink-0">
+    <div class="flex items-center gap-2 min-w-0">
+      <span class="bg-comicRed text-white font-comic text-2xl px-2 py-0.5 border-3 border-black shadow-pop-sm uppercase tracking-wide transform -rotate-2 shrink-0">
+        CUMPEO
+      </span>
+      <span class="hidden xs:inline bg-comicYellow border-2 border-black px-2 py-0.5 text-[10px] font-black uppercase tracking-wider shadow-pop-sm">
+        MÓVIL
+      </span>
+    </div>
+
+    <div class="flex items-center gap-2 min-w-0">
+      <div class="flex items-center gap-1.5 bg-neutral-100 border-2 border-black px-2 py-1 shadow-pop-sm max-w-[40vw]">
+        <span class="w-2 h-2 rounded-full bg-comicRed border border-black shrink-0" aria-hidden="true"></span>
+        <span data-role="device-name" class="text-[11px] font-black uppercase tracking-wide truncate">
+          SIN NOMBRE
+        </span>
+      </div>
+      <div class="flex items-center gap-1 bg-white border-2 border-black px-2 py-1 shadow-pop-sm">
+        <span data-role="connection-dot" class="conn-dot w-2.5 h-2.5 rounded-full bg-comicGreen border border-black" aria-hidden="true"></span>
+        <span data-role="connection-label" class="text-[10px] font-black uppercase">OK</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- =========================================================
+       CONTENIDO PRINCIPAL — tabs
+       ========================================================= -->
+  <main class="flex-1 w-full max-w-xl mx-auto px-3 py-3 flex flex-col min-h-0">
+
+    <!-- Barra de sala -->
+    <div class="flex items-center justify-between gap-2 bg-black text-comicYellow border-3 border-black px-3 py-1.5 shadow-pop mb-3 shrink-0">
+      <div class="flex items-center gap-2">
+        <span class="text-[10px] font-black uppercase tracking-widest opacity-80">SALA</span>
+        <span data-role="room-pin" class="font-tech text-xl font-black tracking-widest text-comicGreen">#---</span>
+      </div>
+      <div class="text-[10px] font-black uppercase tracking-wide text-white/80">
+        <span data-role="room-status">ESPERANDO</span>
+      </div>
+    </div>
+
+    <!-- =====================================================
+         TAB 1: MENSAJE
+         ===================================================== -->
+    <section data-tab="message" class="tab-panel tab-panel-active flex-1 flex flex-col gap-3 min-h-0">
+      <div class="bg-white border-4 border-black p-3 shadow-pop-lg flex flex-col gap-2">
+        <div class="flex items-center justify-between">
+          <h2 class="font-comic text-2xl uppercase tracking-wide">MENSAJE AL MARQUEE</h2>
+          <span class="bg-comicOrange text-black text-[10px] font-black uppercase px-2 py-0.5 border-2 border-black shadow-pop-sm">
+            MÁX 6 PALABRAS
+          </span>
+        </div>
+        <p class="text-[11px] font-bold text-neutral-600 uppercase tracking-wide">
+          Se mostrará en la pantalla pública al cruzar el borde.
+        </p>
+      </div>
+
+      <div class="bg-white border-4 border-black p-3 shadow-pop-lg flex-1 flex flex-col gap-3 min-h-0">
+        <textarea
+          data-role="message-input"
+          id="message-input"
+          rows="3"
+          maxlength="80"
+          placeholder="Ej: ¡Vamos Los Rayos!"
+          class="w-full border-3 border-black p-3 font-grotesque font-bold text-base resize-none shadow-pop-sm focus:outline-none focus:ring-2 focus:ring-comicYellow"></textarea>
+
+        <div class="flex items-center justify-between text-[11px] font-black uppercase">
+          <span class="text-neutral-600">
+            PALABRAS: <span data-role="word-count" class="text-black">0</span>/6
+          </span>
+          <span data-role="word-warning" class="text-comicRed hidden">
+            ⚠ DEMASIADO LARGO
+          </span>
+        </div>
+
+        <button
+          data-role="message-send"
+          class="w-full bg-comicYellow border-3 border-black px-4 py-3 font-comic text-2xl uppercase tracking-wider shadow-pop active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-transform disabled:opacity-50 disabled:cursor-not-allowed">
+          ENVIAR MENSAJE
+        </button>
+
+        <div data-role="message-feedback" class="hidden bg-comicGreen/20 border-2 border-black px-3 py-1.5 text-[11px] font-black uppercase text-center"></div>
+      </div>
+
+      <div class="bg-white border-4 border-black p-3 shadow-pop-lg shrink-0">
+        <h3 class="font-comic text-lg uppercase mb-1.5">ÚLTIMOS ENVIADOS</h3>
+        <ul data-role="sent-list" class="flex flex-col gap-1.5 max-h-40 overflow-y-auto text-[11px] font-bold"></ul>
+      </div>
+    </section>
+
+    <!-- =====================================================
+         TAB 2: ENCUESTA
+         ===================================================== -->
+    <section data-tab="survey" class="tab-panel hidden flex-1 flex-col gap-3 min-h-0">
+      <div class="bg-white border-4 border-black p-3 shadow-pop-lg shrink-0">
+        <div class="flex items-center justify-between">
+          <h2 class="font-comic text-2xl uppercase tracking-wide">ENCUESTA EN VIVO</h2>
+          <span data-role="survey-status" class="bg-neutral-200 text-black text-[10px] font-black uppercase px-2 py-0.5 border-2 border-black shadow-pop-sm">
+            —
+          </span>
+        </div>
+      </div>
+
+      <div id="survey-empty" class="bg-white border-4 border-black p-6 shadow-pop-lg flex-1 flex flex-col items-center justify-center text-center gap-2">
+        <div class="font-comic text-5xl">🤔</div>
+        <p class="font-comic text-2xl uppercase">SIN ENCUESTA ACTIVA</p>
+        <p class="text-[11px] font-bold text-neutral-600 uppercase tracking-wide">
+          El anfitrión abrirá una en cualquier momento.
+        </p>
+      </div>
+
+      <div id="survey-active" class="hidden flex-1 flex-col gap-3 min-h-0">
+        <div class="bg-comicYellow border-4 border-black p-4 shadow-pop-lg shrink-0">
+          <p data-role="survey-question" class="font-comic text-2xl lg:text-3xl uppercase leading-tight">
+            —
+          </p>
+        </div>
+
+        <div class="bg-white border-4 border-black p-3 shadow-pop-lg flex-1 flex flex-col gap-2 min-h-0">
+          <div data-role="survey-options" class="flex flex-col gap-2"></div>
+          <button
+            data-role="survey-send"
+            disabled
+            class="w-full mt-auto bg-comicYellow border-3 border-black px-4 py-3 font-comic text-2xl uppercase tracking-wider shadow-pop active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-transform disabled:opacity-40 disabled:cursor-not-allowed">
+            RESPONDER
+          </button>
+        </div>
+      </div>
+
+      <div id="survey-done" class="hidden bg-comicGreen/20 border-4 border-black p-6 shadow-pop-lg flex-col items-center justify-center text-center gap-2">
+        <div class="font-comic text-5xl">✅</div>
+        <p class="font-comic text-2xl uppercase">¡RESPUESTA ENVIADA!</p>
+        <p class="text-[11px] font-bold text-neutral-700 uppercase tracking-wide" data-role="survey-done-text"></p>
+      </div>
+    </section>
+
+    <!-- =====================================================
+         TAB 3: FOTO
+         ===================================================== -->
+    <section data-tab="photo" class="tab-panel hidden flex-1 flex-col gap-3 min-h-0">
+      <div class="bg-white border-4 border-black p-3 shadow-pop-lg shrink-0">
+        <div class="flex items-center justify-between">
+          <h2 class="font-comic text-2xl uppercase tracking-wide">COMPARTIR FOTO</h2>
+          <span class="bg-comicBlue text-black text-[10px] font-black uppercase px-2 py-0.5 border-2 border-black shadow-pop-sm">
+            GALERÍA PÚBLICA
+          </span>
+        </div>
+        <p class="text-[11px] font-bold text-neutral-600 uppercase tracking-wide mt-1">
+          Aparecerá en la pantalla del salón.
+        </p>
+      </div>
+
+      <div class="bg-white border-4 border-black p-3 shadow-pop-lg flex-1 flex flex-col gap-3 min-h-0">
+        <div data-role="photo-preview" class="relative flex-1 min-h-[35vh] border-4 border-dashed border-neutral-400 bg-neutral-100 flex items-center justify-center overflow-hidden">
+          <div data-role="photo-empty" class="text-center px-4">
+            <div class="font-comic text-5xl text-neutral-400">📷</div>
+            <p class="font-comic text-xl uppercase text-neutral-500 mt-2">SIN FOTO AÚN</p>
+            <p class="text-[10px] font-bold text-neutral-500 uppercase tracking-wide mt-1">
+              Toma una foto o elige de la galería
+            </p>
+          </div>
+          <img data-role="photo-img" class="hidden w-full h-full object-contain" alt="Vista previa">
+          <button data-role="photo-clear"
+                  class="hidden absolute top-2 right-2 bg-comicRed text-white border-2 border-black px-2 py-0.5 text-xs font-black uppercase shadow-pop-sm">
+            ✕ QUITAR
+          </button>
+          <div data-role="photo-info"
+               class="hidden absolute bottom-2 left-2 right-2 bg-black/80 text-white text-[10px] font-black uppercase tracking-wide px-2 py-1">
+            —
+          </div>
+        </div>
+
+        <input type="file" accept="image/*" capture="environment"
+               data-role="photo-camera" class="hidden">
+        <input type="file" accept="image/*"
+               data-role="photo-gallery" class="hidden">
+
+        <div class="grid grid-cols-2 gap-2">
+          <button data-role="photo-camera-btn"
+                  class="bg-comicBlue border-3 border-black px-3 py-2.5 font-comic text-lg uppercase tracking-wide shadow-pop active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-transform">
+            📷 CÁMARA
+          </button>
+          <button data-role="photo-gallery-btn"
+                  class="bg-white border-3 border-black px-3 py-2.5 font-comic text-lg uppercase tracking-wide shadow-pop active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-transform">
+            🖼 GALERÍA
+          </button>
+        </div>
+
+        <label class="flex items-center justify-between gap-2 bg-comicYellow/30 border-2 border-black px-3 py-2 shadow-pop-sm cursor-pointer">
+          <div class="flex flex-col">
+            <span class="text-[11px] font-black uppercase tracking-wide">MODO BAJA RESOLUCIÓN</span>
+            <span class="text-[9px] font-bold text-neutral-600 uppercase">Recomendado · hasta 640px</span>
+          </div>
+          <input type="checkbox" data-role="photo-lowres" checked
+                 class="w-5 h-5 border-2 border-black accent-comicRed cursor-pointer">
+        </label>
+
+        <button
+          data-role="photo-send"
+          disabled
+          class="w-full bg-comicYellow border-3 border-black px-4 py-3 font-comic text-2xl uppercase tracking-wider shadow-pop active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-transform disabled:opacity-40 disabled:cursor-not-allowed">
+          ENVIAR FOTO
+        </button>
+
+        <div data-role="photo-feedback" class="hidden border-2 border-black px-3 py-1.5 text-[11px] font-black uppercase text-center"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- =========================================================
+       TAB BAR INFERIOR
+       ========================================================= -->
+  <nav class="w-full bg-white border-t-4 border-black pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] px-3 z-20 shrink-0 shadow-[0_-4px_0_#000]">
+    <div class="max-w-xl mx-auto grid grid-cols-3 gap-2">
+      <button data-tab-btn="message"
+              class="tab-btn flex flex-col items-center justify-center gap-0.5 bg-comicYellow border-3 border-black px-2 py-2 shadow-pop active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-transform">
+        <span class="text-2xl leading-none">💬</span>
+        <span class="text-[10px] font-black uppercase tracking-wide">MENSAJE</span>
+      </button>
+      <button data-tab-btn="survey"
+              class="tab-btn flex flex-col items-center justify-center gap-0.5 bg-white border-3 border-black px-2 py-2 shadow-pop active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-transform">
+        <span class="text-2xl leading-none">📊</span>
+        <span class="text-[10px] font-black uppercase tracking-wide">ENCUESTA</span>
+      </button>
+      <button data-tab-btn="photo"
+              class="tab-btn flex flex-col items-center justify-center gap-0.5 bg-white border-3 border-black px-2 py-2 shadow-pop active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-transform">
+        <span class="text-2xl leading-none">📷</span>
+        <span class="text-[10px] font-black uppercase tracking-wide">FOTO</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- =========================================================
+       JAVASCRIPT
+       ========================================================= -->
+  <script>
+  (function (window, document) {
+    'use strict';
+
+    /* =========================================================
+       CONFIG
+       ========================================================= */
+    const CONFIG = {
+      apiBase: '/api',
+      maxMessageWords: 6,
+      maxImageSize: 640,
+      imageQuality: 0.72,
+      pollInterval: 3000,
+      storageKeys: {
+        device: 'cumpeo.device',
+        lastTab: 'cumpeo.lastTab'
+      }
+    };
+
+    /* =========================================================
+       HELPERS
+       ========================================================= */
+    const $  = (sel, root = document) => root.querySelector(sel);
+    const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+
+    const el = (role) => document.querySelector(`[data-role="${role}"]`);
+
+    function setText(role, value) {
+      const node = el(role);
+      if (!node || value == null) return false;
+      node.textContent = String(value);
+      return true;
+    }
+
+    function show(node) { if (node) node.classList.remove('hidden'); }
+    function hide(node) { if (node) node.classList.add('hidden'); }
+
+    function debounce(fn, wait = 80) {
+      let t;
+      return function (...args) {
+        clearTimeout(t);
+        t = setTimeout(() => fn.apply(this, args), wait);
+      };
+    }
+
+    function uuid() {
+      return 'dev_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+    }
+
+    function flash(node, className = 'value-flash') {
+      if (!node) return;
+      node.classList.remove(className);
+      void node.offsetWidth;
+      node.classList.add(className);
+      node.addEventListener('animationend', () => node.classList.remove(className), { once: true });
+    }
+
+    function countWords(text) {
+      return (text || '')
+        .trim()
+        .replace(/\s+/g, ' ')
+        .split(' ')
+        .filter(Boolean)
+        .length;
+    }
+
+    /* =========================================================
+       DATA LAYER — adapters pluggables
+       ---------------------------------------------------------
+       Para migrar a Supabase:
+         1. Descomentar el <script> de supabase-js en el <head>.
+         2. Configurar window.__SB_URL__ y window.__SB_KEY__.
+         3. Cambiar ACTIVE_ADAPTER a 'supabase'.
+       El resto del código NO cambia.
+       ========================================================= */
+    const SQLiteAdapter = (() => {
+      const base = CONFIG.apiBase;
+
+      async function _json(method, path, body) {
+        const opts = { method, headers: {} };
+        if (body !== undefined) {
+          opts.headers['Content-Type'] = 'application/json';
+          opts.body = JSON.stringify(body);
+        }
+        const res = await fetch(base + path, opts);
+        if (!res.ok) throw new Error('HTTP ' + res.status + ' en ' + path);
+        return res.json();
+      }
+
+      return {
+        name: 'sqlite',
+
+        async registerParticipant(name, deviceId) {
+          return _json('POST', '/participants', { name, deviceId });
+        },
+
+        async sendBannerMessage(participantId, text) {
+          return _json('POST', '/banner-messages', { participantId, text });
+        },
+
+        async getActiveSurvey() {
+          try { return await _json('GET', '/surveys/active'); }
+          catch (_) { return null; }
+        },
+
+        async submitSurveyAnswer(participantId, surveyId, optionId) {
+          return _json('POST', '/surveys/' + encodeURIComponent(surveyId) + '/answers', {
+            participantId, optionId
+          });
+        },
+
+        async uploadImage(participantId, blob, meta) {
+          const form = new FormData();
+          form.append('participantId', participantId);
+          form.append('image', blob, 'photo.jpg');
+          if (meta) form.append('meta', JSON.stringify(meta));
+          const res = await fetch(base + '/images', { method: 'POST', body: form });
+          if (!res.ok) throw new Error('HTTP ' + res.status + ' en /images');
+          return res.json();
+        },
+
+        async getState() {
+          return _json('GET', '/state');
+        }
+      };
+    })();
+
+    const SupabaseAdapter = (() => {
+      let SB = null;
+      function _client() {
+        if (SB) return SB;
+        if (window.supabase && window.__SB_URL__ && window.__SB_KEY__) {
+          SB = window.supabase.createClient(window.__SB_URL__, window.__SB_KEY__);
+        }
+        return SB;
+      }
+
+      return {
+        name: 'supabase',
+
+        async registerParticipant(name, deviceId) {
+          const sb = _client();
+          if (!sb) throw new Error('Supabase no configurado');
+          const { data, error } = await sb.from('participants')
+            .insert({ name, device_id: deviceId })
+            .select().single();
+          if (error) throw error;
+          return data;
+        },
+
+        async sendBannerMessage(participantId, text) {
+          const sb = _client();
+          const { data, error } = await sb.from('banner_messages')
+            .insert({ participant_id: participantId, text })
+            .select().single();
+          if (error) throw error;
+          return data;
+        },
+
+        async getActiveSurvey() {
+          const sb = _client();
+          if (!sb) return null;
+          const { data, error } = await sb.from('surveys')
+            .select('*').eq('status', 'open')
+            .order('created_at', { ascending: false })
+            .limit(1).maybeSingle();
+          if (error) return null;
+          return data;
+        },
+
+        async submitSurveyAnswer(participantId, surveyId, optionId) {
+          const sb = _client();
+          const { error } = await sb.from('survey_answers')
+            .insert({ participant_id: participantId, survey_id: surveyId, option_id: optionId });
+          if (error) throw error;
+          return { ok: true };
+        },
+
+        async uploadImage(participantId, blob, meta) {
+          const sb = _client();
+          const path = `images/${participantId}/${Date.now()}.jpg`;
+          const up = await sb.storage.from('cumpeo').upload(path, blob, { contentType: 'image/jpeg' });
+          if (up.error) throw up.error;
+          const { data: pub } = sb.storage.from('cumpeo').getPublicUrl(path);
+          const { data, error } = await sb.from('images')
+            .insert({ participant_id: participantId, url: pub.publicUrl, meta })
+            .select().single();
+          if (error) throw error;
+          return data;
+        },
+
+        async getState() {
+          const sb = _client();
+          if (!sb) return { status: 'idle' };
+          const { data } = await sb.from('game_state').select('*').maybeSingle();
+          return data || { status: 'idle' };
+        }
+      };
+    })();
+
+    const DataLayer = (() => {
+      // ✅ Cambiar a 'supabase' cuando esté listo.
+      const ACTIVE_ADAPTER = 'sqlite';
+      const adapters = { sqlite: SQLiteAdapter, supabase: SupabaseAdapter };
+      return adapters[ACTIVE_ADAPTER];
+    })();
+
+    /* =========================================================
+       APP STATE
+       ========================================================= */
+    const AppState = {
+      device: null,      // { id, name, deviceId, joinedAt }
+      tab: 'message',
+      survey: null,      // encuesta activa del backend
+      surveyChoice: null,
+      surveyAnswered: false,
+      photoBlob: null,
+      photoMeta: null,
+      sendingMessage: false,
+      sendingPhoto: false
+    };
+
+    /* =========================================================
+       STORAGE
+       ========================================================= */
+    const Storage = (() => {
+      function get(key) {
+        try { return JSON.parse(localStorage.getItem(key)); }
+        catch { return null; }
+      }
+      function set(key, val) {
+        try { localStorage.setItem(key, JSON.stringify(val)); return true; }
+        catch { return false; }
+      }
+      return { get, set };
+    })();
+
+    /* =========================================================
+       CONNECTION STATUS
+       ========================================================= */
+    const Connection = (() => {
+      const COLORS = { online: 'bg-comicGreen', warn: 'bg-comicYellow', offline: 'bg-comicRed' };
+      const LABELS = { online: 'OK', warn: '...', offline: '!' };
+      let last = null;
+      function set(status) {
+        if (status === last) return;
+        last = status;
+        const dot = el('connection-dot');
+        const label = el('connection-label');
+        if (dot) {
+          dot.classList.remove('bg-comicGreen', 'bg-comicYellow', 'bg-comicRed');
+          dot.classList.add(COLORS[status] || COLORS.offline);
+        }
+        if (label) label.textContent = LABELS[status] || '!';
+      }
+      return { set };
+    })();
+
+    /* =========================================================
+       ONBOARDING
+       ========================================================= */
+    const Onboarding = (() => {
+      function shouldShow() {
+        return !AppState.device || !AppState.device.name;
+      }
+
+      function show() { show(el('onboarding')); }
+      function hide() { hide(el('onboarding')); }
+
+      function open() {
+        show();
+        setTimeout(() => {
+          const input = el('onboarding-name');
+          if (input) input.focus();
+        }, 200);
+      }
+
+      async function submit(name) {
+        const clean = String(name || '').trim().slice(0, 20);
+        if (clean.length < 2) {
+          const input = el('onboarding-name');
+          if (input) {
+            input.classList.add('border-comicRed');
+            input.placeholder = 'Mínimo 2 caracteres';
+          }
+          return false;
+        }
+
+        const deviceId = (AppState.device && AppState.device.deviceId) || uuid();
+
+        try {
+          const res = await DataLayer.registerParticipant(clean, deviceId);
+          AppState.device = {
+            id: res && res.id ? res.id : null,
+            name: clean,
+            deviceId: deviceId,
+            joinedAt: res && res.createdAt ? res.createdAt : new Date().toISOString()
+          };
+          Storage.set(CONFIG.storageKeys.device, AppState.device);
+          updateDeviceUI();
+          hide();
+          Connection.set('online');
+          return true;
+        } catch (err) {
+          console.error('[Onboarding] Error al registrar:', err);
+          // Fallback offline: guardamos localmente aunque no haya backend
+          AppState.device = {
+            id: null,
+            name: clean,
+            deviceId: deviceId,
+            joinedAt: new Date().toISOString()
+          };
+          Storage.set(CONFIG.storageKeys.device, AppState.device);
+          updateDeviceUI();
+          hide();
+          Connection.set('warn');
+          return false;
+        }
+      }
+
+      function bind() {
+        const form = $('#onboarding-form');
+        if (form) {
+          form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const input = el('onboarding-name');
+            await submit(input ? input.value : '');
+          });
+        }
+      }
+
+      return { shouldShow, open, hide, bind };
+    })();
+
+    function updateDeviceUI() {
+      const name = AppState.device && AppState.device.name ? AppState.device.name : 'SIN NOMBRE';
+      setText('device-name', name);
+    }
+
+    /* =========================================================
+       TABS
+       ========================================================= */
+    const Tabs = (() => {
+      const TABS = ['message', 'survey', 'photo'];
+
+      function setActive(tab) {
+        if (!TABS.includes(tab)) tab = 'message';
+        AppState.tab = tab;
+        Storage.set(CONFIG.storageKeys.lastTab, tab);
+
+        // Panels
+        $$('[data-tab]').forEach(p => {
+          const match = p.getAttribute('data-tab') === tab;
+          p.classList.toggle('hidden', !match);
+          p.classList.toggle('flex', match);
+          p.classList.toggle('tab-panel-active', match);
+        });
+
+        // Botones
+        $$('[data-tab-btn]').forEach(btn => {
+          const active = btn.getAttribute('data-tab-btn') === tab;
+          btn.classList.toggle('bg-comicYellow', active);
+          btn.classList.toggle('bg-white', !active);
+        });
+      }
+
+      function bind() {
+        $$('[data-tab-btn]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            setActive(btn.getAttribute('data-tab-btn'));
+          });
+        });
+      }
+
+      return { setActive, bind, TABS };
+    })();
+
+    /* =========================================================
+       TAB MENSAJE
+       ========================================================= */
+    const MessageTab = (() => {
+      let sentHistory = [];
+
+      function renderSentList() {
+        const list = el('sent-list');
+        if (!list) return;
+        if (sentHistory.length === 0) {
+          list.innerHTML = '<li class="text-neutral-500 uppercase">— SIN MENSAJES AÚN —</li>';
+          return;
+        }
+        list.innerHTML = sentHistory
+          .slice(-5)
+          .reverse()
+          .map(m => `
+            <li class="flex items-start gap-2 bg-comicGreen/15 border border-black px-2 py-1">
+              <span class="text-comicGreen font-black">✓</span>
+              <span class="truncate text-black">${escapeHtml(m)}</span>
+            </li>
+          `).join('');
+      }
+
+      function escapeHtml(str) {
+        return String(str)
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
+
+      function updateCounter() {
+        const input = el('message-input');
+        if (!input) return;
+        const count = countWords(input.value);
+        const counter = el('word-count');
+        const warning = el('word-warning');
+        const send = el('message-send');
+        if (counter) {
+          counter.textContent = count;
+          counter.classList.toggle('text-comicRed', count > CONFIG.maxMessageWords);
+          counter.classList.toggle('text-black', count <= CONFIG.maxMessageWords);
+        }
+        const tooLong = count > CONFIG.maxMessageWords;
+        if (warning) warning.classList.toggle('hidden', !tooLong);
+        if (send) send.disabled = tooLong || count === 0;
+      }
+
+      function showFeedback(text, kind = 'ok') {
+        const fb = el('message-feedback');
+        if (!fb) return;
+        fb.textContent = text;
+        fb.classList.remove('hidden', 'bg-comicGreen/20', 'bg-comicRed/20');
+        fb.classList.add(kind === 'ok' ? 'bg-comicGreen/20' : 'bg-comicRed/20');
+        clearTimeout(showFeedback._t);
+        showFeedback._t = setTimeout(() => fb.classList.add('hidden'), 2500);
+      }
+
+      async function send() {
+        if (AppState.sendingMessage) return;
+        const input = el('message-input');
+        if (!input) return;
+
+        const text = String(input.value || '').trim().replace(/\s+/g, ' ').slice(0, 80);
+        const words = countWords(text);
+
+        if (words === 0) return;
+        if (words > CONFIG.maxMessageWords) {
+          showFeedback('DEMASIADAS PALABRAS', 'error');
+          return;
+        }
+
+        const pid = AppState.device && AppState.device.id;
+        if (!pid) {
+          showFeedback('SIN CONEXIÓN AL SERVIDOR', 'error');
+          Connection.set('offline');
+          return;
+        }
+
+        AppState.sendingMessage = true;
+        const btn = el('message-send');
+        const originalHTML = btn ? btn.innerHTML : '';
+        if (btn) { btn.disabled = true; btn.textContent = 'ENVIANDO…'; }
+
+        try {
+          await DataLayer.sendBannerMessage(pid, text);
+          sentHistory.push(text);
+          renderSentList();
+          if (input) input.value = '';
+          updateCounter();
+          showFeedback('¡MENSAJE ENVIADO!', 'ok');
+          Connection.set('online');
+        } catch (err) {
+          console.error('[Message] Error:', err);
+          showFeedback('ERROR AL ENVIAR', 'error');
+          Connection.set('warn');
+        } finally {
+          AppState.sendingMessage = false;
+          if (btn) { btn.innerHTML = originalHTML; }
+          updateCounter();
+        }
+      }
+
+      function bind() {
+        const input = el('message-input');
+        if (input) {
+          input.addEventListener('input', debounce(updateCounter, 60));
+        }
+        const btn = el('message-send');
+        if (btn) btn.addEventListener('click', send);
+        updateCounter();
+        renderSentList();
+      }
+
+      return { bind, updateCounter };
+    })();
+
+    /* =========================================================
+       TAB ENCUESTA
+       ========================================================= */
+    const SurveyTab = (() => {
+      function render() {
+        const empty = $('#survey-empty');
+        const active = $('#survey-active');
+        const done = $('#survey-done');
+        const status = el('survey-status');
+
+        if (!AppState.survey) {
+          if (empty) { empty.classList.remove('hidden'); empty.classList.add('flex'); }
+          hide(active); hide(done);
+          if (status) status.textContent = 'CERRADA';
+          return;
+        }
+
+        if (AppState.surveyAnswered) {
+          hide(empty); hide(active);
+          if (done) { done.classList.remove('hidden'); done.classList.add('flex'); }
+          setText('survey-done-text',
+            AppState.surveyChoice ? 'ELEGISTE: ' + AppState.surveyChoice : 'GRACIAS POR PARTICIPAR');
+          if (status) status.textContent = 'RESPONDIDA';
+          return;
+        }
+
+        hide(empty); hide(done);
+        if (active) { active.classList.remove('hidden'); active.classList.add('flex'); }
+
+        setText('survey-question', AppState.survey.question || AppState.survey.title || '—');
+        if (status) status.textContent = 'ABIERTA';
+
+        const opts = el('survey-options');
+        if (opts) {
+          const options = AppState.survey.options || [];
+          opts.innerHTML = options.map(o => {
+            const id = o.id != null ? o.id : o.value;
+            const label = o.label != null ? o.label : o.text;
+            return `
+              <button data-opt-id="${escapeAttr(id)}" data-opt-label="${escapeAttr(label)}"
+                class="survey-opt w-full text-left bg-white border-3 border-black px-3 py-3 shadow-pop-sm font-grotesque font-black text-sm uppercase tracking-wide active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-transform">
+                ${escapeHtml(label)}
+              </button>
+            `;
+          }).join('');
+
+          opts.querySelectorAll('.survey-opt').forEach(btn => {
+            btn.addEventListener('click', () => {
+              opts.querySelectorAll('.survey-opt').forEach(b => {
+                b.classList.remove('bg-comicYellow');
+                b.classList.add('bg-white');
+              });
+              btn.classList.remove('bg-white');
+              btn.classList.add('bg-comicYellow');
+              AppState.surveyChoice = btn.getAttribute('data-opt-label');
+              AppState.surveyChoiceId = btn.getAttribute('data-opt-id');
+              const send = el('survey-send');
+              if (send) send.disabled = false;
+            });
+          });
+        }
+
+        const send = el('survey-send');
+        if (send) send.disabled = !AppState.surveyChoiceId;
+      }
+
+      function escapeHtml(str) {
+        return String(str)
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
+      function escapeAttr(str) {
+        return escapeHtml(str).replace(/'/g, '&#39;');
+      }
+
+      async function submit() {
+        if (!AppState.survey || !AppState.surveyChoiceId) return;
+        const pid = AppState.device && AppState.device.id;
+        if (!pid) return;
+
+        const send = el('survey-send');
+        if (send) { send.disabled = true; send.textContent = 'ENVIANDO…'; }
+
+        try {
+          await DataLayer.submitSurveyAnswer(pid, AppState.survey.id, AppState.surveyChoiceId);
+          AppState.surveyAnswered = true;
+          render();
+        } catch (err) {
+          console.error('[Survey] Error:', err);
+          if (send) { send.disabled = false; send.textContent = 'REINTENTAR'; }
+          Connection.set('warn');
+        }
+      }
+
+      function bind() {
+        const send = el('survey-send');
+        if (send) send.addEventListener('click', submit);
+      }
+
+      async function refresh() {
+        try {
+          const survey = await DataLayer.getActiveSurvey();
+          // Si es una encuesta nueva, reiniciamos el estado de respuesta
+          if (survey && (!AppState.survey || AppState.survey.id !== survey.id)) {
+            AppState.survey = survey;
+            AppState.surveyChoice = null;
+            AppState.surveyChoiceId = null;
+            AppState.surveyAnswered = false;
+            render();
+          } else if (!survey && AppState.survey) {
+            AppState.survey = null;
+            AppState.surveyChoice = null;
+            AppState.surveyChoiceId = null;
+            AppState.surveyAnswered = false;
+            render();
+          }
+        } catch (err) {
+          // Silencioso: sin encuesta activa
+        }
+      }
+
+      return { bind, render, refresh };
+    })();
+
+    /* =========================================================
+       TAB FOTO
+       ========================================================= */
+    const PhotoTab = (() => {
+      async function compress(file, maxSize, quality) {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          const url = URL.createObjectURL(file);
+          img.onload = () => {
+            URL.revokeObjectURL(url);
+            let { width, height } = img;
+            const scale = Math.min(1, maxSize / Math.max(width, height));
+            const w = Math.max(1, Math.round(width * scale));
+            const h = Math.max(1, Math.round(height * scale));
+
+            const canvas = document.createElement('canvas');
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+
+            canvas.toBlob(blob => {
+              if (!blob) return reject(new Error('toBlob falló'));
+              resolve({ blob, width: w, height: h });
+            }, 'image/jpeg', quality);
+          };
+          img.onerror = () => reject(new Error('No se pudo leer la imagen'));
+          img.src = url;
+        });
+      }
+
+      function setPreview(blob, width, height) {
+        const img = el('photo-img');
+        const empty = el('photo-empty');
+        const info = el('photo-info');
+        const clear = el('photo-clear');
+        const send = el('photo-send');
+
+        if (!img || !blob) return;
+
+        const url = URL.createObjectURL(blob);
+        if (img.dataset.url) URL.revokeObjectURL(img.dataset.url);
+        img.dataset.url = url;
+        img.src = url;
+
+        hide(empty); show(img); show(clear); show(info);
+        if (info) info.textContent = `${width} × ${height} px · ${Math.round(blob.size / 1024)} KB`;
+        if (send) send.disabled = false;
+
+        AppState.photoBlob = blob;
+        AppState.photoMeta = { width, height, size: blob.size };
+      }
+
+      function clearPreview() {
+        const img = el('photo-img');
+        const empty = el('photo-empty');
+        const info = el('photo-info');
+        const clear = el('photo-clear');
+        const send = el('photo-send');
+
+        if (img) {
+          if (img.dataset.url) URL.revokeObjectURL(img.dataset.url);
+          img.removeAttribute('src');
+          delete img.dataset.url;
+          hide(img);
+        }
+        show(empty);
+        hide(clear); hide(info);
+        if (send) send.disabled = true;
+
+        AppState.photoBlob = null;
+        AppState.photoMeta = null;
+      }
+
+      async function handleFile(file) {
+        if (!file) return;
+        const lowres = el('photo-lowres');
+        const useLowres = lowres ? lowres.checked : true;
+        const maxSize = useLowres ? CONFIG.maxImageSize : 1600;
+        const quality = useLowres ? CONFIG.imageQuality : 0.9;
+
+        try {
+          const { blob, width, height } = await compress(file, maxSize, quality);
+          setPreview(blob, width, height);
+        } catch (err) {
+          console.error('[Photo] Error al comprimir:', err);
+          showFeedback('NO SE PUDO PROCESAR LA IMAGEN', 'error');
+        }
+      }
+
+      function showFeedback(text, kind = 'ok') {
+        const fb = el('photo-feedback');
+        if (!fb) return;
+        fb.textContent = text;
+        fb.classList.remove('hidden', 'bg-comicGreen/20', 'bg-comicRed/20');
+        fb.classList.add(kind === 'ok' ? 'bg-comicGreen/20' : 'bg-comicRed/20');
+        clearTimeout(showFeedback._t);
+        showFeedback._t = setTimeout(() => fb.classList.add('hidden'), 3000);
+      }
+
+      async function send() {
+        if (AppState.sendingPhoto) return;
+        if (!AppState.photoBlob) return;
+
+        const pid = AppState.device && AppState.device.id;
+        if (!pid) {
+          showFeedback('SIN CONEXIÓN AL SERVIDOR', 'error');
+          Connection.set('offline');
+          return;
+        }
+
+        AppState.sendingPhoto = true;
+        const btn = el('photo-send');
+        const originalHTML = btn ? btn.innerHTML : '';
+        if (btn) { btn.disabled = true; btn.textContent = 'SUBIENDO…'; }
+
+        try {
+          await DataLayer.uploadImage(pid, AppState.photoBlob, AppState.photoMeta);
+          showFeedback('¡FOTO ENVIADA A LA PANTALLA!', 'ok');
+          Connection.set('online');
+          clearPreview();
+        } catch (err) {
+          console.error('[Photo] Error al subir:', err);
+          showFeedback('ERROR AL SUBIR', 'error');
+          Connection.set('warn');
+        } finally {
+          AppState.sendingPhoto = false;
+          if (btn) btn.innerHTML = originalHTML;
+        }
+      }
+
+      function bind() {
+        const camInput = el('photo-camera');
+        const galInput = el('photo-gallery');
+        const camBtn = el('photo-camera-btn');
+        const galBtn = el('photo-gallery-btn');
+        const clearBtn = el('photo-clear');
+        const sendBtn = el('photo-send');
+        const lowres = el('photo-lowres');
+
+        if (camBtn && camInput) {
+          camBtn.addEventListener('click', () => camInput.click());
+          camInput.addEventListener('change', (e) => {
+            handleFile(e.target.files && e.target.files[0]);
+            e.target.value = '';
+          });
+        }
+
+        if (galBtn && galInput) {
+          galBtn.addEventListener('click', () => galInput.click());
+          galInput.addEventListener('change', (e) => {
+            handleFile(e.target.files && e.target.files[0]);
+            e.target.value = '';
+          });
+        }
+
+        if (clearBtn) clearBtn.addEventListener('click', clearPreview);
+        if (sendBtn) sendBtn.addEventListener('click', send);
+
+        if (lowres) {
+          lowres.addEventListener('change', () => {
+            // Re-comprime la última foto si hay una seleccionada
+            // (por simplicidad, pedimos al usuario que la vuelva a elegir)
+            if (AppState.photoBlob) {
+              showFeedback('VUELVE A ELEGIR LA FOTO CON EL NUEVO MODO', 'error');
+            }
+          });
+        }
+      }
+
+      return { bind, clearPreview };
+    })();
+
+    /* =========================================================
+       POLLING — estado + encuesta
+       ========================================================= */
+    let pollTimer = null;
+    let isPolling = false;
+    let consecutiveErrors = 0;
+    const ERROR_WARN = 1;
+    const ERROR_OFFLINE = 3;
+
+    async function poll() {
+      if (isPolling) return;
+      isPolling = true;
+      try {
+        const state = await DataLayer.getState();
+
+        if (state) {
+          // Sala / pin
+          if (state.code) {
+            const clean = String(state.code).startsWith('#') ? state.code : '#' + state.code;
+            setText('room-pin', clean);
+          }
+          // Estado de partida
+          const statusLabel =
+            state.status === 'active' ? 'EN JUEGO' :
+            state.status === 'paused' ? 'EN PAUSA' :
+            state.status === 'idle'   ? 'ESPERANDO' :
+            (state.status || 'ESPERANDO').toUpperCase();
+          setText('room-status', statusLabel);
+        }
+
+        await SurveyTab.refresh();
+
+        consecutiveErrors = 0;
+        Connection.set('online');
+      } catch (err) {
+        consecutiveErrors++;
+        console.warn('[Poll] Error:', err.message);
+        if (consecutiveErrors >= ERROR_OFFLINE) Connection.set('offline');
+        else if (consecutiveErrors >= ERROR_WARN) Connection.set('warn');
+      } finally {
+        isPolling = false;
+      }
+    }
+
+    function startPolling() {
+      stopPolling();
+      poll();
+      pollTimer = setInterval(poll, CONFIG.pollInterval);
+    }
+
+    function stopPolling() {
+      if (pollTimer) clearInterval(pollTimer);
+      pollTimer = null;
+    }
+
+    /* =========================================================
+       BOOT
+       ========================================================= */
+    function boot() {
+      // 1. Cargar dispositivo guardado
+      const saved = Storage.get(CONFIG.storageKeys.device);
+      if (saved && saved.name) {
+        AppState.device = saved;
+      }
+      updateDeviceUI();
+
+      // 2. Última pestaña
+      const lastTab = Storage.get(CONFIG.storageKeys.lastTab);
+      if (lastTab && Tabs.TABS.includes(lastTab)) {
+        AppState.tab = lastTab;
+      }
+
+      // 3. Bindear UI
+      Tabs.bind();
+      Tabs.setActive(AppState.tab);
+      Onboarding.bind();
+      MessageTab.bind();
+      SurveyTab.bind();
+      PhotoTab.bind();
+
+      // 4. Onboarding si hace falta
+      if (Onboarding.shouldShow()) {
+        Onboarding.open();
+      }
+
+      // 5. Arrancar polling
+      startPolling();
+
+      // Pausar polling si la pestaña se oculta (ahorro de batería)
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) stopPolling();
+        else startPolling();
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', boot);
+    } else {
+      boot();
+    }
+
+    /* =========================================================
+       API PÚBLICA (para debug en consola)
+       ========================================================= */
+    window.CumpeoMovil = {
+      AppState,
+      DataLayer,
+      Connection,
+      Tabs,
+      Onboarding,
+      MessageTab,
+      SurveyTab,
+      PhotoTab,
+      // Utilidades para pruebas:
+      resetDevice() {
+        localStorage.removeItem(CONFIG.storageKeys.device);
+        AppState.device = null;
+        updateDeviceUI();
+        Onboarding.open();
+      },
+      resendSurvey() {
+        AppState.surveyAnswered = false;
+        AppState.surveyChoice = null;
+        AppState.surveyChoiceId = null;
+        SurveyTab.render();
+      }
+    };
+
+  })(window, document);
+  </script>
+
+</body>
+</html>

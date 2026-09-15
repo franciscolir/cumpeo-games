@@ -120,30 +120,52 @@ function initSchema() {
     // Column already exists, ignore
   }
 
-  // Migrate old game file paths to new modular structure
-  const oldFileMap = {
-    'trivia-relampago.html': 'trivia-relampago/index.html',
-    'memorice.html': 'memorice/index.html',
-    'sing.html': 'cancion-incompleta/index.html',
-    'rosco.html': 'rosco/index.html',
-    'pictionary.html': 'pictionary/index.html',
-    'historia-enredada.html': 'historia-enredada/index.html'
-  };
-  Object.entries(oldFileMap).forEach(([oldFile, newFile]) => {
-    try {
-      db.run(`UPDATE games SET file = ? WHERE file = ?`, [newFile, oldFile]);
-    } catch (e) { /* ignore */ }
-  });
+  // === MOBILE / AUDIENCE TABLES ===
 
-  // Remove duplicate session codes (keep only the most recent)
-  try {
-    db.run(`DELETE FROM sessions WHERE id NOT IN (SELECT MAX(id) FROM sessions GROUP BY code)`);
-  } catch (e) { /* ignore */ }
+  // Mobile participants (players connecting from phones)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS participants (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      device_id TEXT UNIQUE,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
 
-  // Fix game file paths: remove 'games/' prefix if present
-  try {
-    db.run(`UPDATE games SET file = REPLACE(file, 'games/', '') WHERE file LIKE 'games/%'`);
-  } catch (e) { /* ignore */ }
+  // Banner messages from mobile (shown in public marquee)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS banner_messages (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      participant_id INTEGER,
+      text TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (participant_id) REFERENCES participants(id)
+    );
+  `);
+
+  // Surveys (created by conductor from console)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS surveys (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      question TEXT NOT NULL,
+      options TEXT NOT NULL DEFAULT '[]',
+      status TEXT NOT NULL DEFAULT 'open',
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
+  // Survey answers from mobile participants
+  db.run(`
+    CREATE TABLE IF NOT EXISTS survey_answers (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      participant_id INTEGER,
+      survey_id INTEGER NOT NULL,
+      option_id TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (participant_id) REFERENCES participants(id),
+      FOREIGN KEY (survey_id) REFERENCES surveys(id)
+    );
+  `);
 }
 
 function save() {

@@ -379,6 +379,169 @@ app.post('/api/sessions/:id/next-game', (req, res) => {
   }
 });
 
+// ==================== MOBILE / AUDIENCE API ====================
+
+// Register mobile participant
+app.post('/api/participants', (req, res) => {
+  try {
+    const { name, deviceId } = req.body;
+    if (!name || !deviceId) {
+      return res.status(400).json({ error: 'name and deviceId required' });
+    }
+
+    // Check if device already registered
+    const existing = db.prepare('SELECT id, name, created_at FROM participants WHERE device_id = ?').get(deviceId);
+    if (existing) {
+      return res.json({ id: existing.id, createdAt: existing.created_at });
+    }
+
+    const stmt = db.prepare('INSERT INTO participants (name, device_id) VALUES (?, ?)');
+    const info = stmt.run(name, deviceId);
+    res.status(201).json({ id: info.lastInsertRowid, createdAt: new Date().toISOString() });
+  } catch (err) {
+    console.error('Error registering participant:', err);
+    res.status(500).json({ error: 'Error registering participant' });
+  }
+});
+
+// Send banner message (from mobile to marquee)
+app.post('/api/banner-messages', (req, res) => {
+  try {
+    const { participantId, text } = req.body;
+    if (!text || !String(text).trim()) {
+      return res.status(400).json({ error: 'text required' });
+    }
+
+    const stmt = db.prepare('INSERT INTO banner_messages (participant_id, text) VALUES (?, ?)');
+    const info = stmt.run(participantId || null, String(text).trim().slice(0, 120));
+    res.status(201).json({ id: info.lastInsertRowid });
+  } catch (err) {
+    console.error('Error sending banner message:', err);
+    res.status(500).json({ error: 'Error sending message' });
+  }
+});
+
+// Get new banner messages (for public screen polling)
+app.get('/api/banner-messages', (req, res) => {
+  try {
+    const since = parseInt(req.query.since) || 0;
+    const rows = db.prepare(
+      'SELECT bm.id, bm.text, bm.created_at, p.name as participant_name FROM banner_messages bm LEFT JOIN participants p ON bm.participant_id = p.id WHERE bm.id > ? ORDER BY bm.id ASC LIMIT 50'
+    ).all(since);
+    res.json(rows);
+  } catch (err) {
+    console.error('Error getting banner messages:', err);
+    res.status(500).json({ error: 'Error getting messages' });
+  }
+});
+
+// Create survey (from conductor console)
+app.post('/api/surveys', (req, res) => {
+  try {
+    const { question, options } = req.body;
+    if (!question) {
+      return res.status(400).json({ error: 'question required' });
+    }
+    const opts = Array.isArray(options) ? options : [];
+
+    // Close any existing open surveys first
+    db.prepare("UPDATE surveys SET status = 'closed' WHERE status = 'open'").run();
+
+    const stmt = db.prepare('INSERT INTO surveys (question, options, status) VALUES (?, ?, ?)');
+    const info = stmt.run(question, JSON.stringify(opts), 'open');
+    res.status(201).json({ id: info.lastInsertRowid, question, options: opts, status: 'open' });
+  } catch (err) {
+    console.error('Error creating survey:', err);
+    res.status(500).json({ error: 'Error creating survey' });
+  }
+});
+
+// Get active survey (for mobile polling)
+app.get('/api/surveys/active', (req, res) => {
+  try {
+    const survey = db.prepare("SELECT * FROM surveys WHERE status = 'open' ORDER BY created_at DESC LIMIT 1").get();
+    if (!survey) return res.json(null);
+
+    survey.options = JSON.parse(survey.options || '[]');
+    res.json(survey);
+  } catch (err) {
+    console.error('Error getting active survey:', err);
+    res.status(500).json({ error: 'Error getting survey' });
+  }
+});
+
+// Submit survey answer (from mobile)
+app.post('/api/surveys/:id/answers', (req, res) => {
+  try {
+    const { participantId, optionId } = req.body;
+    const surveyId = req.params.id;
+
+    if (!optionId && optionId !== 0) {
+      return res.status(400).json({ error: 'optionId required' });
+    }
+
+    // Check if survey exists and is open
+    const survey = db.prepare('SELECT * FROM surveys WHERE id = ?').get(surveyId);
+    if (!survey) return res.status(404).json({ error: 'Survey not found' });
+    if (survey.status !== 'open') return res.status(400).json({ error: 'Survey is closed' });
+
+    // Check if already answered
+    if (participantId) {
+      const existing = db.prepare('SELECT id FROM survey_answers WHERE participant_id = ? AND survey_id = ?').get(participantId, surveyId);
+      if (existing) {
+        // Update answer instead of duplicate
+        db.prepare('UPDATE survey_answers SET option_id = ? WHERE participant_id = ? AND survey_id = ?')
+          .run(String(optionId), participantId, surveyId);
+        save();
+        return res.json({ ok: true, updated: true });
+      }
+    }
+
+    const stmt = db.prepare('INSERT INTO survey_answers (participant_id, survey_id, option_id) VALUES (?, ?, ?)');
+    stmt.run(participantId || null, surveyId, String(optionId));
+    res.status(201).json({ ok: true });
+  } catch (err) {
+    console.error('Error submitting answer:', err);
+    res.status(500).json({ error: 'Error submitting answer' });
+  }
+});
+
+// Get survey results (for conductor console)
+app.get('/api/surveys/:id/results', (req, res) => {
+  try {
+    const survey = db.prepare('SELECT * FROM surveys WHERE id = ?').get(req.params.id);
+    if (!survey) return res.status(404).json({ error: 'Survey not found' });
+
+    survey.options = JSON.parse(survey.options || '[]');
+    const answers = db.prepare(
+      'SELECT option_id, COUNT(*) as count FROM survey_answers WHERE survey_id = ? GROUP BY option_id'
+    ).all(req.params.id);
+
+    const total = answers.reduce((sum, a) => sum + a.count, 0);
+    const results = survey.options.map(opt => {
+      const answer = answers.find(a => a.option_id === String(opt.id));
+      return { ...opt, votes: answer?.count || 0 };
+    });
+
+    res.json({ survey, results, total });
+  } catch (err) {
+    console.error('Error getting results:', err);
+    res.status(500).json({ error: 'Error getting results' });
+  }
+});
+
+// Close survey
+app.patch('/api/surveys/:id/close', (req, res) => {
+  try {
+    db.prepare("UPDATE surveys SET status = 'closed' WHERE id = ?").run(req.params.id);
+    save();
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('Error closing survey:', err);
+    res.status(500).json({ error: 'Error closing survey' });
+  }
+});
+
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

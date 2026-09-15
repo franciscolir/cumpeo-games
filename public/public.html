@@ -1,19 +1,23 @@
 <!DOCTYPE html>
-<html class="h-full" lang="es" xmlns="http://www.w3.org/1999/xhtml">
+<html class="h-full" lang="es">
 <head>
   <meta charset="utf-8">
-  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="Pantalla pública de CUMPEO: marcador en vivo, próximo desafío, galería de fotos y código de sala #402 para unirse a la partida.">
+  <meta name="theme-color" content="#FFE600">
+  <meta name="color-scheme" content="light">
   <title>CUMPEO - Vista de Salón Pública</title>
 
-  <!-- Tailwind CSS v3 CDN with plugins -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='12' fill='%23FF3344'/><text x='50' y='74' font-size='68' text-anchor='middle' font-family='Arial,sans-serif' font-weight='bold' fill='%23ffffff'>C</text></svg>">
+
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 
-  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com" rel="preconnect">
   <link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,900&family=Bangers&family=Permanent+Marker&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
 
-  <!-- Tailwind Configuration -->
+  <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+
   <script>
     tailwind.config = {
       theme: {
@@ -32,10 +36,7 @@
             marker: ['"Permanent Marker"', 'cursive'],
             tech: ['"Space Grotesk"', 'sans-serif']
           },
-          // ✅ FIX: border-3 ahora existe
-          borderWidth: {
-            '3': '3px'
-          },
+          borderWidth: { '3': '3px' },
           boxShadow: {
             'pop-sm': '3px 3px 0px #000000',
             'pop': '5px 5px 0px #000000',
@@ -47,7 +48,6 @@
     }
   </script>
 
-  <!-- Global & Comic Halftone Styles -->
   <style>
     .comic-dots-pattern {
       background-color: #f7f3eb;
@@ -55,92 +55,133 @@
       background-size: 24px 24px;
       background-position: 0 0, 12px 12px;
     }
-
     .comic-dots-yellow {
       background-color: #ffe600;
       background-image: radial-gradient(#e5c800 2px, transparent 2px);
       background-size: 14px 14px;
     }
-
-    @keyframes marquee {
-      0%   { transform: translateX(0%); }
-      100% { transform: translateX(-50%); }
-    }
     .animate-comic-marquee {
       display: inline-flex;
       white-space: nowrap;
-      animation: marquee 28s linear infinite;
+      overflow-x: clip;
+    }
+    .animate-comic-marquee.is-animating {
       will-change: transform;
-    }
-
-    .speech-tail-left::after {
-      content: '';
-      position: absolute;
-      left: -16px;
-      top: 24px;
-      width: 0; height: 0;
-      border-top: 10px solid transparent;
-      border-right: 18px solid #000000;
-      border-bottom: 10px solid transparent;
-    }
-    .speech-tail-left::before {
-      content: '';
-      position: absolute;
-      left: -12px;
-      top: 26px;
-      width: 0; height: 0;
-      border-top: 8px solid transparent;
-      border-right: 14px solid #ffffff;
-      border-bottom: 8px solid transparent;
-      z-index: 10;
     }
 
     @keyframes live-pulse {
       0%, 100% { opacity: 1; transform: scale(1); }
       50%      { opacity: 0.5; transform: scale(0.9); }
     }
-    .pulse-dot {
-      animation: live-pulse 1.8s ease-in-out infinite;
+    .pulse-dot { animation: live-pulse 1.8s ease-in-out infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .pulse-dot { animation: none !important; }
+    }
+
+    @keyframes value-flash {
+      0%   { background-color: #FFE600; transform: scale(1.05); }
+      100% { background-color: transparent; transform: scale(1); }
+    }
+    .value-flash { animation: value-flash 0.9s ease-out; }
+
+    .conn-dot { transition: background-color 0.3s ease; }
+
+    /* QR escalable: qrcodejs genera canvas a tamaño fijo, CSS lo estira */
+    [data-role="qr-code"] canvas,
+    [data-role="qr-code"] img {
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+
+    /* La columna derecha nunca desborda el viewport */
+    .right-column-fit {
+      min-height: 0;
+      max-height: 100%;
+    }
+    .right-column-fit > article,
+    .right-column-fit > div {
+      min-height: 0;
+    }
+
+    /* Galería de fotos */
+    @keyframes gallery-fade-in {
+      from { opacity: 0; transform: scale(1.02); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    [data-role="gallery-img"].gallery-anim {
+      animation: gallery-fade-in 0.6s ease-out;
+    }
+
+    @keyframes gallery-progress {
+      from { width: 0%; }
+      to   { width: 100%; }
+    }
+    [data-role="gallery-progress-bar"].is-running {
+      animation: gallery-progress var(--gallery-duration, 5s) linear forwards;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      [data-role="gallery-img"].gallery-anim,
+      [data-role="gallery-progress-bar"].is-running {
+        animation: none !important;
+      }
+    }
+
+    body.marquee-reduced-motion [data-role="marquee-track"] {
+      display: flex !important;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.75rem;
+      white-space: normal !important;
+      transform: none !important;
+      animation: none !important;
+    }
+    body.marquee-reduced-motion [data-role="marquee-track"] > span[aria-hidden="true"] {
+      display: none !important;
     }
   </style>
 </head>
 
-<body class="comic-dots-pattern h-full min-h-screen overflow-y-auto text-neutral-900 flex flex-col font-grotesque">
+<body class="comic-dots-pattern min-h-screen min-h-[100svh] overflow-x-hidden text-neutral-900 flex flex-col font-grotesque">
 
   <!-- BEGIN: MainHeader -->
-  <header class="w-full bg-white border-b-4 border-black px-6 py-2.5 flex items-center justify-between shadow-[0_4px_0_#000] z-20 shrink-0">
-    <div class="flex items-center gap-4">
+  <header class="w-full bg-white border-b-4 border-black px-4 lg:px-6 py-2 flex flex-wrap items-center justify-between gap-3 shadow-[0_4px_0_#000] z-20 shrink-0">
+    <div class="flex flex-wrap items-center gap-4">
       <div class="flex items-center gap-2">
-        <span class="bg-comicRed text-white font-comic text-4xl px-3 py-0.5 border-3 border-black shadow-pop-sm uppercase tracking-wider transform -rotate-2">
+        <span class="inline-block bg-comicRed text-white font-comic text-3xl sm:text-4xl px-3 py-0.5 border-3 border-black shadow-pop-sm uppercase tracking-wider transform -rotate-2">
           CUMPEO
         </span>
-        <span class="bg-comicYellow border-2 border-black px-2.5 py-1 text-xs font-black uppercase tracking-wider shadow-pop-sm flex items-center gap-1.5">
-          <span class="w-2.5 h-2.5 rounded-full bg-comicRed border border-black pulse-dot"></span>
-          EN INTERLUDIO
+        <span data-role="game-status-badge" class="bg-comicYellow border-2 border-black px-2.5 py-1 text-xs font-black uppercase tracking-wider shadow-pop-sm flex items-center gap-1.5">
+          <span class="w-2.5 h-2.5 rounded-full bg-comicRed border border-black pulse-dot" aria-hidden="true"></span>
+          <span data-role="game-status-text">EN INTERLUDIO</span>
         </span>
       </div>
       <div class="hidden xl:flex items-center gap-2 text-xs font-bold text-neutral-600 bg-neutral-100 border-2 border-black px-3 py-1 shadow-pop-sm">
         <span class="text-neutral-900 font-extrabold">SALÓN PÚBLICO</span>
-        <span>•</span>
+        <span aria-hidden="true">•</span>
         <span>HDMI 1080P PROJECTION</span>
       </div>
     </div>
 
-    <div class="flex items-center gap-3 bg-comicYellow border-3 border-black px-5 py-1.5 shadow-pop rounded-sm transform rotate-0.5">
+    <div class="flex items-center gap-3 bg-comicYellow border-3 border-black px-4 sm:px-5 py-1 shadow-pop rounded-sm transform rotate-0.5">
       <div class="text-right leading-tight">
         <p class="text-[11px] font-black uppercase tracking-wider text-black">INGRESA EN CUMPEO.LIVE</p>
         <p class="text-[10px] font-bold text-neutral-800">PIN DE CONEXIÓN</p>
       </div>
-      <div class="bg-black text-white font-tech text-3xl font-black px-3.5 py-0.5 rounded border-2 border-black tracking-widest text-comicGreen">
+      <div data-role="room-pin" class="bg-black font-tech text-2xl sm:text-3xl font-black px-3 py-0.5 rounded border-2 border-black tracking-widest text-comicGreen">
         #402
       </div>
     </div>
 
     <div class="flex items-center gap-3">
       <div class="flex items-center gap-2 bg-comicGreen/20 border-2 border-black px-3 py-1.5 shadow-pop-sm">
-        <div class="w-3 h-3 rounded-full bg-comicGreen border-2 border-black"></div>
+        <div data-role="connection-dot" class="conn-dot w-3 h-3 rounded-full bg-comicGreen border-2 border-black" aria-hidden="true"></div>
         <div class="text-xs font-extrabold uppercase leading-none">
-          PULSADORES: <span class="text-comicGreen font-black text-sm">24/24</span>
+          PULSADORES: <span data-role="buzzer-count" class="text-comicGreen font-black text-sm">24/24</span>
         </div>
       </div>
       <div class="bg-comicBlue border-2 border-black px-3 py-1 text-xs font-black uppercase shadow-pop-sm text-black">
@@ -148,201 +189,1222 @@
       </div>
     </div>
   </header>
-  <!-- END: MainHeader -->
 
   <!-- BEGIN: MainContentStage -->
-  <main class="flex-1 w-full max-w-[1920px] mx-auto p-4 lg:p-6 grid grid-cols-12 gap-5 min-h-0 items-stretch">
+  <main class="flex-1 w-full max-w-[1920px] mx-auto p-3 lg:p-5 grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-0 items-stretch">
 
     <!-- LEFT COLUMN -->
-    <section class="col-span-7 flex flex-col justify-between min-h-0">
-      <div class="relative flex-1 bg-white border-4 border-black p-3.5 shadow-pop-xl flex flex-col justify-between overflow-hidden">
+    <section class="col-span-1 lg:col-span-7 flex flex-col justify-between min-h-0">
+      <div class="relative flex-1 bg-white border-4 border-black p-3 shadow-pop-xl flex flex-col justify-between overflow-hidden min-h-0">
 
-        <!-- Rivets -->
-        <div class="absolute top-2 left-2 w-3.5 h-3.5 rounded-full border-2 border-black bg-neutral-300 flex items-center justify-center font-mono text-[8px] font-bold z-10">+</div>
-        <div class="absolute top-2 right-2 w-3.5 h-3.5 rounded-full border-2 border-black bg-neutral-300 flex items-center justify-center font-mono text-[8px] font-bold z-10">+</div>
-        <div class="absolute bottom-2 left-2 w-3.5 h-3.5 rounded-full border-2 border-black bg-neutral-300 flex items-center justify-center font-mono text-[8px] font-bold z-10">+</div>
-        <div class="absolute bottom-2 right-2 w-3.5 h-3.5 rounded-full border-2 border-black bg-neutral-300 flex items-center justify-center font-mono text-[8px] font-bold z-10">+</div>
+        <div class="absolute top-2 left-2 w-3.5 h-3.5 rounded-full border-2 border-black bg-neutral-300 flex items-center justify-center font-mono text-[8px] font-bold z-10" aria-hidden="true">+</div>
+        <div class="absolute top-2 right-2 w-3.5 h-3.5 rounded-full border-2 border-black bg-neutral-300 flex items-center justify-center font-mono text-[8px] font-bold z-10" aria-hidden="true">+</div>
+        <div class="absolute bottom-2 left-2 w-3.5 h-3.5 rounded-full border-2 border-black bg-neutral-300 flex items-center justify-center font-mono text-[8px] font-bold z-10" aria-hidden="true">+</div>
+        <div class="absolute bottom-2 right-2 w-3.5 h-3.5 rounded-full border-2 border-black bg-neutral-300 flex items-center justify-center font-mono text-[8px] font-bold z-10" aria-hidden="true">+</div>
 
-    
-
-        <!-- Artwork Frame -->
-        <div class="relative flex-1 w-full border-4 border-black bg-neutral-900 overflow-hidden flex items-center justify-center">
-          <div class="w-full h-full comic-dots-pattern flex flex-col items-center justify-center p-8 text-center">
-            <div class="bg-white border-4 border-black p-5 shadow-pop-lg max-w-[30rem] flex flex-col items-center gap-4 transform -rotate-1">
-              <img src="images/public.jpeg" alt="Imagen pública" class="w-full h-auto border-4 border-black shadow-pop-sm">
-              
+        <div class="relative flex-1 w-full min-h-[40vh] lg:min-h-0 border-4 border-black bg-neutral-900 overflow-hidden flex items-center justify-center">
+          <div class="w-full h-full comic-dots-pattern flex flex-col items-center justify-center p-6 text-center">
+            <div class="bg-white border-4 border-black p-4 shadow-pop-lg max-w-[28rem] w-full flex flex-col items-center gap-3 transform -rotate-1">
+              <img
+                id="stage-image"
+                src="images/public.jpeg"
+                alt="Equipo de CUMPEO preparado en el salón antes de comenzar la partida"
+                decoding="async"
+                class="w-full h-auto border-4 border-black shadow-pop-sm"
+                onerror="this.classList.add('hidden'); document.getElementById('imgFallback').classList.remove('hidden');">
+              <div id="imgFallback" class="hidden w-full h-40 items-center justify-center font-comic text-2xl bg-neutral-200 border-4 border-black">
+                IMAGEN NO DISPONIBLE
+              </div>
             </div>
           </div>
 
           <div class="absolute bottom-3 right-3 bg-comicYellow border-3 border-black p-2 shadow-pop rotate-[-3deg] z-10 max-w-xs text-center">
-            <p class="font-comic text-2xl leading-none text-black drop-shadow-[1px_1px_0_#fff]">¡TODO EL EQUIPO LISTO!</p>
-            <p class="font-bold text-[10px] uppercase text-neutral-800 tracking-wide mt-0.5">ESPERANDO SEÑAL DEL ANFITRIÓN</p>
+            <p data-role="stage-message" class="font-comic text-2xl leading-none text-black drop-shadow-[1px_1px_0_#fff]">¡TODO EL EQUIPO LISTO!</p>
+            <p data-role="stage-submessage" class="font-bold text-[10px] uppercase text-neutral-800 tracking-wide mt-0.5">ESPERANDO SEÑAL DEL ANFITRIÓN</p>
           </div>
         </div>
 
-        <!-- Announcement Banner -->
-        <div class="mt-3 bg-comicYellow border-3 border-black p-3.5 shadow-pop flex items-center justify-between">
+        <div class="mt-3 bg-comicYellow border-3 border-black p-3 shadow-pop flex flex-wrap items-center justify-between gap-3" role="status" aria-live="polite">
           <div>
-            <h2 class="font-comic text-3xl tracking-wide text-black uppercase leading-none">
+            <h2 data-role="announcement-title" class="font-comic text-2xl lg:text-3xl tracking-wide text-black uppercase leading-none">
               ¡LA PARTIDA COMENZARÁ EN BREVE!
             </h2>
-            <p class="text-xs font-black text-neutral-900 uppercase tracking-wide mt-1">
+            <p data-role="announcement-subtitle" class="text-xs font-black text-neutral-900 uppercase tracking-wide mt-1">
               Afina tus reflejos, reúne a tu equipo y mantén tu pulsador listo.
             </p>
           </div>
           <div class="shrink-0 bg-comicRed text-white border-2 border-black px-3.5 py-2 font-black text-center shadow-pop-sm transform rotate-2">
             <span class="block text-[10px] tracking-widest uppercase">ESTADO</span>
-            <span class="font-tech text-base font-black">EN PAUSA</span>
+            <span data-role="state-text" class="font-tech text-base font-black">EN PAUSA</span>
           </div>
         </div>
 
       </div>
     </section>
 
-    <!-- RIGHT COLUMN -->
-    <section class="col-span-5 flex flex-col justify-between gap-4 min-h-0">
+    <!-- RIGHT COLUMN — Orden: Marcador → Próximo desafío → [Galería | QR] -->
+    <section class="col-span-1 lg:col-span-5 right-column-fit flex flex-col gap-3 min-h-0 overflow-hidden">
 
-      <!-- WIDGET 1: Scoreboard -->
-      <article class="bg-white border-4 border-black p-4 shadow-pop-lg flex flex-col gap-2.5">
-        <div class="flex items-center justify-between border-b-2 border-black pb-2">
+      <!-- CARD 1: Marcador -->
+      <article class="bg-white border-4 border-black p-3.5 shadow-pop-lg flex flex-col gap-2 shrink-0" aria-live="polite">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b-2 border-black pb-1.5">
           <div class="flex items-center gap-2">
-            <span class="w-3 h-3 bg-comicRed border-2 border-black"></span>
-            <h3 class="font-comic text-2xl uppercase tracking-wider">MARCADOR GENERAL EN VIVO</h3>
+            <span class="w-3 h-3 bg-comicRed border-2 border-black" aria-hidden="true"></span>
+            <h3 class="font-comic text-xl lg:text-2xl uppercase tracking-wider">MARCADOR GENERAL EN VIVO</h3>
           </div>
-          <span class="bg-comicOrange text-black text-[11px] font-black uppercase px-2 py-0.5 border-2 border-black shadow-pop-sm">
-            RIVALIDAD AL ROJO VIVO
+          <span data-role="scoreboard-tag" class="bg-comicOrange text-black text-[10px] font-black uppercase px-2 py-0.5 border-2 border-black shadow-pop-sm">
+            ESPERANDO DATOS
           </span>
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
-          <div class="bg-comicBlue/15 border-3 border-black p-3 shadow-pop-sm relative">
-            <span class="absolute -top-2.5 right-2 bg-comicBlue text-black font-black text-[9px] px-1.5 py-0.5 border border-black uppercase">
-              1° LUGAR
+        <div class="grid grid-cols-2 gap-2.5">
+          <div class="bg-comicBlue/15 border-3 border-black p-2.5 shadow-pop-sm relative">
+            <span data-role="rank-1" class="absolute -top-2.5 right-2 bg-comicBlue text-black font-black text-[9px] px-1.5 py-0.5 border border-black uppercase">
+              SIN DATOS
             </span>
-            <p class="font-black text-xs uppercase tracking-wider text-neutral-700">EQUIPO 01</p>
-            <h4 class="font-comic text-2xl leading-none text-black mt-0.5">⚡ LOS RAYOS</h4>
-            <div class="mt-2 flex items-baseline justify-between border-t-2 border-black pt-1">
-              <span class="text-3xl font-tech font-black text-black">340</span>
-              <span class="text-[11px] font-black text-neutral-600 uppercase">PUNTOS</span>
+            <p class="font-black text-[10px] uppercase tracking-wider text-neutral-700">EQUIPO 01</p>
+            <h4 data-role="team-1-name" class="font-comic text-xl lg:text-2xl leading-none text-black mt-0.5">ESPERANDO EQUIPOS</h4>
+            <div class="mt-1.5 flex items-baseline justify-between border-t-2 border-black pt-1">
+              <span data-role="team-1-score" class="text-2xl lg:text-3xl font-tech font-black text-black">0</span>
+              <span class="text-[10px] font-black text-neutral-600 uppercase">PUNTOS</span>
             </div>
           </div>
 
-          <div class="bg-comicRed/15 border-3 border-black p-3 shadow-pop-sm relative">
-            <span class="absolute -top-2.5 right-2 bg-comicRed text-white font-black text-[9px] px-1.5 py-0.5 border border-black uppercase">
-              2° LUGAR
+          <div class="bg-comicRed/15 border-3 border-black p-2.5 shadow-pop-sm relative">
+            <span data-role="rank-2" class="absolute -top-2.5 right-2 bg-comicRed text-white font-black text-[9px] px-1.5 py-0.5 border border-black uppercase">
+              SIN DATOS
             </span>
-            <p class="font-black text-xs uppercase tracking-wider text-neutral-700">EQUIPO 02</p>
-            <h4 class="font-comic text-2xl leading-none text-black mt-0.5">🛡️ LOS TITANES</h4>
-            <div class="mt-2 flex items-baseline justify-between border-t-2 border-black pt-1">
-              <span class="text-3xl font-tech font-black text-black">310</span>
-              <span class="text-[11px] font-black text-neutral-600 uppercase">PUNTOS</span>
+            <p class="font-black text-[10px] uppercase tracking-wider text-neutral-700">EQUIPO 02</p>
+            <h4 data-role="team-2-name" class="font-comic text-xl lg:text-2xl leading-none text-black mt-0.5">ESPERANDO EQUIPOS</h4>
+            <div class="mt-1.5 flex items-baseline justify-between border-t-2 border-black pt-1">
+              <span data-role="team-2-score" class="text-2xl lg:text-3xl font-tech font-black text-black">0</span>
+              <span class="text-[10px] font-black text-neutral-600 uppercase">PUNTOS</span>
             </div>
           </div>
         </div>
 
-        <div class="w-full bg-neutral-200 border-2 border-black h-5 overflow-hidden flex shadow-inner">
-          <div class="h-full bg-comicBlue flex items-center justify-center font-tech text-[10px] font-black text-black border-r-2 border-black" style="width: 52.3%">
-            52%
+        <div class="w-full bg-neutral-200 border-2 border-black h-4 overflow-hidden flex shadow-inner"
+             role="img" aria-label="Barra de progreso comparativa de puntuación: ambos equipos en cero">
+          <div data-role="bar-1" class="h-full bg-comicBlue flex items-center justify-center font-tech text-[10px] font-black text-black border-r-2 border-black" style="width: 50%">
+            50%
           </div>
-          <div class="h-full bg-comicRed flex items-center justify-center font-tech text-[10px] font-black text-white" style="width: 47.7%">
-            48%
+          <div data-role="bar-2" class="h-full bg-comicRed flex items-center justify-center font-tech text-[10px] font-black text-white" style="width: 50%">
+            50%
           </div>
         </div>
       </article>
 
-      <!-- WIDGET 2: Next Challenge -->
-      <article class="bg-comicYellow border-4 border-black p-4 shadow-pop-lg relative overflow-hidden">
-        <div class="flex items-center justify-between mb-2">
-          <span class="bg-black text-white font-comic text-lg px-2.5 py-0.5 uppercase tracking-wide">
+      <!-- CARD 2: Próximo desafío (placeholder neutro — el JS lo rellena) -->
+      <article data-role="next-challenge-card"
+               class="bg-comicYellow border-4 border-black p-3.5 shadow-pop-lg relative overflow-hidden shrink-0">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-1.5">
+          <span class="bg-black text-white font-comic text-base lg:text-lg px-2.5 py-0.5 uppercase tracking-wide">
             PRÓXIMO DESAFÍO EN COLA
           </span>
-          <span class="font-tech text-xs font-black uppercase text-black bg-white px-2 py-0.5 border-2 border-black">
-            RONDA #04
+          <span data-role="next-round" class="font-tech text-xs font-black uppercase text-black bg-white px-2 py-0.5 border-2 border-black">
+            —
           </span>
         </div>
-        <h4 class="font-comic text-2xl lg:text-3xl leading-tight text-neutral-900 uppercase">
-          RONDA RELÁMPAGO DE TRIVIA POP &amp; DADOS VS
+        <h4 data-role="next-challenge-title" class="font-comic text-xl lg:text-2xl xl:text-3xl leading-tight text-neutral-900 uppercase">
+          ESPERANDO INICIO DE JUEGO
         </h4>
-        <p class="text-xs font-bold text-neutral-800 mt-1 leading-relaxed">
-          Pulsador de velocidad inmediata con penalización por respuesta incorrecta. Multiplicador de dados x2 activo en la mesa del jurado.
+        <p data-role="next-challenge-desc" class="text-xs font-bold text-neutral-800 mt-1 leading-snug">
+          El anfitrión cargará el primer desafío en cualquier momento.
         </p>
       </article>
 
-      <!-- WIDGET 3: Referee + QR -->
-      <div class="grid grid-cols-12 gap-3">
+      <!-- CARD 3: [ GALERÍA | QR ] -->
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-3 min-h-0 flex-1">
 
-        <div class="col-span-8 bg-white border-4 border-black p-3.5 shadow-pop-lg relative flex flex-col justify-between">
-          <div class="flex items-center gap-2 mb-1.5">
-            <span class="bg-comicRed text-white text-[10px] font-black uppercase px-2 py-0.5 border border-black">
-              DICTAMEN DE ARBITRAJE
+        <!-- GALERÍA DE FOTOS -->
+        <article class="md:col-span-7 bg-white border-4 border-black p-3 shadow-pop-lg flex flex-col min-h-0">
+          <div class="flex items-center justify-between gap-2 mb-2 shrink-0">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="bg-comicBlue text-black text-[10px] font-black uppercase px-2 py-0.5 border border-black shrink-0">
+                GALERÍA EN VIVO
+              </span>
+              <span class="font-comic text-base lg:text-lg text-black truncate">FOTOS DEL PÚBLICO</span>
+            </div>
+            <span data-role="gallery-counter"
+                  class="font-tech text-xs font-black bg-comicYellow border-2 border-black px-2 py-0.5 shrink-0">
+              0
             </span>
-            <span class="font-comic text-lg text-black">PUPI ÁRBITRO</span>
-          </div>
-          <blockquote class="text-xs font-bold italic leading-tight text-neutral-900 bg-yellow-50 p-2.5 border-2 border-black relative">
-            "¡Aprovechen la pausa para hidratarse y afinar tácticas! Nadie toque los pulsadores hasta escuchar la sirena oficial de reinicio."
-          </blockquote>
-          <div class="mt-2 text-[10px] font-black uppercase text-neutral-600 flex items-center justify-between">
-            <span>DECISIÓN DEL JURADO: <strong class="text-black font-extrabold">INAPELABLE</strong></span>
-            <span class="text-comicRed font-black">★ SISTEMA VAR ACTIVO</span>
-          </div>
-        </div>
-
-        <div class="col-span-4 bg-white border-4 border-black p-2.5 shadow-pop-lg flex flex-col items-center justify-between text-center">
-          <p class="font-comic text-sm uppercase leading-none text-black">¡ÚNETE EN VIVO!</p>
-
-          <div class="w-20 h-20 bg-white border-2 border-black p-1 shadow-pop-sm flex items-center justify-center my-1">
-            <!-- ✅ FIX: fill="white" en root del SVG -->
-            <svg class="w-full h-full" fill="white" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-              <rect fill="white" height="28" stroke="black" stroke-width="5" width="28" x="5" y="5"></rect>
-              <rect fill="black" height="14" width="14" x="12" y="12"></rect>
-
-              <rect fill="white" height="28" stroke="black" stroke-width="5" width="28" x="67" y="5"></rect>
-              <rect fill="black" height="14" width="14" x="74" y="12"></rect>
-
-              <rect fill="white" height="28" stroke="black" stroke-width="5" width="28" x="5" y="67"></rect>
-              <rect fill="black" height="14" width="14" x="12" y="74"></rect>
-
-              <rect fill="black" height="8" width="8" x="42" y="8"></rect>
-              <rect fill="black" height="16" width="8" x="42" y="24"></rect>
-              <rect fill="black" height="8" width="16" x="10" y="42"></rect>
-              <rect fill="black" height="10" width="10" x="34" y="42"></rect>
-              <rect fill="black" height="8" width="16" x="52" y="42"></rect>
-              <rect fill="black" height="16" width="16" x="76" y="42"></rect>
-              <rect fill="black" height="24" width="8" x="42" y="60"></rect>
-              <rect fill="black" height="12" width="12" x="60" y="68"></rect>
-              <rect fill="black" height="18" width="12" x="80" y="72"></rect>
-              <rect fill="black" height="6" width="16" x="58" y="86"></rect>
-            </svg>
           </div>
 
-          <span class="font-tech text-xs font-black bg-comicYellow border border-black px-1.5 py-0.5 w-full uppercase">
-            PIN: #402
+          <div data-role="gallery-stage"
+               class="relative flex-1 min-h-[180px] bg-neutral-900 border-3 border-black overflow-hidden flex items-center justify-center">
+
+            <div data-role="gallery-empty"
+                 class="text-center text-white/70 font-comic text-lg px-4">
+              <div class="text-4xl mb-1">📷</div>
+              ESPERANDO FOTOS...
+            </div>
+
+            <img data-role="gallery-img"
+                 class="hidden w-full h-full object-contain"
+                 alt="Foto enviada por el público" decoding="async">
+
+            <div data-role="gallery-author"
+                 class="hidden absolute top-2 left-2 bg-black/80 text-comicYellow text-[10px] font-black uppercase tracking-wide px-2 py-0.5 border border-white/30 max-w-[70%] truncate">
+              —
+            </div>
+
+            <div data-role="gallery-index"
+                 class="hidden absolute top-2 right-2 bg-black/80 text-white text-[10px] font-black uppercase tracking-wide px-2 py-0.5 border border-white/30">
+              —
+            </div>
+
+            <div class="absolute bottom-0 left-0 right-0 h-1 bg-white/10 overflow-hidden">
+              <div data-role="gallery-progress-bar"
+                   class="h-full bg-comicYellow"
+                   style="width: 0%;"></div>
+            </div>
+          </div>
+        </article>
+
+        <!-- QR -->
+        <article class="md:col-span-5 bg-white border-4 border-black p-3 shadow-pop-lg flex flex-col items-center justify-between text-center min-h-0">
+          <p class="font-comic text-base lg:text-lg uppercase leading-none text-black shrink-0">¡ÚNETE EN VIVO!</p>
+
+          <div data-role="qr-container"
+               class="w-32 h-32 sm:w-36 sm:h-36 lg:w-44 lg:h-44 xl:w-48 xl:h-48 bg-white border-4 border-black p-1.5 shadow-pop-lg flex items-center justify-center my-1.5 shrink-0">
+            <div data-role="qr-placeholder" class="w-full h-full border-2 border-dashed border-neutral-400 flex items-center justify-center">
+              <span class="text-[9px] font-bold text-neutral-500 text-center leading-tight">ESPERANDO<br>INICIAR SESIÓN</span>
+            </div>
+            <div data-role="qr-code" class="hidden w-full h-full"></div>
+          </div>
+
+          <p data-role="qr-status" class="text-[9px] font-black uppercase text-neutral-600 mb-1 leading-tight">
+            ESPERANDO SESIÓN
+          </p>
+
+          <span data-role="room-pin-small" class="font-tech text-base lg:text-lg font-black bg-comicYellow border-2 border-black px-2 py-0.5 w-full uppercase">
+            #402
           </span>
-        </div>
+        </article>
       </div>
     </section>
   </main>
-  <!-- END: MainContentStage -->
 
   <!-- BEGIN: Marquee Footer -->
-  <footer class="w-full bg-black text-comicYellow border-t-4 border-black py-2.5 overflow-hidden z-20 shrink-0 select-none shadow-[0_-4px_0_#000]">
-    <div class="animate-comic-marquee font-comic text-xl tracking-wider uppercase items-center gap-8">
+  <footer class="w-full bg-black text-comicYellow border-t-4 border-black pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] overflow-hidden z-20 shrink-0 select-none shadow-[0_-4px_0_#000]">
+    <div data-role="marquee-track" class="animate-comic-marquee font-comic text-xl sm:text-2xl md:text-3xl tracking-wider uppercase items-center gap-6 sm:gap-10">
 
-      <span class="flex items-center gap-3"><span class="text-comicRed">★</span> ESCANEA EL CÓDIGO QR O VISITA CUMPEO.LIVE</span>
-      <span class="flex items-center gap-3"><span class="text-comicGreen">★</span> CÓDIGO DE SALA: <span class="bg-comicYellow text-black px-2 font-tech font-black">#402</span></span>
-      <span class="flex items-center gap-3"><span class="text-comicBlue">★</span> REGLA #01: LA DECISIÓN DE PUPI ÁRBITRO ES TOTALMENTE INAPELABLE</span>
-      <span class="flex items-center gap-3"><span class="text-comicRed">★</span> PROYECTOR HDMI SALÓN CENTRAL • TRANSMISIÓN EN DIRECTO 1080P</span>
-      <span class="flex items-center gap-3"><span class="text-white">★</span> ¡QUE GANE EL MEJOR EQUIPO DE CUMPEO!</span>
+      <span class="flex items-center gap-3"><span class="text-comicRed" aria-hidden="true">★</span> ESCANEA EL CÓDIGO QR O VISITA CUMPEO.LIVE</span>
+      <span class="flex items-center gap-3"><span class="text-comicGreen" aria-hidden="true">★</span> CÓDIGO DE SALA: <span data-role="room-pin-marquee" class="bg-comicYellow text-black px-2 font-tech font-black">#402</span></span>
+      <span class="flex items-center gap-3"><span class="text-comicBlue" aria-hidden="true">★</span> MANDA TU FOTO Y APARECERÁ EN PANTALLA</span>
+      <span class="flex items-center gap-3"><span class="text-comicRed" aria-hidden="true">★</span> PROYECTOR HDMI SALÓN CENTRAL • TRANSMISIÓN EN DIRECTO 1080P</span>
+      <span class="flex items-center gap-3"><span class="text-white" aria-hidden="true">★</span> ¡QUE GANE EL MEJOR EQUIPO DE CUMPEO!</span>
 
-      <!-- Loop duplicado -->
-      <span class="flex items-center gap-3"><span class="text-comicRed">★</span> ESCANEA EL CÓDIGO QR O VISITA CUMPEO.LIVE</span>
-      <span class="flex items-center gap-3"><span class="text-comicGreen">★</span> CÓDIGO DE SALA: <span class="bg-comicYellow text-black px-2 font-tech font-black">#402</span></span>
-      <span class="flex items-center gap-3"><span class="text-comicBlue">★</span> REGLA #01: LA DECISIÓN DE PUPI ÁRBITRO ES TOTALMENTE INAPELABLE</span>
-      <span class="flex items-center gap-3"><span class="text-comicRed">★</span> PROYECTOR HDMI SALÓN CENTRAL • TRANSMISIÓN EN DIRECTO 1080P</span>
-      <span class="flex items-center gap-3"><span class="text-white">★</span> ¡QUE GANE EL MEJOR EQUIPO DE CUMPEO!</span>
+      <span class="flex items-center gap-3" aria-hidden="true"><span class="text-comicRed">★</span> ESCANEA EL CÓDIGO QR O VISITA CUMPEO.LIVE</span>
+      <span class="flex items-center gap-3" aria-hidden="true"><span class="text-comicGreen">★</span> CÓDIGO DE SALA: <span class="bg-comicYellow text-black px-2 font-tech font-black">#402</span></span>
+      <span class="flex items-center gap-3" aria-hidden="true"><span class="text-comicBlue">★</span> MANDA TU FOTO Y APARECERÁ EN PANTALLA</span>
+      <span class="flex items-center gap-3" aria-hidden="true"><span class="text-comicRed">★</span> PROYECTOR HDMI SALÓN CENTRAL • TRANSMISIÓN EN DIRECTO 1080P</span>
+      <span class="flex items-center gap-3" aria-hidden="true"><span class="text-white">★</span> ¡QUE GANE EL MEJOR EQUIPO DE CUMPEO!</span>
     </div>
   </footer>
-  <!-- END: Marquee Footer -->
+
+  <!-- ====================== VANILLA JS ====================== -->
+  <script>
+  (function (window, document) {
+    'use strict';
+
+    /* ----------------------- Helpers ----------------------- */
+    const $  = (sel, root = document) => root.querySelector(sel);
+    const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+
+    function el(role) {
+      const node = document.querySelector(`[data-role="${role}"]`);
+      if (!node) console.warn(`[CumpeoPublic] Falta el elemento data-role="${role}"`);
+      return node;
+    }
+
+    function setText(role, value, { flash = false } = {}) {
+      const node = el(role);
+      if (!node || value == null) return false;
+      node.textContent = String(value);
+      if (flash) flashNode(node);
+      return true;
+    }
+
+    function setHTML(role, html) {
+      const node = el(role);
+      if (!node) return false;
+      node.innerHTML = String(html);
+      return true;
+    }
+
+    function flashNode(node, className = 'value-flash') {
+      node.classList.remove(className);
+      void node.offsetWidth;
+      node.classList.add(className);
+      node.addEventListener('animationend', () => node.classList.remove(className), { once: true });
+    }
+
+    function debounce(fn, wait = 80) {
+      let t;
+      return function (...args) {
+        clearTimeout(t);
+        t = setTimeout(() => fn.apply(this, args), wait);
+      };
+    }
+
+    /* ----------------------- 1. Reloj ----------------------- */
+    const Clock = (() => {
+      let tickId = null, targetTime = null, onTick = null;
+      function emit() {
+        const now = Date.now();
+        const remaining = targetTime ? Math.max(0, targetTime - now) : null;
+        if (typeof onTick === 'function') {
+          onTick({
+            now: new Date(now),
+            remainingMs: remaining,
+            remainingText: remaining != null ? formatDuration(remaining) : null,
+            finished: remaining === 0
+          });
+        }
+      }
+      function start({ every = 1000, onTickCallback = null } = {}) {
+        stop(); onTick = onTickCallback; emit();
+        tickId = setInterval(emit, every); return true;
+      }
+      function stop() { if (tickId) clearInterval(tickId); tickId = null; return true; }
+      function setTarget(dateOrMs) {
+        targetTime = dateOrMs instanceof Date ? dateOrMs.getTime() : Number(dateOrMs) || null;
+        emit(); return true;
+      }
+      function clearTarget() { targetTime = null; emit(); return true; }
+      function formatDuration(ms) {
+        const total = Math.floor(ms / 1000);
+        const h = String(Math.floor(total / 3600)).padStart(2, '0');
+        const m = String(Math.floor((total % 3600) / 60)).padStart(2, '0');
+        const s = String(total % 60).padStart(2, '0');
+        return `${h}:${m}:${s}`;
+      }
+      return { start, stop, setTarget, clearTarget, formatDuration };
+    })();
+
+    /* ----------------------- 2. Estado ----------------------- */
+    const GameState = (() => {
+      const STATES = {
+        LOBBY:     { label: 'EN LOBBY',      dotColor: 'bg-comicBlue' },
+        INTERLUDE: { label: 'EN INTERLUDIO', dotColor: 'bg-comicRed' },
+        PAUSED:    { label: 'EN PAUSA',      dotColor: 'bg-comicRed' },
+        PLAYING:   { label: 'EN JUEGO',      dotColor: 'bg-comicGreen' },
+        FINISHED:  { label: 'FINALIZADO',    dotColor: 'bg-neutral-500' }
+      };
+      function set(stateKey, { customLabel = null } = {}) {
+        const state = STATES[stateKey];
+        if (!state) { console.warn(`[CumpeoPublic] Estado desconocido: ${stateKey}`); return false; }
+        const label = customLabel || state.label;
+        const badge = el('game-status-badge');
+        if (badge) {
+          badge.querySelector('[data-role="game-status-text"]').textContent = label;
+          const dot = badge.querySelector('span[aria-hidden="true"]');
+          if (dot) {
+            dot.className = dot.className.replace(/bg-\S+/g, '').trim() + ' ' + state.dotColor;
+            dot.classList.add('w-2.5', 'h-2.5', 'rounded-full', 'border', 'border-black', 'pulse-dot');
+          }
+        }
+        setText('state-text', label, { flash: true });
+        document.body.dataset.gameState = stateKey;
+        return true;
+      }
+      function get() { return document.body.dataset.gameState || 'INTERLUDE'; }
+      function list() { return Object.keys(STATES); }
+      return { set, get, list, STATES };
+    })();
+
+    /* ----------------------- 3. Anuncios ----------------------- */
+    const Announce = (() => {
+      function set({ title, subtitle, stateLabel } = {}) {
+        let ok = true;
+        if (title != null)      ok = setText('announcement-title', title) && ok;
+        if (subtitle != null)   ok = setText('announcement-subtitle', subtitle) && ok;
+        if (stateLabel != null) ok = setText('state-text', stateLabel, { flash: true }) && ok;
+        return ok;
+      }
+      function setStage({ message, submessage } = {}) {
+        let ok = true;
+        if (message != null)    ok = setText('stage-message', message) && ok;
+        if (submessage != null) ok = setText('stage-submessage', submessage) && ok;
+        return ok;
+      }
+      function setImage(src, alt = '') {
+        const img = document.getElementById('stage-image');
+        const fallback = document.getElementById('imgFallback');
+        if (!img) return false;
+        img.classList.remove('hidden');
+        if (fallback) fallback.classList.add('hidden');
+        if (alt) img.alt = alt;
+        img.src = src;
+        return true;
+      }
+      return { set, setStage, setImage };
+    })();
+
+    /* ----------------------- 4. Marcador ----------------------- */
+    const Scoreboard = (() => {
+      function normalize(teams) {
+        return (teams || []).slice(0, 2).map((t, i) => ({
+          name: t && t.name != null ? String(t.name) : `EQUIPO 0${i + 1}`,
+          score: Number(t && t.score) || 0
+        }));
+      }
+
+      function setTeams(teams) {
+        const [a, b] = normalize(teams);
+        if (!a || !b) return false;
+        const aWins = a.score >= b.score;
+        setText('team-1-name', a.name);
+        setText('team-1-score', a.score, { flash: true });
+        setText('team-2-name', b.name);
+        setText('team-2-score', b.score, { flash: true });
+        const rank1 = el('rank-1'), rank2 = el('rank-2');
+        if (rank1 && rank2) {
+          rank1.textContent = aWins ? '1° LUGAR' : '2° LUGAR';
+          rank2.textContent = aWins ? '2° LUGAR' : '1° LUGAR';
+          const card1 = rank1.closest('div'), card2 = rank2.closest('div');
+          if (card1 && card2) {
+            card1.classList.toggle('bg-comicBlue/15', aWins);
+            card1.classList.toggle('bg-comicRed/15', !aWins);
+            card2.classList.toggle('bg-comicBlue/15', !aWins);
+            card2.classList.toggle('bg-comicRed/15', aWins);
+          }
+        }
+        const total = a.score + b.score || 1;
+        const pctA = (a.score / total) * 100;
+        const pctB = 100 - pctA;
+        const bar1 = el('bar-1'), bar2 = el('bar-2');
+        if (bar1) { bar1.style.width = pctA.toFixed(1) + '%'; bar1.textContent = Math.round(pctA) + '%'; }
+        if (bar2) { bar2.style.width = pctB.toFixed(1) + '%'; bar2.textContent = Math.round(pctB) + '%'; }
+        setText('scoreboard-tag', 'RIVALIDAD AL ROJO VIVO');
+        return true;
+      }
+
+      function setTag(text) { return setText('scoreboard-tag', text, { flash: true }); }
+
+      function reset() {
+        setText('team-1-name', 'ESPERANDO EQUIPOS');
+        setText('team-1-score', 0);
+        setText('team-2-name', 'ESPERANDO EQUIPOS');
+        setText('team-2-score', 0);
+        setText('rank-1', 'SIN DATOS');
+        setText('rank-2', 'SIN DATOS');
+        setText('scoreboard-tag', 'ESPERANDO DATOS');
+
+        const bar1 = el('bar-1');
+        const bar2 = el('bar-2');
+        if (bar1) { bar1.style.width = '50%'; bar1.textContent = '50%'; }
+        if (bar2) { bar2.style.width = '50%'; bar2.textContent = '50%'; }
+
+        ['rank-1', 'rank-2'].forEach(role => {
+          const r = el(role);
+          const card = r && r.closest('div');
+          if (card) card.classList.remove('bg-comicBlue/15', 'bg-comicRed/15');
+        });
+
+        return true;
+      }
+
+      return { setTeams, setTag, reset };
+    })();
+
+    /* =========================================================
+       5. Próximo desafío
+       ---------------------------------------------------------
+       - Muestra info REAL de la sesión activa cuando existe.
+       - Si no hay sesión, la sesión no tiene juegos, o el
+         backend está caído → "ESPERANDO INICIO DE JUEGO".
+       - `reset()` vuelve al estado neutro y se llama al arrancar,
+         al pasar a idle y cuando la conexión falla 3 veces.
+       ========================================================= */
+    const NextChallenge = (() => {
+      const NEUTRAL = {
+        round: '—',
+        title: 'ESPERANDO INICIO DE JUEGO',
+        description: 'El anfitrión cargará el primer desafío en cualquier momento.'
+      };
+
+      function set({ round, title, description } = {}) {
+        let ok = true;
+        if (round != null)       ok = setText('next-round', round, { flash: true }) && ok;
+        if (title != null)       ok = setText('next-challenge-title', title) && ok;
+        if (description != null) ok = setText('next-challenge-desc', description) && ok;
+        return ok;
+      }
+
+      function reset() {
+        return set(NEUTRAL);
+      }
+
+      // Deriva el estado de la tarjeta a partir de la sesión y del estado global.
+      // Devuelve el payload listo para `set()`.
+      function deriveFromSession(session) {
+        const games = (session && session.games) || [];
+        const currentIdx = session && typeof session.current_game_index === 'number'
+          ? session.current_game_index
+          : 0;
+
+        // 1) Sin juegos cargados → esperando
+        if (games.length === 0) {
+          return {
+            round: 'ESPERANDO',
+            title: 'ESPERANDO INICIO DE JUEGO',
+            description: 'El anfitrión cargará el primer desafío en breve.'
+          };
+        }
+
+        const currentGame = games[currentIdx];
+        const nextGame = games[currentIdx + 1];
+
+        // 2) Hay un próximo juego en la cola → lo anunciamos
+        if (nextGame) {
+          return {
+            round: `JUEGO ${currentIdx + 2} / ${games.length}`,
+            title: nextGame.game_name || nextGame.name || 'PRÓXIMO DESAFÍO',
+            description: nextGame.game_desc || nextGame.description
+              || 'Prepárate para el siguiente desafío del circuito.'
+          };
+        }
+
+        // 3) No hay próximo, pero el actual está pendiente → es "el que viene"
+        if (currentGame && currentGame.status === 'pending') {
+          return {
+            round: `JUEGO ${currentIdx + 1} / ${games.length}`,
+            title: currentGame.game_name || currentGame.name || 'PRÓXIMO DESAFÍO',
+            description: currentGame.game_desc || currentGame.description
+              || 'Sigue las instrucciones del anfitrión.'
+          };
+        }
+
+        // 4) Último juego, ya en curso o completado → sin más en cola
+        if (currentGame) {
+          return {
+            round: `ÚLTIMO · ${currentIdx + 1} / ${games.length}`,
+            title: 'SIN MÁS DESAFÍOS EN COLA',
+            description: 'Este es el último juego del circuito. ¡A darlo todo!'
+          };
+        }
+
+        // 5) Fallback
+        return {
+          round: 'ESPERANDO',
+          title: 'ESPERANDO INICIO DE JUEGO',
+          description: 'El anfitrión cargará el primer desafío en breve.'
+        };
+      }
+
+      return { set, reset, deriveFromSession, NEUTRAL };
+    })();
+
+    /* ----------------------- 6. Árbitro (API mantenida por compat) ----------------------- */
+    const Referee = (() => {
+      function set({ name, quote } = {}) {
+        if (name) console.info('[Referee] (card removido)', name);
+        if (quote) console.info('[Referee] (card removido)', quote);
+        return true;
+      }
+      return { set };
+    })();
+
+    /* ----------------------- 7. Sala ----------------------- */
+    const Room = (() => {
+      function setPin(pin) {
+        const clean = String(pin).startsWith('#') ? String(pin) : `#${pin}`;
+        setText('room-pin', clean, { flash: true });
+        setText('room-pin-small', clean);
+        return true;
+      }
+      return { setPin };
+    })();
+
+    /* ----------------------- 8. Conexión ----------------------- */
+    const Connection = (() => {
+      const COLORS = { online: 'bg-comicGreen', warn: 'bg-comicYellow', offline: 'bg-comicRed' };
+      function setStatus(status) {
+        const dot = el('connection-dot');
+        if (!dot) return false;
+        dot.classList.remove('bg-comicGreen', 'bg-comicYellow', 'bg-comicRed');
+        dot.classList.add(COLORS[status] || COLORS.offline);
+        return true;
+      }
+      function setBuzzerCount(active, total) {
+        return setText('buzzer-count', `${active}/${total}`, { flash: true });
+      }
+      return { setStatus, setBuzzerCount };
+    })();
+
+    /* =========================================================
+       9. Marquee
+       ========================================================= */
+    const Marquee = (() => {
+      let _messages = [];
+      let _pendingAdd = [];
+      let _track = null;
+      let _scrollX = 0;
+      let _halfWidth = 0;
+      let _rafId = null;
+      let _lastTime = null;
+      let _started = false;
+      let _reduceMotion = false;
+      const SPEED = 120;
+
+      const DEFAULT_MESSAGES = [
+        'ESCANEA EL CÓDIGO QR O VISITA CUMPEO.LIVE',
+        'CÓDIGO DE SALA: #402',
+        'MANDA TU FOTO Y APARECERÁ EN PANTALLA',
+        'PROYECTOR HDMI SALÓN CENTRAL • TRANSMISIÓN EN DIRECTO 1080P',
+        '¡QUE GANE EL MEJOR EQUIPO DE CUMPEO!'
+      ];
+
+      function _buildHTML(list, hidden = false) {
+        const colors = ['text-comicRed', 'text-comicGreen', 'text-comicBlue', 'text-white'];
+        const aria = hidden ? ' aria-hidden="true"' : '';
+        return list.map((msg, i) => {
+          const color = colors[i % colors.length];
+          return `<span class="flex items-center gap-3 shrink-0"${aria}>` +
+                 `<span class="${color}">★</span> ${msg}</span>`;
+        }).join('');
+      }
+
+      function _measureHalfWidth() {
+        if (!_track) return 0;
+        const kids = _track.children;
+        const n = kids.length;
+        if (n >= 2 && n % 2 === 0) {
+          const half = n / 2;
+          const r0 = kids[0].getBoundingClientRect();
+          const rH = kids[half].getBoundingClientRect();
+          const w = rH.left - r0.left;
+          if (w > 0) return w;
+        }
+        return _track.scrollWidth / 2;
+      }
+
+      function _rebuildDOM(preserveScroll = false) {
+        if (!_track) _track = el('marquee-track');
+        if (!_track) return;
+        _track.innerHTML = _buildHTML(_messages, false) + _buildHTML(_messages, true);
+        _halfWidth = _measureHalfWidth();
+        if (_halfWidth > 0) {
+          _scrollX = _scrollX % _halfWidth;
+          if (_scrollX < 0) _scrollX += _halfWidth;
+        } else {
+          _scrollX = 0;
+        }
+        if (!preserveScroll) {
+          _track.style.transform = 'translateX(0)';
+          _scrollX = 0;
+        } else {
+          _track.style.transform = `translateX(-${_scrollX}px)`;
+        }
+      }
+
+      function _animate(now) {
+        if (!_lastTime) _lastTime = now;
+        const dt = (now - _lastTime) / 1000;
+        _lastTime = now;
+        const prevX = _scrollX;
+        _scrollX += SPEED * dt;
+        const crossedSeam = _halfWidth > 0 && prevX < _halfWidth && _scrollX >= _halfWidth;
+        if (crossedSeam) {
+          _scrollX -= _halfWidth;
+          if (_pendingAdd.length > 0) {
+            _messages.push(..._pendingAdd);
+            _pendingAdd = [];
+            _rebuildDOM(true);
+          }
+        }
+        if (_track) _track.style.transform = `translateX(-${_scrollX}px)`;
+        _rafId = requestAnimationFrame(_animate);
+      }
+
+      function _start() {
+        if (_started) return;
+        if (_reduceMotion) { console.info('[Marquee] prefers-reduced-motion activo.'); return; }
+        _started = true;
+        _lastTime = null;
+        if (_track) _track.classList.add('is-animating');
+        _rafId = requestAnimationFrame(_animate);
+      }
+
+      function _stop() {
+        if (_rafId) cancelAnimationFrame(_rafId);
+        _rafId = null; _started = false;
+        if (_track) _track.classList.remove('is-animating');
+      }
+
+      function setPin(pin) {
+        const clean = String(pin).startsWith('#') ? String(pin) : `#${pin}`;
+        const idx = _messages.findIndex(m => m.startsWith('CÓDIGO DE SALA:'));
+        const msg = `CÓDIGO DE SALA: ${clean}`;
+        if (idx >= 0) _messages[idx] = msg;
+        else _messages.splice(1, 0, msg);
+        _rebuildDOM(true);
+      }
+
+      function setMessages(messages) {
+        if (!Array.isArray(messages)) return false;
+        _messages = [...messages];
+        _pendingAdd = [];
+        _rebuildDOM(true);
+        return true;
+      }
+
+      function addMessage(text) {
+        if (!text || typeof text !== 'string') return false;
+        _pendingAdd.push(text);
+        return true;
+      }
+
+      function addMessages(arr) {
+        if (!Array.isArray(arr)) return false;
+        const valid = arr.filter(m => typeof m === 'string' && m);
+        if (valid.length === 0) return false;
+        _pendingAdd.push(...valid);
+        return true;
+      }
+
+      function flushPending() {
+        if (_pendingAdd.length === 0) return false;
+        _messages.push(..._pendingAdd);
+        _pendingAdd = [];
+        _rebuildDOM(true);
+        return true;
+      }
+
+      function getMessages() { return [..._messages]; }
+      function getPending()  { return [..._pendingAdd]; }
+      function getDebug()    { return { scrollX: _scrollX, halfWidth: _halfWidth }; }
+
+      function init(pin) {
+        _messages = [...DEFAULT_MESSAGES];
+        if (pin) {
+          const clean = String(pin).startsWith('#') ? String(pin) : `#${pin}`;
+          const idx = _messages.findIndex(m => m.startsWith('CÓDIGO DE SALA:'));
+          const msg = `CÓDIGO DE SALA: ${clean}`;
+          if (idx >= 0) _messages[idx] = msg;
+          else _messages.splice(1, 0, msg);
+        }
+        _pendingAdd = [];
+        _track = el('marquee-track');
+        _rebuildDOM(false);
+        _start();
+      }
+
+      function _initReduceMotion() {
+        const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+        _reduceMotion = mq.matches;
+        document.body.classList.toggle('marquee-reduced-motion', _reduceMotion);
+        const handler = (e) => {
+          _reduceMotion = e.matches;
+          document.body.classList.toggle('marquee-reduced-motion', _reduceMotion);
+          if (_reduceMotion) _stop(); else if (!_started) _start();
+        };
+        if (typeof mq.addEventListener === 'function') mq.addEventListener('change', handler);
+        else if (typeof mq.addListener === 'function') mq.addListener(handler);
+      }
+      _initReduceMotion();
+
+      const _onResize = debounce(() => { _rebuildDOM(true); }, 150);
+      window.addEventListener('resize', _onResize);
+      window.addEventListener('orientationchange', _onResize);
+
+      if (document.fonts && document.fonts.ready && typeof document.fonts.ready.then === 'function') {
+        document.fonts.ready.then(() => { _rebuildDOM(true); });
+      }
+
+      return {
+        setMessages, addMessage, addMessages, getMessages, getPending, getDebug,
+        setPin, init, flushPending
+      };
+    })();
+
+    /* ----------------------- 10. QR ----------------------- */
+    const QR = (() => {
+      let _instance = null, _lastPin = null;
+      const QR_SIZE = 512;
+
+      function generate(url) {
+        const container = el('qr-code');
+        const placeholder = el('qr-placeholder');
+        const status = el('qr-status');
+        if (!container || !placeholder) return false;
+        if (typeof window.QRCode !== 'function') {
+          console.warn('[QR] QRCode library no disponible. Revisa el CDN.');
+          return false;
+        }
+        container.innerHTML = '';
+        container.classList.remove('hidden');
+        placeholder.classList.add('hidden');
+        if (status) status.textContent = 'ESCANEA PARA UNIRTE';
+        try {
+          _instance = new QRCode(container, {
+            text: url,
+            width: QR_SIZE,
+            height: QR_SIZE,
+            colorDark: '#000000',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.M
+          });
+          _lastPin = url;
+          return true;
+        } catch (err) {
+          console.error('[QR] Generation error:', err);
+          container.classList.add('hidden');
+          placeholder.classList.remove('hidden');
+          if (status) status.textContent = 'ESPERANDO SESIÓN';
+          return false;
+        }
+      }
+      function showPlaceholder() {
+        const container = el('qr-code');
+        const placeholder = el('qr-placeholder');
+        const status = el('qr-status');
+        if (container) { container.classList.add('hidden'); container.innerHTML = ''; }
+        if (placeholder) placeholder.classList.remove('hidden');
+        if (status) status.textContent = 'ESPERANDO SESIÓN';
+        _instance = null; _lastPin = null;
+      }
+      function setFromPin(pin) {
+        if (!pin) { showPlaceholder(); return false; }
+        const clean = String(pin).startsWith('#') ? String(pin) : `#${pin}`;
+        const url = `https://cumpeo.live?pin=${encodeURIComponent(clean)}`;
+        if (url === _lastPin) return true;
+        return generate(url);
+      }
+      return { generate, showPlaceholder, setFromPin };
+    })();
+
+    /* =========================================================
+       11. Galería de fotos
+       ========================================================= */
+    const Gallery = (() => {
+      const GALLERY_INTERVAL = 5000;
+      let _images = [];
+      let _idx = 0;
+      let _rotateTimer = null;
+      let _pendingImages = null;
+
+      function _renderIndex() {
+        const indexEl = el('gallery-index');
+        if (!indexEl) return;
+        if (_images.length <= 1) {
+          indexEl.classList.add('hidden');
+          return;
+        }
+        indexEl.classList.remove('hidden');
+        indexEl.textContent = `${(_idx % _images.length) + 1} / ${_images.length}`;
+      }
+
+      function _render() {
+        const img = el('gallery-img');
+        const empty = el('gallery-empty');
+        const author = el('gallery-author');
+        const counter = el('gallery-counter');
+        const bar = el('gallery-progress-bar');
+        if (!img || !empty) return;
+
+        if (counter) counter.textContent = _images.length;
+
+        if (_images.length === 0) {
+          img.classList.add('hidden');
+          empty.classList.remove('hidden');
+          if (author) author.classList.add('hidden');
+          const indexEl = el('gallery-index');
+          if (indexEl) indexEl.classList.add('hidden');
+          if (bar) { bar.classList.remove('is-running'); bar.style.width = '0%'; }
+          return;
+        }
+
+        const current = _images[_idx % _images.length];
+
+        empty.classList.add('hidden');
+        img.classList.remove('hidden');
+
+        const src = current.url || current.dataUrl || current.src;
+        if (src) {
+          if (img.getAttribute('src') !== src) {
+            img.setAttribute('src', src);
+          }
+          img.classList.remove('gallery-anim');
+          void img.offsetWidth;
+          img.classList.add('gallery-anim');
+        }
+
+        if (author) {
+          const name = current.author || current.participantName || '';
+          if (name) {
+            author.textContent = '📸 ' + name;
+            author.classList.remove('hidden');
+          } else {
+            author.classList.add('hidden');
+          }
+        }
+
+        _renderIndex();
+
+        if (bar) {
+          bar.classList.remove('is-running');
+          bar.style.width = '0%';
+          bar.style.setProperty('--gallery-duration', (GALLERY_INTERVAL / 1000) + 's');
+          void bar.offsetWidth;
+          if (_images.length > 1) bar.classList.add('is-running');
+        }
+      }
+
+      function _scheduleNext() {
+        if (_rotateTimer) clearTimeout(_rotateTimer);
+        if (_images.length <= 1) return;
+        _rotateTimer = setTimeout(() => {
+          _idx = (_idx + 1) % _images.length;
+
+          if (_pendingImages && _pendingImages.length >= 0) {
+            _images = [..._pendingImages];
+            _pendingImages = null;
+            if (_idx >= _images.length) _idx = 0;
+          }
+
+          _render();
+          _scheduleNext();
+        }, GALLERY_INTERVAL);
+      }
+
+      function setImages(list) {
+        if (!Array.isArray(list)) return false;
+        const prevIds = _images.map(i => i.id || i.url).join('|');
+        const nextIds = list.map(i => i.id || i.url).join('|');
+        if (prevIds === nextIds) return true;
+
+        const firstLoad = _images.length === 0;
+
+        if (firstLoad) {
+          _images = [...list];
+          _idx = _images.length - 1;
+          _render();
+          _scheduleNext();
+        } else {
+          _pendingImages = [...list];
+        }
+        return true;
+      }
+
+      function addImage(image) {
+        if (!image) return false;
+        const key = image.id || image.url;
+        if (!key) return false;
+        if (_images.some(i => (i.id || i.url) === key)) return true;
+        const merged = [..._images, image];
+        setImages(merged);
+        return true;
+      }
+
+      function getImages() { return [..._images]; }
+      function getDebug() { return { count: _images.length, idx: _idx, hasPending: !!_pendingImages }; }
+      function start() { _scheduleNext(); }
+      function stop() {
+        if (_rotateTimer) clearTimeout(_rotateTimer);
+        _rotateTimer = null;
+      }
+
+      return { setImages, addImage, getImages, getDebug, start, stop };
+    })();
+
+    /* ----------------------- 12. Simulación ----------------------- */
+    const Simulation = (() => {
+      let id = null;
+      function start({ intervalMs = 5000 } = {}) {
+        stop();
+        id = setInterval(() => {
+          const active = 18 + Math.floor(Math.random() * 7);
+          Connection.setBuzzerCount(active, 24);
+        }, intervalMs);
+        return true;
+      }
+      function stop() { if (id) clearInterval(id); id = null; return true; }
+      return { start, stop };
+    })();
+
+    /* ----------------------- Namespace público ----------------------- */
+    window.CumpeoPublic = {
+      $, $$, el, setText, setHTML, flashNode, debounce,
+      Clock, GameState, Announce, Scoreboard, NextChallenge,
+      Referee, Room, Connection, Marquee, QR, Gallery, Simulation,
+      update(payload = {}) {
+        if (payload.state)         GameState.set(payload.state);
+        if (payload.announcement)  Announce.set(payload.announcement);
+        if (payload.stage)         Announce.setStage(payload.stage);
+        if (payload.teams)         Scoreboard.setTeams(payload.teams);
+        if (payload.nextChallenge) NextChallenge.set(payload.nextChallenge);
+        if (payload.referee)       Referee.set(payload.referee);
+        if (payload.pin) {
+          Room.setPin(payload.pin);
+          Marquee.setPin(payload.pin);
+          QR.setFromPin(payload.pin);
+        }
+        if (payload.buzzerCount)   Connection.setBuzzerCount(payload.buzzerCount[0], payload.buzzerCount[1]);
+        if (payload.connection)    Connection.setStatus(payload.connection);
+        if (payload.marquee)       Marquee.setMessages(payload.marquee);
+        if (payload.marqueeAppend) {
+          Array.isArray(payload.marqueeAppend)
+            ? Marquee.addMessages(payload.marqueeAppend)
+            : Marquee.addMessage(payload.marqueeAppend);
+        }
+        if (payload.images)        Gallery.setImages(payload.images);
+        if (payload.image)         Gallery.addImage(payload.image);
+        return true;
+      }
+    };
+
+    /* ----------------------- BOOT + POLLING ----------------------- */
+    document.addEventListener('DOMContentLoaded', () => {
+      CumpeoPublic.Clock.start({
+        every: 1000,
+        onTickCallback: ({ now }) => { document.body.dataset.clock = now.toISOString(); }
+      });
+
+      // ✅ Estado inicial neutro.
+      CumpeoPublic.Scoreboard.reset();
+      CumpeoPublic.NextChallenge.reset();
+
+      CumpeoPublic.Marquee.init();
+      Gallery.start();
+      startPolling();
+    });
+
+    const API = window.location.origin + '/api';
+    let activeSessionId = null;
+    let pollInterval = null;
+    let lastState = null;
+    let lastSessionHash = '';
+    let isPolling = false;
+
+    let lastMessageId = 0;
+    let lastImageId = 0;
+
+    let consecutiveErrors = 0;
+    const ERROR_THRESHOLD_OFFLINE = 3;
+    const ERROR_THRESHOLD_WARN = 1;
+
+    function hashSession(s) {
+      if (!s) return '';
+      return JSON.stringify({
+        status: s.status, code: s.code,
+        scoreA: s.cumulative_score_a, scoreB: s.cumulative_score_b,
+        progress: s.progress, current_game_index: s.current_game_index,
+        teams: (s.teams || []).map(t => ({ name: t.name, score: t.score })),
+        games: (s.games || []).map(g => ({ id: g.id, status: g.status, game_name: g.game_name }))
+      });
+    }
+
+    async function poll() {
+      if (isPolling) return;
+      isPolling = true;
+      try {
+        const stateRes = await fetch(`${API}/state`);
+        if (!stateRes.ok) throw new Error(`HTTP ${stateRes.status} en /state`);
+        const state = await stateRes.json();
+
+        if (!activeSessionId) {
+          const sessRes = await fetch(`${API}/sessions?status=activo`);
+          if (sessRes.ok) {
+            const sessions = await sessRes.json();
+            if (sessions.length > 0) {
+              activeSessionId = sessions[0].id;
+              lastSessionHash = '';
+            }
+          }
+        }
+
+        if (!activeSessionId) { applyIdleState(); }
+
+        if (activeSessionId) {
+          const sessRes = await fetch(`${API}/sessions/${activeSessionId}`);
+          if (!sessRes.ok) {
+            activeSessionId = null; lastSessionHash = '';
+            applyIdleState();
+          } else {
+            const session = await sessRes.json();
+
+            if (session.status === 'finalizado') {
+              applyFinishedState(session);
+              activeSessionId = null; lastSessionHash = '';
+            } else {
+              const newHash = hashSession(session);
+              if (newHash !== lastSessionHash) {
+                lastSessionHash = newHash;
+                applySessionState(state, session);
+              }
+            }
+          }
+        }
+
+        await pollBannerMessages();
+        await pollImages();
+
+        if (consecutiveErrors > 0) {
+          console.info('[Public] Conexión restablecida.');
+        }
+        consecutiveErrors = 0;
+        Connection.setStatus('online');
+
+      } catch (err) {
+        console.error('[Public] Poll error:', err);
+        consecutiveErrors++;
+
+        if (consecutiveErrors >= ERROR_THRESHOLD_OFFLINE) {
+          Connection.setStatus('offline');
+          if (consecutiveErrors === ERROR_THRESHOLD_OFFLINE) {
+            console.warn('[Public] Backend inalcanzable. Reseteando tarjetas.');
+            CumpeoPublic.Scoreboard.reset();
+            CumpeoPublic.NextChallenge.reset();
+            CumpeoPublic.QR.showPlaceholder();
+          }
+        } else if (consecutiveErrors >= ERROR_THRESHOLD_WARN) {
+          Connection.setStatus('warn');
+        }
+      } finally {
+        isPolling = false;
+      }
+    }
+
+    async function pollBannerMessages() {
+      try {
+        const res = await fetch(`${API}/banner-messages?since=${lastMessageId}`);
+        if (!res.ok) return;
+        const list = await res.json();
+        if (!Array.isArray(list) || list.length === 0) return;
+
+        list.forEach(m => {
+          const text = m && (m.text || m.message);
+          if (text) Marquee.addMessage(String(text).slice(0, 120));
+          const id = Number(m && m.id);
+          if (!isNaN(id) && id > lastMessageId) lastMessageId = id;
+        });
+      } catch (_) { /* silencioso */ }
+    }
+
+    async function pollImages() {
+      try {
+        const res = await fetch(`${API}/images/latest?limit=30`);
+        if (!res.ok) return;
+        const list = await res.json();
+        if (!Array.isArray(list)) return;
+
+        let maxSeen = lastImageId;
+        list.forEach(img => {
+          const id = Number(img && img.id);
+          if (!isNaN(id) && id > maxSeen) maxSeen = id;
+        });
+
+        Gallery.setImages(list);
+        lastImageId = maxSeen;
+      } catch (_) { /* silencioso */ }
+    }
+
+    function applyIdleState() {
+      if (lastState === 'idle') return;
+      lastState = 'idle';
+
+      CumpeoPublic.update({
+        state: 'LOBBY',
+        announcement: {
+          title: '¡LA PARTIDA COMENZARÁ EN BREVE!',
+          subtitle: 'Afina tus reflejos, reúne a tu equipo y mantén tu pulsador listo.'
+        },
+        stage: { message: '¡TODO EL EQUIPO LISTO!', submessage: 'ESPERANDO SEÑAL DEL ANFITRIÓN' },
+        connection: 'online'
+      });
+
+      // ✅ Marcador, próximo desafío y QR vuelven a estado neutro.
+      CumpeoPublic.Scoreboard.reset();
+      CumpeoPublic.NextChallenge.reset();
+      CumpeoPublic.QR.showPlaceholder();
+    }
+
+    function applySessionState(state, session) {
+      const gameStatus = state.status;
+      const isPaused = session.progress?.isPaused;
+      const currentRound = session.progress?.currentRound ?? 1;
+
+      let pubState;
+      if (gameStatus === 'idle') pubState = 'LOBBY';
+      else if (gameStatus === 'active' && isPaused) pubState = 'PAUSED';
+      else if (gameStatus === 'active') pubState = 'PLAYING';
+      else if (gameStatus === 'paused') pubState = 'PAUSED';
+      else pubState = 'INTERLUDE';
+
+      const teams = (session.teams || []).map(t => ({
+        name: `${t.avatar || ''} ${t.name}`.trim(),
+        score: t.score || 0
+      }));
+      while (teams.length < 2) teams.push({ name: `EQUIPO 0${teams.length + 1}`, score: 0 });
+
+      const currentGame = (session.games || [])[session.current_game_index || 0];
+      const gameName = currentGame?.game_name || 'JUEGO';
+      const gameDesc = currentGame?.game_desc || 'Sigue las instrucciones del anfitrión.';
+
+      let announcement, stage;
+      if (pubState === 'PLAYING') {
+        announcement = { title: `🎮 ${gameName}`, subtitle: gameDesc };
+        stage = { message: '¡A JUGAR!', submessage: `${gameName} — RONDA ${currentRound}` };
+      } else if (pubState === 'PAUSED') {
+        announcement = { title: '⏸️ ¡PARTIDA EN PAUSA!', subtitle: 'Espera las instrucciones del anfitrión para continuar.' };
+        stage = { message: 'PAUSA', submessage: 'ESPERANDO REANUDACIÓN' };
+      } else {
+        announcement = { title: '¡LA PARTIDA COMENZARÁ EN BREVE!', subtitle: 'Afina tus reflejos, reúne a tu equipo y mantén tu pulsador listo.' };
+        stage = { message: '¡TODO EL EQUIPO LISTO!', submessage: 'ESPERANDO SEÑAL DEL ANFITRIÓN' };
+      }
+
+      // ✅ Próximo desafío derivado de la sesión real.
+      // Si no hay juegos cargados, `deriveFromSession` devuelve el estado neutro.
+      const nextChallenge = NextChallenge.deriveFromSession(session);
+
+      CumpeoPublic.update({
+        state: pubState, announcement, stage, teams, nextChallenge,
+        pin: session.code || 'CMP-###',
+        connection: 'online'
+      });
+
+      lastState = pubState;
+    }
+
+    function applyFinishedState(session) {
+      if (lastState === 'FINISHED') return;
+      lastState = 'FINISHED';
+      const teams = (session.teams || []).map(t => ({
+        name: `${t.avatar || ''} ${t.name}`.trim(),
+        score: t.score || 0
+      }));
+      while (teams.length < 2) teams.push({ name: `EQUIPO 0${teams.length + 1}`, score: 0 });
+      const winner = teams[0].score >= teams[1].score ? teams[0] : teams[1];
+
+      CumpeoPublic.update({
+        state: 'FINISHED',
+        announcement: { title: `🏆 ${winner.name} ¡GANADOR!`, subtitle: `Con ${winner.score} puntos — ¡Felicidades campeones!` },
+        stage: { message: '🎉 ¡PARTIDA FINALIZADA!', submessage: `${winner.name} se corona como campeón` },
+        teams,
+        nextChallenge: {
+          round: 'FIN',
+          title: '¡GRACIAS POR JUGAR!',
+          description: 'Esperamos verlos en la próxima partida de CUMPEO.'
+        },
+        connection: 'online'
+      });
+      CumpeoPublic.QR.showPlaceholder();
+    }
+
+    function startPolling() {
+      const params = new URLSearchParams(window.location.search);
+      const sessionId = params.get('session');
+      if (sessionId) activeSessionId = parseInt(sessionId, 10) || null;
+      poll();
+      pollInterval = setInterval(poll, 2000);
+    }
+
+  })(window, document);
+  </script>
 
 </body>
 </html>

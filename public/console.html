@@ -559,6 +559,38 @@
         </div>
       </div>
 
+      <!-- SURVEYS -->
+      <div class="bg-surface-container-lowest rounded-xl border-2 border-on-surface shadow-comic-md p-3 flex flex-col" id="survey-panel">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-primary text-[16px">poll</span>
+            <h3 class="font-comic-score text-[18px] uppercase text-on-surface tracking-wider">ENCUESTAS</h3>
+          </div>
+          <span class="font-label-xs text-[10px] uppercase" id="survey-panel-status">SIN ENCUESTA</span>
+        </div>
+
+        <div id="survey-empty-state" class="text-center py-2">
+          <p class="text-[11px] text-on-surface-variant">Crea una encuesta para que el público vote desde su celular.</p>
+        </div>
+
+        <div id="survey-active-state" class="hidden flex-col gap-2">
+          <div class="bg-surface-container-low rounded-lg border border-on-surface p-2">
+            <p class="font-bold text-xs text-on-surface" id="survey-active-question">-</p>
+            <div class="mt-1 space-y-0.5" id="survey-active-results"></div>
+            <p class="text-[10px] text-on-surface-variant mt-1" id="survey-active-total">0 respuestas</p>
+          </div>
+          <button type="button" onclick="closeSurvey()"
+                  class="w-full px-3 py-1.5 rounded-lg bg-primary text-on-primary border-2 border-on-surface shadow-comic-sm font-label-md uppercase text-center">
+            CERRAR ENCUESTA
+          </button>
+        </div>
+
+        <button type="button" onclick="openSurveyModal()"
+                class="mt-2 w-full px-3 py-1.5 rounded-lg bg-secondary-container text-on-secondary-container border-2 border-on-surface shadow-comic-sm font-label-md uppercase text-center hover:bg-secondary-fixed transition-colors">
+          + NUEVA ENCUESTA
+        </button>
+      </div>
+
     </aside>
   </div>
 
@@ -603,6 +635,59 @@
         <button type="button" onclick="applyScore()" class="px-5 py-2.5 rounded-xl bg-primary text-on-primary font-headline-sm uppercase border-2 border-on-surface shadow-comic-md hover:bg-primary-container flex items-center gap-2">
           <span class="material-symbols-outlined text-[20px]">check</span>
           Confirmar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SURVEY MODAL -->
+  <div class="fixed inset-0 bg-on-surface/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4" id="survey-modal">
+    <div class="bg-surface-container-lowest rounded-2xl border-3 border-on-surface shadow-comic-xl max-w-md w-full p-6 relative">
+      <div class="flex items-center justify-between pb-3 border-b-2 border-on-surface">
+        <div class="flex items-center gap-2">
+          <span class="px-2.5 py-0.5 rounded-full bg-secondary-container font-label-comic-pill text-xs uppercase border border-on-surface">ENCUESTA</span>
+          <h3 class="font-comic-score text-[22px] uppercase text-on-surface tracking-wider">Nueva Encuesta</h3>
+        </div>
+        <button type="button" aria-label="Cerrar" onclick="closeSurveyModal()" class="w-8 h-8 rounded-lg bg-surface-container border border-on-surface flex items-center justify-center font-bold">✕</button>
+      </div>
+
+      <div class="py-4 flex flex-col gap-3">
+        <div>
+          <label class="font-label-md text-label-md text-on-surface-variant uppercase block mb-1">Pregunta</label>
+          <input id="survey-question-input" type="text" placeholder="¿Quién dijo esta frase?" maxlength="200"
+                 class="w-full bg-surface-container-lowest border-2 border-on-surface rounded-lg px-3 py-2 font-body-md focus:outline-none focus:border-primary">
+        </div>
+
+        <div>
+          <label class="font-label-md text-label-md text-on-surface-variant uppercase block mb-1">Opciones (2-4)</label>
+          <div class="flex flex-col gap-2" id="survey-options-container">
+            <div class="flex items-center gap-2">
+              <span class="w-6 h-6 rounded-md bg-surface-container border-2 border-on-surface flex items-center justify-center text-xs font-bold">A</span>
+              <input type="text" placeholder="Opción 1" maxlength="80" class="survey-option-input flex-1 bg-surface-container-lowest border-2 border-on-surface rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-primary">
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-6 h-6 rounded-md bg-surface-container border-2 border-on-surface flex items-center justify-center text-xs font-bold">B</span>
+              <input type="text" placeholder="Opción 2" maxlength="80" class="survey-option-input flex-1 bg-surface-container-lowest border-2 border-on-surface rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-primary">
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-6 h-6 rounded-md bg-surface-container border-2 border-on-surface flex items-center justify-center text-xs font-bold">C</span>
+              <input type="text" placeholder="Opción 3 (opcional)" maxlength="80" class="survey-option-input flex-1 bg-surface-container-lowest border-2 border-on-surface rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-primary">
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-6 h-6 rounded-md bg-surface-container border-2 border-on-surface flex items-center justify-center text-xs font-bold">D</span>
+              <input type="text" placeholder="Opción 4 (opcional)" maxlength="80" class="survey-option-input flex-1 bg-surface-container-lowest border-2 border-on-surface rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-primary">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-2 flex justify-between gap-2">
+        <button type="button" onclick="closeSurveyModal()" class="px-5 py-2.5 rounded-xl bg-surface-container text-on-surface font-headline-sm uppercase border-2 border-on-surface shadow-comic-md hover:bg-surface-container-high">
+          Cancelar
+        </button>
+        <button type="button" onclick="createSurvey()" class="px-5 py-2.5 rounded-xl bg-primary text-on-primary font-headline-sm uppercase border-2 border-on-surface shadow-comic-md hover:bg-primary-container flex items-center gap-2">
+          <span class="material-symbols-outlined text-[20px]">poll</span>
+          CREAR ENCUESTA
         </button>
       </div>
     </div>
@@ -667,6 +752,8 @@
       } else {
         showToast('⚠️ No se proporcionó ID de sesión');
       }
+
+      checkActiveSurvey();
     }
 
     // ==================== SESSION MANAGEMENT ====================
@@ -849,6 +936,8 @@
           cumulativeScores: { A: scoreA, B: scoreB }
         }, '*');
       }
+
+      persistProgress();
     }
 
     function handleGameOver(data) {
@@ -873,15 +962,22 @@
       }
     }
 
+    let lastPersistAt = 0;
     function handleTimerUpdate(seconds) {
       countdownSeconds = seconds;
       updateTimerDisplay();
+      const now = Date.now();
+      if (now - lastPersistAt > 5000) {
+        lastPersistAt = now;
+        persistProgress();
+      }
     }
 
     function handleRoundUpdate(current, total) {
       document.getElementById('round-info').textContent = `R${current}/${total}`;
       const roundBadge = document.getElementById('current-game-round');
       if (roundBadge) roundBadge.textContent = `R${current}/${total}`;
+      persistProgress({ currentRound: current });
     }
 
     // ==================== TIMER ====================
@@ -895,6 +991,7 @@
     function startCountdown(seconds) {
       countdownSeconds = seconds;
       updateTimerDisplay();
+      persistProgress();
 
       if (countdownInterval) clearInterval(countdownInterval);
 
@@ -947,6 +1044,8 @@
       if (sessionData && sessionData.status === 'activo') {
         if (!isPaused) {
           togglePause();
+        } else {
+          persistProgress();
         }
         fetch(`${API}/sessions/${sessionData.id}`, {
           method: 'PATCH',
@@ -1165,6 +1264,22 @@
       closeScoreModal();
     }
 
+    // ==================== PERSIST PROGRESS ====================
+    function persistProgress(extra = {}) {
+      if (!sessionData) return;
+      const progress = {
+        isPaused,
+        timerSeconds: countdownSeconds,
+        currentRound: parseInt(document.getElementById('round-info')?.textContent?.replace(/\D/g, '') || '1'),
+        ...extra
+      };
+      fetch(`${API}/sessions/${sessionData.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ progress })
+      }).catch(err => console.error('Error persisting progress:', err));
+    }
+
     // ==================== CONTROLS ====================
     function togglePause() {
       isPaused = !isPaused;
@@ -1186,7 +1301,12 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
             status: 'activo',
-            progress: { isPaused: isPaused, pausedAt: isPaused ? new Date().toISOString() : null }
+            progress: { 
+              isPaused, 
+              pausedAt: isPaused ? new Date().toISOString() : null,
+              timerSeconds: countdownSeconds,
+              currentRound: parseInt(document.getElementById('round-info')?.textContent?.replace(/\D/g, '') || '1')
+            }
           })
         }).catch(err => console.error('Error saving pause state:', err));
       }
@@ -1200,6 +1320,157 @@
 
     function playSoundFx(fxName) { showToast(`🔊 ${fxName}`); }
     function broadcastAlert(msg) { showToast(msg); }
+
+    // ==================== SURVEYS ====================
+    let activeSurveyId = null;
+    let surveyPollInterval = null;
+
+    function openSurveyModal() {
+      document.getElementById('survey-question-input').value = '';
+      document.querySelectorAll('.survey-option-input').forEach((input, i) => {
+        input.value = '';
+        input.placeholder = `Opción ${i + 1}${i >= 2 ? ' (opcional)' : ''}`;
+      });
+      const modal = document.getElementById('survey-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      document.getElementById('survey-question-input').focus();
+    }
+
+    function closeSurveyModal() {
+      const modal = document.getElementById('survey-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    async function createSurvey() {
+      const question = document.getElementById('survey-question-input').value.trim();
+      if (!question) {
+        showToast('⚠️ Escribe una pregunta');
+        return;
+      }
+
+      const options = [];
+      document.querySelectorAll('.survey-option-input').forEach((input, i) => {
+        const val = input.value.trim();
+        if (val) options.push({ id: String.fromCharCode(65 + i), label: val });
+      });
+
+      if (options.length < 2) {
+        showToast('⚠️ Agrega al menos 2 opciones');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API}/surveys`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question, options })
+        });
+        const data = await res.json();
+        activeSurveyId = data.id;
+        closeSurveyModal();
+        showToast(`📊 Encuesta creada: "${question}"`);
+        updateSurveyPanel(data);
+        startSurveyPolling();
+      } catch (err) {
+        console.error('Error creating survey:', err);
+        showToast('❌ Error al crear encuesta');
+      }
+    }
+
+    async function closeSurvey() {
+      if (!activeSurveyId) return;
+      try {
+        await fetch(`${API}/surveys/${activeSurveyId}/close`, { method: 'PATCH' });
+        activeSurveyId = null;
+        stopSurveyPolling();
+        updateSurveyPanel(null);
+        showToast('📊 Encuesta cerrada');
+      } catch (err) {
+        console.error('Error closing survey:', err);
+      }
+    }
+
+    function updateSurveyPanel(survey) {
+      const emptyState = document.getElementById('survey-empty-state');
+      const activeState = document.getElementById('survey-active-state');
+      const statusEl = document.getElementById('survey-panel-status');
+
+      if (!survey) {
+        emptyState.classList.remove('hidden');
+        activeState.classList.add('hidden');
+        activeState.classList.remove('flex');
+        statusEl.textContent = 'SIN ENCUESTA';
+        statusEl.className = 'font-label-xs text-[10px] uppercase text-on-surface-variant';
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+      activeState.classList.remove('hidden');
+      activeState.classList.add('flex');
+      statusEl.textContent = 'ABIERTA';
+      statusEl.className = 'font-label-xs text-[10px] uppercase text-tertiary font-bold';
+
+      document.getElementById('survey-active-question').textContent = survey.question;
+      pollSurveyResults();
+    }
+
+    async function pollSurveyResults() {
+      if (!activeSurveyId) return;
+      try {
+        const res = await fetch(`${API}/surveys/${activeSurveyId}/results`);
+        const data = await res.json();
+        const container = document.getElementById('survey-active-results');
+        const totalEl = document.getElementById('survey-active-total');
+
+        if (!data.results) return;
+
+        const maxVotes = Math.max(...data.results.map(r => r.votes), 1);
+        container.innerHTML = data.results.map(r => {
+          const pct = data.total > 0 ? Math.round((r.votes / data.total) * 100) : 0;
+          const barWidth = data.total > 0 ? Math.round((r.votes / maxVotes) * 100) : 0;
+          return `
+            <div class="flex items-center gap-2 text-[11px]">
+              <span class="w-5 font-bold text-on-surface">${r.id}</span>
+              <div class="flex-1 bg-surface-container rounded-full h-3 overflow-hidden border border-on-surface/30">
+                <div class="h-full bg-primary transition-all duration-300" style="width: ${barWidth}%"></div>
+              </div>
+              <span class="w-8 text-right font-bold text-on-surface">${r.votes}</span>
+              <span class="w-8 text-right text-on-surface-variant">${pct}%</span>
+            </div>`;
+        }).join('');
+        totalEl.textContent = `${data.total} respuesta${data.total !== 1 ? 's' : ''}`;
+      } catch (err) {
+        console.error('Error polling results:', err);
+      }
+    }
+
+    function startSurveyPolling() {
+      stopSurveyPolling();
+      surveyPollInterval = setInterval(pollSurveyResults, 3000);
+    }
+
+    function stopSurveyPolling() {
+      if (surveyPollInterval) clearInterval(surveyPollInterval);
+      surveyPollInterval = null;
+    }
+
+    async function checkActiveSurvey() {
+      try {
+        const res = await fetch(`${API}/surveys/active`);
+        const survey = await res.json();
+        if (survey && survey.id !== activeSurveyId) {
+          activeSurveyId = survey.id;
+          updateSurveyPanel(survey);
+          startSurveyPolling();
+        } else if (!survey && activeSurveyId) {
+          activeSurveyId = null;
+          stopSurveyPolling();
+          updateSurveyPanel(null);
+        }
+      } catch (_) {}
+    }
 
     function toggleRulesModal() {
       const modal = document.getElementById('rules-modal');
