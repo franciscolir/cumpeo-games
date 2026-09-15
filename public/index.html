@@ -3055,18 +3055,10 @@ function setupEventListeners() {
           if (existingGame) {
             gameId = existingGame.id;
           } else {
-            const gameFiles = {
-              'Trivia Relampago': 'trivia-relampago.html',
-              'Memorice': 'memorice.html',
-              'Cancion Incompleta': 'sing.html',
-              'Rosco': 'rosco.html',
-              'Pictionary Veloz': 'pictionary.html',
-              'Historia Enredada': 'historia-enredada.html'
-            };
             const gameRes = await fetch(API + '/games', {
               method: 'POST',
               headers: {'Content-Type':'application/json'},
-              body: JSON.stringify({ name: gameName, description: 'Juego individual', file: gameFiles[gameName] || null })
+              body: JSON.stringify({ name: gameName, description: 'Juego individual', file: btn.getAttribute('data-href') || null })
             });
             if (!gameRes.ok) throw new Error('Error creando juego');
             const gameData = await gameRes.json();
@@ -3090,18 +3082,10 @@ function setupEventListeners() {
         if (existingGame) {
           gameId = existingGame.id;
         } else {
-          const gameFiles = {
-            'Trivia Relampago': 'trivia-relampago.html',
-            'Memorice': 'memorice.html',
-            'Cancion Incompleta': 'sing.html',
-            'Rosco': 'rosco.html',
-            'Pictionary Veloz': 'pictionary.html',
-            'Historia Enredada': 'historia-enredada.html'
-          };
           const gameRes = await fetch(API + '/games', {
             method: 'POST',
             headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({ name: gameName, description: 'Juego individual', file: gameFiles[gameName] || null })
+            body: JSON.stringify({ name: gameName, description: 'Juego individual', file: btn.getAttribute('data-href') || null })
           });
           if (!gameRes.ok) throw new Error('Error creando juego');
           const gameData = await gameRes.json();

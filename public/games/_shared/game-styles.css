@@ -179,6 +179,12 @@ html, body {
   box-shadow: none;
 }
 
+.btn-disabled {
+  opacity: 0.5;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
 /* ═══════════════════════════════════════════════════════════
    RELOJ
    ═══════════════════════════════════════════════════════════ */
@@ -186,23 +192,151 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
+  padding: 0.75rem 1rem;
   background: white;
   border: 3px solid #1c1b1b;
   border-radius: 0.75rem;
   box-shadow: 3px 3px 0px #1c1b1b;
+  flex-shrink: 0;
 }
 
 .clock-value {
   font-family: 'Bangers', 'Bricolage Grotesque', cursive;
-  font-size: 3rem;
+  font-size: 2.5rem;
   letter-spacing: 2px;
   color: #1c1b1b;
+  line-height: 1;
 }
 
 .clock-warning {
   color: #ba1a1a;
   animation: pulseScale 0.5s infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PANTALLA DE INICIO (COUNTDOWN)
+   ═══════════════════════════════════════════════════════════ */
+.start-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  backdrop-filter: blur(8px);
+}
+
+.start-screen img {
+  width: 180px;
+  height: 180px;
+  object-fit: contain;
+  margin-bottom: 1.5rem;
+  animation: fadeInScale 0.5s ease-out;
+}
+
+.start-countdown {
+  font-family: 'Bangers', 'Bricolage Grotesque', cursive;
+  font-size: 6rem;
+  color: #ffc72c;
+  text-shadow: 4px 4px 0px #1c1b1b;
+  line-height: 1;
+}
+
+.start-go {
+  font-family: 'Bangers', 'Bricolage Grotesque', cursive;
+  font-size: 4rem;
+  color: #008562;
+  text-shadow: 4px 4px 0px #1c1b1b;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TIMER ROW (RELOJ + MECHA + SCOREBOARD)
+   ═══════════════════════════════════════════════════════════ */
+.timer-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.timer-scoreboard {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.timer-scoreboard .score-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  border: 2px solid #1c1b1b;
+  border-radius: 0.5rem;
+  font-family: 'Bangers', 'Bricolage Grotesque', cursive;
+  font-size: 1.1rem;
+  letter-spacing: 1px;
+  box-shadow: 2px 2px 0px #1c1b1b;
+  white-space: nowrap;
+}
+
+.timer-scoreboard .score-badge.team-a {
+  background: #ffdad6;
+  color: #ba1a1a;
+}
+
+.timer-scoreboard .score-badge.team-b {
+  background: #fff9e6;
+  color: #775a00;
+}
+
+.timer-bar-wrapper {
+  flex: 1;
+  height: 28px;
+  background: #333;
+  border: 3px solid #1c1b1b;
+  border-radius: 14px;
+  box-shadow: 3px 3px 0px #1c1b1b;
+  position: relative;
+  overflow: hidden;
+}
+
+.timer-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ff4444, #ff8800, #ffcc00);
+  border-radius: 11px;
+  transition: width 1s linear;
+  position: relative;
+}
+
+.timer-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 4px;
+  right: 4px;
+  height: 6px;
+  background: rgba(255,255,255,0.3);
+  border-radius: 3px;
+}
+
+.timer-bar-fill.warning {
+  background: linear-gradient(90deg, #ff0000, #ff4444);
+  animation: pulse 0.5s infinite;
+}
+
+.timer-dynamite {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.1rem;
+  z-index: 2;
+  filter: drop-shadow(1px 1px 1px rgba(0,0,0,0.5));
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -269,56 +403,115 @@ html, body {
   background: white;
   border: 3px solid #1c1b1b;
   border-radius: 1rem;
-  padding: 1.5rem;
+  padding: 1.25rem;
   box-shadow: 4px 4px 0px #1c1b1b;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.75rem;
   height: 100%;
-  overflow: hidden;
+  overflow-y: auto;
 }
 
 /* ═══════════════════════════════════════════════════════════
-   PANTALLA INICIO (COUNTDOWN)
+   BOTÓN CONFIGURAR (GRIS)
    ═══════════════════════════════════════════════════════════ */
-.start-screen {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, #ffc72c 0%, #e41b34 100%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 200;
+.btn-config {
+  background-color: #e5e2e1;
+  color: #1c1b1b;
+  border: 3px solid #1c1b1b;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s;
+  box-shadow: 3px 3px 0px #1c1b1b;
 }
 
-.start-screen img {
-  width: 200px;
-  height: 200px;
-  object-fit: contain;
-  margin-bottom: 2rem;
+.btn-config:hover {
+  background-color: #d5d2d1;
 }
 
-.start-countdown {
-  font-family: 'Bangers', 'Bricolage Grotesque', cursive;
-  font-size: 8rem;
-  color: white;
-  text-shadow: 4px 4px 0px #1c1b1b;
-  animation: countdownPulse 1s ease-out;
-}
-
-.start-go {
-  font-family: 'Bangers', 'Bricolage Grotesque', cursive;
-  font-size: 5rem;
-  color: white;
-  text-shadow: 4px 4px 0px #1c1b1b;
+.btn-config:active {
+  transform: translate(3px, 3px);
+  box-shadow: none;
 }
 
 /* ═══════════════════════════════════════════════════════════
-   MODAL PAUSA
+   CONFIGURACIÓN FULL-SCREEN (OCUPA TODO EL JUEGO)
+   ═══════════════════════════════════════════════════════════ */
+.config-view {
+  display: none;
+  grid-column: 1 / -1;
+  background: white;
+  border: 3px solid #1c1b1b;
+  border-radius: 1rem;
+  box-shadow: 4px 4px 0px #1c1b1b;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.config-view.active {
+  display: block;
+}
+
+.config-view-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 3px solid #1c1b1b;
+  background: #f6f3f2;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.config-view-header h2 {
+  font-family: 'Bangers', 'Bricolage Grotesque', cursive;
+  font-size: 1.8rem;
+  margin: 0;
+  color: #1c1b1b;
+}
+
+.config-view-body {
+  padding: 1.5rem;
+}
+
+.config-close-btn {
+  background: #ffdad6;
+  color: #ba1a1a;
+  border: 2px solid #1c1b1b;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-size: 0.85rem;
+  box-shadow: 2px 2px 0px #1c1b1b;
+}
+
+.config-close-btn:hover {
+  background: #ba1a1a;
+  color: white;
+}
+
+.config-section {
+  margin-bottom: 1.5rem;
+}
+
+.config-section-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #5d3f3e;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px dashed #e5e2e1;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PAUSA OVERLAY (SIMPLE)
    ═══════════════════════════════════════════════════════════ */
 .pause-overlay {
   position: absolute;
@@ -391,7 +584,7 @@ html, body {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   PANTALLA FINAL
+   PANTALLA FINAL (2 COLUMNAS)
    ═══════════════════════════════════════════════════════════ */
 .results-screen {
   position: absolute;
@@ -412,43 +605,81 @@ html, body {
   background: white;
   border: 4px solid #1c1b1b;
   border-radius: 1.5rem;
-  padding: 3rem;
+  padding: 2rem;
   text-align: center;
-  max-width: 600px;
+  max-width: 700px;
   width: 100%;
   box-shadow: 6px 6px 0px #1c1b1b;
 }
 
-.winner-section {
-  margin-bottom: 2rem;
+.results-title {
+  font-family: 'Bangers', 'Bricolage Grotesque', cursive;
+  font-size: 2.5rem;
+  margin: 0 0 1.5rem 0;
+  color: #1c1b1b;
 }
 
-.winner-section img {
-  width: 150px;
-  height: 150px;
-  object-fit: contain;
-  border: 3px solid #1c1b1b;
-  border-radius: 1rem;
-  box-shadow: 4px 4px 0px #1c1b1b;
+.results-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
 }
 
-.loser-section img {
-  width: 100px;
-  height: 100px;
-  object-fit: contain;
-  border: 3px solid #1c1b1b;
+.team-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem;
+  border: 3px solid #e5e2e1;
   border-radius: 1rem;
-  box-shadow: 3px 3px 0px #1c1b1b;
-  opacity: 0.7;
+  background: #f6f3f2;
+}
+
+.team-column.winner {
+  border-color: #bb0024;
+  background: #fff5f5;
+}
+
+.team-column img {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  margin-bottom: 0.75rem;
+}
+
+.team-column .team-label {
+  font-family: 'Bangers', 'Bricolage Grotesque', cursive;
+  font-size: 1.3rem;
+  color: #1c1b1b;
+  margin-bottom: 0.25rem;
+}
+
+.team-column .team-score {
+  font-family: 'Bangers', 'Bricolage Grotesque', cursive;
+  font-size: 2rem;
+  color: #bb0024;
+}
+
+.team-column .winner-badge {
+  display: inline-block;
+  background: #bb0024;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.5rem;
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  margin-top: 0.5rem;
 }
 
 /* ═══════════════════════════════════════════════════════════
    PREGUNTAS / SECCIÓN OCULTA
    ═══════════════════════════════════════════════════════════ */
 .questions-section {
-  margin-top: 1rem;
+  margin-top: 0.5rem;
   border-top: 2px dashed #e5e2e1;
-  padding-top: 1rem;
+  padding-top: 0.75rem;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -460,7 +691,7 @@ html, body {
   background: #f0edec;
   border: 2px solid #1c1b1b;
   border-radius: 0.5rem;
-  padding: 0.75rem;
+  padding: 0.6rem;
   font-weight: 700;
   text-transform: uppercase;
   cursor: pointer;
@@ -469,10 +700,11 @@ html, body {
   justify-content: center;
   gap: 0.5rem;
   box-shadow: 2px 2px 0px #1c1b1b;
+  font-size: 0.85rem;
 }
 
 .questions-panel {
-  margin-top: 1rem;
+  margin-top: 0.75rem;
   background: #f6f3f2;
   border: 2px solid #1c1b1b;
   border-radius: 0.75rem;
@@ -491,6 +723,19 @@ html, body {
   border: 2px solid #1c1b1b;
   border-radius: 0.5rem;
   margin-bottom: 0.5rem;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   IMÁGENES SIN MARCO
+   ═══════════════════════════════════════════════════════════ */
+.start-screen img,
+.pause-message img,
+.winner-section img,
+.loser-section img,
+.team-column img {
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -522,3 +767,17 @@ html, body {
 .bg-surface-container-lowest { background-color: white; }
 
 .border-on-surface { border-color: #1c1b1b; }
+
+.flex-1 { flex: 1; }
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-center { justify-content: center; }
+.gap-1 { gap: 0.25rem; }
+.gap-2 { gap: 0.5rem; }
+.gap-3 { gap: 0.75rem; }
+.w-full { width: 100%; }
+.mt-1 { margin-top: 0.25rem; }
+.mt-2 { margin-top: 0.5rem; }
+.mb-1 { margin-bottom: 0.25rem; }
+.mb-2 { margin-bottom: 0.5rem; }

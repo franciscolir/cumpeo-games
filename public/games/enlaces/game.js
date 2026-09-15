@@ -1,550 +1,340 @@
 /**
- * ENLACES - Game Logic
- * Conecta las palabras relacionadas
+ * ENLACES - Drag and Drop Columna Fija / Móvil
+ * Sets de grupos, arrastre de palabras
  */
-
 (function() {
   'use strict';
 
-  // ==================== GAME STATE ====================
-  const sdk = new GameSDK();
-  let localScores = { A: 0, B: 0 };
-  let selectedTeam = 'A';
-  let currentRound = 1;
-  let totalRounds = 2;
-  let timePerRound = 90;
-  let isPaused = false;
-  let isStarted = false;
-  let timerInterval = null;
-  let timeRemaining = 0;
+  const core = GameCore.create({
+    gameName: 'enlaces',
+    defaultRounds: 2,
+    defaultTime: 90,
+    warningThreshold: 10,
+    onTimeUp: () => core.endGame(),
+    onGetHiddenContainer: () => $('waiting-state'),
+    onNext: () => nextSet(),
+    onStart: startGame
+  });
 
-  // Board state
-  let allWords = [];
-  let selectedWords = [];
-  let foundGroups = [];
-  let mistakes = 0;
-  const maxMistakes = 4;
+  const { sdk, state, $ } = core;
 
-  // Group colors
-  const groupColors = ['#008562', '#0050a0', '#ba1a1a', '#775a00', '#8b5cf6'];
+  // ==================== STATE ====================
+  let sets = [];
+  let currentSetIndex = -1;
+  let currentSet = null;
+  let itemsPool = [];
+  let placedItems = new Map();
+  let draggedElement = null;
+  let correctCount = 0;
 
-  // Default groups
-  const defaultGroups = [
-    { name: 'Animales', words: ['gato', 'perro', 'pájaro', 'pez'], color: '#008562' },
-    { name: 'Países', words: ['brasil', 'argentina', 'chile', 'perú'], color: '#0050a0' },
-    { name: 'Colores', words: ['rojo', 'azul', 'verde', 'amarillo'], color: '#ba1a1a' },
-    { name: 'Deportes', words: ['fútbol', 'básquet', 'tenis', 'natación'], color: '#775a00' }
+  const defaultSets = [
+    {
+      name: 'Animales y Países',
+      groups: [
+        { name: 'Animales', words: ['gato', 'perro', 'pájaro', 'pez'] },
+        { name: 'Países', words: ['brasil', 'argentina', 'chile', 'perú'] },
+        { name: 'Colores', words: ['rojo', 'azul', 'verde', 'amarillo'] },
+        { name: 'Deportes', words: ['fútbol', 'básquet', 'tenis', 'natación'] }
+      ]
+    }
   ];
 
-  let groups = [...defaultGroups];
-
-  // ==================== DOM ELEMENTS ====================
-  const $ = (id) => document.getElementById(id);
-  
-  const clockEl = $('clock');
-  const clockValueEl = $('clock-value');
-  const waitingState = $('waiting-state');
+  // ==================== DOM ====================
+  const setSelectContainer = $('set-select-container');
+  const setCards = $('set-cards');
   const boardContainer = $('board-container');
-  const wordsGrid = $('words-grid');
+  const fixedColumn = $('fixed-column');
+  const mobileItems = $('mobile-items');
+  const solutionContent = $('solution-content');
+  const officialSolution = $('official-solution');
   const turnIndicator = $('turn-indicator');
   const turnText = $('turn-text');
-  const selected1 = $('selected-1');
-  const selected2 = $('selected-2');
-  const btnConfirm = $('btn-confirm');
-  const foundGroupsEl = $('found-groups');
-  const groupsList = $('groups-list');
-  const roundsSelect = $('rounds-select');
-  const timeSelect = $('time-select');
-  const questionsList = $('questions-list');
+  const btnNextSet = $('btn-next-set');
+  const btnCheck = $('btn-check');
+  const questionsListPanel = $('questions-list-panel');
   const questionsPanel = $('questions-panel');
 
-  // ==================== SDK INITIALIZATION ====================
-  sdk.init((sessionData) => {
-    console.log('Session data received:', sessionData);
-    if (sessionData.teams) {
-      const teamA = sessionData.teams.find(t => t.letter === 'A');
-      const teamB = sessionData.teams.find(t => t.letter === 'B');
-      if (teamA) localScores.A = teamA.cumulativeScore || 0;
-      if (teamB) localScores.B = teamB.cumulativeScore || 0;
-      updateScoreDisplay();
-    }
-  });
-
-  sdk.onPause(() => {
-    isPaused = true;
-    pauseTimer();
-    showPauseModal();
-  });
-
-  sdk.onResume(() => {
-    isPaused = false;
-    resumeTimer();
-    hidePauseModal();
-  });
-
-  sdk.onNextRound(() => {
-    nextRound();
-  });
-
-  // ==================== TIMER ====================
-  function startTimer() {
-    timeRemaining = timePerRound;
-    updateClockDisplay();
-    clockEl.classList.remove('hidden');
-    
-    timerInterval = setInterval(() => {
-      if (isPaused) return;
-      
-      timeRemaining--;
-      updateClockDisplay();
-      sdk.updateTimer(timeRemaining);
-      
-      if (timeRemaining <= 0) {
-        endGame();
-      }
-    }, 1000);
+  // ==================== LOAD/SAVE ====================
+  function loadSets() {
+    const saved = sdk.getQuestions('enlaces');
+    if (saved.length > 0) sets = saved;
+    else sets = JSON.parse(JSON.stringify(defaultSets));
   }
 
-  function pauseTimer() {
-    if (timerInterval) {
-      clearInterval(timerInterval);
-      timerInterval = null;
-    }
+  function saveSets() {
+    sdk.saveQuestions('enlaces', sets);
   }
 
-  function resumeTimer() {
-    if (timeRemaining > 0 && !timerInterval) {
-      timerInterval = setInterval(() => {
-        if (isPaused) return;
-        
-        timeRemaining--;
-        updateClockDisplay();
-        sdk.updateTimer(timeRemaining);
-        
-        if (timeRemaining <= 0) {
-          endGame();
-        }
-      }, 1000);
-    }
-  }
-
-  function updateClockDisplay() {
-    const mins = Math.floor(timeRemaining / 60);
-    const secs = timeRemaining % 60;
-    clockValueEl.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    
-    if (timeRemaining <= 10) {
-      clockValueEl.classList.add('clock-warning');
-    } else {
-      clockValueEl.classList.remove('clock-warning');
-    }
-  }
-
-  // ==================== BOARD LOGIC ====================
-  function createBoard() {
-    wordsGrid.innerHTML = '';
-    allWords = [];
-    selectedWords = [];
-    foundGroups = [];
-    mistakes = 0;
-    
-    // Collect all words from groups
-    groups.forEach(group => {
-      group.words.forEach(word => {
-        allWords.push({ word, group: group.name, color: group.color });
-      });
-    });
-    
-    // Shuffle words
-    for (let i = allWords.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [allWords[i], allWords[j]] = [allWords[j], allWords[i]];
-    }
-    
-    // Create word cards
-    allWords.forEach((item, index) => {
-      const card = document.createElement('div');
-      card.className = 'word-card';
-      card.textContent = item.word;
-      card.dataset.index = index;
-      card.dataset.group = item.group;
-      
-      card.addEventListener('click', () => selectWord(card, index));
-      wordsGrid.appendChild(card);
-    });
-    
-    // Render groups in conductor panel
-    renderGroupsList();
-    updateFoundGroups();
-  }
-
-  function selectWord(card, index) {
-    if (isPaused || !isStarted) return;
-    if (card.classList.contains('matched') || card.classList.contains('eliminated')) return;
-    if (selectedWords.length >= 2) return;
-    
-    // Toggle selection
-    if (card.classList.contains('selected')) {
-      card.classList.remove('selected');
-      selectedWords = selectedWords.filter(w => w.index !== index);
-    } else {
-      card.classList.add('selected');
-      selectedWords.push({ index, word: allWords[index].word, group: allWords[index].group });
-    }
-    
-    // Update selection display
-    updateSelectionDisplay();
-    
-    // Enable/disable confirm button
-    btnConfirm.disabled = selectedWords.length !== 2;
-  }
-
-  function updateSelectionDisplay() {
-    if (selectedWords.length >= 1) {
-      selected1.innerHTML = `<span>${selectedWords[0].word}</span>`;
-      selected1.classList.add('active');
-    } else {
-      selected1.innerHTML = '<span class="material-symbols-outlined">touch_app</span><span>Selecciona primera palabra</span>';
-      selected1.classList.remove('active');
-    }
-    
-    if (selectedWords.length >= 2) {
-      selected2.innerHTML = `<span>${selectedWords[1].word}</span>`;
-      selected2.classList.add('active');
-    } else {
-      selected2.innerHTML = '<span class="material-symbols-outlined">touch_app</span><span>Selecciona segunda palabra</span>';
-      selected2.classList.remove('active');
-    }
-  }
-
-  function confirmSelection() {
-    if (selectedWords.length !== 2) return;
-    
-    const [word1, word2] = selectedWords;
-    const isMatch = word1.group === word2.group;
-    
-    if (isMatch) {
-      // Correct match
-      localScores[selectedTeam] += 100;
-      updateScoreDisplay();
-      sdk.updateScore(localScores);
-      
-      // Mark as matched
-      document.querySelectorAll('.word-card.selected').forEach(card => {
-        card.classList.remove('selected');
-        card.classList.add('matched');
-      });
-      
-      // Add to found groups
-      const group = groups.find(g => g.name === word1.group);
-      if (group && !foundGroups.find(f => f.name === group.name)) {
-        foundGroups.push(group);
-        updateFoundGroups();
-      }
-      
-      // Check if all groups found
-      if (foundGroups.length === groups.length) {
-        endGame();
-      }
-    } else {
-      // Wrong match
-      mistakes++;
-      
-      // Mark as eliminated
-      document.querySelectorAll('.word-card.selected').forEach(card => {
-        card.classList.remove('selected');
-        card.classList.add('eliminated');
-      });
-      
-      // Check if too many mistakes
-      if (mistakes >= maxMistakes) {
-        endGame();
-      }
-    }
-    
-    // Reset selection
-    selectedWords = [];
-    updateSelectionDisplay();
-    btnConfirm.disabled = true;
-  }
-
-  function updateFoundGroups() {
-    foundGroupsEl.innerHTML = '';
-    foundGroups.forEach(group => {
-      const div = document.createElement('div');
-      div.className = 'found-group';
-      div.innerHTML = `
-        <div class="found-group-color" style="background: ${group.color}"></div>
-        <span class="found-group-name">${group.name}</span>
-        <span class="found-group-words">${group.words.join(', ')}</span>
-      `;
-      foundGroupsEl.appendChild(div);
-    });
-  }
-
-  function renderGroupsList() {
-    groupsList.innerHTML = '';
-    groups.forEach(group => {
-      const div = document.createElement('div');
-      div.className = 'group-item';
-      div.innerHTML = `
-        <div class="group-color" style="background: ${group.color}"></div>
-        <span class="group-name">${group.name}</span>
-        <span class="group-words">${group.words.join(', ')}</span>
-      `;
-      groupsList.appendChild(div);
-    });
-  }
-
-  // ==================== GAME CONTROL ====================
+  // ==================== START ====================
   function startGame() {
-    // Load groups from localStorage or use defaults
-    const savedGroups = sdk.getQuestions('enlaces');
-    if (savedGroups.length > 0) {
-      groups = savedGroups;
-    }
-    
-    // Get settings from selectors
-    totalRounds = parseInt(roundsSelect.value);
-    timePerRound = parseInt(timeSelect.value);
-    
-    currentRound = 1;
-    localScores = { A: 0, B: 0 };
-    selectedTeam = 'A';
-    isStarted = true;
-    
-    sdk.updateRound(currentRound, totalRounds);
-    sdk.setTimePerRound(timePerRound);
-    
-    // Show game
-    waitingState.classList.add('hidden');
-    boardContainer.classList.remove('hidden');
-    
-    createBoard();
+    loadSets();
+    state.localScores = { A: 0, B: 0 };
+    state.selectedTeam = 'A';
+    state.isStarted = true;
+    state.currentRound = 1;
+    state.totalRounds = parseInt($('config-rounds-select').value);
+    state.timePerUnit = parseInt($('config-time-select').value);
+
+    $('waiting-state').classList.add('hidden');
+    setSelectContainer.classList.remove('hidden');
+    boardContainer.classList.add('hidden');
+    renderSetCards();
     updateTurnDisplay();
-    updateScoreDisplay();
-    startTimer();
+    core.setButtonsDisabled(false);
   }
 
-  function endGame() {
-    pauseTimer();
-    isStarted = false;
-    
-    const winner = localScores.A > localScores.B ? 'A' :
-                   localScores.B > localScores.A ? 'B' : 'empate';
-
-    showResultsScreen({
-      winner: winner,
-      scores: localScores
-    }, () => {
-      sdk.gameOver({
-        winner: winner,
-        localScores: localScores,
-        stats: {
-          totalRounds: totalRounds,
-          groupsFound: foundGroups.length,
-          mistakes: mistakes
-        }
-      });
-      
-      // Reset to waiting state
-      waitingState.classList.remove('hidden');
-      boardContainer.classList.add('hidden');
-      clockEl.classList.add('hidden');
+  // ==================== SET SELECTION ====================
+  function renderSetCards() {
+    setCards.innerHTML = '';
+    sets.forEach((set, idx) => {
+      const card = document.createElement('div');
+      card.className = 'story-card';
+      card.innerHTML = `
+        <div class="story-card-placeholder">🔗</div>
+        <div class="story-card-body">
+          <h3 class="story-card-title">${set.name}</h3>
+          <p class="story-card-desc">${set.groups.length} grupos • ${set.groups.reduce((a,g)=>a+g.words.length,0)} palabras</p>
+        </div>
+      `;
+      card.addEventListener('click', () => startSet(idx));
+      setCards.appendChild(card);
     });
   }
 
-  function nextRound() {
-    currentRound++;
-    if (currentRound > totalRounds) {
-      endGame();
+  function startSet(idx) {
+    currentSetIndex = idx;
+    currentSet = JSON.parse(JSON.stringify(sets[idx]));
+    itemsPool = [];
+    placedItems.clear();
+    correctCount = 0;
+
+    setSelectContainer.classList.add('hidden');
+    boardContainer.classList.remove('hidden');
+
+    officialSolution.textContent = currentSet.groups.map(g => `${g.name}: ${g.words.join(', ')}`).join(' | ');
+    renderBoard();
+    core.updateScoreDisplay();
+  }
+
+  // ==================== BOARD RENDER ====================
+  function renderBoard() {
+    fixedColumn.innerHTML = '';
+    mobileItems.innerHTML = '';
+
+    itemsPool = [];
+    currentSet.groups.forEach((group, gi) => {
+      group.words.forEach(word => itemsPool.push({ word, groupIndex: gi, groupName: group.name }));
+    });
+
+    // Shuffle items
+    for (let i = itemsPool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [itemsPool[i], itemsPool[j]] = [itemsPool[j], itemsPool[i]];
+    }
+
+    // Fixed columns
+    currentSet.groups.forEach((group, gi) => {
+      const col = document.createElement('div');
+      col.className = 'group-column';
+      col.dataset.groupIndex = gi;
+      col.innerHTML = `
+        <div class="group-column-header">${group.name}</div>
+        <div class="group-column-items" data-group-index="${gi}"></div>
+      `;
+      col.addEventListener('dragover', e => { e.preventDefault(); col.classList.add('drag-over'); });
+      col.addEventListener('dragleave', () => col.classList.remove('drag-over'));
+      col.addEventListener('drop', e => handleDrop(e, gi));
+      fixedColumn.appendChild(col);
+    });
+
+    // Mobile items
+    itemsPool.forEach((item, i) => {
+      const el = document.createElement('div');
+      el.className = 'mobile-item';
+      el.draggable = true;
+      el.textContent = item.word;
+      el.dataset.index = i;
+      el.addEventListener('dragstart', e => { draggedElement = el; e.dataTransfer.effectAllowed = 'move'; });
+      el.addEventListener('dragend', () => { draggedElement = null; });
+      mobileItems.appendChild(el);
+    });
+
+    btnNextSet.disabled = true;
+  }
+
+  function handleDrop(e, groupIndex) {
+    e.preventDefault();
+    const col = e.currentTarget;
+    col.classList.remove('drag-over');
+    if (!draggedElement) return;
+
+    const itemEl = draggedElement;
+    const itemIndex = parseInt(itemEl.dataset.index);
+    const item = itemsPool[itemIndex];
+    if (!item) return;
+
+    // Move to column if correct
+    if (item.groupIndex === groupIndex) {
+      const target = col.querySelector('.group-column-items');
+      itemEl.classList.add('correct');
+      itemEl.draggable = false;
+      target.appendChild(itemEl);
+      placedItems.set(itemIndex, groupIndex);
+      correctCount++;
+      if (correctCount === itemsPool.length) checkCompletion();
+    } else {
+      // Wrong drop: brief shake
+      itemEl.classList.add('wrong');
+      setTimeout(() => itemEl.classList.remove('wrong'), 300);
+      // Return to pool
+      mobileItems.appendChild(itemEl);
+    }
+  }
+
+  function checkCompletion() {
+    if (correctCount < itemsPool.length) {
+      // Not all items placed correctly yet
       return;
     }
-    
-    sdk.updateRound(currentRound, totalRounds);
-    createBoard();
-    updateTurnDisplay();
+    btnNextSet.disabled = false;
+    const team = state.selectedTeam;
+    core.addCorrectPoints(team);
+    core.showTurnModal('¡Set completado!', 1200);
   }
 
-  function updateScoreDisplay() {
-    $('score-a').textContent = localScores.A;
-    $('score-b').textContent = localScores.B;
+  function nextSet() {
+    currentSetIndex = -1;
+    currentSet = null;
+    boardContainer.classList.add('hidden');
+    setSelectContainer.classList.remove('hidden');
+    renderSetCards();
   }
 
   function updateTurnDisplay() {
-    turnText.textContent = `TURNO: EQUIPO ${selectedTeam}`;
-    turnIndicator.style.background = selectedTeam === 'A' ? '#ffdad6' : '#fff9e6';
-    
+    turnText.textContent = `TURNO: EQUIPO ${state.selectedTeam}`;
+    turnIndicator.style.background = state.selectedTeam === 'A' ? '#ffdad6' : '#fff9e6';
     const dot = turnIndicator.querySelector('.turn-dot');
-    dot.style.background = selectedTeam === 'A' ? '#ba1a1a' : '#775a00';
+    if (dot) dot.style.background = state.selectedTeam === 'A' ? '#ba1a1a' : '#775a00';
   }
 
-  // ==================== GROUPS MANAGEMENT ====================
-  function renderGroups() {
-    questionsList.innerHTML = '';
-    groups.forEach((group, index) => {
+  // ==================== SET MANAGEMENT ====================
+  function renderSets(listEl) {
+    listEl.innerHTML = '';
+    sets.forEach((set, idx) => {
       const div = document.createElement('div');
       div.className = 'question-item';
       div.innerHTML = `
-        <span class="question-item-text">${group.name}: ${group.words.join(', ')}</span>
+        <span class="question-item-text">${set.name} (${set.groups.length} grupos)</span>
         <div class="question-item-actions">
-          <button class="question-item-btn edit" data-index="${index}">
-            <span class="material-symbols-outlined" style="font-size: 1rem;">edit</span>
-          </button>
-          <button class="question-item-btn delete" data-index="${index}">
-            <span class="material-symbols-outlined" style="font-size: 1rem;">delete</span>
-          </button>
+          <button class="question-item-btn edit" data-index="${idx}"><span class="material-symbols-outlined" style="font-size: 1rem;">edit</span></button>
+          <button class="question-item-btn delete" data-index="${idx}"><span class="material-symbols-outlined" style="font-size: 1rem;">delete</span></button>
         </div>
       `;
-      questionsList.appendChild(div);
+      listEl.appendChild(div);
     });
   }
 
-  function openEditGroup(index = -1) {
-    const modal = $('edit-group-modal');
-    $('edit-group-index').value = index;
-    
-    if (index >= 0) {
-      const group = groups[index];
-      $('edit-group-name').value = group.name;
-      $('edit-group-words').value = group.words.join(', ');
+  let editingGroups = [];
+
+  function openEditSet(idx = -1) {
+    $('edit-set-index').value = idx;
+    if (idx >= 0) {
+      const s = sets[idx];
+      $('edit-set-name').value = s.name || '';
+      editingGroups = JSON.parse(JSON.stringify(s.groups));
     } else {
-      $('edit-group-name').value = '';
-      $('edit-group-words').value = '';
+      $('edit-set-name').value = '';
+      editingGroups = [];
     }
-    
-    modal.classList.remove('hidden');
+    renderGroupsEditor();
+    $('edit-set-modal').classList.remove('hidden');
   }
 
-  function saveGroup() {
-    const index = parseInt($('edit-group-index').value);
-    const name = $('edit-group-name').value.trim();
-    const wordsStr = $('edit-group-words').value.trim();
-    
-    const words = wordsStr.split(',').map(w => w.trim().toLowerCase()).filter(w => w);
-    
-    if (!name || words.length !== 4) {
-      alert('Se necesita un nombre y exactamente 4 palabras');
-      return;
-    }
+  function renderGroupsEditor() {
+    const container = $('groups-editor');
+    container.innerHTML = '';
+    editingGroups.forEach((g, i) => {
+      const div = document.createElement('div');
+      div.className = 'color-space-editor-item';
+      div.innerHTML = `
+        <input type="text" class="select-input group-name" data-index="${i}" value="${g.name}" placeholder="Nombre grupo" style="width: 30%;">
+        <input type="text" class="select-input group-words" data-index="${i}" value="${g.words.join(', ')}" placeholder="4 palabras separadas por coma" style="flex:1;">
+        <button class="question-item-btn delete" data-index="${i}" style="flex-shrink:0;"><span class="material-symbols-outlined" style="font-size: 1rem;">delete</span></button>
+      `;
+      container.appendChild(div);
+    });
 
-    const color = groupColors[groups.length % groupColors.length];
-    const group = { name, words, color };
-    
-    if (index >= 0) {
-      groups[index] = group;
-    } else {
-      groups.push(group);
-    }
-    
-    sdk.saveQuestions('enlaces', groups);
-    renderGroups();
-    $('edit-group-modal').classList.add('hidden');
+    container.querySelectorAll('.group-name').forEach(inp => {
+      inp.addEventListener('input', () => { editingGroups[parseInt(inp.dataset.index)].name = inp.value; });
+    });
+    container.querySelectorAll('.group-words').forEach(inp => {
+      inp.addEventListener('blur', () => {
+        const idx = parseInt(inp.dataset.index);
+        editingGroups[idx].words = inp.value.split(',').map(w => w.trim()).filter(w => w);
+      });
+    });
+    container.querySelectorAll('.question-item-btn.delete').forEach(btn => {
+      btn.addEventListener('click', () => {
+        editingGroups.splice(parseInt(btn.dataset.index), 1);
+        renderGroupsEditor();
+      });
+    });
   }
 
-  function deleteGroup(index) {
-    if (confirm('¿Eliminar este grupo?')) {
-      groups.splice(index, 1);
-      sdk.saveQuestions('enlaces', groups);
-      renderGroups();
-    }
+  function saveSet() {
+    const idx = parseInt($('edit-set-index').value);
+    const name = $('edit-set-name').value.trim();
+    if (!name || editingGroups.length === 0) { alert('Nombre y al menos un grupo requeridos'); return; }
+    editingGroups.forEach(g => { if (!g.name || g.words.length !== 4) { alert('Cada grupo debe tener nombre y 4 palabras'); throw new Error('validation'); } });
+    const set = { name, groups: JSON.parse(JSON.stringify(editingGroups)) };
+    if (idx >= 0) sets[idx] = set;
+    else sets.push(set);
+    saveSets();
+    renderSets($('config-sets-list'));
+    renderSets(questionsListPanel);
+    $('edit-set-modal').classList.add('hidden');
+  }
+
+  function deleteSet(idx) {
+    if (confirm('¿Eliminar este set?')) { sets.splice(idx,1); saveSets(); renderSets($('config-sets-list')); renderSets(questionsListPanel); }
   }
 
   // ==================== EVENT LISTENERS ====================
-  
-  // Start button
-  $('btn-start').addEventListener('click', () => {
-    showStartModal(() => {
-      startGame();
-    });
-  });
-
-  // Pause button
-  $('btn-pause').addEventListener('click', () => {
-    if (isPaused) {
-      isPaused = false;
-      resumeTimer();
-      hidePauseModal();
-      $('btn-pause').innerHTML = '<span class="material-symbols-outlined" style="font-size: 1rem;">pause</span> PAUSAR';
-    } else {
-      isPaused = true;
-      pauseTimer();
-      showPauseModal();
-      $('btn-pause').innerHTML = '<span class="material-symbols-outlined" style="font-size: 1rem;">play</span> CONTINUAR';
-    }
-  });
-
-  // End button
-  $('btn-end').addEventListener('click', () => {
-    showEndConfirmModal(() => {
-      endGame();
-    });
-  });
-
-  // Reset button
-  $('btn-reset').addEventListener('click', () => {
-    if (isStarted) {
-      createBoard();
-      updateTurnDisplay();
-    }
-  });
-
-  // Confirm button
-  btnConfirm.addEventListener('click', () => {
-    confirmSelection();
-  });
-
-  // Team selection
   document.querySelectorAll('.team-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.team-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      selectedTeam = btn.dataset.team;
+      state.selectedTeam = btn.dataset.team;
       updateTurnDisplay();
     });
   });
 
-  // Rounds/Time selectors
-  roundsSelect.addEventListener('change', () => {
-    totalRounds = parseInt(roundsSelect.value);
-    sdk.updateRound(currentRound, totalRounds);
-  });
-
-  timeSelect.addEventListener('change', () => {
-    timePerRound = parseInt(timeSelect.value);
-    sdk.setTimePerRound(timePerRound);
-  });
-
-  // Groups panel toggle
   $('btn-toggle-questions').addEventListener('click', () => {
     questionsPanel.classList.toggle('hidden');
-    if (!questionsPanel.classList.contains('hidden')) {
-      renderGroups();
-    }
+    if (!questionsPanel.classList.contains('hidden')) renderSets(questionsListPanel);
   });
 
-  // Add group button
-  $('btn-add-group').addEventListener('click', () => {
-    openEditGroup(-1);
-  });
+  $('btn-add-set-panel').addEventListener('click', () => openEditSet(-1));
+  $('btn-add-set-config').addEventListener('click', () => openEditSet(-1));
+  $('btn-add-group-set').addEventListener('click', () => { editingGroups.push({ name: '', words: [] }); renderGroupsEditor(); });
 
-  // Groups list delegation
-  questionsList.addEventListener('click', (e) => {
+  $('config-sets-list').addEventListener('click', handleSetListClick);
+  questionsListPanel.addEventListener('click', handleSetListClick);
+  function handleSetListClick(e) {
     const editBtn = e.target.closest('.question-item-btn.edit');
     const deleteBtn = e.target.closest('.question-item-btn.delete');
-    
-    if (editBtn) {
-      openEditGroup(parseInt(editBtn.dataset.index));
-    }
-    if (deleteBtn) {
-      deleteGroup(parseInt(deleteBtn.dataset.index));
-    }
-  });
+    if (editBtn) openEditSet(parseInt(editBtn.dataset.index));
+    if (deleteBtn) deleteSet(parseInt(deleteBtn.dataset.index));
+  }
 
-  // Edit group modal
-  $('btn-save-group').addEventListener('click', saveGroup);
-  $('btn-cancel-group').addEventListener('click', () => {
-    $('edit-group-modal').classList.add('hidden');
-  });
+  $('btn-save-set').addEventListener('click', () => { try { saveSet(); } catch(e){} });
+  $('btn-cancel-set').addEventListener('click', () => $('edit-set-modal').classList.add('hidden'));
+
+  btnNextSet.addEventListener('click', nextSet);
+  btnCheck.addEventListener('click', checkCompletion);
+
+  // Init
+  loadSets();
+  renderSets($('config-sets-list'));
 
 })();

@@ -1,35 +1,41 @@
 /**
  * ROSCO ALFABÉTICO - Game Logic
  */
-
 (function() {
   'use strict';
 
-  // ==================== GAME STATE ====================
-  const sdk = new GameSDK();
-  let localScores = { A: 0, B: 0 };
-  let currentRound = 1;
-  let totalRounds = 3;
-  let timePerRound = 90;
-  let isPaused = false;
-  let isStarted = false;
-  let selectedTeam = 'A';
-  let timerInterval = null;
-  let timeRemaining = 0;
-  let currentLetterIndex = 0;
+  const core = GameCore.create({
+    gameName: 'rosco',
+    defaultRounds: 3,
+    defaultTime: 90,
+    warningThreshold: 10,
+    onTimeUp: () => {
+      const active = letters.find(l => l.state === 'active');
+      if (active) setLetterState(active.ch, 'red');
+      state.selectedTeam = state.selectedTeam === 'A' ? 'B' : 'A';
+      updateTeamUI();
+      showTurnModal(`Tiempo agotado — Equipo ${state.selectedTeam}`, 2000);
+      const nextPending = letters.findIndex(l => l.state === 'pending');
+      if (nextPending >= 0) focusLetter(nextPending);
+      else core.endGame();
+    },
+    onGetHiddenContainer: () => $('waiting-state'),
+    onNext: () => nextRound(),
+    onStart: startGame,
+    extraStats: () => ({ totalRounds: core.state.totalRounds })
+  });
 
-  // 25 letras del rosco (A-Z sin W ni Y)
+  const { sdk, state, $ } = core;
+
+  // ==================== GAME-SPECIFIC STATE ====================
   const ALPHABET = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','Ñ','O','P','Q','R','S','T','U','V','X','Z'];
-  
+
   let letters = ALPHABET.map(ch => ({
-    ch: ch,
-    state: 'pending', // pending, active, green, red
-    definition: '',
-    answer: '',
-    synonyms: []
+    ch, state: 'pending', definition: '', answer: '', synonyms: []
   }));
 
-  // Default questions
+  let currentLetterIndex = 0;
+
   const defaultLetters = [
     { ch: 'A', definition: 'Letra del abecedario', answer: 'A', synonyms: [] },
     { ch: 'B', definition: 'Segunda letra del abecedario', answer: 'B', synonyms: [] },
@@ -58,12 +64,8 @@
     { ch: 'Z', definition: 'Letra del abecedario', answer: 'Z', synonyms: [] }
   ];
 
-  // ==================== DOM ELEMENTS ====================
-  const $ = (id) => document.getElementById(id);
-  
-  const clockEl = $('clock');
-  const clockValueEl = $('clock-value');
-  const waitingState = $('waiting-state');
+  // ==================== DOM ====================
+  const RADIUS = 41;
   const roscoContainer = $('rosco-container');
   const lettersContainer = $('letters-container');
   const activeLetterBadge = $('active-letter-badge');
@@ -78,41 +80,12 @@
   const timeSelect = $('time-select');
   const questionsList = $('questions-list');
   const questionsPanel = $('questions-panel');
-
-  // ==================== SDK INITIALIZATION ====================
-  sdk.init((sessionData) => {
-    console.log('Session data received:', sessionData);
-    if (sessionData.teams) {
-      const teamA = sessionData.teams.find(t => t.letter === 'A');
-      const teamB = sessionData.teams.find(t => t.letter === 'B');
-      if (teamA) localScores.A = teamA.cumulativeScore || 0;
-      if (teamB) localScores.B = teamB.cumulativeScore || 0;
-    }
-  });
-
-  sdk.onPause(() => {
-    isPaused = true;
-    pauseTimer();
-    showPauseModal();
-  });
-
-  sdk.onResume(() => {
-    isPaused = false;
-    resumeTimer();
-    hidePauseModal();
-  });
-
-  sdk.onNextRound(() => {
-    nextRound();
-  });
+  const btnStart = $('btn-start');
 
   // ==================== RENDER ROSCO ====================
-  const RADIUS = 41; // % del contenedor
-
   function renderLetters() {
     lettersContainer.innerHTML = '';
     const N = letters.length;
-    
     letters.forEach((item, i) => {
       const angleDeg = (360 / N) * i;
       const angleRad = (angleDeg - 90) * Math.PI / 180;
@@ -129,26 +102,20 @@
       btn.className = `letter-btn ${item.state}`;
       btn.textContent = item.ch;
       btn.addEventListener('click', () => focusLetter(i));
-      
+
       wrapper.appendChild(btn);
       lettersContainer.appendChild(wrapper);
     });
   }
 
   function focusLetter(idx) {
-    if (!isStarted) return;
-    
-    letters.forEach((l, i) => {
-      if (l.state === 'active' && i !== idx) l.state = 'pending';
-    });
-    
+    if (!state.isStarted) return;
+    letters.forEach((l, i) => { if (l.state === 'active' && i !== idx) l.state = 'pending'; });
     letters[idx].state = 'active';
     currentLetterIndex = idx;
-    
     activeLetterBadge.textContent = letters[idx].ch;
     roscoDefinition.textContent = letters[idx].definition || 'Sin definición';
     officialSolution.textContent = letters[idx].answer || '—';
-    
     renderLetters();
     updateCounts();
   }
@@ -164,215 +131,82 @@
   function updateCounts() {
     const g = letters.filter(l => l.state === 'green').length;
     const r = letters.filter(l => l.state === 'red').length;
-    const a = letters.filter(l => l.state === 'active').length;
-    const p = letters.filter(l => l.state === 'pending').length;
-    
+    const p = letters.filter(l => l.state === 'pending' || l.state === 'active').length;
     countGreen.textContent = g + ' Verdes';
     countRed.textContent = r + ' Rojas';
-    countPending.textContent = (p + a) + ' Restantes';
+    countPending.textContent = p + ' Restantes';
   }
 
-  // ==================== TIMER ====================
-  function startTimer() {
-    timeRemaining = timePerRound;
-    updateClockDisplay();
-    clockEl.classList.remove('hidden');
-    
-    timerInterval = setInterval(() => {
-      if (isPaused) return;
-      
-      timeRemaining--;
-      updateClockDisplay();
-      sdk.updateTimer(timeRemaining);
-      
-      if (timeRemaining <= 0) {
-        pauseTimer();
-      }
-    }, 1000);
-  }
-
-  function pauseTimer() {
-    if (timerInterval) {
-      clearInterval(timerInterval);
-      timerInterval = null;
-    }
-  }
-
-  function resumeTimer() {
-    if (timeRemaining > 0 && !timerInterval) {
-      timerInterval = setInterval(() => {
-        if (isPaused) return;
-        
-        timeRemaining--;
-        updateClockDisplay();
-        sdk.updateTimer(timeRemaining);
-        
-        if (timeRemaining <= 0) {
-          pauseTimer();
-        }
-      }, 1000);
-    }
-  }
-
-  function updateClockDisplay() {
-    const mins = Math.floor(timeRemaining / 60);
-    const secs = timeRemaining % 60;
-    clockValueEl.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    
-    if (timeRemaining <= 10) {
-      clockValueEl.classList.add('clock-warning');
-    } else {
-      clockValueEl.classList.remove('clock-warning');
-    }
+  function updateTeamUI() {
+    document.querySelectorAll('.team-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.team === state.selectedTeam);
+    });
+    teamIndicator.textContent = `EQUIPO ${state.selectedTeam}`;
   }
 
   // ==================== GAME LOGIC ====================
   function startGame() {
-    // Load questions from localStorage or use defaults
     const savedQuestions = sdk.getQuestions('rosco');
     if (savedQuestions.length > 0) {
       letters = ALPHABET.map((ch, i) => {
         const saved = savedQuestions.find(q => q.letter === ch);
-        return {
-          ch: ch,
-          state: 'pending',
-          definition: saved ? saved.definition : '',
-          answer: saved ? saved.answer : '',
-          synonyms: saved ? saved.synonyms : []
-        };
+        return { ch, state: 'pending', definition: saved ? saved.definition : '', answer: saved ? saved.answer : '', synonyms: saved ? saved.synonyms : [] };
       });
     } else {
-      letters = defaultLetters.map(q => ({
-        ...q,
-        state: 'pending'
-      }));
+      letters = defaultLetters.map(q => ({ ...q, state: 'pending' }));
     }
-    
-    // Get settings from selectors
-    totalRounds = parseInt(roundsSelect.value);
-    timePerRound = parseInt(timeSelect.value);
-    
-    currentRound = 1;
-    localScores = { A: 0, B: 0 };
-    isStarted = true;
-    
-    sdk.updateRound(currentRound, totalRounds);
-    sdk.setTimePerRound(timePerRound);
-    
-    // Show game
-    waitingState.classList.add('hidden');
+
+    state.totalRounds = parseInt(roundsSelect.value);
+    state.timePerUnit = parseInt(timeSelect.value);
+    state.currentRound = 1;
+    state.localScores = { A: 0, B: 0 };
+    state.isStarted = true;
+
+    sdk.updateRound(state.currentRound, state.totalRounds);
+    sdk.setTimePerRound(state.timePerUnit);
+    core.updateScoreDisplay();
+
+    $('waiting-state').classList.add('hidden');
     roscoContainer.classList.remove('hidden');
-    
-    // Focus first letter
+
+    core.setButtonsDisabled(false);
     focusLetter(0);
-    startTimer();
+    core.startTimer();
   }
 
   function nextRound() {
-    currentRound++;
-    if (currentRound > totalRounds) {
-      endGame();
-      return;
-    }
-    
-    sdk.updateRound(currentRound, totalRounds);
-    roundIndicator.textContent = `RONDA ${currentRound}`;
-    
-    // Reset letters
+    state.currentRound++;
+    if (state.currentRound > state.totalRounds) { core.endGame(); return; }
+    sdk.updateRound(state.currentRound, state.totalRounds);
+    roundIndicator.textContent = `RONDA ${state.currentRound}`;
     letters.forEach(l => l.state = 'pending');
     focusLetter(0);
   }
 
   function correctAnswer() {
     const active = letters.find(l => l.state === 'active');
-    if (active) {
-      setLetterState(active.ch, 'green');
-      localScores[selectedTeam] += 100;
-      sdk.updateScore(localScores);
-    }
-    
-    // Find next pending letter
+    if (active) { setLetterState(active.ch, 'green'); core.addCorrectPoints(state.selectedTeam); }
     const nextPending = letters.findIndex(l => l.state === 'pending');
-    if (nextPending >= 0) {
-      focusLetter(nextPending);
-    } else {
-      // All letters answered
-      endGame();
-    }
+    if (nextPending >= 0) focusLetter(nextPending);
+    else core.endGame();
   }
 
   function errorAnswer() {
     const active = letters.find(l => l.state === 'active');
-    if (active) {
-      setLetterState(active.ch, 'red');
-    }
-    
-    // Find next pending letter
+    if (active) setLetterState(active.ch, 'red');
     const nextPending = letters.findIndex(l => l.state === 'pending');
-    if (nextPending >= 0) {
-      focusLetter(nextPending);
-    } else {
-      endGame();
-    }
+    if (nextPending >= 0) focusLetter(nextPending);
+    else core.endGame();
   }
 
   function passTurn() {
     const active = letters.find(l => l.state === 'active');
-    if (active) {
-      // Keep as pending
-      setLetterState(active.ch, 'pending');
-    }
-    
-    // Switch team
-    selectedTeam = selectedTeam === 'A' ? 'B' : 'A';
+    if (active) setLetterState(active.ch, 'pending');
+    state.selectedTeam = state.selectedTeam === 'A' ? 'B' : 'A';
     updateTeamUI();
-    showTurnModal(`Equipo ${selectedTeam}`, 2000);
-    
-    // Find next pending letter
+    showTurnModal(`Equipo ${state.selectedTeam}`, 2000);
     const nextPending = letters.findIndex(l => l.state === 'pending');
-    if (nextPending >= 0) {
-      focusLetter(nextPending);
-    }
-  }
-
-  function endGame() {
-    pauseTimer();
-    isStarted = false;
-    
-    const winner = localScores.A > localScores.B ? 'A' :
-                   localScores.B > localScores.A ? 'B' : 'empate';
-
-    showResultsScreen({
-      winner: winner,
-      scores: localScores
-    }, () => {
-      sdk.gameOver({
-        winner: winner,
-        localScores: localScores,
-        stats: {
-          totalRounds: totalRounds,
-          finalScoreA: localScores.A,
-          finalScoreB: localScores.B
-        }
-      });
-      
-      // Reset to waiting state
-      waitingState.classList.remove('hidden');
-      roscoContainer.classList.add('hidden');
-      clockEl.classList.add('hidden');
-    });
-  }
-
-  function updateTeamUI() {
-    document.querySelectorAll('.team-btn').forEach(btn => {
-      const team = btn.dataset.team;
-      if (team === selectedTeam) {
-        btn.classList.add('active');
-      } else {
-        btn.classList.remove('active');
-      }
-    });
-    teamIndicator.textContent = `EQUIPO ${selectedTeam}`;
+    if (nextPending >= 0) focusLetter(nextPending);
   }
 
   // ==================== QUESTIONS MANAGEMENT ====================
@@ -396,134 +230,56 @@
   function openEditQuestion(index) {
     const modal = $('edit-question-modal');
     $('edit-question-index').value = index;
-    
     const q = letters[index];
     $('edit-letter').value = q.ch;
     $('edit-definition').value = q.definition || '';
     $('edit-answer').value = q.answer || '';
     $('edit-synonyms').value = (q.synonyms || []).join(', ');
-    
     modal.classList.remove('hidden');
   }
 
   function saveQuestion() {
     const index = parseInt($('edit-question-index').value);
-    const definition = $('edit-definition').value.trim();
-    const answer = $('edit-answer').value.trim();
-    const synonyms = $('edit-synonyms').value.split(',').map(s => s.trim()).filter(s => s);
-    
-    letters[index].definition = definition;
-    letters[index].answer = answer;
-    letters[index].synonyms = synonyms;
-    
-    // Save to localStorage
-    const questionsToSave = letters.map(l => ({
-      letter: l.ch,
-      definition: l.definition,
-      answer: l.answer,
-      synonyms: l.synonyms
-    }));
-    sdk.saveQuestions('rosco', questionsToSave);
-    
-    // Update display if this letter is active
+    letters[index].definition = $('edit-definition').value.trim();
+    letters[index].answer = $('edit-answer').value.trim();
+    letters[index].synonyms = $('edit-synonyms').value.split(',').map(s => s.trim()).filter(s => s);
+    sdk.saveQuestions('rosco', letters.map(l => ({ letter: l.ch, definition: l.definition, answer: l.answer, synonyms: l.synonyms })));
     if (letters[index].state === 'active') {
-      roscoDefinition.textContent = definition || 'Sin definición';
-      officialSolution.textContent = answer || '—';
+      roscoDefinition.textContent = letters[index].definition || 'Sin definición';
+      officialSolution.textContent = letters[index].answer || '—';
     }
-    
     renderQuestions();
     $('edit-question-modal').classList.add('hidden');
   }
 
   // ==================== EVENT LISTENERS ====================
-  
-  // Start button
-  $('btn-start').addEventListener('click', () => {
-    showStartModal(() => {
-      startGame();
-    });
-  });
-
-  // Pause button
-  $('btn-pause').addEventListener('click', () => {
-    if (isPaused) {
-      isPaused = false;
-      resumeTimer();
-      hidePauseModal();
-      $('btn-pause').innerHTML = '<span class="material-symbols-outlined" style="font-size: 1rem;">pause</span> PAUSAR';
-    } else {
-      isPaused = true;
-      pauseTimer();
-      showPauseModal();
-      $('btn-pause').innerHTML = '<span class="material-symbols-outlined" style="font-size: 1rem;">play</span> CONTINUAR';
-    }
-  });
-
-  // End button
-  $('btn-end').addEventListener('click', () => {
-    showEndConfirmModal(() => {
-      endGame();
-    });
-  });
-
-  // Verdict buttons
   $('btn-correct').addEventListener('click', correctAnswer);
   $('btn-error').addEventListener('click', errorAnswer);
   $('btn-pass').addEventListener('click', passTurn);
 
-  // Team selector
   document.querySelectorAll('.team-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      selectedTeam = btn.dataset.team;
-      updateTeamUI();
-    });
+    btn.addEventListener('click', () => { state.selectedTeam = btn.dataset.team; updateTeamUI(); });
   });
 
-  // Rounds/Time selectors
-  roundsSelect.addEventListener('change', () => {
-    totalRounds = parseInt(roundsSelect.value);
-    sdk.updateRound(currentRound, totalRounds);
-  });
-
-  timeSelect.addEventListener('change', () => {
-    timePerRound = parseInt(timeSelect.value);
-    sdk.setTimePerRound(timePerRound);
-  });
-
-  // Questions panel toggle
   $('btn-toggle-questions').addEventListener('click', () => {
     questionsPanel.classList.toggle('hidden');
-    if (!questionsPanel.classList.contains('hidden')) {
-      renderQuestions();
-    }
+    if (!questionsPanel.classList.contains('hidden')) renderQuestions();
   });
 
-  // Add question button
   $('btn-add-question').addEventListener('click', () => {
-    // Find first letter without definition
     const idx = letters.findIndex(l => !l.definition);
-    if (idx >= 0) {
-      openEditQuestion(idx);
-    } else {
-      alert('Todas las letras ya tienen definiciones');
-    }
+    if (idx >= 0) openEditQuestion(idx);
+    else alert('Todas las letras ya tienen definiciones');
   });
 
-  // Questions list delegation
   questionsList.addEventListener('click', (e) => {
     const editBtn = e.target.closest('.question-item-btn.edit');
-    if (editBtn) {
-      openEditQuestion(parseInt(editBtn.dataset.index));
-    }
+    if (editBtn) openEditQuestion(parseInt(editBtn.dataset.index));
   });
 
-  // Edit question modal
   $('btn-save-question').addEventListener('click', saveQuestion);
-  $('btn-cancel-question').addEventListener('click', () => {
-    $('edit-question-modal').classList.add('hidden');
-  });
+  $('btn-cancel-question').addEventListener('click', () => $('edit-question-modal').classList.add('hidden'));
 
-  // Init
   renderLetters();
   updateCounts();
 

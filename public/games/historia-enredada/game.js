@@ -1,493 +1,492 @@
 /**
  * HISTORIA ENREDADA - Game Logic
- * ¡Crea una historia entre todos!
+ * Representación presencial con palabras del público
  */
-
 (function() {
   'use strict';
 
-  // ==================== GAME STATE ====================
-  const sdk = new GameSDK();
-  let localScores = { A: 0, B: 0 };
-  let selectedTeam = 'A';
-  let currentRound = 1;
-  let totalRounds = 5;
-  let timePerRound = 45;
-  let isPaused = false;
-  let isStarted = false;
-  let timerInterval = null;
-  let timeRemaining = 0;
-  let currentStoryIndex = 0;
+  const core = GameCore.create({
+    gameName: 'historia-enredada',
+    defaultRounds: 5,
+    defaultTime: 45,
+    warningThreshold: 10,
+    onTimeUp: () => endTurn(),
+    onGetHiddenContainer: () => $('waiting-state'),
+    onNext: () => endTurn(),
+    onStart: startGame,
+    extraStats: () => ({ totalRounds: core.state.totalRounds, storiesUsed: storiesUsed.length })
+  });
 
-  // Story state
-  let storySentences = [];
-  let currentSentenceIndex = 0;
+  const { sdk, state, $ } = core;
 
-  // Default story starts
-  const defaultStarts = [
-    { title: 'La aventura del bosque', text: 'Erase una vez un gato llamado Michi que vivía en un bosque encantado donde los árboles susurraban secretos al viento.' },
-    { title: 'El misterio de la luna', text: 'Una noche, mientras toda la ciudad dormía, un rayo de luz plateada cayó sobre el tejado del viejo edificio.' },
-    { title: 'El viaje submarino', text: 'El capitán del submarino dio la orden de sumergirse, sin saber que los esperaba un mundo desconocido bajo las olas.' },
-    { title: 'La máquina del tiempo', text: 'Cuando el reloj dio la medianoche, la extraña máquina comenzó a brillar con todos los colores del arcoíris.' },
-    { title: 'El secreto de la abuela', text: 'La abuela siempre decía que el viejo baúl del ático contenía tesoros, pero nunca permitía que nadie lo abriera.' }
+  // ==================== GAME-SPECIFIC STATE ====================
+  let currentStoryIndex = -1;
+  let storiesUsed = [];
+  let currentColorSpaceIndex = 0;
+  let revealedWords = [];
+
+  const COLOR_OPTIONS = [
+    { name: 'AZUL', hex: '#0050a0', emoji: '🔵' },
+    { name: 'ROJO', hex: '#ba1a1a', emoji: '🔴' },
+    { name: 'VERDE', hex: '#008562', emoji: '🟢' },
+    { name: 'AMARILLO', hex: '#ffc72c', emoji: '🟡' },
+    { name: 'NARANJA', hex: '#e65100', emoji: '🟠' },
+    { name: 'MORADO', hex: '#7b1fa2', emoji: '🟣' },
+    { name: 'ROSADO', hex: '#e91e63', emoji: '💗' },
+    { name: 'NEGRO', hex: '#1c1b1b', emoji: '⚫' }
   ];
 
-  let storyStarts = [...defaultStarts];
+  const defaultStories = [
+    {
+      title: 'La aventura del bosque',
+      description: 'Un gato mágico en un bosque encantado',
+      image: '',
+      conductorChar: 'El Narrador',
+      playerChar: 'Michi el Gato',
+      text: 'Erase una vez un gato llamado Michi que vivía en un bosque encantado donde los árboles susurraban secretos al viento.',
+      colorSpaces: [
+        { colorIndex: 0, description: 'Nombre de un familiar' },
+        { colorIndex: 1, description: 'Un objeto cotidiano' },
+        { colorIndex: 2, description: 'Una comida' }
+      ]
+    },
+    {
+      title: 'El misterio de la luna',
+      description: 'Un rayo de luz sobre la ciudad',
+      image: '',
+      conductorChar: 'El Detective',
+      playerChar: 'La Testigo',
+      text: 'Una noche, mientras toda la ciudad dormía, un rayo de luz plateada cayó sobre el tejado del viejo edificio.',
+      colorSpaces: [
+        { colorIndex: 3, description: 'Un animal' },
+        { colorIndex: 0, description: 'Un lugar' },
+        { colorIndex: 4, description: 'Una emoción' }
+      ]
+    }
+  ];
 
-  // ==================== DOM ELEMENTS ====================
-  const $ = (id) => document.getElementById(id);
-  
-  const clockEl = $('clock');
-  const clockValueEl = $('clock-value');
-  const waitingState = $('waiting-state');
+  let stories = JSON.parse(JSON.stringify(defaultStories));
+
+  // ==================== DOM ====================
+  const storySelectContainer = $('story-select-container');
+  const storyCards = $('story-cards');
   const storyContainer = $('story-container');
   const turnIndicator = $('turn-indicator');
   const turnText = $('turn-text');
   const storyTitle = $('story-title');
   const storyText = $('story-text');
   const instructionText = $('instruction-text');
-  const sentenceInput = $('sentence-input');
   const officialStart = $('official-start');
-  const roundsSelect = $('rounds-select');
-  const timeSelect = $('time-select');
+  const colorSpaceDisplay = $('color-space-display');
+  const colorSpaceBadge = $('color-space-badge');
+  const colorSpaceLabel = $('color-space-label');
+  const colorSpaceDescription = $('color-space-description');
+  const colorWordInput = $('color-word-input');
   const questionsList = $('questions-list');
+  const questionsListPanel = $('questions-list-panel');
   const questionsPanel = $('questions-panel');
 
-  // ==================== SDK INITIALIZATION ====================
-  sdk.init((sessionData) => {
-    console.log('Session data received:', sessionData);
-    if (sessionData.teams) {
-      const teamA = sessionData.teams.find(t => t.letter === 'A');
-      const teamB = sessionData.teams.find(t => t.letter === 'B');
-      if (teamA) localScores.A = teamA.cumulativeScore || 0;
-      if (teamB) localScores.B = teamB.cumulativeScore || 0;
-      updateScoreDisplay();
-    }
-  });
-
-  sdk.onPause(() => {
-    isPaused = true;
-    pauseTimer();
-    showPauseModal();
-  });
-
-  sdk.onResume(() => {
-    isPaused = false;
-    resumeTimer();
-    hidePauseModal();
-  });
-
-  sdk.onNextRound(() => {
-    nextTurn();
-  });
-
-  // ==================== TIMER ====================
-  function startTimer() {
-    timeRemaining = timePerRound;
-    updateClockDisplay();
-    clockEl.classList.remove('hidden');
-    
-    timerInterval = setInterval(() => {
-      if (isPaused) return;
-      
-      timeRemaining--;
-      updateClockDisplay();
-      sdk.updateTimer(timeRemaining);
-      
-      if (timeRemaining <= 0) {
-        endTurn();
-      }
-    }, 1000);
+  // ==================== STORIES MANAGEMENT ====================
+  function loadStories() {
+    const saved = sdk.getQuestions('historia-enredada');
+    if (saved.length > 0) stories = saved;
   }
 
-  function pauseTimer() {
-    if (timerInterval) {
-      clearInterval(timerInterval);
-      timerInterval = null;
-    }
+  function saveStories() {
+    sdk.saveQuestions('historia-enredada', stories);
   }
 
-  function resumeTimer() {
-    if (timeRemaining > 0 && !timerInterval) {
-      timerInterval = setInterval(() => {
-        if (isPaused) return;
-        
-        timeRemaining--;
-        updateClockDisplay();
-        sdk.updateTimer(timeRemaining);
-        
-        if (timeRemaining <= 0) {
-          endTurn();
-        }
-      }, 1000);
-    }
-  }
-
-  function updateClockDisplay() {
-    const mins = Math.floor(timeRemaining / 60);
-    const secs = timeRemaining % 60;
-    clockValueEl.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    
-    if (timeRemaining <= 10) {
-      clockValueEl.classList.add('clock-warning');
-    } else {
-      clockValueEl.classList.remove('clock-warning');
-    }
-  }
-
-  // ==================== GAME LOGIC ====================
-  function startGame() {
-    // Load story starts from localStorage or use defaults
-    const savedStarts = sdk.getQuestions('historia-enredada');
-    if (savedStarts.length > 0) {
-      storyStarts = savedStarts;
-    }
-    
-    // Get settings from selectors
-    totalRounds = parseInt(roundsSelect.value);
-    timePerRound = parseInt(timeSelect.value);
-    
-    currentRound = 1;
-    currentStoryIndex = 0;
-    localScores = { A: 0, B: 0 };
-    selectedTeam = 'A';
-    isStarted = true;
-    
-    sdk.updateRound(currentRound, totalRounds);
-    sdk.setTimePerRound(timePerRound);
-    
-    // Show game
-    waitingState.classList.add('hidden');
-    storyContainer.classList.remove('hidden');
-    
-    startNewStory();
-    updateTurnDisplay();
-    startTimer();
-  }
-
-  function startNewStory() {
-    if (currentStoryIndex >= storyStarts.length) {
-      currentStoryIndex = 0;
-    }
-
-    const story = storyStarts[currentStoryIndex];
-    storyTitle.textContent = story.title;
-    officialStart.textContent = story.text;
-    
-    // Initialize story
-    storySentences = [{ text: story.text, team: 'start' }];
-    currentSentenceIndex = 0;
-    
-    renderStory();
-    
-    // Enable input
-    sentenceInput.disabled = false;
-    sentenceInput.value = '';
-    sentenceInput.focus();
-    instructionText.textContent = 'Escribe una oración para continuar la historia';
-    
-    // Reset timer
-    pauseTimer();
-    timeRemaining = timePerRound;
-    updateClockDisplay();
-    startTimer();
-  }
-
-  function renderStory() {
-    storyText.innerHTML = '';
-    storySentences.forEach((sentence, index) => {
-      const div = document.createElement('div');
-      div.className = `story-sentence ${sentence.team}`;
-      if (index === storySentences.length - 1) {
-        div.classList.add('current');
-      }
-      div.textContent = sentence.text;
-      storyText.appendChild(div);
-    });
-    
-    // Scroll to bottom
-    storyText.scrollTop = storyText.scrollHeight;
-  }
-
-  function submitSentence() {
-    const sentence = sentenceInput.value.trim();
-    if (!sentence) return;
-    
-    // Add sentence to story
-    storySentences.push({ text: sentence, team: selectedTeam });
-    currentSentenceIndex++;
-    
-    // Add points
-    localScores[selectedTeam] += 50;
-    updateScoreDisplay();
-    sdk.updateScore(localScores);
-    
-    // Clear input
-    sentenceInput.value = '';
-    
-    // Render updated story
-    renderStory();
-    
-    // Switch team
-    selectedTeam = selectedTeam === 'A' ? 'B' : 'A';
-    updateTurnDisplay();
-    showTurnModal(`Equipo ${selectedTeam}`, 1500);
-    
-    // Reset timer
-    pauseTimer();
-    timeRemaining = timePerRound;
-    updateClockDisplay();
-    startTimer();
-  }
-
-  function awardBonus(points) {
-    localScores[selectedTeam] += points;
-    updateScoreDisplay();
-    sdk.updateScore(localScores);
-  }
-
-  function endTurn() {
-    // Switch team and continue
-    selectedTeam = selectedTeam === 'A' ? 'B' : 'A';
-    updateTurnDisplay();
-    showTurnModal(`Equipo ${selectedTeam}`, 1500);
-    
-    if (isStarted) {
-      // Reset timer for next turn
-      pauseTimer();
-      timeRemaining = timePerRound;
-      updateClockDisplay();
-      startTimer();
-    }
-  }
-
-  function nextTurn() {
-    endTurn();
-  }
-
-  function endGame() {
-    pauseTimer();
-    isStarted = false;
-    
-    const winner = localScores.A > localScores.B ? 'A' :
-                   localScores.B > localScores.A ? 'B' : 'empate';
-
-    showResultsScreen({
-      winner: winner,
-      scores: localScores
-    }, () => {
-      sdk.gameOver({
-        winner: winner,
-        localScores: localScores,
-        stats: {
-          totalRounds: totalRounds,
-          sentences: storySentences.length,
-          finalScoreA: localScores.A,
-          finalScoreB: localScores.B
-        }
-      });
-      
-      // Reset to waiting state
-      waitingState.classList.remove('hidden');
-      storyContainer.classList.add('hidden');
-      clockEl.classList.add('hidden');
-    });
-  }
-
-  function updateScoreDisplay() {
-    $('score-a').textContent = localScores.A;
-    $('score-b').textContent = localScores.B;
-  }
-
-  function updateTurnDisplay() {
-    turnText.textContent = `TURNO: EQUIPO ${selectedTeam}`;
-    turnIndicator.style.background = selectedTeam === 'A' ? '#ffdad6' : '#fff9e6';
-    
-    const dot = turnIndicator.querySelector('.turn-dot');
-    dot.style.background = selectedTeam === 'A' ? '#ba1a1a' : '#775a00';
-  }
-
-  // ==================== STORY STARTS MANAGEMENT ====================
-  function renderStarts() {
-    questionsList.innerHTML = '';
-    storyStarts.forEach((start, index) => {
-      const div = document.createElement('div');
-      div.className = 'question-item';
-      div.innerHTML = `
-        <span class="question-item-text">${index + 1}. ${start.title}</span>
-        <div class="question-item-actions">
-          <button class="question-item-btn edit" data-index="${index}">
-            <span class="material-symbols-outlined" style="font-size: 1rem;">edit</span>
-          </button>
-          <button class="question-item-btn delete" data-index="${index}">
-            <span class="material-symbols-outlined" style="font-size: 1rem;">delete</span>
-          </button>
+  function renderStoryCards() {
+    storyCards.innerHTML = '';
+    stories.forEach((story, index) => {
+      const card = document.createElement('div');
+      card.className = 'story-card';
+      card.innerHTML = `
+        ${story.image ? `<img src="${story.image}" alt="${story.title}" class="story-card-image">` : '<div class="story-card-placeholder">📖</div>'}
+        <div class="story-card-body">
+          <h3 class="story-card-title">${story.title}</h3>
+          <p class="story-card-desc">${story.description || ''}</p>
+          <p class="story-card-chars">${story.conductorChar || 'Conductor'} + ${story.playerChar || 'Jugador'}</p>
         </div>
       `;
-      questionsList.appendChild(div);
+      card.addEventListener('click', () => selectStory(index));
+      storyCards.appendChild(card);
     });
   }
 
-  function openEditStart(index = -1) {
-    const modal = $('edit-start-modal');
-    $('edit-start-index').value = index;
-    
-    if (index >= 0) {
-      const start = storyStarts[index];
-      $('edit-start-title').value = start.title;
-      $('edit-start-text').value = start.text;
+  function selectStory(index) {
+    currentStoryIndex = index;
+    const story = stories[index];
+    officialStart.textContent = story.text;
+    storyTitle.textContent = story.title;
+    revealedWords = [];
+    currentColorSpaceIndex = 0;
+
+    storySelectContainer.classList.add('hidden');
+    storyContainer.classList.remove('hidden');
+
+    instructionText.textContent = `${story.conductorChar || 'Conductor'}: "${story.text}"`;
+    storyText.innerHTML = `<div class="story-sentence start">${story.text}</div>`;
+
+    if (story.colorSpaces && story.colorSpaces.length > 0) {
+      showColorSpace(0);
     } else {
-      $('edit-start-title').value = '';
-      $('edit-start-text').value = '';
+      colorSpaceDisplay.style.display = 'none';
     }
-    
-    modal.classList.remove('hidden');
+
+    updateTurnDisplay();
   }
 
-  function saveStart() {
-    const index = parseInt($('edit-start-index').value);
-    const title = $('edit-start-title').value.trim();
-    const text = $('edit-start-text').value.trim();
-    
-    if (!title || !text) {
-      alert('El título y el comienzo son obligatorios');
+  function showColorSpace(index) {
+    const story = stories[currentStoryIndex];
+    if (!story || !story.colorSpaces || index >= story.colorSpaces.length) {
+      colorSpaceDisplay.style.display = 'none';
+      instructionText.textContent = 'Historia completada — El conductor determina el ganador por aplausos';
       return;
     }
 
-    const start = { title, text };
-    
-    if (index >= 0) {
-      storyStarts[index] = start;
-    } else {
-      storyStarts.push(start);
+    const space = story.colorSpaces[index];
+    const color = COLOR_OPTIONS[space.colorIndex] || COLOR_OPTIONS[0];
+    currentColorSpaceIndex = index;
+
+    colorSpaceDisplay.style.display = '';
+    colorSpaceBadge.style.background = color.hex;
+    colorSpaceBadge.style.color = color.hex === '#ffc72c' ? '#1c1b1b' : 'white';
+    colorSpaceLabel.textContent = `ESPACIO ${index + 1} → ${color.emoji} ${color.name}`;
+    colorSpaceDescription.textContent = space.description || '';
+    colorWordInput.value = '';
+    colorWordInput.focus();
+    instructionText.textContent = `El público saca un papel ${color.name} — Conductor revela la palabra`;
+  }
+
+  function revealColorWord() {
+    const word = colorWordInput.value.trim();
+    if (!word) return;
+    revealedWords.push({ spaceIndex: currentColorSpaceIndex, word });
+
+    const story = stories[currentStoryIndex];
+    const space = story.colorSpaces[currentColorSpaceIndex];
+    const color = COLOR_OPTIONS[space.colorIndex] || COLOR_OPTIONS[0];
+
+    const sentenceDiv = document.createElement('div');
+    sentenceDiv.className = 'story-sentence color-word';
+    sentenceDiv.style.borderLeftColor = color.hex;
+    sentenceDiv.innerHTML = `<span style="color:${color.hex};font-weight:bold;">[${color.name}]</span> "${word}"`;
+    storyText.appendChild(sentenceDiv);
+    storyText.scrollTop = storyText.scrollHeight;
+
+    // Play reveal sound
+    playSound('reveal');
+
+    currentColorSpaceIndex++;
+    showColorSpace(currentColorSpaceIndex);
+  }
+
+  function awardWinner(team) {
+    core.addCorrectPoints(team);
+    if (team !== state.selectedTeam) {
+      core.addPenaltyPoints(state.selectedTeam);
     }
-    
-    sdk.saveQuestions('historia-enredada', storyStarts);
-    renderStarts();
+    // Play winner sound
+    playSound('winner');
+  }
+
+  function endTurn() {
+    state.selectedTeam = state.selectedTeam === 'A' ? 'B' : 'A';
+    updateTurnDisplay();
+    showTurnModal(`Equipo ${state.selectedTeam}`, 1500);
+    if (state.isStarted) {
+      core.pauseTimer();
+      state.timeRemaining = state.timePerUnit;
+      state.totalTime = state.timePerUnit;
+      core.updateClockDisplay();
+      core.updateTimerBar();
+      core.startTimer();
+    }
+  }
+
+  function startGame() {
+    loadStories();
+    state.localScores = { A: 0, B: 0 };
+    state.selectedTeam = 'A';
+    state.isStarted = true;
+    storiesUsed = [];
+    currentStoryIndex = -1;
+
+    sdk.updateRound(1, state.totalRounds);
+    core.updateScoreDisplay();
+
+    $('waiting-state').classList.add('hidden');
+    storySelectContainer.classList.remove('hidden');
+    storyContainer.classList.add('hidden');
+
+    core.setButtonsDisabled(false);
+    renderStoryCards();
+  }
+
+  function nextStory() {
+    storiesUsed.push(currentStoryIndex);
+    currentStoryIndex = -1;
+    storyContainer.classList.add('hidden');
+    storySelectContainer.classList.remove('hidden');
+    renderStoryCards();
+    instructionText.textContent = 'Selecciona la siguiente historia';
+  }
+
+  function updateTurnDisplay() {
+    turnText.textContent = `EQUIPO ${state.selectedTeam}`;
+    turnIndicator.style.background = state.selectedTeam === 'A' ? '#ffdad6' : '#fff9e6';
+    const dot = turnIndicator.querySelector('.turn-dot');
+    dot.style.background = state.selectedTeam === 'A' ? '#ba1a1a' : '#775a00';
+  }
+
+  // ==================== STORY EDITOR ====================
+  function renderStories() {
+    questionsList.innerHTML = '';
+    questionsListPanel.innerHTML = '';
+    stories.forEach((story, index) => {
+      const div = document.createElement('div');
+      div.className = 'question-item';
+      div.innerHTML = `
+        <span class="question-item-text">${index + 1}. ${story.title}</span>
+        <div class="question-item-actions">
+          <button class="question-item-btn edit" data-index="${index}"><span class="material-symbols-outlined" style="font-size: 1rem;">edit</span></button>
+          <button class="question-item-btn delete" data-index="${index}"><span class="material-symbols-outlined" style="font-size: 1rem;">delete</span></button>
+        </div>
+      `;
+      if (questionsList) questionsList.appendChild(div.cloneNode(true));
+      if (questionsListPanel) questionsListPanel.appendChild(div);
+    });
+  }
+
+  let editingColorSpaces = [];
+
+  function renderColorSpacesEditor() {
+    const container = $('color-spaces-editor');
+    if (!container) return;
+    container.innerHTML = '';
+    editingColorSpaces.forEach((space, i) => {
+      const color = COLOR_OPTIONS[space.colorIndex] || COLOR_OPTIONS[0];
+      const div = document.createElement('div');
+      div.className = 'color-space-editor-item';
+      div.innerHTML = `
+        <select class="select-input color-space-select" data-index="${i}" style="width: auto; min-width: 120px;">
+          ${COLOR_OPTIONS.map((c, ci) => `<option value="${ci}" ${ci === space.colorIndex ? 'selected' : ''}>${c.emoji} ${c.name}</option>`).join('')}
+        </select>
+        <input type="text" class="select-input color-space-desc" data-index="${i}" value="${space.description || ''}" placeholder="Indicación del papel..." style="flex: 1;">
+        <button class="question-item-btn delete" data-index="${i}" style="flex-shrink:0;"><span class="material-symbols-outlined" style="font-size: 1rem;">delete</span></button>
+      `;
+      container.appendChild(div);
+    });
+
+    container.querySelectorAll('.color-space-select').forEach(sel => {
+      sel.addEventListener('change', () => {
+        editingColorSpaces[parseInt(sel.dataset.index)].colorIndex = parseInt(sel.value);
+      });
+    });
+    container.querySelectorAll('.color-space-desc').forEach(inp => {
+      inp.addEventListener('input', () => {
+        editingColorSpaces[parseInt(inp.dataset.index)].description = inp.value;
+      });
+    });
+    container.querySelectorAll('.question-item-btn.delete').forEach(btn => {
+      btn.addEventListener('click', () => {
+        editingColorSpaces.splice(parseInt(btn.dataset.index), 1);
+        renderColorSpacesEditor();
+      });
+    });
+  }
+
+  function openEditStory(index = -1) {
+    const modal = $('edit-start-modal');
+    $('edit-start-index').value = index;
+    if (index >= 0) {
+      const s = stories[index];
+      $('edit-start-title').value = s.title || '';
+      $('edit-start-description').value = s.description || '';
+      $('edit-start-image').value = s.image || '';
+      $('edit-start-conductor-char').value = s.conductorChar || '';
+      $('edit-start-player-char').value = s.playerChar || '';
+      $('edit-start-text').value = s.text || '';
+      editingColorSpaces = JSON.parse(JSON.stringify(s.colorSpaces || []));
+    } else {
+      $('edit-start-title').value = '';
+      $('edit-start-description').value = '';
+      $('edit-start-image').value = '';
+      $('edit-start-conductor-char').value = '';
+      $('edit-start-player-char').value = '';
+      $('edit-start-text').value = '';
+      editingColorSpaces = [];
+    }
+    renderColorSpacesEditor();
+    modal.classList.remove('hidden');
+  }
+
+  function saveStory() {
+    const index = parseInt($('edit-start-index').value);
+    const title = $('edit-start-title').value.trim();
+    const text = $('edit-start-text').value.trim();
+    if (!title || !text) { alert('El título y el texto son obligatorios'); return; }
+    const story = {
+      title,
+      description: $('edit-start-description').value.trim(),
+      image: $('edit-start-image').value.trim(),
+      conductorChar: $('edit-start-conductor-char').value.trim(),
+      playerChar: $('edit-start-player-char').value.trim(),
+      text,
+      colorSpaces: JSON.parse(JSON.stringify(editingColorSpaces))
+    };
+    if (index >= 0) stories[index] = story;
+    else stories.push(story);
+    saveStories();
+    renderStories();
     $('edit-start-modal').classList.add('hidden');
   }
 
-  function deleteStart(index) {
-    if (confirm('¿Eliminar este comienzo?')) {
-      storyStarts.splice(index, 1);
-      sdk.saveQuestions('historia-enredada', storyStarts);
-      renderStarts();
+  function deleteStory(index) {
+    if (confirm('¿Eliminar esta historia?')) {
+      stories.splice(index, 1);
+      saveStories();
+      renderStories();
     }
   }
 
   // ==================== EVENT LISTENERS ====================
-  
-  // Start button
-  $('btn-start').addEventListener('click', () => {
-    showStartModal(() => {
-      startGame();
-    });
-  });
+  $('btn-reveal-word').addEventListener('click', revealColorWord);
+  colorWordInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') revealColorWord(); });
 
-  // Pause button
-  $('btn-pause').addEventListener('click', () => {
-    if (isPaused) {
-      isPaused = false;
-      resumeTimer();
-      hidePauseModal();
-      $('btn-pause').innerHTML = '<span class="material-symbols-outlined" style="font-size: 1rem;">pause</span> PAUSAR';
-    } else {
-      isPaused = true;
-      pauseTimer();
-      showPauseModal();
-      $('btn-pause').innerHTML = '<span class="material-symbols-outlined" style="font-size: 1rem;">play</span> CONTINUAR';
-    }
-  });
+  $('btn-winner-a').addEventListener('click', () => { awardWinner('A'); nextStory(); });
+  $('btn-winner-b').addEventListener('click', () => { awardWinner('B'); nextStory(); });
 
-  // End button
-  $('btn-end').addEventListener('click', () => {
-    showEndConfirmModal(() => {
-      endGame();
-    });
-  });
+  $('btn-new-story').addEventListener('click', nextStory);
 
-  // New story button
-  $('btn-new-story').addEventListener('click', () => {
-    currentStoryIndex++;
-    startNewStory();
-  });
+  // Print script button
+  $('btn-print-script').addEventListener('click', printScript);
 
-  // Submit sentence
-  $('btn-submit').addEventListener('click', () => {
-    submitSentence();
-  });
-
-  sentenceInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-      submitSentence();
-    }
-  });
-
-  // Bonus buttons
-  $('btn-correct').addEventListener('click', () => {
-    awardBonus(50);
-  });
-
-  $('btn-funny').addEventListener('click', () => {
-    awardBonus(100);
-  });
-
-  // Skip button
-  $('btn-skip').addEventListener('click', () => {
-    endTurn();
-  });
-
-  // Team selection
   document.querySelectorAll('.team-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.team-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      selectedTeam = btn.dataset.team;
+      state.selectedTeam = btn.dataset.team;
       updateTurnDisplay();
     });
   });
 
-  // Rounds/Time selectors
-  roundsSelect.addEventListener('change', () => {
-    totalRounds = parseInt(roundsSelect.value);
-    sdk.updateRound(currentRound, totalRounds);
-  });
-
-  timeSelect.addEventListener('change', () => {
-    timePerRound = parseInt(timeSelect.value);
-    sdk.setTimePerRound(timePerRound);
-  });
-
-  // Story starts panel toggle
   $('btn-toggle-questions').addEventListener('click', () => {
     questionsPanel.classList.toggle('hidden');
-    if (!questionsPanel.classList.contains('hidden')) {
-      renderStarts();
-    }
+    if (!questionsPanel.classList.contains('hidden')) renderStories();
   });
 
-  // Add start button
-  $('btn-add-start').addEventListener('click', () => {
-    openEditStart(-1);
+  $('btn-add-start-panel').addEventListener('click', () => openEditStory(-1));
+  $('btn-add-story').addEventListener('click', () => openEditStory(-1));
+
+  [questionsList, questionsListPanel].forEach(list => {
+    if (!list) return;
+    list.addEventListener('click', (e) => {
+      const editBtn = e.target.closest('.question-item-btn.edit');
+      const deleteBtn = e.target.closest('.question-item-btn.delete');
+      if (editBtn) openEditStory(parseInt(editBtn.dataset.index));
+      if (deleteBtn) deleteStory(parseInt(deleteBtn.dataset.index));
+    });
   });
 
-  // Starts list delegation
-  questionsList.addEventListener('click', (e) => {
-    const editBtn = e.target.closest('.question-item-btn.edit');
-    const deleteBtn = e.target.closest('.question-item-btn.delete');
+  $('btn-save-start').addEventListener('click', saveStory);
+  $('btn-cancel-start').addEventListener('click', () => $('edit-start-modal').classList.add('hidden'));
+
+  $('btn-add-color-space').addEventListener('click', () => {
+    editingColorSpaces.push({ colorIndex: 0, description: '' });
+    renderColorSpacesEditor();
+  });
+
+  // ==================== SOUND EFFECTS ====================
+  function playSound(type) {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
     
-    if (editBtn) {
-      openEditStart(parseInt(editBtn.dataset.index));
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    
+    gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+    
+    if (type === 'reveal') {
+      oscillator.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+      oscillator.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); // E5
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+      oscillator.start(audioCtx.currentTime);
+      oscillator.stop(audioCtx.currentTime + 0.3);
+    } else if (type === 'winner') {
+      oscillator.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+      oscillator.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.15); // E5
+      oscillator.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.3); // G5
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+      oscillator.start(audioCtx.currentTime);
+      oscillator.stop(audioCtx.currentTime + 0.5);
     }
-    if (deleteBtn) {
-      deleteStart(parseInt(deleteBtn.dataset.index));
-    }
-  });
+  }
 
-  // Edit start modal
-  $('btn-save-start').addEventListener('click', saveStart);
-  $('btn-cancel-start').addEventListener('click', () => {
-    $('edit-start-modal').classList.add('hidden');
-  });
+  // ==================== PRINT SCRIPT ====================
+  function printScript() {
+    if (currentStoryIndex < 0) return;
+    const story = stories[currentStoryIndex];
+    const conductor = $('player-conductor').value.trim() || 'Conductor';
+    const actor = $('player-actor').value.trim() || 'Jugador';
+    
+    let scriptContent = `
+      <html>
+      <head>
+        <title>Guion - ${story.title}</title>
+        <style>
+          body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+          h1 { color: #1c1b1b; border-bottom: 2px solid #1c1b1b; padding-bottom: 10px; }
+          h2 { color: #5d3f3e; margin-top: 30px; }
+          .character { font-weight: bold; color: #0050a0; }
+          .stage-direction { font-style: italic; color: #5d3f3e; margin: 10px 0; padding: 10px; background: #f6f3f2; border-left: 3px solid #0050a0; }
+          .color-word { margin: 5px 0; padding: 5px 10px; border-left: 3px solid; }
+          @media print { body { padding: 0; } }
+        </style>
+      </head>
+      <body>
+        <h1>📖 ${story.title}</h1>
+        <p><strong>Conductor:</strong> ${conductor}</p>
+        <p><strong>Jugador:</strong> ${actor}</p>
+        <p><strong>Espacios de color:</strong> ${story.colorSpaces ? story.colorSpaces.length : 0}</p>
+        
+        <h2>Inicio de la Historia</h2>
+        <div class="stage-direction">${story.text}</div>
+        
+        <h2>Palabras del Público</h2>
+    `;
+    
+    if (story.colorSpaces && story.colorSpaces.length > 0) {
+      story.colorSpaces.forEach((space, i) => {
+        const color = COLOR_OPTIONS[space.colorIndex] || COLOR_OPTIONS[0];
+        scriptContent += `
+          <div class="color-word" style="border-color: ${color.hex};">
+            <strong>${color.emoji} ${color.name}:</strong> ${space.description || 'Sin descripción'}
+          </div>
+        `;
+      });
+    }
+    
+    scriptContent += `
+        <h2>Fin de la Historia</h2>
+        <div class="stage-direction">El conductor determina el ganador por aplausos del público.</div>
+        
+        <hr style="margin-top: 40px;">
+        <p style="color: #5d3f3e; font-size: 0.9rem;">Guion generado por CUMPEO - Historia Enredada</p>
+      </body>
+      </html>
+    `;
+    
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(scriptContent);
+    printWindow.document.close();
+    printWindow.print();
+  }
+
+  // Init
+  loadStories();
+  renderStories();
 
 })();

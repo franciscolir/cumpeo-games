@@ -64,7 +64,7 @@ function showStartModal(callback, options = {}) {
 }
 
 /**
- * Muestra modal de pausa con Pupi
+ * Muestra modal de pausa
  */
 function showPauseModal() {
   const existing = document.getElementById('pause-overlay');
@@ -75,9 +75,11 @@ function showPauseModal() {
   overlay.className = 'pause-overlay';
   overlay.innerHTML = `
     <div class="pause-message">
-      <img src="/images/pupi-pausa.png" alt="Pupi Pausa" style="width: 150px; height: 150px; object-fit: contain;">
-      <h2>¡ALTO AHÍ!</h2>
-      <p style="color: #5d3f3e; font-size: 1.1rem;">Juego en pausa</p>
+      <h2>¡PAUSA!</h2>
+      <p style="color: #5d3f3e; font-size: 1.1rem; margin-bottom: 1.5rem;">Juego en pausa</p>
+      <button id="btn-resume-game" class="btn-primary" style="min-width: 200px;">
+        <span class="material-symbols-outlined" style="margin-right: 0.5rem;">play_arrow</span> REANUDAR
+      </button>
     </div>
   `;
 
@@ -87,6 +89,12 @@ function showPauseModal() {
   } else {
     document.body.appendChild(overlay);
   }
+
+  document.getElementById('btn-resume-game').addEventListener('click', () => {
+    hidePauseModal();
+    // Dispatch custom event so game.js can handle resume
+    window.dispatchEvent(new CustomEvent('game-resume'));
+  });
 }
 
 /**
@@ -143,7 +151,6 @@ function showEndConfirmModal(onConfirm, onCancel) {
   overlay.className = 'modal-overlay';
   overlay.innerHTML = `
     <div class="modal-content">
-      <img src="/images/pupi-pausa.png" alt="Pupi" style="width: 100px; height: 100px; object-fit: contain; margin-bottom: 1rem;">
       <h2 style="font-family: 'Bangers', cursive; font-size: 2rem; margin-bottom: 1rem;">¿FINALIZAR JUEGO?</h2>
       <p style="color: #5d3f3e; margin-bottom: 1.5rem;">¿Estás seguro que deseas terminar el juego actual?</p>
       <div style="display: flex; gap: 1rem; justify-content: center;">
@@ -172,7 +179,7 @@ function showEndConfirmModal(onConfirm, onCancel) {
 }
 
 /**
- * Muestra pantalla de resultados
+ * Muestra pantalla de resultados en 2 columnas (Equipo A / Equipo B)
  * @param {Object} result - { winner: 'A'|'B'|'empate', scores: { A: number, B: number } }
  * @param {Function} onClose - Callback al cerrar
  */
@@ -183,46 +190,39 @@ function showResultsScreen(result, onClose) {
   const winnerTeam = result.winner;
   const isTie = winnerTeam === 'empate';
   
-  let winnerImage, loserImage, winnerText;
-  
+  let titleText;
   if (isTie) {
-    winnerImage = '/images/pupi-pulgar-arriba.png';
-    loserImage = '/images/pupi-pulgar-arriba.png';
-    winnerText = '¡EMPATE!';
+    titleText = '¡EMPATE!';
   } else if (winnerTeam === 'A') {
-    winnerImage = '/images/pupi-ganador.png';
-    loserImage = '/images/pupi-perdedor.png';
-    winnerText = '¡EQUIPO A GANA!';
+    titleText = '¡EQUIPO A GANA!';
   } else {
-    winnerImage = '/images/pupi-ganador.png';
-    loserImage = '/images/pupi-perdedor.png';
-    winnerText = '¡EQUIPO B GANA!';
+    titleText = '¡EQUIPO B GANA!';
   }
+
+  const imageA = winnerTeam === 'A' ? '/images/pupi-ganador.png' : (winnerTeam === 'B' ? '/images/pupi-perdedor.png' : '/images/pupi-pulgar-arriba.png');
+  const imageB = winnerTeam === 'B' ? '/images/pupi-ganador.png' : (winnerTeam === 'A' ? '/images/pupi-perdedor.png' : '/images/pupi-pulgar-arriba.png');
 
   overlay.innerHTML = `
     <div class="results-card">
-      <h1 style="font-family: 'Bangers', cursive; font-size: 3rem; margin-bottom: 2rem; color: #1c1b1b;">${winnerText}</h1>
+      <h1 class="results-title">${titleText}</h1>
       
-      <div class="winner-section">
-        <img src="${winnerImage}" alt="Ganador">
-        <p style="font-family: 'Bangers', cursive; font-size: 1.5rem; margin-top: 1rem;">
-          ${isTie ? 'AMBOS EQUIPOS' : `EQUIPO ${winnerTeam}`}
-        </p>
-        <p style="font-size: 2rem; font-weight: bold; color: #bb0024;">
-          ${isTie ? result.scores.A : (winnerTeam === 'A' ? result.scores.A : result.scores.B)} PTS
-        </p>
+      <div class="results-grid">
+        <div class="team-column ${winnerTeam === 'A' || isTie ? 'winner' : ''}">
+          <img src="${imageA}" alt="Equipo A">
+          <div class="team-label">EQUIPO A</div>
+          <div class="team-score">${result.scores.A} PTS</div>
+          ${winnerTeam === 'A' ? '<span class="winner-badge">GANADOR</span>' : ''}
+          ${isTie ? '<span class="winner-badge" style="background:#ffc72c;color:#1c1b1b">EMPATE</span>' : ''}
+        </div>
+        <div class="team-column ${winnerTeam === 'B' ? 'winner' : ''}">
+          <img src="${imageB}" alt="Equipo B">
+          <div class="team-label">EQUIPO B</div>
+          <div class="team-score">${result.scores.B} PTS</div>
+          ${winnerTeam === 'B' ? '<span class="winner-badge">GANADOR</span>' : ''}
+        </div>
       </div>
 
-      ${!isTie ? `
-      <div class="loser-section" style="margin-top: 1.5rem;">
-        <img src="${loserImage}" alt="Perdedor">
-        <p style="font-size: 1.2rem; color: #5d3f3e; margin-top: 0.5rem;">
-          Equipo ${winnerTeam === 'A' ? 'B' : 'A'}: ${winnerTeam === 'A' ? result.scores.B : result.scores.A} PTS
-        </p>
-      </div>
-      ` : ''}
-
-      <button id="btn-close-results" class="btn-primary" style="margin-top: 2rem; width: 100%;">
+      <button id="btn-close-results" class="btn-primary" style="width: 100%;">
         CERRAR
       </button>
     </div>

@@ -1,522 +1,278 @@
 /**
- * ¿QUÉ DICE? - Game Logic
- * Adivina quién dijo la frase
+ * ¿QUÉ PIENSA EL PÚBLICO? - Game Logic
+ * Encuesta binaria: el público vota, los equipos predicen
  */
-
 (function() {
   'use strict';
 
-  // ==================== GAME STATE ====================
-  const sdk = new GameSDK();
-  let localScores = { A: 0, B: 0 };
-  let selectedTeam = 'A';
-  let currentRound = 1;
-  let totalRounds = 5;
-  let timePerQuestion = 20;
-  let isPaused = false;
-  let isStarted = false;
-  let timerInterval = null;
-  let timeRemaining = 0;
-  let currentQuoteIndex = 0;
+  const core = GameCore.create({
+    gameName: 'que-dice',
+    defaultRounds: 1,
+    defaultTime: 60,
+    warningThreshold: 5,
+    onTimeUp: () => {
+      // Show timeout message and auto-advance
+      resultContainer.classList.remove('hidden');
+      resultBox.textContent = '¡TIEMPO AGOTADO!';
+      resultBox.className = 'result-box error';
+      document.querySelectorAll('.prediction-btn').forEach(btn => btn.disabled = true);
+      document.querySelectorAll('.survey-option-btn').forEach(btn => btn.disabled = true);
+      setTimeout(() => nextQuestion(), 2000);
+    },
+    onGetHiddenContainer: () => $('waiting-state'),
+    onNext: () => nextQuestion(),
+    onStart: startGame,
+    extraStats: () => ({ totalRounds: core.state.totalRounds })
+  });
 
-  // Default quotes
-  const defaultQuotes = [
-    {
-      text: "Ser o no ser, esa es la cuestión.",
-      author: "William Shakespeare",
-      options: ["William Shakespeare", "Miguel de Cervantes", "Pablo Neruda", "Gabriel García Márquez"]
-    },
-    {
-      text: "La vida es lo que pasa mientras estás ocupado haciendo otros planes.",
-      author: "John Lennon",
-      options: ["John Lennon", "Paul McCartney", "Bob Dylan", "Eric Clapton"]
-    },
-    {
-      text: "El único modo de hacer un gran trabajo es amar lo que haces.",
-      author: "Steve Jobs",
-      options: ["Steve Jobs", "Bill Gates", "Mark Zuckerberg", "Elon Musk"]
-    },
-    {
-      text: "No pienso, luego no existo.",
-      author: "René Descartes",
-      options: ["René Descartes", "Sócrates", "Platón", "Aristóteles"]
-    },
-    {
-      text: "La imaginación es más importante que el conocimiento.",
-      author: "Albert Einstein",
-      options: ["Albert Einstein", "Isaac Newton", "Nikola Tesla", "Galileo Galilei"]
-    }
+  const { sdk, state, $ } = core;
+
+  // ==================== GAME-SPECIFIC STATE ====================
+  let currentQuestionIndex = 0;
+  let questionsPerRound = 5;
+  let predictions = { A: null, B: null };
+  let isRevealed = false;
+
+  const defaultQuestions = [
+    { text: "¿Cuál es la mejor hora para almorzar?", optionA: "12:00", optionB: "14:00", correctOption: "A" },
+    { text: "¿Pizza o hamburguesa?", optionA: "Pizza", optionB: "Hamburguesa", correctOption: "A" },
+    { text: "¿Playa o montaña?", optionA: "Playa", optionB: "Montaña", correctOption: "B" },
+    { text: "¿Gatos o perros?", optionA: "Gatos", optionB: "Perros", correctOption: "B" },
+    { text: "¿Madrugador o noctámbulo?", optionA: "Madrugador", optionB: "Noctámbulo", correctOption: "A" }
   ];
 
-  let quotes = [...defaultQuotes];
+  let questions = [...defaultQuestions];
 
-  // ==================== DOM ELEMENTS ====================
-  const $ = (id) => document.getElementById(id);
-  
-  const clockEl = $('clock');
-  const clockValueEl = $('clock-value');
-  const waitingState = $('waiting-state');
-  const quoteContainer = $('quote-container');
-  const turnIndicator = $('turn-indicator');
-  const turnText = $('turn-text');
-  const quoteText = $('quote-text');
-  const quoteIndex = $('quote-index');
-  const officialAuthor = $('official-author');
+  // ==================== DOM ====================
+  const surveyContainer = $('survey-container');
+  const surveyQuestionText = $('survey-question-text');
+  const questionIndex = $('question-index');
+  const officialSolution = $('official-solution');
   const resultContainer = $('result-container');
   const resultBox = $('result-box');
   const roundsSelect = $('rounds-select');
   const timeSelect = $('time-select');
   const questionsList = $('questions-list');
-  const questionsPanel = $('questions-panel');
-
-  // ==================== SDK INITIALIZATION ====================
-  sdk.init((sessionData) => {
-    console.log('Session data received:', sessionData);
-    if (sessionData.teams) {
-      const teamA = sessionData.teams.find(t => t.letter === 'A');
-      const teamB = sessionData.teams.find(t => t.letter === 'B');
-      if (teamA) localScores.A = teamA.cumulativeScore || 0;
-      if (teamB) localScores.B = teamB.cumulativeScore || 0;
-      updateScoreDisplay();
-    }
-  });
-
-  sdk.onPause(() => {
-    isPaused = true;
-    pauseTimer();
-    showPauseModal();
-  });
-
-  sdk.onResume(() => {
-    isPaused = false;
-    resumeTimer();
-    hidePauseModal();
-  });
-
-  sdk.onNextRound(() => {
-    nextQuote();
-  });
-
-  // ==================== TIMER ====================
-  function startTimer() {
-    timeRemaining = timePerQuestion;
-    updateClockDisplay();
-    clockEl.classList.remove('hidden');
-    
-    timerInterval = setInterval(() => {
-      if (isPaused) return;
-      
-      timeRemaining--;
-      updateClockDisplay();
-      sdk.updateTimer(timeRemaining);
-      
-      if (timeRemaining <= 0) {
-        revealAnswer();
-      }
-    }, 1000);
-  }
-
-  function pauseTimer() {
-    if (timerInterval) {
-      clearInterval(timerInterval);
-      timerInterval = null;
-    }
-  }
-
-  function resumeTimer() {
-    if (timeRemaining > 0 && !timerInterval) {
-      timerInterval = setInterval(() => {
-        if (isPaused) return;
-        
-        timeRemaining--;
-        updateClockDisplay();
-        sdk.updateTimer(timeRemaining);
-        
-        if (timeRemaining <= 0) {
-          revealAnswer();
-        }
-      }, 1000);
-    }
-  }
-
-  function updateClockDisplay() {
-    const mins = Math.floor(timeRemaining / 60);
-    const secs = timeRemaining % 60;
-    clockValueEl.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    
-    if (timeRemaining <= 5) {
-      clockValueEl.classList.add('clock-warning');
-    } else {
-      clockValueEl.classList.remove('clock-warning');
-    }
-  }
+  const btnNext = $('btn-next');
+  const predictionsPanel = $('predictions-panel');
+  const predictionADisplay = $('prediction-a-display');
+  const predictionBDisplay = $('prediction-b-display');
+  const surveyOptions = $('survey-options');
 
   // ==================== GAME LOGIC ====================
   function startGame() {
-    // Load quotes from localStorage or use defaults
-    const savedQuotes = sdk.getQuestions('que-dice');
-    if (savedQuotes.length > 0) {
-      quotes = savedQuotes;
-    }
-    
-    // Get settings from selectors
-    totalRounds = parseInt(roundsSelect.value);
-    timePerQuestion = parseInt(timeSelect.value);
-    
-    currentRound = 1;
-    currentQuoteIndex = 0;
-    localScores = { A: 0, B: 0 };
-    selectedTeam = 'A';
-    isStarted = true;
-    
-    sdk.updateRound(currentRound, totalRounds);
-    sdk.setTimePerRound(timePerQuestion);
-    
-    // Show game
-    waitingState.classList.add('hidden');
-    quoteContainer.classList.remove('hidden');
-    
-    loadQuote();
-    updateTurnDisplay();
-    startTimer();
+    const savedQuestions = sdk.getQuestions('que-dice');
+    if (savedQuestions.length > 0) questions = savedQuestions;
+
+    state.totalRounds = parseInt(roundsSelect.value);
+    questionsPerRound = parseInt(timeSelect.value);
+    state.currentRound = 1;
+    currentQuestionIndex = 0;
+    state.localScores = { A: 0, B: 0 };
+    state.selectedTeam = 'A';
+    state.isStarted = true;
+
+    sdk.updateRound(state.currentRound, state.totalRounds);
+
+    $('waiting-state').classList.add('hidden');
+    surveyContainer.classList.remove('hidden');
+
+    core.setButtonsDisabled(false);
+    core.updateScoreDisplay();
+    loadQuestion();
   }
 
-  function loadQuote() {
-    if (currentQuoteIndex >= quotes.length) {
-      currentQuoteIndex = 0;
+  function loadQuestion() {
+    if (currentQuestionIndex >= questionsPerRound) {
+      currentQuestionIndex = 0;
+    }
+    if (currentQuestionIndex >= questions.length) {
+      currentQuestionIndex = 0;
     }
 
-    const quote = quotes[currentQuoteIndex];
-    quoteText.textContent = quote.text;
-    quoteIndex.textContent = `${currentQuoteIndex + 1}/${quotes.length}`;
-    officialAuthor.textContent = quote.author;
-    
-    // Shuffle options
-    const shuffledOptions = [...quote.options].sort(() => Math.random() - 0.5);
-    
-    document.getElementById('option-0').textContent = shuffledOptions[0];
-    document.getElementById('option-1').textContent = shuffledOptions[1];
-    document.getElementById('option-2').textContent = shuffledOptions[2];
-    document.getElementById('option-3').textContent = shuffledOptions[3];
-    
-    // Store correct answer
-    document.getElementById('options-container').dataset.correct = quote.author;
+    const q = questions[currentQuestionIndex];
+    surveyQuestionText.textContent = q.text;
+    questionIndex.textContent = `${currentQuestionIndex + 1}/${questionsPerRound}`;
+    officialSolution.textContent = `${q.correctOption} — ${q['option' + q.correctOption]}`;
 
-    // Reset buttons
-    document.querySelectorAll('.option-btn').forEach(btn => {
-      btn.classList.remove('correct', 'wrong', 'selected-correct');
+    $('survey-option-a').textContent = q.optionA;
+    $('survey-option-b').textContent = q.optionB;
+
+    predictions = { A: null, B: null };
+    isRevealed = false;
+    predictionADisplay.textContent = '—';
+    predictionBDisplay.textContent = '—';
+    predictionADisplay.className = 'prediction-display';
+    predictionBDisplay.className = 'prediction-display';
+
+    document.querySelectorAll('.prediction-btn').forEach(btn => {
+      btn.classList.remove('selected', 'correct-prediction', 'wrong-prediction');
       btn.disabled = false;
     });
-
-    // Hide result
+    document.querySelectorAll('.survey-option-btn').forEach(btn => {
+      btn.classList.remove('correct-option', 'wrong-option');
+    });
     resultContainer.classList.add('hidden');
-    
-    // Reset timer
-    pauseTimer();
-    timeRemaining = timePerQuestion;
-    updateClockDisplay();
-    startTimer();
   }
 
-  function selectOption(displayIndex) {
-    if (isPaused || !isStarted) return;
+  function setPrediction(team, prediction) {
+    predictions[team] = prediction;
+    const display = team === 'A' ? predictionADisplay : predictionBDisplay;
+    display.textContent = prediction;
+    display.className = 'prediction-display selected';
 
-    const quote = quotes[currentQuoteIndex];
-    const selectedAuthor = document.getElementById(`option-${displayIndex}`).textContent;
-    const isCorrect = selectedAuthor === quote.author;
-    
-    const buttons = document.querySelectorAll('.option-btn');
+    document.querySelectorAll(`.prediction-btn[data-team="${team}"]`).forEach(btn => {
+      btn.classList.remove('selected');
+      if (btn.dataset.prediction === prediction) btn.classList.add('selected');
+    });
+  }
 
-    // Disable all buttons
-    buttons.forEach(btn => btn.disabled = true);
+  function revealResult() {
+    if (predictions.A === null || predictions.B === null) {
+      alert('Ambos equipos deben registrar su predicción');
+      return;
+    }
 
-    // Show which was correct
-    buttons.forEach((btn, i) => {
-      const btnAuthor = document.getElementById(`option-${i}`).textContent;
-      if (btnAuthor === quote.author) {
-        btn.classList.add('selected-correct');
-      }
+    isRevealed = true;
+    const q = questions[currentQuestionIndex];
+    const correct = q.correctOption;
+
+    document.querySelectorAll('.prediction-btn').forEach(btn => btn.disabled = true);
+
+    document.querySelectorAll('.survey-option-btn').forEach(btn => {
+      if (btn.dataset.option === correct) btn.classList.add('correct-option');
+      else btn.classList.add('wrong-option');
     });
 
-    // Show result
-    resultContainer.classList.remove('hidden');
-
-    if (isCorrect) {
-      localScores[selectedTeam] += 100;
-      updateScoreDisplay();
-      sdk.updateScore(localScores);
-      resultBox.textContent = '¡Correcto! +100 pts';
-      resultBox.className = 'result-box success';
+    if (predictions.A === correct) {
+      core.addCorrectPoints('A');
+      predictionADisplay.className = 'prediction-display correct-prediction';
     } else {
-      buttons[displayIndex].classList.add('wrong');
-      resultBox.textContent = `¡Incorrecto! Era ${quote.author}`;
-      resultBox.className = 'result-box error';
+      predictionADisplay.className = 'prediction-display wrong-prediction';
+      core.addPenaltyPoints('A');
     }
 
-    // Next quote after delay
-    setTimeout(() => {
-      currentQuoteIndex++;
-      loadQuote();
-    }, 2000);
-  }
+    if (predictions.B === correct) {
+      core.addCorrectPoints('B');
+      predictionBDisplay.className = 'prediction-display correct-prediction';
+    } else {
+      predictionBDisplay.className = 'prediction-display wrong-prediction';
+      core.addPenaltyPoints('B');
+    }
 
-  function revealAnswer() {
-    pauseTimer();
-    
-    const quote = quotes[currentQuoteIndex];
-    const buttons = document.querySelectorAll('.option-btn');
-    
-    // Show correct answer
-    buttons.forEach((btn, i) => {
-      const btnAuthor = document.getElementById(`option-${i}`).textContent;
-      if (btnAuthor === quote.author) {
-        btn.classList.add('selected-correct');
-      }
-      btn.disabled = true;
-    });
+    const resultA = predictions.A === correct;
+    const resultB = predictions.B === correct;
+    let msg = '';
+    if (resultA && resultB) msg = '¡Ambos acertaron!';
+    else if (resultA) msg = '¡Equipo A acierta!';
+    else if (resultB) msg = '¡Equipo B acierta!';
+    else msg = 'Nadie acierta';
 
-    // Show result
     resultContainer.classList.remove('hidden');
-    resultBox.textContent = `¡Tiempo! Era ${quote.author}`;
-    resultBox.className = 'result-box error';
-
-    // Next quote after delay
-    setTimeout(() => {
-      currentQuoteIndex++;
-      loadQuote();
-    }, 2000);
+    resultBox.textContent = msg;
+    resultBox.className = 'result-box ' + (resultA || resultB ? 'success' : 'error');
   }
 
-  function nextQuote() {
-    currentQuoteIndex++;
-    if (currentQuoteIndex >= quotes.length) {
-      currentRound++;
-      if (currentRound > totalRounds) {
-        endGame();
-        return;
-      }
-      sdk.updateRound(currentRound, totalRounds);
-      currentQuoteIndex = 0;
+  function nextQuestion() {
+    currentQuestionIndex++;
+    if (currentQuestionIndex >= questionsPerRound) {
+      state.currentRound++;
+      if (state.currentRound > state.totalRounds) { core.endGame(); return; }
+      sdk.updateRound(state.currentRound, state.totalRounds);
+      currentQuestionIndex = 0;
     }
-    loadQuote();
+    loadQuestion();
   }
 
-  function endGame() {
-    pauseTimer();
-    isStarted = false;
-    
-    const winner = localScores.A > localScores.B ? 'A' :
-                   localScores.B > localScores.A ? 'B' : 'empate';
-
-    showResultsScreen({
-      winner: winner,
-      scores: localScores
-    }, () => {
-      sdk.gameOver({
-        winner: winner,
-        localScores: localScores,
-        stats: {
-          totalRounds: totalRounds,
-          finalScoreA: localScores.A,
-          finalScoreB: localScores.B
-        }
-      });
-      
-      // Reset to waiting state
-      waitingState.classList.remove('hidden');
-      quoteContainer.classList.add('hidden');
-      clockEl.classList.add('hidden');
-    });
-  }
-
-  function updateScoreDisplay() {
-    $('score-a').textContent = localScores.A;
-    $('score-b').textContent = localScores.B;
-  }
-
-  function updateTurnDisplay() {
-    turnText.textContent = `TURNO: EQUIPO ${selectedTeam}`;
-    turnIndicator.style.background = selectedTeam === 'A' ? '#ffdad6' : '#fff9e6';
-    
-    const dot = turnIndicator.querySelector('.turn-dot');
-    dot.style.background = selectedTeam === 'A' ? '#ba1a1a' : '#775a00';
-  }
-
-  // ==================== QUOTES MANAGEMENT ====================
-  function renderQuotes() {
+  // ==================== QUESTIONS MANAGEMENT ====================
+  function renderQuestions() {
     questionsList.innerHTML = '';
-    quotes.forEach((quote, index) => {
+    questions.forEach((q, index) => {
       const div = document.createElement('div');
       div.className = 'question-item';
       div.innerHTML = `
-        <span class="question-item-text">${index + 1}. "${quote.text.substring(0, 40)}..." - ${quote.author}</span>
+        <span class="question-item-text">${index + 1}. "${q.text.substring(0, 40)}..." [${q.correctOption}]</span>
         <div class="question-item-actions">
-          <button class="question-item-btn edit" data-index="${index}">
-            <span class="material-symbols-outlined" style="font-size: 1rem;">edit</span>
-          </button>
-          <button class="question-item-btn delete" data-index="${index}">
-            <span class="material-symbols-outlined" style="font-size: 1rem;">delete</span>
-          </button>
+          <button class="question-item-btn edit" data-index="${index}"><span class="material-symbols-outlined" style="font-size: 1rem;">edit</span></button>
+          <button class="question-item-btn delete" data-index="${index}"><span class="material-symbols-outlined" style="font-size: 1rem;">delete</span></button>
         </div>
       `;
       questionsList.appendChild(div);
     });
   }
 
-  function openEditQuote(index = -1) {
-    const modal = $('edit-quote-modal');
-    $('edit-quote-index').value = index;
-    
+  function openEditQuestion(index = -1) {
+    const modal = $('edit-question-modal');
+    $('edit-question-index').value = index;
     if (index >= 0) {
-      const quote = quotes[index];
-      $('edit-quote-text').value = quote.text;
-      $('edit-quote-author').value = quote.author;
-      
-      const wrongOptions = quote.options.filter(o => o !== quote.author);
-      $('edit-quote-wrong1').value = wrongOptions[0] || '';
-      $('edit-quote-wrong2').value = wrongOptions[1] || '';
-      $('edit-quote-wrong3').value = wrongOptions[2] || '';
+      const q = questions[index];
+      $('edit-question-text').value = q.text;
+      $('edit-option-a').value = q.optionA;
+      $('edit-option-b').value = q.optionB;
+      $('edit-correct-option').value = q.correctOption;
     } else {
-      $('edit-quote-text').value = '';
-      $('edit-quote-author').value = '';
-      $('edit-quote-wrong1').value = '';
-      $('edit-quote-wrong2').value = '';
-      $('edit-quote-wrong3').value = '';
+      $('edit-question-text').value = '';
+      $('edit-option-a').value = '';
+      $('edit-option-b').value = '';
+      $('edit-correct-option').value = 'A';
     }
-    
     modal.classList.remove('hidden');
   }
 
-  function saveQuote() {
-    const index = parseInt($('edit-quote-index').value);
-    const text = $('edit-quote-text').value.trim();
-    const author = $('edit-quote-author').value.trim();
-    const wrong1 = $('edit-quote-wrong1').value.trim();
-    const wrong2 = $('edit-quote-wrong2').value.trim();
-    const wrong3 = $('edit-quote-wrong3').value.trim();
-    
-    if (!text || !author) {
-      alert('La frase y el autor son obligatorios');
-      return;
-    }
-
-    const options = [author, wrong1, wrong2, wrong3].filter(o => o);
-    const quote = { text, author, options };
-    
-    if (index >= 0) {
-      quotes[index] = quote;
-    } else {
-      quotes.push(quote);
-    }
-    
-    sdk.saveQuestions('que-dice', quotes);
-    renderQuotes();
-    $('edit-quote-modal').classList.add('hidden');
+  function saveQuestion() {
+    const index = parseInt($('edit-question-index').value);
+    const text = $('edit-question-text').value.trim();
+    const optionA = $('edit-option-a').value.trim();
+    const optionB = $('edit-option-b').value.trim();
+    const correctOption = $('edit-correct-option').value;
+    if (!text || !optionA || !optionB) { alert('Todos los campos son obligatorios'); return; }
+    const question = { text, optionA, optionB, correctOption };
+    if (index >= 0) questions[index] = question;
+    else questions.push(question);
+    sdk.saveQuestions('que-dice', questions);
+    renderQuestions();
+    $('edit-question-modal').classList.add('hidden');
   }
 
-  function deleteQuote(index) {
-    if (confirm('¿Eliminar esta frase?')) {
-      quotes.splice(index, 1);
-      sdk.saveQuestions('que-dice', quotes);
-      renderQuotes();
+  function deleteQuestion(index) {
+    if (confirm('¿Eliminar esta pregunta?')) {
+      questions.splice(index, 1);
+      sdk.saveQuestions('que-dice', questions);
+      renderQuestions();
     }
   }
 
   // ==================== EVENT LISTENERS ====================
-  
-  // Start button
-  $('btn-start').addEventListener('click', () => {
-    showStartModal(() => {
-      startGame();
-    });
-  });
+  btnNext.addEventListener('click', nextQuestion);
+  $('btn-reveal').addEventListener('click', revealResult);
 
-  // Pause button
-  $('btn-pause').addEventListener('click', () => {
-    if (isPaused) {
-      isPaused = false;
-      resumeTimer();
-      hidePauseModal();
-      $('btn-pause').innerHTML = '<span class="material-symbols-outlined" style="font-size: 1rem;">pause</span> PAUSAR';
-    } else {
-      isPaused = true;
-      pauseTimer();
-      showPauseModal();
-      $('btn-pause').innerHTML = '<span class="material-symbols-outlined" style="font-size: 1rem;">play</span> CONTINUAR';
-    }
-  });
-
-  // End button
-  $('btn-end').addEventListener('click', () => {
-    showEndConfirmModal(() => {
-      endGame();
-    });
-  });
-
-  // Next button
-  $('btn-next').addEventListener('click', () => {
-    nextQuote();
-  });
-
-  // Option buttons
-  document.querySelectorAll('.option-btn').forEach(btn => {
+  document.querySelectorAll('.prediction-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      const index = parseInt(btn.dataset.index);
-      selectOption(index);
+      setPrediction(btn.dataset.team, btn.dataset.prediction);
     });
   });
 
-  // Team selection
   document.querySelectorAll('.team-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.team-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      selectedTeam = btn.dataset.team;
-      updateTurnDisplay();
+      state.selectedTeam = btn.dataset.team;
     });
   });
 
-  // Rounds/Time selectors
-  roundsSelect.addEventListener('change', () => {
-    totalRounds = parseInt(roundsSelect.value);
-    sdk.updateRound(currentRound, totalRounds);
-  });
+  $('btn-add-question').addEventListener('click', () => openEditQuestion(-1));
 
-  timeSelect.addEventListener('change', () => {
-    timePerQuestion = parseInt(timeSelect.value);
-    sdk.setTimePerRound(timePerQuestion);
-  });
-
-  // Quotes panel toggle
-  $('btn-toggle-questions').addEventListener('click', () => {
-    questionsPanel.classList.toggle('hidden');
-    if (!questionsPanel.classList.contains('hidden')) {
-      renderQuotes();
-    }
-  });
-
-  // Add quote button
-  $('btn-add-quote').addEventListener('click', () => {
-    openEditQuote(-1);
-  });
-
-  // Quotes list delegation
   questionsList.addEventListener('click', (e) => {
     const editBtn = e.target.closest('.question-item-btn.edit');
     const deleteBtn = e.target.closest('.question-item-btn.delete');
-    
-    if (editBtn) {
-      openEditQuote(parseInt(editBtn.dataset.index));
-    }
-    if (deleteBtn) {
-      deleteQuote(parseInt(deleteBtn.dataset.index));
-    }
+    if (editBtn) openEditQuestion(parseInt(editBtn.dataset.index));
+    if (deleteBtn) deleteQuestion(parseInt(deleteBtn.dataset.index));
   });
 
-  // Edit quote modal
-  $('btn-save-quote').addEventListener('click', saveQuote);
-  $('btn-cancel-quote').addEventListener('click', () => {
-    $('edit-quote-modal').classList.add('hidden');
-  });
+  $('btn-save-question').addEventListener('click', saveQuestion);
+  $('btn-cancel-question').addEventListener('click', () => $('edit-question-modal').classList.add('hidden'));
+
+  // Init
+  renderQuestions();
 
 })();

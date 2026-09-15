@@ -20,13 +20,92 @@
 
   <div class="game-layout">
 
+    <!-- CONFIG VIEW (full-screen overlay inside game-layout) -->
+    <div id="config-view" class="config-view">
+      <div class="config-card">
+        <button id="btn-close-config" class="config-close-btn">✕ CERRAR</button>
+        <h2>⚙️ CONFIGURACIÓN</h2>
+
+        <!-- Selectores -->
+        <div class="config-section">
+          <div class="config-section-title">Tiempo y Rondas</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+            <div class="select-container">
+              <label class="select-label">Tiempo/Ronda</label>
+              <select id="time-select" class="select-input">
+                <option value="60">60 seg</option>
+                <option value="90" selected>90 seg</option>
+                <option value="120">120 seg</option>
+              </select>
+            </div>
+            <div class="select-container">
+              <label class="select-label">Rondas</label>
+              <select id="rounds-select" class="select-input">
+                <option value="3">3 Rondas</option>
+                <option value="5" selected>5 Rondas</option>
+                <option value="7">7 Rondas</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="config-section">
+          <div class="config-section-title">Puntaje</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+            <div class="select-container">
+              <label class="select-label">Puntos por correcta</label>
+              <select id="config-correct-points" class="select-input">
+                <option value="50">50 pts</option>
+                <option value="100" selected>100 pts</option>
+                <option value="150">150 pts</option>
+                <option value="200">200 pts</option>
+                <option value="300">300 pts</option>
+              </select>
+            </div>
+            <div class="select-container">
+              <label class="select-label">Penalización</label>
+              <div style="display:flex; align-items:center; gap:0.75rem; margin-top:0.25rem;">
+                <input type="checkbox" id="config-penalty-toggle" style="width:1.2rem; height:1.2rem; cursor:pointer;">
+                <label for="config-penalty-toggle" style="font-size:0.85rem; cursor:pointer;">Restar por incorrecta</label>
+              </div>
+              <select id="config-penalty-points" class="select-input" style="margin-top:0.5rem;">
+                <option value="10">-10 pts</option>
+                <option value="25" selected>-25 pts</option>
+                <option value="50">-50 pts</option>
+                <option value="100">-100 pts</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Palabras -->
+        <div class="config-section">
+          <div class="config-section-title">Palabras</div>
+          <div id="questions-list-config"></div>
+          <button id="btn-add-word-config" class="btn-secondary" style="width:100%; margin-top:0.5rem;">
+            + AGREGAR PALABRA
+          </button>
+        </div>
+
+      </div>
+    </div>
+
     <!-- AREA DE JUEGO (8 columnas) -->
     <section id="game-area" class="game-area">
       
-      <!-- RELOJ -->
-      <div id="clock" class="clock-container hidden">
-        <span class="material-symbols-outlined" style="margin-right: 0.5rem;">timer</span>
-        <span id="clock-value" class="clock-value">00:00</span>
+      <!-- TIMER ROW: reloj + barra de mecha -->
+      <div id="timer-row" class="timer-row hidden">
+        <div class="clock-container">
+          <span class="material-symbols-outlined" style="margin-right:0.25rem;">timer</span>
+          <span id="clock-value" class="clock-value">00:00</span>
+        </div>
+        <div class="timer-bar-wrapper">
+          <span class="timer-dynamite">💣</span>
+          <div id="timer-bar-fill" class="timer-bar-fill" style="width:100%"></div>
+        </div>
+        <div class="timer-scoreboard">
+          <span class="score-badge team-a">🔴 <span id="score-a">0</span></span>
+          <span class="score-badge team-b">🟡 <span id="score-b">0</span></span>
+        </div>
       </div>
 
       <!-- CONTENIDO DEL JUEGO -->
@@ -54,8 +133,8 @@
             </div>
           </div>
 
-          <!-- Canvas de dibujo -->
-          <div class="canvas-wrapper">
+          <!-- Canvas de dibujo (modo Dibuja) -->
+          <div id="mode-dibuja" class="canvas-wrapper">
             <canvas id="drawing-canvas" class="drawing-canvas"></canvas>
             
             <!-- Herramientas -->
@@ -87,11 +166,34 @@
             </div>
           </div>
 
+          <!-- Modo Mímica -->
+          <div id="mode-mime" class="hidden mime-container">
+            <div class="mime-instructions">
+              <span class="material-symbols-outlined" style="font-size: 4rem;">person</span>
+              <h3>MODO MÍMICA</h3>
+              <p>El jugador debe representar la palabra con gestos y movimientos</p>
+              <p style="font-size: 0.85rem; color: #5d3f3e;">NO se puede hablar ni hacer sonidos</p>
+            </div>
+          </div>
+
+          <!-- Modo Escritura -->
+          <div id="mode-escritura" class="hidden escritura-container">
+            <div class="escritura-instructions">
+              <span class="material-symbols-outlined" style="font-size: 4rem;">edit</span>
+              <h3>MODO ESCRITURA</h3>
+              <p>Escribe pistas para que el equipo adivine</p>
+              <textarea id="clue-textarea" class="select-input" style="width: 100%; min-height: 100px; margin-top: 1rem;" placeholder="Escribe una pista aquí..."></textarea>
+              <button id="btn-send-clue" class="btn-primary" style="margin-top: 0.5rem;">
+                <span class="material-symbols-outlined">send</span> ENVIAR PISTA
+              </button>
+            </div>
+          </div>
+
           <!-- Botones de control del turno -->
           <div class="turn-controls">
             <button id="btn-correct" class="btn-correct">
               <span class="material-symbols-outlined">check_circle</span>
-              ¡CORRECTO! +100
+              ¡CORRECTO!
             </button>
             <button id="btn-pass" class="btn-pass">
               <span class="material-symbols-outlined">skip_next</span>
@@ -108,24 +210,12 @@
     <!-- AREA CONDUCTOR (4 columnas) -->
     <aside id="conductor-area" class="conductor-area">
       <div class="conductor-panel">
-        
-        <!-- Título -->
-        <div style="text-align: center; margin-bottom: 1.5rem;">
-          <h3 style="font-family: 'Bangers', cursive; font-size: 1.5rem; color: #1c1b1b;">PANEL DEL CONDUCTOR</h3>
-          <p style="font-size: 0.75rem; color: #5d3f3e;">Pictionary - ¡Dibuja y adivina!</p>
-        </div>
-
-        <!-- BOTÓN EMPECEMOS -->
-        <button id="btn-start" class="btn-primary" style="width: 100%; margin-bottom: 1rem;">
-          <span class="material-symbols-outlined" style="margin-right: 0.5rem;">play_arrow</span>
-          EMPECEMOS
-        </button>
 
         <!-- PALABRA ACTUAL -->
         <div class="solution-box">
           <div class="solution-header">
             <span class="material-symbols-outlined" style="font-size: 1rem;">key</span>
-            <span>Palabra a Dibujar</span>
+            <span>Palabra a Adivinar</span>
           </div>
           <div class="solution-content">
             <span id="official-word">CARGANDO...</span>
@@ -133,37 +223,44 @@
           </div>
         </div>
 
-        <!-- SELECTOR EQUIPO -->
+        <!-- JUGADORES -->
         <div style="margin-bottom: 1rem;">
-          <label class="select-label">Equipo que Dibuja</label>
+          <label class="select-label">Jugadores del Equipo</label>
+          <div style="margin-bottom: 0.5rem;">
+            <input type="text" id="player-drawer" class="select-input" style="width: 100%; font-size: 0.85rem;" placeholder="Jugador que DIBUJA (nombre)">
+          </div>
+          <div>
+            <input type="text" id="player-guesser" class="select-input" style="width: 100%; font-size: 0.85rem;" placeholder="Jugador que ADIVINA (nombre)">
+          </div>
+        </div>
+
+        <!-- MODO DE JUEGO -->
+        <div style="margin-bottom: 1rem;">
+          <label class="select-label">Modo de Juego</label>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
+            <button class="mode-btn active" data-mode="dibuja">
+              <span class="material-symbols-outlined" style="font-size: 1rem;">brush</span> Dibuja
+            </button>
+            <button class="mode-btn" data-mode="mime">
+              <span class="material-symbols-outlined" style="font-size: 1rem;">person</span> Mímica
+            </button>
+            <button class="mode-btn" data-mode="escritura">
+              <span class="material-symbols-outlined" style="font-size: 1rem;">edit</span> Escritura
+            </button>
+          </div>
+        </div>
+
+        <!-- SELECTOR EQUIPO -->
+        <div class="btn-disabled">
+          <label class="select-label">Equipo Activo</label>
           <div class="team-selector">
             <button class="team-btn active" data-team="A">EQUIPO A</button>
             <button class="team-btn" data-team="B">EQUIPO B</button>
           </div>
         </div>
 
-        <!-- SELECTORES -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
-          <div class="select-container">
-            <label class="select-label">Rondas</label>
-            <select id="rounds-select" class="select-input">
-              <option value="3">3 Rondas</option>
-              <option value="5" selected>5 Rondas</option>
-              <option value="7">7 Rondas</option>
-            </select>
-          </div>
-          <div class="select-container">
-            <label class="select-label">Tiempo/Ronda</label>
-            <select id="time-select" class="select-input">
-              <option value="60">60 seg</option>
-              <option value="90" selected>90 seg</option>
-              <option value="120">120 seg</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- CONTROLES -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+        <!-- CONTROLES (deshabilitados hasta EMPECEMOS) -->
+        <div id="game-controls" class="btn-disabled" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
           <button id="btn-pause" class="btn-secondary" style="width: 100%;">
             <span class="material-symbols-outlined" style="font-size: 1rem;">pause</span> PAUSAR
           </button>
@@ -172,8 +269,8 @@
           </button>
         </div>
 
-        <!-- SIGUIENTE PALABRA -->
-        <button id="btn-next-word" class="btn-secondary" style="width: 100%; margin-bottom: 1rem;">
+        <!-- SIGUIENTE PALABRA (deshabilitado) -->
+        <button id="btn-next-word" class="btn-secondary btn-disabled" style="width: 100%; margin-bottom: 1rem;">
           <span class="material-symbols-outlined" style="font-size: 1rem;">skip_next</span> SIGUIENTE PALABRA
         </button>
 
@@ -190,6 +287,16 @@
             </button>
           </div>
         </div>
+
+        <!-- BOTÓN CONFIGURAR (siempre habilitado) -->
+        <button id="btn-config" class="btn-config" style="width:100%;">
+          <span class="material-symbols-outlined" style="font-size:1rem;">settings</span> CONFIGURAR
+        </button>
+
+        <!-- BOTÓN EMPECEMOS -->
+        <button id="btn-start" class="btn-primary" style="width:100%;">
+          <span class="material-symbols-outlined" style="font-size:1rem;">play_arrow</span> EMPECEMOS
+        </button>
 
       </div>
     </aside>
@@ -218,6 +325,7 @@
 
   <script src="../_shared/game-sdk.js"></script>
   <script src="../_shared/game-start-modal.js"></script>
+  <script src="../_shared/game-core.js"></script>
   <script src="game.js"></script>
 
 </body>
