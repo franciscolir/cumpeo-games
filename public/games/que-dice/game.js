@@ -10,7 +10,15 @@
     defaultRounds: 1,
     defaultTime: 60,
     warningThreshold: 5,
-    onTimeUp: () => {},
+    onTimeUp: () => {
+      // Show timeout message and auto-advance
+      resultContainer.classList.remove('hidden');
+      resultBox.textContent = '¡TIEMPO AGOTADO!';
+      resultBox.className = 'result-box error';
+      document.querySelectorAll('.prediction-btn').forEach(btn => btn.disabled = true);
+      document.querySelectorAll('.survey-option-btn').forEach(btn => btn.disabled = true);
+      setTimeout(() => nextQuestion(), 2000);
+    },
     onGetHiddenContainer: () => $('waiting-state'),
     onNext: () => nextQuestion(),
     onStart: startGame,

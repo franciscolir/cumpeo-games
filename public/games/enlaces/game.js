@@ -192,10 +192,13 @@
   }
 
   function checkCompletion() {
+    if (correctCount < itemsPool.length) {
+      // Not all items placed correctly yet
+      return;
+    }
     btnNextSet.disabled = false;
     const team = state.selectedTeam;
     core.addCorrectPoints(team);
-    // Penalize if any wrong placements (none in this flow)
     core.showTurnModal('¡Set completado!', 1200);
   }
 
@@ -265,7 +268,6 @@
       inp.addEventListener('input', () => { editingGroups[parseInt(inp.dataset.index)].name = inp.value; });
     });
     container.querySelectorAll('.group-words').forEach(inp => {
-      inp.addEventListener('input', () => { editingGroups[parseInt(inp.dataset.index)].words = []; });
       inp.addEventListener('blur', () => {
         const idx = parseInt(inp.dataset.index);
         editingGroups[idx].words = inp.value.split(',').map(w => w.trim()).filter(w => w);

@@ -264,6 +264,10 @@
 
     setSelector.style.display = 'none';
     currentSetDisplay.style.display = '';
+    
+    // Hide next round button
+    const btnNextRound = $('btn-next-round');
+    if (btnNextRound) btnNextRound.style.display = 'none';
 
     loadQuestion();
     core.startTimer();
@@ -338,6 +342,9 @@
       updateRoundSetSelect();
       setSelector.style.display = '';
       currentSetDisplay.style.display = 'none';
+      // Show next round button
+      const btnNextRound = $('btn-next-round');
+      if (btnNextRound) btnNextRound.style.display = '';
       return;
     }
     loadQuestion();
@@ -346,7 +353,23 @@
   // ==================== EVENT LISTENERS ====================
   btnNext.addEventListener('click', nextQuestion);
   $('btn-correct').addEventListener('click', () => addBonusPoints(100));
-  $('btn-error').addEventListener('click', () => {});
+  $('btn-error').addEventListener('click', () => {
+    if (state.penaltyEnabled) {
+      core.addPenaltyPoints(state.selectedTeam);
+      resultBox.textContent = `¡Error! -${state.penaltyPoints} pts`;
+      resultBox.className = 'result-box error';
+      resultContainer.classList.remove('hidden');
+    }
+  });
+
+  // Start next round button
+  const btnNextRound = document.createElement('button');
+  btnNextRound.id = 'btn-next-round';
+  btnNextRound.className = 'btn-secondary';
+  btnNextRound.style.cssText = 'width: 100%; margin-bottom: 1rem; display: none;';
+  btnNextRound.innerHTML = '<span class="material-symbols-outlined" style="font-size: 1rem;">skip_next</span> SIGUIENTE RONDA';
+  $('btn-start').parentNode.insertBefore(btnNextRound, $('btn-start'));
+  btnNextRound.addEventListener('click', startNextRound);
 
   document.querySelectorAll('.answer-btn').forEach(btn => {
     btn.addEventListener('click', () => selectAnswer(parseInt(btn.dataset.index)));

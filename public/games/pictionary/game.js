@@ -52,7 +52,12 @@
   const btnNextWord = $('btn-next-word');
 
   // ==================== CANVAS ====================
+  let canvasInitialized = false;
+  
   function initCanvas() {
+    if (canvasInitialized) return;
+    canvasInitialized = true;
+    
     canvas = $('drawing-canvas');
     ctx = canvas.getContext('2d');
     function resizeCanvas() {
@@ -111,9 +116,23 @@
     if (drawingHistory.length > 0) {
       drawingHistory.pop();
       redrawCanvas();
+      let isDrawing = false;
       drawingHistory.forEach(action => {
-        if (action.type === 'draw') {
-          ctx.beginPath(); ctx.strokeStyle = action.color; ctx.lineWidth = action.size; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke();
+        if (action.type === 'start') {
+          ctx.beginPath();
+          ctx.moveTo(action.x, action.y);
+          isDrawing = true;
+        } else if (action.type === 'draw' && isDrawing) {
+          ctx.lineTo(action.x, action.y);
+          ctx.strokeStyle = action.color;
+          ctx.lineWidth = action.size;
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(action.x, action.y);
+        } else if (action.type === 'stop') {
+          isDrawing = false;
         }
       });
     }
