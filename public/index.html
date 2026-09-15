@@ -2949,7 +2949,10 @@ function setupEventListeners() {
   });
 
   document.getElementById('explore-library-btn').addEventListener('click', e => { e.preventDefault(); navigateTo('juegos'); });
-  document.getElementById('toggle-public-btn').addEventListener('click', () => { window.open('/public.html', '_blank'); });
+  document.getElementById('toggle-public-btn').addEventListener('click', () => {
+    const url = activeSessionId ? `/public.html?session=${activeSessionId}` : '/public.html';
+    window.open(url, '_blank');
+  });
 
   // Filtros de juegos
   document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -3181,7 +3184,8 @@ function setupEventListeners() {
   });
 
   document.getElementById('dash-btn-public').addEventListener('click', () => {
-    window.open('/public.html', '_blank');
+    const url = activeSessionId ? `/public.html?session=${activeSessionId}` : '/public.html';
+    window.open(url, '_blank');
   });
 
   document.getElementById('dash-btn-sound').addEventListener('click', () => {

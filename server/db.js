@@ -119,6 +119,53 @@ function initSchema() {
   } catch (e) {
     // Column already exists, ignore
   }
+
+  // === MOBILE / AUDIENCE TABLES ===
+
+  // Mobile participants (players connecting from phones)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS participants (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      device_id TEXT UNIQUE,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
+  // Banner messages from mobile (shown in public marquee)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS banner_messages (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      participant_id INTEGER,
+      text TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (participant_id) REFERENCES participants(id)
+    );
+  `);
+
+  // Surveys (created by conductor from console)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS surveys (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      question TEXT NOT NULL,
+      options TEXT NOT NULL DEFAULT '[]',
+      status TEXT NOT NULL DEFAULT 'open',
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
+  // Survey answers from mobile participants
+  db.run(`
+    CREATE TABLE IF NOT EXISTS survey_answers (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      participant_id INTEGER,
+      survey_id INTEGER NOT NULL,
+      option_id TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (participant_id) REFERENCES participants(id),
+      FOREIGN KEY (survey_id) REFERENCES surveys(id)
+    );
+  `);
 }
 
 function save() {
