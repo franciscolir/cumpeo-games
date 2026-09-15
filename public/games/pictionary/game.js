@@ -27,6 +27,7 @@
   let currentColor = '#1c1b1b';
   let currentSize = 5;
   let drawingHistory = [];
+  let currentMode = 'dibuja';
 
   const defaultWords = [
     { text: 'GATO', category: 'Animales' }, { text: 'CASA', category: 'Cosas' },
@@ -150,6 +151,22 @@
     currentWordEl.textContent = '???';
     officialWord.textContent = words[currentWordIndex].text;
     clearCanvas();
+    
+    // Update mode display
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+      btn.classList.remove('active');
+      if (btn.dataset.mode === currentMode) btn.classList.add('active');
+    });
+    
+    // Show/hide mode containers
+    $('mode-dibuja').classList.toggle('hidden', currentMode !== 'dibuja');
+    $('mode-mime').classList.toggle('hidden', currentMode !== 'mime');
+    $('mode-escritura').classList.toggle('hidden', currentMode !== 'escritura');
+    
+    // Initialize canvas only if in dibuja mode
+    if (currentMode === 'dibuja') {
+      initCanvas();
+    }
   }
 
   function revealWord() { currentWordEl.textContent = words[currentWordIndex].text; }
@@ -275,5 +292,24 @@
 
   $('btn-save-word').addEventListener('click', saveWord);
   $('btn-cancel-word').addEventListener('click', () => $('edit-word-modal').classList.add('hidden'));
+
+  // Mode buttons
+  document.querySelectorAll('.mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentMode = btn.dataset.mode;
+      showNextWord();
+    });
+  });
+
+  // Send clue button (escritura mode)
+  $('btn-send-clue').addEventListener('click', () => {
+    const clue = $('clue-textarea').value.trim();
+    if (!clue) return;
+    // Show clue in the current word display
+    currentWordEl.textContent = clue;
+    $('clue-textarea').value = '';
+  });
 
 })();

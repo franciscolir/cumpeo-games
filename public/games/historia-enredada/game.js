@@ -175,6 +175,9 @@
     storyText.appendChild(sentenceDiv);
     storyText.scrollTop = storyText.scrollHeight;
 
+    // Play reveal sound
+    playSound('reveal');
+
     currentColorSpaceIndex++;
     showColorSpace(currentColorSpaceIndex);
   }
@@ -184,6 +187,8 @@
     if (team !== state.selectedTeam) {
       core.addPenaltyPoints(state.selectedTeam);
     }
+    // Play winner sound
+    playSound('winner');
   }
 
   function endTurn() {
@@ -355,6 +360,9 @@
 
   $('btn-new-story').addEventListener('click', nextStory);
 
+  // Print script button
+  $('btn-print-script').addEventListener('click', printScript);
+
   document.querySelectorAll('.team-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.team-btn').forEach(b => b.classList.remove('active'));
@@ -389,6 +397,93 @@
     editingColorSpaces.push({ colorIndex: 0, description: '' });
     renderColorSpacesEditor();
   });
+
+  // ==================== SOUND EFFECTS ====================
+  function playSound(type) {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    
+    gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+    
+    if (type === 'reveal') {
+      oscillator.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+      oscillator.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); // E5
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+      oscillator.start(audioCtx.currentTime);
+      oscillator.stop(audioCtx.currentTime + 0.3);
+    } else if (type === 'winner') {
+      oscillator.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+      oscillator.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.15); // E5
+      oscillator.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.3); // G5
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+      oscillator.start(audioCtx.currentTime);
+      oscillator.stop(audioCtx.currentTime + 0.5);
+    }
+  }
+
+  // ==================== PRINT SCRIPT ====================
+  function printScript() {
+    if (currentStoryIndex < 0) return;
+    const story = stories[currentStoryIndex];
+    const conductor = $('player-conductor').value.trim() || 'Conductor';
+    const actor = $('player-actor').value.trim() || 'Jugador';
+    
+    let scriptContent = `
+      <html>
+      <head>
+        <title>Guion - ${story.title}</title>
+        <style>
+          body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+          h1 { color: #1c1b1b; border-bottom: 2px solid #1c1b1b; padding-bottom: 10px; }
+          h2 { color: #5d3f3e; margin-top: 30px; }
+          .character { font-weight: bold; color: #0050a0; }
+          .stage-direction { font-style: italic; color: #5d3f3e; margin: 10px 0; padding: 10px; background: #f6f3f2; border-left: 3px solid #0050a0; }
+          .color-word { margin: 5px 0; padding: 5px 10px; border-left: 3px solid; }
+          @media print { body { padding: 0; } }
+        </style>
+      </head>
+      <body>
+        <h1>📖 ${story.title}</h1>
+        <p><strong>Conductor:</strong> ${conductor}</p>
+        <p><strong>Jugador:</strong> ${actor}</p>
+        <p><strong>Espacios de color:</strong> ${story.colorSpaces ? story.colorSpaces.length : 0}</p>
+        
+        <h2>Inicio de la Historia</h2>
+        <div class="stage-direction">${story.text}</div>
+        
+        <h2>Palabras del Público</h2>
+    `;
+    
+    if (story.colorSpaces && story.colorSpaces.length > 0) {
+      story.colorSpaces.forEach((space, i) => {
+        const color = COLOR_OPTIONS[space.colorIndex] || COLOR_OPTIONS[0];
+        scriptContent += `
+          <div class="color-word" style="border-color: ${color.hex};">
+            <strong>${color.emoji} ${color.name}:</strong> ${space.description || 'Sin descripción'}
+          </div>
+        `;
+      });
+    }
+    
+    scriptContent += `
+        <h2>Fin de la Historia</h2>
+        <div class="stage-direction">El conductor determina el ganador por aplausos del público.</div>
+        
+        <hr style="margin-top: 40px;">
+        <p style="color: #5d3f3e; font-size: 0.9rem;">Guion generado por CUMPEO - Historia Enredada</p>
+      </body>
+      </html>
+    `;
+    
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(scriptContent);
+    printWindow.document.close();
+    printWindow.print();
+  }
 
   // Init
   loadStories();

@@ -133,8 +133,8 @@
             </div>
           </div>
 
-          <!-- Canvas de dibujo -->
-          <div class="canvas-wrapper">
+          <!-- Canvas de dibujo (modo Dibuja) -->
+          <div id="mode-dibuja" class="canvas-wrapper">
             <canvas id="drawing-canvas" class="drawing-canvas"></canvas>
             
             <!-- Herramientas -->
@@ -162,6 +162,29 @@
               </button>
               <button id="btn-clear" class="tool-btn danger">
                 <span class="material-symbols-outlined">delete</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Modo Mímica -->
+          <div id="mode-mime" class="hidden mime-container">
+            <div class="mime-instructions">
+              <span class="material-symbols-outlined" style="font-size: 4rem;">person</span>
+              <h3>MODO MÍMICA</h3>
+              <p>El jugador debe representar la palabra con gestos y movimientos</p>
+              <p style="font-size: 0.85rem; color: #5d3f3e;">NO se puede hablar ni hacer sonidos</p>
+            </div>
+          </div>
+
+          <!-- Modo Escritura -->
+          <div id="mode-escritura" class="hidden escritura-container">
+            <div class="escritura-instructions">
+              <span class="material-symbols-outlined" style="font-size: 4rem;">edit</span>
+              <h3>MODO ESCRITURA</h3>
+              <p>Escribe pistas para que el equipo adivine</p>
+              <textarea id="clue-textarea" class="select-input" style="width: 100%; min-height: 100px; margin-top: 1rem;" placeholder="Escribe una pista aquí..."></textarea>
+              <button id="btn-send-clue" class="btn-primary" style="margin-top: 0.5rem;">
+                <span class="material-symbols-outlined">send</span> ENVIAR PISTA
               </button>
             </div>
           </div>
@@ -208,6 +231,22 @@
           </div>
           <div>
             <input type="text" id="player-guesser" class="select-input" style="width: 100%; font-size: 0.85rem;" placeholder="Jugador que ADIVINA (nombre)">
+          </div>
+        </div>
+
+        <!-- MODO DE JUEGO -->
+        <div style="margin-bottom: 1rem;">
+          <label class="select-label">Modo de Juego</label>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
+            <button class="mode-btn active" data-mode="dibuja">
+              <span class="material-symbols-outlined" style="font-size: 1rem;">brush</span> Dibuja
+            </button>
+            <button class="mode-btn" data-mode="mime">
+              <span class="material-symbols-outlined" style="font-size: 1rem;">person</span> Mímica
+            </button>
+            <button class="mode-btn" data-mode="escritura">
+              <span class="material-symbols-outlined" style="font-size: 1rem;">edit</span> Escritura
+            </button>
           </div>
         </div>
 

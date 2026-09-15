@@ -370,3 +370,82 @@
   background: #ba1a1a;
   color: white;
 }
+
+/* Mode buttons */
+.mode-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 0.5rem;
+  border: 2px solid #1c1b1b;
+  border-radius: 0.5rem;
+  font-family: 'Bangers', cursive;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  background: white;
+  color: #1c1b1b;
+}
+
+.mode-btn.active {
+  background: #0050a0;
+  color: white;
+  box-shadow: 2px 2px 0px #1c1b1b;
+}
+
+.mode-btn:hover:not(.active) {
+  background: #f6f3f2;
+}
+
+/* Mime mode */
+.mime-container {
+  background: white;
+  border: 3px solid #1c1b1b;
+  border-radius: 0.75rem;
+  padding: 2rem;
+  box-shadow: 3px 3px 0px #1c1b1b;
+}
+
+.mime-instructions {
+  text-align: center;
+}
+
+.mime-instructions h3 {
+  font-family: 'Bangers', cursive;
+  font-size: 2rem;
+  color: #1c1b1b;
+  margin: 1rem 0 0.5rem;
+}
+
+.mime-instructions p {
+  color: #5d3f3e;
+  font-size: 1rem;
+  margin: 0.5rem 0;
+}
+
+/* Writing mode */
+.escritura-container {
+  background: white;
+  border: 3px solid #1c1b1b;
+  border-radius: 0.75rem;
+  padding: 2rem;
+  box-shadow: 3px 3px 0px #1c1b1b;
+}
+
+.escritura-instructions {
+  text-align: center;
+}
+
+.escritura-instructions h3 {
+  font-family: 'Bangers', cursive;
+  font-size: 2rem;
+  color: #1c1b1b;
+  margin: 1rem 0 0.5rem;
+}
+
+.escritura-instructions p {
+  color: #5d3f3e;
+  font-size: 1rem;
+  margin: 0.5rem 0;
+}
