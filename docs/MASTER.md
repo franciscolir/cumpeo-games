@@ -1,8 +1,10 @@
 # CUMPEO — Documento Maestro de Construcción
 
-**Versión:** 1.0
-**Estado:** Modelo conceptual cerrado · Capa de repositorios implementada y commiteada
-**Última actualización:** Post-commit `f8dc2da`
+**Versión:** 1.1
+**Estado:** H4 en progreso · ~35-40% proyecto completo · ~15-20% H4
+**Última actualización:** Post-commit `295e596`
+**HEAD:** `feature/vertical-slice` — `295e596`
+**Tests:** 248 pasando (15 archivos de test)
 **Audiencia:** Desarrollador único / equipo reducido
 **Propósito:** Guía única de referencia para construcción, consulta y auditoría del sistema.
 
@@ -530,21 +532,66 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 
 ## 8. Estado del Desarrollo
 
-### 8.1 Fases cerradas
+### 8.1 Resumen de progreso
+
+| Métrica | Valor |
+|---------|-------|
+| Progreso global | ~35-40% |
+| H4 completado | ~15-20% |
+| Tests pasando | 248 (15 archivos) |
+| Commits totales (rama) | 30+ |
+
+### 8.2 Fases cerradas
 
 | Fase | Contenido | Estado |
 |------|-----------|--------|
 | Diseño conceptual | 17 entidades, 156 invariantes, ciclo de vida | Cerrado |
 | Arquitectura | Server-first, RPC, Realtime, adaptador | Cerrado |
 | Capa de repositorios (H3) | 14 repositorios + adaptador | Cerrado |
-| Servicios (H4) | ControlService + AccionProcesadaRepository | En progreso |
 
-### 8.2 Commits clave
+### 8.3 H4 — Servicios de dominio (EN PROGRESO)
 
-2a825ab feat: implement IndexedDB vertical slice and repositories
-414cd2e feat(services): add ControlService with lease management
-ea5f67e fix(adapters): correct accion_procesadas keyPath and add migration v2
-f8dc2da feat(repositories): add AccionProcesadaRepository for idempotency
+#### Estado de servicios
+
+| Servicio | Estado | Notas |
+|----------|--------|-------|
+| ControlService | ✅ Cerrado | Lease de control, heartbeat |
+| PartidaService | 🟡 En progreso | Absorbió idempotencia en PartidaRepository |
+| CircuitoService | ⬜ Pendiente | |
+| SetService | ⬜ Pendiente | |
+| GameDefinitionRegistry | ⬜ Pendiente | |
+
+#### PartidaService — Métodos refactorizados
+
+| Método | Grupo | Estado | Commit |
+|--------|-------|--------|--------|
+| `crearPartida` | A (helpers compartidos) | ✅ | `c2962fa` |
+| `pausarJuego` | A (vía `_cambiarEstadoJuego`) | ✅ | `3df8390` |
+| `reanudarJuego` | A (vía `_cambiarEstadoJuego`) | ✅ | `3df8390` |
+| `descartarPartida` | A (vía `_terminarPartida`) | ✅ | `295e596` |
+| `finalizarCircuito` | A (vía `_terminarPartida`) | ✅ | `295e596` |
+| `iniciarJuego` | B (lógica intermedia) | ⬜ Siguiente — Bloque B.1 | |
+| `comenzarPartida` | B (lógica intermedia) | ⬜ Bloque B.2 | |
+| `actualizarEstadoJuego` | C (lógica compleja) | ⬜ Bloque C.1 | |
+| `finalizarJuego` | C (lógica compleja) | ⬜ Bloque C.2 | |
+
+#### Modelo de trabajo por sub-bloques
+
+- **Grupo A (✅ cerrado):** Métodos con helpers compartidos (`_cambiarEstadoJuego`, `_terminarPartida`). El wrapper público maneja idempotencia; el helper interno hace el trabajo real.
+- **Grupo B (siguiente):** Métodos con lógica intermedia. Requieren orquestación de múltiples repositorios.
+- **Grupo C:** Métodos con lógica compleja. Transacciones de alto riesgo.
+
+### 8.4 Commits clave
+
+```
+2a825ab  feat: implement IndexedDB vertical slice and repositories
+414cd2e  feat(services): add ControlService with lease management
+ea5f67e  fix(adapters): correct accion_procesadas keyPath and add migration v2
+f8dc2da  feat(repositories): add AccionProcesadaRepository for idempotency
+c2962fa  refactor(partida): add idempotency to crearPartida via actionId
+3df8390  refactor(partida): add idempotency to pausar/reanudar via _cambiarEstadoJuego
+295e596  refactor(partida): add idempotency to descartarPartida/finalizarCircuito via _terminarPartida
+```
 
 ### 8.3 Estructura del repositorio
 /
@@ -611,15 +658,20 @@ f8dc2da feat(repositories): add AccionProcesadaRepository for idempotency
 
 ### Fase H3 - Repositorios (CERRADA)
 
-### Fase H4 - Servicios de dominio (EN PROGRESO)
+### Fase H4 - Servicios de dominio (EN PROGRESO ~15-20%)
 
 Servicios a implementar:
 
-1. **ControlService** - Cerrado.
-2. **PartidaService** - En progreso (el más complejo).
-3. **CircuitoService** - Pendiente.
-4. **SetService** - Pendiente.
-5. **GameDefinitionRegistry** - Pendiente.
+1. **ControlService** — ✅ Cerrado.
+2. **PartidaService** — 🟡 En progreso. Ver sección 8.3 para detalle de métodos.
+3. **CircuitoService** — ⬜ Pendiente.
+4. **SetService** — ⬜ Pendiente.
+5. **GameDefinitionRegistry** — ⬜ Pendiente.
+
+**Sub-bloques de PartidaService:**
+- Grupo A (helpers compartidos): ✅ Cerrado — crearPartida, pausar/reanudar, descartar/finalizarCircuito
+- Grupo B (lógica intermedia): ⬜ Siguiente — iniciarJuego, comenzarPartida
+- Grupo C (lógica compleja): ⬜ Pendiente — actualizarEstadoJuego, finalizarJuego
 
 ### Fase H5 - GameDefinition Trivia
 
@@ -710,6 +762,27 @@ Migrar a Supabase, RPC, RLS, Realtime.
 | 12 | Heredoc con `<<'EOF'` | Delimitadores custom fallan en Git Bash. |
 | 13 | Opción B: cliente genera `action_id` | Cumple INV-084. Idempotencia real en reintentos. |
 | 14 | Opción 1: repo absorbe `action_id` | Una sola transacción. Atómico. |
+| 15 | `actionId` como último argumento en toda API crítica | Firma consistente, facilita testing y composición. |
+| 16 | Helpers internos en repo con patrón `_<metodo>EnTx` | El wrapper público maneja idempotencia; el helper interno hace el trabajo real. Una sola transacción. |
+| 17 | Scripts de Node en `/tmp/*.js` ejecutados con `node /tmp/script.js` | Nunca `node -e` — bash expande `!` y corrompe scripts silenciosamente. |
+| 18 | `node --check` después de cada refactor, antes de `npm test` | Detecta sintaxis rota en segundos, ahorra minutos de test fallido. |
+| 19 | Contrato de cierre de bloque (7 verificaciones) | Garantiza calidad antes de avanzar. Ver abajo. |
+
+### 12.1 Contrato de cierre de bloque
+
+Cada bloque de desarrollo debe cumplir estas 7 verificaciones antes de ser considerado completo:
+
+| # | Verificación | Comando |
+|---|-------------|---------|
+| 1 | Sintaxis válida | `node --check` en cada archivo JS modificado |
+| 2 | Llaves balanceadas | Revisión manual o `eslint --rule 'no-unbalanced-...` |
+| 3 | Tests verdes | `npm test` |
+| 4 | Sin warnings de git | `git diff --check` |
+| 5 | Status pre-commit limpio | `git status --short` solo muestra archivos esperados |
+| 6 | Commit atómico | Un solo commit por bloque funcional |
+| 7 | Status post-commit limpio | `git status --short` sin salida después del push |
+
+**Regla:** No avanzar al siguiente bloque sin recibir autorización del auditor externo.
 
 ---
 
