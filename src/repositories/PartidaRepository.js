@@ -288,104 +288,134 @@ export class PartidaRepository extends BaseRepository {
 
     reqCodigo.onerror = () => tx.abort();
   }
-  async comenzarPartida(partidaId, sessionId) {
+  /**
+   * Helper interno transaccional para comenzarPartida.
+   * Extraído para permitir idempotencia vía reservarEnTx.
+   *
+   * @param {IDBTransaction} tx - Transacción abierta con STORE_PARTIDAS, STORE_JUEGOS_EJECUTADOS,
+   *   STORE_CIRCUITO_JUEGOS, STORE_CONTROL
+   * @param {string} partidaId - ID de la partida a comenzar
+   * @param {string} sessionId - Sesión del conductor (lease check)
+   * @param {function} onDone - Callback con resultado { partidaId, juegos } o { error }
+   */
+  _comenzarPartidaEnTx(tx, partidaId, sessionId, onDone) {
+    this._verificarLeaseEnTx(tx, partidaId, sessionId, (ok) => {
+      if (!ok) {
+        onDone({ error: new SinControlError(partidaId) });
+        return;
+      }
+
+      const partidasStore = tx.objectStore(STORE_PARTIDAS);
+      const reqPartida = partidasStore.get(partidaId);
+
+      reqPartida.onsuccess = () => {
+        const partida = reqPartida.result;
+        if (!partida) {
+          onDone({ error: new NoEncontradoError('Partida', partidaId) });
+          return;
+        }
+        if (partida.estado !== 'CONFIGURANDO') {
+          onDone({ error: new OperacionInvalidaError(
+            'No se puede comenzar una partida en estado ' + partida.estado
+          ) });
+          return;
+        }
+        if (!partida.circuito_id) {
+          onDone({ error: new OperacionInvalidaError('La partida no tiene circuito_id') });
+          return;
+        }
+
+        const cjStore = tx.objectStore(STORE_CIRCUITO_JUEGOS);
+        const reqCjs = cjStore
+          .index('circuito_juego_circuito_id')
+          .getAll(partida.circuito_id);
+
+        reqCjs.onsuccess = () => {
+          const cjs = reqCjs.result.sort((a, b) => a.orden - b.orden);
+          if (cjs.length === 0) {
+            onDone({ error: new OperacionInvalidaError(
+              'El circuito de la partida no tiene juegos'
+            ) });
+            return;
+          }
+
+          const ts = ahora();
+          const jeStore = tx.objectStore(STORE_JUEGOS_EJECUTADOS);
+          const juegosCreados = [];
+
+          for (const cj of cjs) {
+            const je = {
+              id: nuevoId(),
+              partida_id: partidaId,
+              circuito_juego_id: cj.id,
+              juego_id: cj.juego_id,
+              orden: cj.orden,
+              snapshot_id: cj.snapshot_id ?? null,
+              configuracion_congelada: cj.configuracion ?? {},
+              estado: 'PENDIENTE',
+              state_version: 1,
+              timer_actual: null,
+              paused_at: null,
+              estado_juego: {},
+              resultado: null,
+              finish_reason: null,
+              started_at: null,
+              finished_at: null,
+              created_at: ts,
+              updated_at: ts
+            };
+            jeStore.add(je);
+            juegosCreados.push(je);
+          }
+
+          partidasStore.put({
+            ...partida,
+            estado: 'EN_CURSO',
+            started_at: ts,
+            last_activity_at: ts,
+            version: partida.version + 1,
+            updated_at: ts
+          });
+
+          onDone({ partidaId, juegos: juegosCreados });
+        };
+
+        reqCjs.onerror = () => tx.abort();
+      };
+
+      reqPartida.onerror = () => tx.abort();
+    });
+  }
+
+  async comenzarPartida(partidaId, sessionId, actionId) {
     validarNoVacio(partidaId, 'partidaId');
     validarNoVacio(sessionId, 'sessionId');
+    validarNoVacio(actionId, 'actionId');
 
     return this.adapter.tx(
       [
         STORE_PARTIDAS,
         STORE_JUEGOS_EJECUTADOS,
         STORE_CIRCUITO_JUEGOS,
-        STORE_CONTROL
+        STORE_CONTROL,
+        STORE_ACCIONES
       ],
       'readwrite',
       (tx, resolver) => {
-        this._verificarLeaseEnTx(tx, partidaId, sessionId, (ok) => {
-          if (!ok) {
-            resolver({ error: new SinControlError(partidaId) });
+        this.acciones.reservarEnTx(tx, actionId, partidaId, TIPO_ACCION.COMENZAR_PARTIDA, (reserva) => {
+          if (reserva.yaProcesada) {
+            resolver({ partidaId, juegos: reserva.resultado });
             return;
           }
 
-          const partidasStore = tx.objectStore(STORE_PARTIDAS);
-          const reqPartida = partidasStore.get(partidaId);
-
-          reqPartida.onsuccess = () => {
-            const partida = reqPartida.result;
-            if (!partida) {
-              resolver({ error: new NoEncontradoError('Partida', partidaId) });
+          this._comenzarPartidaEnTx(tx, partidaId, sessionId, (resultado) => {
+            if (resultado.error) {
+              resolver({ error: resultado.error });
               return;
             }
-            if (partida.estado !== 'CONFIGURANDO') {
-              resolver({ error: new OperacionInvalidaError(
-                'No se puede comenzar una partida en estado ' + partida.estado
-              ) });
-              return;
-            }
-            if (!partida.circuito_id) {
-              resolver({ error: new OperacionInvalidaError('La partida no tiene circuito_id') });
-              return;
-            }
-
-            const cjStore = tx.objectStore(STORE_CIRCUITO_JUEGOS);
-            const reqCjs = cjStore
-              .index('circuito_juego_circuito_id')
-              .getAll(partida.circuito_id);
-
-            reqCjs.onsuccess = () => {
-              const cjs = reqCjs.result.sort((a, b) => a.orden - b.orden);
-              if (cjs.length === 0) {
-                resolver({ error: new OperacionInvalidaError(
-                  'El circuito de la partida no tiene juegos'
-                ) });
-                return;
-              }
-
-              const ts = ahora();
-              const jeStore = tx.objectStore(STORE_JUEGOS_EJECUTADOS);
-              const juegosCreados = [];
-
-              for (const cj of cjs) {
-                const je = {
-                  id: nuevoId(),
-                  partida_id: partidaId,
-                  circuito_juego_id: cj.id,
-                  juego_id: cj.juego_id,
-                  orden: cj.orden,
-                  snapshot_id: cj.snapshot_id ?? null,
-                  configuracion_congelada: cj.configuracion ?? {},
-                  estado: 'PENDIENTE',
-                  state_version: 1,
-                  timer_actual: null,
-                  paused_at: null,
-                  estado_juego: {},
-                  resultado: null,
-                  finish_reason: null,
-                  started_at: null,
-                  finished_at: null,
-                  created_at: ts,
-                  updated_at: ts
-                };
-                jeStore.add(je);
-                juegosCreados.push(je);
-              }
-
-              partidasStore.put({
-                ...partida,
-                estado: 'EN_CURSO',
-                started_at: ts,
-                last_activity_at: ts,
-                version: partida.version + 1,
-                updated_at: ts
-              });
-
-              resolver({ partidaId, juegos: juegosCreados });
-            };
-
-            reqCjs.onerror = () => tx.abort();
-          };
-
-          reqPartida.onerror = () => tx.abort();
+            this.acciones.actualizarResultadoEnTx(tx, actionId, resultado.juegos);
+            resolver({ partidaId: resultado.partidaId, juegos: resultado.juegos });
+          });
         });
       }
     ).then((r) => {

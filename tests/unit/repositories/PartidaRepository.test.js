@@ -112,7 +112,7 @@ describe('PartidaRepository', () => {
     await crearCircuitoListoConJuegos(circuitoId, nJuegos);
     const p = await repo.crearPartida({ circuito_id: circuitoId, public_codigo: publicCodigo, actionId: nuevoActionId() });
     await tomarControl(p.id, sessionId);
-    const r = await repo.comenzarPartida(p.id, sessionId);
+    const r = await repo.comenzarPartida(p.id, sessionId, nuevoActionId());
     return { partida: p, juegos: r.juegos };
   }
 
@@ -370,7 +370,7 @@ describe('PartidaRepository', () => {
       await crearCircuitoListoConJuegos('c1', 3);
       const p = await repo.crearPartida({ circuito_id: 'c1', public_codigo: 'A1', actionId: nuevoActionId() });
       await tomarControl(p.id);
-      const r = await repo.comenzarPartida(p.id, SESION);
+      const r = await repo.comenzarPartida(p.id, SESION, nuevoActionId());
 
       expect(r.juegos).toHaveLength(3);
       for (const j of r.juegos) {
@@ -391,15 +391,27 @@ describe('PartidaRepository', () => {
       await crearCircuitoListoConJuegos();
       const p = await repo.crearPartida({ circuito_id: 'c1', public_codigo: 'A1', actionId: nuevoActionId() });
       await expect(
-        repo.comenzarPartida(p.id, 'otra-sesion')
+        repo.comenzarPartida(p.id, 'otra-sesion', nuevoActionId())
       ).rejects.toThrow(/Sin control/);
     });
 
     it('rechaza si la partida ya está EN_CURSO', async () => {
       const { partida } = await escenarioPartidaEnCurso();
       await expect(
-        repo.comenzarPartida(partida.id, SESION)
+        repo.comenzarPartida(partida.id, SESION, nuevoActionId())
       ).rejects.toThrow(/no se puede comenzar/i);
+    });
+
+    it('es idempotente: dos llamadas con el mismo actionId no duplican juegos', async () => {
+      await crearCircuitoListoConJuegos('c1', 2);
+      const p = await repo.crearPartida({ circuito_id: 'c1', public_codigo: 'B1', actionId: nuevoActionId() });
+      await tomarControl(p.id);
+      const actionId = nuevoActionId();
+      const r1 = await repo.comenzarPartida(p.id, SESION, actionId);
+      const r2 = await repo.comenzarPartida(p.id, SESION, actionId);
+      expect(r1.juegos).toHaveLength(2);
+      expect(r2.juegos).toHaveLength(2);
+      expect(r2.juegos.map((j) => j.id).sort()).toEqual(r1.juegos.map((j) => j.id).sort());
     });
   });
 
@@ -613,7 +625,7 @@ describe('PartidaRepository', () => {
       await crearCircuitoListoConJuegos('c1', 1);
       const p = await repo.crearPartida({ circuito_id: 'c1', public_codigo: 'A1', actionId: nuevoActionId() });
       await tomarControl(p.id);
-      const r = await repo.comenzarPartida(p.id, SESION);
+      const r = await repo.comenzarPartida(p.id, SESION, nuevoActionId());
       await repo.iniciarJuego(p.id, r.juegos[0].id, SESION, nuevoActionId());
 
       await repo.finalizarJuego(
