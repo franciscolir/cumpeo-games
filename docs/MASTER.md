@@ -1,10 +1,10 @@
 # CUMPEO — Documento Maestro de Construcción
 
-**Versión:** 1.2
-**Estado:** H4 COMPLETO · ~42-46% proyecto completo · 5/5 servicios
-**Última actualización:** Post-commit `d8e07ec`
-**HEAD:** `feature/vertical-slice` — `d8e07ec`
-**Tests:** 318 pasando (19 archivos de test)
+**Versión:** 1.3
+**Estado:** H4 COMPLETO · H5.1 COMPLETO · ~48-52% proyecto completo
+**Última actualización:** Post-commit `24a72dc`
+**HEAD:** `feature/vertical-slice` — `24a72dc`
+**Tests:** 353 pasando (20 archivos de test)
 **Audiencia:** Desarrollador único / equipo reducido
 **Propósito:** Guía única de referencia para construcción, consulta y auditoría del sistema.
 
@@ -536,10 +536,11 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 
 | Métrica | Valor |
 |---------|-------|
-| Progreso global | ~42-46% |
+| Progreso global | ~48-52% |
 | H4 completado | 100% (5/5 servicios) |
-| Tests pasando | 318 (19 archivos) |
-| Commits totales (rama) | 35+ |
+| H5.1 completado | 100% (Trivia definido) |
+| Tests pasando | 353 (20 archivos) |
+| Commits totales (rama) | 40+ |
 
 ### 8.2 Fases cerradas
 
@@ -617,6 +618,55 @@ Cada `GameDefinition` es un objeto que declara el comportamiento de un juego con
 
 El registry **no invoca** estos métodos. Solo verifica que existan. La invocación la hace cada juego concreto o la UI cuando corresponda.
 
+### 8.3.3 TriviaGameDefinition (H5.1)
+
+Implementación concreta del contrato `GameDefinition` para el juego Trivia.
+
+**Ubicación:** `src/games/trivia/TriviaGameDefinition.js` (commit `24a72dc`).
+
+**Contrato implementado:**
+
+| Campo | Valor |
+|-------|-------|
+| `codigo` | `'TRIVIA'` |
+| `nombre` | `'Trivia'` |
+| `requiere_set` | `true` |
+
+**Métodos:**
+
+1. **`validarConfiguracion(config)`** — valida `rondas`, `preguntas_por_ronda`, `puntos_por_acierto`, `penalizacion_activa`, `penalizacion_puntos`, `tiempo_por_pregunta_seg`. Regla cross-field: si `penalizacion_activa === true`, entonces `penalizacion_puntos > 0`.
+
+2. **`validarContenidoSet(contenido)`** — valida `items` array no vacío. Cada item: `pregunta` (string), `opciones` (2-6 elementos), `respuesta_correcta_index` (entero en rango), `dificultad` (opcional, 1-3).
+
+3. **`validarEstadoJuego(estado)`** — valida `ronda_actual`, `pregunta_actual_index`, `fase`, `respuestas`, `puntos_equipo_1`, `puntos_equipo_2`.
+
+4. **`calcularResultado(estadoJuego)`** — devuelve `{ puntos_equipo_1, puntos_equipo_2 }`. Asume 0 si faltan.
+
+5. **`aplicarTimeUp(estadoJuego)`** — determinista (INV-066). Fase terminal → null. Fase activa → pasa a `MOSTRANDO_RESULTADO` con respuesta `equipo: 0`. No penaliza.
+
+**Fases del juego:**
+
+- `MOSTRANDO_PREGUNTA`
+- `SELECCIONANDO_RESPUESTA`
+- `MOSTRANDO_RESULTADO`
+- `FIN_DE_RONDA`
+- `FIN_DE_JUEGO`
+
+**Estado del juego:**
+
+```js
+{
+  ronda_actual: 1,
+  pregunta_actual_index: 0,
+  fase: 'MOSTRANDO_PREGUNTA',
+  respuestas: [{ equipo: 1, opcion_index: 2, correcta: true, puntos: 10 }],
+  puntos_equipo_1: 0,
+  puntos_equipo_2: 0
+}
+```
+
+**35 tests.** Cubre validaciones, cálculo de resultado, time-up, e integración con `GameDefinitionRegistry`.
+
 ### 8.4 Commits clave
 
 ```
@@ -635,6 +685,7 @@ c425013  refactor(partida): add idempotency to finalizarJuego
 3d413ba  feat(services): add CircuitoService as facade over CircuitoRepository
 6294d75  feat(services): add SetService as facade over SetRepository
 d8e07ec  feat(services): add GameDefinitionRegistry for game contracts
+24a72dc  feat(games): add TriviaGameDefinition implementing GameDefinition contract
 ```
 
 ### 8.3 Estructura del repositorio
@@ -719,11 +770,15 @@ d8e07ec  feat(services): add GameDefinitionRegistry for game contracts
 
 **PartidaRepository completó su ciclo de idempotencia. 9/9 métodos críticos idempotentes. Siguiente: crear PartidaService como wrapper fino sobre el repo.**
 
-### Fase H5 - GameDefinition Trivia (SIGUIENTE)
+### Fase H5 - GameDefinition Trivia (CERRADA 100% — H5.1)
 
-Primera implementación concreta del contrato `GameDefinition`. El `TriviaGameDefinition` implementará los 5 métodos del contrato (`validarConfiguracion`, `validarContenidoSet`, `validarEstadoJuego`, `calcularResultado`, `aplicarTimeUp`) para el juego de Trivia.
+**H5.1 cerrado** (commit `24a72dc`):
 
-### Fase H6 - Interfaz de Usuario
+`TriviaGameDefinition` implementa el contrato `GameDefinition` con los 5 métodos obligatorios. 35 tests.
+
+**H5.2 (opcional, pospuesto):** implementación de un segundo juego (Rosco, Pictionary) para validar el contrato. Pospuesto hasta que la UI lo requiera.
+
+### Fase H6 - Interfaz de Usuario (SIGUIENTE)
 
 Consola del conductor + pantalla pública.
 
@@ -819,6 +874,9 @@ Migrar a Supabase, RPC, RLS, Realtime.
 | 23 | `GameDefinitionRegistry` instanciable con `Map` interno | Consistencia con otros services. Sin estado global. |
 | 24 | Contrato `GameDefinition` definido en E.3 | H5 solo implementa el contrato para Trivia, sin decidir estructura. |
 | 25 | Registry síncrono, sin `adapter` | En memoria pura, sin persistencia. No necesita I/O. |
+| 26 | Contrato de Trivia: contenido + configuración + estado definidos en H5.1 | H5.2 reutilizará el mismo contrato con otros juegos. |
+| 27 | `aplicarTimeUp` no penaliza (agrega respuesta con equipo: 0) | Determinista e idempotente (INV-066). La penalización solo aplica a respuestas incorrectas. |
+| 28 | Registro explícito de juegos en `main.js` (Opción B) | No auto-registro al importar. Más explícito y testeable. |
 
 ### 12.1 Contrato de cierre de bloque
 
