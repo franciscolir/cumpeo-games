@@ -13,6 +13,7 @@ import { TriviaGameDefinition } from './trivia/TriviaGameDefinition.js';
 export function registrarTodos(registry) {
   const definiciones = [
     TriviaGameDefinition
+    // Agregar aquí los próximos juegos (H5.2)
   ];
 
   for (const def of definiciones) {
