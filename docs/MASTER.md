@@ -1,10 +1,10 @@
 # CUMPEO — Documento Maestro de Construcción
 
-**Versión:** 1.3
-**Estado:** H4 COMPLETO · H5.1 COMPLETO · ~48-52% proyecto completo
-**Última actualización:** Post-commit `24a72dc`
-**HEAD:** `feature/vertical-slice` — `24a72dc`
-**Tests:** 353 pasando (20 archivos de test)
+**Versión:** 1.4
+**Estado:** H4 · H5.1 · H6.1 · H6.2 COMPLETOS · ~55-58% proyecto completo
+**Última actualización:** Post-commit `3fbd526`
+**HEAD:** `feature/vertical-slice` — `3fbd526`
+**Tests:** 362 unit + 7 e2e (21 archivos unit)
 **Audiencia:** Desarrollador único / equipo reducido
 **Propósito:** Guía única de referencia para construcción, consulta y auditoría del sistema.
 
@@ -536,11 +536,14 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 
 | Métrica | Valor |
 |---------|-------|
-| Progreso global | ~48-52% |
+| Progreso global | ~55-58% |
 | H4 completado | 100% (5/5 servicios) |
 | H5.1 completado | 100% (Trivia definido) |
-| Tests pasando | 353 (20 archivos) |
-| Commits totales (rama) | 40+ |
+| H6.1 completado | 100% (Bootstrap) |
+| H6.2 completado | 100% (Dashboard) |
+| Tests unit | 362 (21 archivos) |
+| Tests e2e | 7 |
+| Commits totales (rama) | 45+ |
 
 ### 8.2 Fases cerradas
 
@@ -667,6 +670,41 @@ Implementación concreta del contrato `GameDefinition` para el juego Trivia.
 
 **35 tests.** Cubre validaciones, cálculo de resultado, time-up, e integración con `GameDefinitionRegistry`.
 
+### 8.3.4 Bootstrap + Dashboard (H6.1, H6.2)
+
+**H6.1 — Bootstrap** (commit `240964e`):
+
+- `src/app/bootstrap.js` — orquesta la inicialización:
+  - Instancia los 5 services.
+  - Instancia `SessionContext`.
+  - Registra los juegos disponibles.
+  - Expone `window.cumpeo`.
+  - Retorna `{ adapter, session, services, registry }`.
+- `src/games/registro.js` — `registrarTodos(registry)` con la lista de juegos.
+- `src/main.js` — llama a `bootstrap(adapter)` después de abrir IndexedDB.
+
+**H6.2 — Dashboard** (commit `3fbd526`):
+
+- `src/ui/dashboard.js` — `renderDashboard(container, app)`:
+  - Card de Sesión (sessionId).
+  - Card de Circuitos (listado o empty state).
+  - Card de Juegos disponibles (registry).
+  - Botón de toggle de tema.
+- `src/ui/components/card.js` — componente `Card({ titulo, contenido, color, clase })` que devuelve HTML.
+
+**Testing de UI:**
+
+- Sin tests unitarios de UI (no hay `jsdom` ni `happy-dom`).
+- Testing exclusivamente con Playwright (e2e).
+- **7 tests e2e** en `tests/e2e/boot.spec.js` + `tests/e2e/indexeddb-smoke.spec.js`.
+
+**Convención de UI adoptada:**
+
+- JavaScript vanilla. Template strings + `innerHTML`.
+- Componentes como funciones puras que devuelven HTML.
+- Sin frameworks, sin router todavía.
+- Estética cómic consistente con Tailwind custom.
+
 ### 8.4 Commits clave
 
 ```
@@ -686,6 +724,9 @@ c425013  refactor(partida): add idempotency to finalizarJuego
 6294d75  feat(services): add SetService as facade over SetRepository
 d8e07ec  feat(services): add GameDefinitionRegistry for game contracts
 24a72dc  feat(games): add TriviaGameDefinition implementing GameDefinition contract
+240964e  feat(app): add bootstrap initializing services and games
+747a164  fix(games): restore comment in registro and export registrarTodos
+3fbd526  feat(ui): add dashboard as first screen
 ```
 
 ### 8.3 Estructura del repositorio
@@ -778,9 +819,16 @@ d8e07ec  feat(services): add GameDefinitionRegistry for game contracts
 
 **H5.2 (opcional, pospuesto):** implementación de un segundo juego (Rosco, Pictionary) para validar el contrato. Pospuesto hasta que la UI lo requiera.
 
-### Fase H6 - Interfaz de Usuario (SIGUIENTE)
+### Fase H6 - Interfaz de Usuario (EN PROGRESO ~30%)
 
-Consola del conductor + pantalla pública.
+**Sub-bloques:**
+
+1. **H6.1 — Bootstrap** ✅ Cerrado (`240964e`). Servicios + registry + session.
+2. **H6.2 — Dashboard** ✅ Cerrado (`3fbd526`). Primera pantalla con cards.
+3. **H6.3 — CRUD de circuitos** ⬜ Siguiente. Crear, editar, eliminar circuitos.
+4. **H6.4 — CRUD de sets** ⬜ Pendiente. Sets + items.
+5. **H6.5 — Consola del conductor** ⬜ Pendiente. Flujo de partida.
+6. **H6.6 — Pantalla pública** ⬜ Pendiente.
 
 ### Fase H7 - Producción
 
@@ -799,17 +847,22 @@ Migrar a Supabase, RPC, RLS, Realtime.
 
 ### 10.2 Testing
 
-- **Unit**: por repositorio, por servicio.
-- **E2E**: boot, smoke test de IndexedDB.
-- **Framework**: Vitest.
-- **Mock**: `fake-indexeddb`.
+- **Unit**: por repositorio, por servicio. Framework: **Vitest**.
+- **E2E**: UI, navegación, bootstrap. Framework: **Playwright**.
+- **Mock IndexedDB**: `fake-indexeddb` en unit.
+- **Testing de UI**: solo e2e. **Sin `jsdom` ni `happy-dom`.**
 - **Regla**: todo repositorio y servicio tiene tests antes de commitear.
+- **Regla UI**: toda pantalla nueva requiere al menos 1 test e2e que verifique que renderiza.
 
 ### 10.3 Scripts
 
-- `npm test` - ejecuta todos los tests.
-- `npm run test:watch` - modo watch.
-- `npm run dev` - servidor de desarrollo (cuando aplique).
+- `npm test` — tests unit (Vitest).
+- `npm run test:watch` — modo watch.
+- `npm run test:e2e` — tests e2e (Playwright).
+- `npm run test:all` — unit + e2e.
+- `npm run dev` — servidor de desarrollo (Vite).
+- `npm run build` — build de producción.
+- `npm run coverage` — cobertura.
 
 ### 10.4 Notas importantes
 
@@ -877,6 +930,10 @@ Migrar a Supabase, RPC, RLS, Realtime.
 | 26 | Contrato de Trivia: contenido + configuración + estado definidos en H5.1 | H5.2 reutilizará el mismo contrato con otros juegos. |
 | 27 | `aplicarTimeUp` no penaliza (agrega respuesta con equipo: 0) | Determinista e idempotente (INV-066). La penalización solo aplica a respuestas incorrectas. |
 | 28 | Registro explícito de juegos en `main.js` (Opción B) | No auto-registro al importar. Más explícito y testeable. |
+| 29 | `bootstrap(adapter)` recibe adapter ya creado y retorna `{ adapter, session, services, registry }` | Flexibilidad + testing. `main.js` maneja errores. |
+| 30 | Dashboard como primera pantalla de la consola del conductor | Punto de entrada a todas las operaciones. |
+| 31 | Sin tests unitarios de UI, solo e2e con Playwright | Evita dependencias frágiles (jsdom). Verifica UI real. |
+| 32 | Componentes de UI como funciones puras que devuelven HTML | Consistencia con vanilla JS. Sin frameworks. |
 
 ### 12.1 Contrato de cierre de bloque
 
