@@ -3,6 +3,7 @@ import './styles/theme.css';
 import './styles/comic.css';
 
 import { LocalAdapter } from './adapters/LocalAdapter.js';
+import { SupabaseAdapter } from './adapters/SupabaseAdapter.js';
 import { bootstrap } from './app/bootstrap.js';
 import { Router } from './ui/router.js';
 import { applyTheme, resolveTheme } from './ui/theme.js';
@@ -49,6 +50,14 @@ router.setNotFound((c) => {
    ============================================================= */
 const app = document.getElementById('app');
 
+async function crearAdapter() {
+  const usarSupabase = import.meta.env.VITE_SUPABASE_ADAPTER === 'true';
+  if (usarSupabase) {
+    return new SupabaseAdapter();
+  }
+  return new LocalAdapter();
+}
+
 async function boot() {
   app.innerHTML = `
     <main class="min-h-screen flex items-center justify-center p-6">
@@ -64,7 +73,7 @@ async function boot() {
   `;
 
   const status = document.getElementById('boot-status');
-  const adapter = new LocalAdapter();
+  const adapter = await crearAdapter();
 
   try {
     await adapter.abrir();
