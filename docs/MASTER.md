@@ -1,10 +1,10 @@
 # CUMPEO — Documento Maestro de Construcción
 
-**Versión:** 1.6
-**Estado:** H4 · H5.1 · H6.1 a H6.5 COMPLETOS · ~68-70% proyecto completo
-**Última actualización:** Post-commit `6164386`
-**HEAD:** `feature/vertical-slice` — `6164386`
-**Tests:** 376 unit + 29 e2e
+**Versión:** 1.7
+**Estado:** H4 · H5.1 · H6 COMPLETOS · ~75% proyecto completo
+**Última actualización:** Post-commit `a0a7f07`
+**HEAD:** `feature/vertical-slice` — `a0a7f07`
+**Tests:** 376 unit + 34 e2e
 **Audiencia:** Desarrollador único / equipo reducido
 **Propósito:** Guía única de referencia para construcción, consulta y auditoría del sistema.
 
@@ -536,7 +536,7 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 
 | Métrica | Valor |
 |---------|-------|
-| Progreso global | ~68-70% |
+| Progreso global | ~75% |
 | H4 completado | 100% (5/5 servicios) |
 | H5.1 completado | 100% (Trivia definido) |
 | H6.1 completado | 100% (Bootstrap) |
@@ -545,9 +545,10 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 | H6.4a completado | 100% (JuegoService + seed) |
 | H6.4b completado | 100% (CRUD sets) |
 | H6.5 completado | 100% (Consola del conductor) |
+| H6.6 completado | 100% (Pantalla pública) |
 | Tests unit | 376 (23 archivos) |
-| Tests e2e | 29 |
-| Commits totales (rama) | 55+ |
+| Tests e2e | 34 |
+| Commits totales (rama) | 60+ |
 
 ### 8.2 Fases cerradas
 
@@ -780,6 +781,30 @@ El handler de `hashchange` llamaba `this._resolver()` sin `container` ni `app`. 
 
 **Total: 376 unit + 29 e2e.**
 
+### 8.3.7 Pantalla Pública (H6.6)
+
+Vista de solo lectura para el público. Cierra la fase H6.
+
+**Archivos:**
+
+- `src/ui/publica/pantalla.js` — `renderPantallaPublica(container, app, params)`:
+  - Acceso vía `#/publica/:codigo` (código público).
+  - Auto-refresh cada 2s con limpieza estricta del interval.
+  - Header custom sin `Header` compartido (no hay botón de tema para el público).
+  - Cards de equipos con color de borde real (`style="border-color: ..."`).
+  - Puntajes con `font-comic-score text-7xl`.
+  - Estado del juego activo (o "Esperando el inicio del juego…").
+  - **Sin botones de control.**
+- `src/main.js` — ruta `#/publica/:codigo`.
+- `src/ui/partidas/consola.js` — link "Ver pantalla pública ↗" con `target="_blank"`.
+- `tests/e2e/publica.spec.js` — 5 tests (código inválido, código válido, sin botones, puntajes grandes, link desde consola).
+
+**Ajuste no reportado:**
+
+- `tests/e2e/partidas.spec.js` — el test "ir a la consola" se reescribió para crear la partida vía API (evita flakiness).
+
+**Total: 376 unit + 34 e2e.**
+
 ### 8.4 Commits clave
 
 ```
@@ -808,6 +833,8 @@ c812b1f  feat(services): add JuegoService and seed juegos from registry
 db0fe46  feat(ui): add conductor console for partidas
 c908bb5  fix(ui): use ControlPartida entity for control check
 6164386  docs: add games manual (GAMES.md)
+256c2b5  docs: update master with H6.4 and H6.5 completion
+a0a7f07  feat(ui): add public screen for partidas
 ```
 
 ### 8.3 Estructura del repositorio
@@ -900,7 +927,7 @@ c908bb5  fix(ui): use ControlPartida entity for control check
 
 **H5.2 (opcional, pospuesto):** implementación de un segundo juego (Rosco, Pictionary) para validar el contrato. Pospuesto hasta que la UI lo requiera.
 
-### Fase H6 - Interfaz de Usuario (EN PROGRESO ~85%)
+### Fase H6 - Interfaz de Usuario (CERRADA 100%)
 
 **Sub-bloques:**
 
@@ -911,7 +938,18 @@ c908bb5  fix(ui): use ControlPartida entity for control check
 5. **H6.4b — CRUD de sets** ✅ Cerrado (`84164d8`).
 6. **H6.4c — Editor de items** ⬜ Pospuesto. Editor específico por juego.
 7. **H6.5 — Consola del conductor** ✅ Cerrado (`db0fe46`, fixup `c908bb5`).
-8. **H6.6 — Pantalla pública** ⬜ Siguiente.
+8. **H6.6 — Pantalla pública** ✅ Cerrado (`a0a7f07`).
+
+### Fase H7 - Producción (SIGUIENTE)
+
+Migración a Supabase. Sub-bloques propuestos:
+
+1. **H7.1 — SupabaseAdapter** (implementación del adapter contra Supabase).
+2. **H7.2 — RPC transaccionales** en PostgreSQL.
+3. **H7.3 — RLS** por tabla.
+4. **H7.4 — Realtime** (reemplaza el auto-refresh de la consola y la pantalla pública).
+5. **H7.5 — Auth de Supabase** (reemplaza el `SessionContext`).
+6. **H7.6 — Migración de tests** a Supabase.
 
 ### Fase H7 - Producción
 
