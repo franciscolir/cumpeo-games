@@ -47,3 +47,15 @@ test('los servicios quedan expuestos en window.cumpeo', async ({ page }) => {
   expect(cumpeo.hasRegistry).toBe(true);
   expect(cumpeo.juegosRegistrados).toContain('TRIVIA');
 });
+
+test('los juegos están seedeados en la DB', async ({ page }) => {
+  await page.goto('/');
+  const juegos = await page.evaluate(async () => {
+    return await window.cumpeo.services.juego.listarJuegos();
+  });
+  expect(juegos.length).toBeGreaterThanOrEqual(1);
+  expect(juegos.some((j) => j.codigo === 'TRIVIA')).toBe(true);
+  const trivia = juegos.find((j) => j.codigo === 'TRIVIA');
+  expect(trivia.id).not.toBe('TRIVIA');
+  expect(trivia.id.length).toBeGreaterThan(20);
+});

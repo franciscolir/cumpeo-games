@@ -7,11 +7,13 @@ import {
   PartidaService,
   CircuitoService,
   SetService,
+  JuegoService,
   GameDefinitionRegistry
 } from '../services/index.js';
 
 import { SessionContext } from './session-context.js';
 import { registrarTodos } from '../games/registro.js';
+import { seedJuegos } from './seed.js';
 
 /**
  * Inicializa la aplicación: servicios, session, registro de juegos.
@@ -25,10 +27,11 @@ import { registrarTodos } from '../games/registro.js';
  *     partida: PartidaService,
  *     circuito: CircuitoService,
  *     set: SetService,
+ *     juego: JuegoService,
  *     registry: GameDefinitionRegistry
  *   },
  *   registry: GameDefinitionRegistry
- * }>}}
+ * }>}
  * @throws {Error} si el adapter no está abierto o algún service falla.
  */
 export async function bootstrap(adapter) {
@@ -43,10 +46,12 @@ export async function bootstrap(adapter) {
     partida: new PartidaService(adapter),
     circuito: new CircuitoService(adapter),
     set: new SetService(adapter),
+    juego: new JuegoService(adapter),
     registry: new GameDefinitionRegistry()
   };
 
   registrarTodos(services.registry);
+  await seedJuegos(services, services.registry);
 
   const app = {
     adapter,

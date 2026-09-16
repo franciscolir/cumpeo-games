@@ -34,8 +34,8 @@ export async function renderFormularioCircuito(container, app, params = {}) {
     { posicion: 2, nombre: 'Equipo 2', color: '#F6E05E' }
   ];
   const juegosSeleccionados = completo ? completo.juegos : [];
-  const juegosDisponibles = app.services.registry.listar();
-  const juegoSeleccionadoId = juegosSeleccionados[0]?.juego_id || (juegosDisponibles[0]?.codigo || '');
+  const juegosDisponibles = await app.services.juego.listarJuegos();
+  const juegoSeleccionadoId = juegosSeleccionados[0]?.juego_id || (juegosDisponibles[0]?.id || '');
 
   container.innerHTML = `
     <main class="min-h-screen p-6 max-w-3xl mx-auto">
@@ -81,7 +81,7 @@ export async function renderFormularioCircuito(container, app, params = {}) {
             <label for="juego_id" class="font-label-md uppercase block mb-1">Juego principal</label>
             <select id="juego_id" name="juego_id" class="w-full font-body-md border-2.5 border-on-surface rounded-lg px-3 py-2 bg-surface-container-lowest focus:outline-none">
               ${juegosDisponibles.map((d) => `
-                <option value="${d.codigo}" ${d.codigo === juegoSeleccionadoId ? 'selected' : ''}>${d.nombre}</option>
+                <option value="${d.id}" ${d.id === juegoSeleccionadoId ? 'selected' : ''}>${d.nombre}</option>
               `).join('')}
             </select>
           </div>
