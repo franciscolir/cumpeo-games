@@ -487,7 +487,8 @@ describe('PartidaRepository', () => {
         juegos[0].id,
         { puntos_equipo_1: 1, puntos_equipo_2: 0 },
         'NORMAL',
-        SESION
+        SESION,
+        nuevoActionId()
       );
 
       await expect(
@@ -535,7 +536,8 @@ describe('PartidaRepository', () => {
         juegos[0].id,
         { puntos_equipo_1: 1, puntos_equipo_2: 0 },
         'NORMAL',
-        SESION
+        SESION,
+        nuevoActionId()
       );
 
       await expect(
@@ -608,7 +610,8 @@ describe('PartidaRepository', () => {
         partida.id, juegos[0].id,
         { puntos_equipo_1: 100, puntos_equipo_2: 50 },
         'NORMAL',
-        SESION
+        SESION,
+        nuevoActionId()
       );
       expect(r.estado).toBe('FINALIZADO');
       expect(r.finish_reason).toBe('NORMAL');
@@ -638,7 +641,8 @@ describe('PartidaRepository', () => {
         juegos[0].id,
         { puntos_equipo_1: 10, puntos_equipo_2: 0 },
         'NORMAL',
-        SESION
+        SESION,
+        nuevoActionId()
       );
 
       expect(finalizado.updated_at).toBeTruthy();
@@ -656,7 +660,8 @@ describe('PartidaRepository', () => {
         p.id, r.juegos[0].id,
         { puntos_equipo_1: 10, puntos_equipo_2: 0 },
         'NORMAL',
-        SESION
+        SESION,
+        nuevoActionId()
       );
 
       const recargada = await repo.obtenerPartida(p.id);
@@ -668,8 +673,36 @@ describe('PartidaRepository', () => {
       const { partida, juegos } = await escenarioPartidaEnCurso();
       await repo.iniciarJuego(partida.id, juegos[0].id, SESION, nuevoActionId());
       await expect(
-        repo.finalizarJuego(partida.id, juegos[0].id, { puntos_equipo_1: 1 }, 'NORMAL', 'otra')
+        repo.finalizarJuego(partida.id, juegos[0].id, { puntos_equipo_1: 1 }, 'NORMAL', 'otra', nuevoActionId())
       ).rejects.toThrow(/Sin control/);
+    });
+
+    it('es idempotente: dos llamadas con el mismo actionId no duplican puntos', async () => {
+      const { partida, juegos } = await escenarioPartidaEnCurso();
+      await repo.iniciarJuego(partida.id, juegos[0].id, SESION, nuevoActionId());
+      const actionId = nuevoActionId();
+      const r1 = await repo.finalizarJuego(
+        partida.id, juegos[0].id,
+        { puntos_equipo_1: 100, puntos_equipo_2: 50 },
+        'NORMAL',
+        SESION,
+        actionId
+      );
+      const r2 = await repo.finalizarJuego(
+        partida.id, juegos[0].id,
+        { puntos_equipo_1: 100, puntos_equipo_2: 50 },
+        'NORMAL',
+        SESION,
+        actionId
+      );
+      expect(r2.id).toBe(r1.id);
+      expect(r2.estado).toBe('FINALIZADO');
+
+      const ctx = await repo.obtenerContextoEspera(partida.id);
+      const eq1 = ctx.equipos.find((e) => e.posicion === 1);
+      const eq2 = ctx.equipos.find((e) => e.posicion === 2);
+      expect(eq1.puntaje).toBe(100);
+      expect(eq2.puntaje).toBe(50);
     });
   });
 

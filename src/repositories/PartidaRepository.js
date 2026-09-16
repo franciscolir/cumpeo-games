@@ -780,278 +780,205 @@ export class PartidaRepository extends BaseRepository {
     });
   }
 
-  async finalizarJuego(
-    partidaId,
-    juegoEjecutadoId,
-    resultado,
-    finishReason,
-    sessionId
-  ) {
+  /**
+   * Helper interno transaccional para finalizarJuego.
+   * Extraído para permitir idempotencia vía reservarEnTx.
+   *
+   * @param {IDBTransaction} tx - Transacción abierta con STORE_PARTIDAS, STORE_JUEGOS_EJECUTADOS,
+   *   STORE_EQUIPOS_PARTIDA, STORE_CONTROL
+   * @param {string} partidaId - ID de la partida
+   * @param {string} juegoEjecutadoId - ID del juego ejecutado
+   * @param {object} resultado - Resultado del juego { puntos_equipo_1, puntos_equipo_2, ... }
+   * @param {string} finishReason - Razón de finalización
+   * @param {string} sessionId - Sesión del conductor (lease check)
+   * @param {function} onDone - Callback con resultado { partida, juegoEjecutado, equipos } o { error }
+   */
+  _finalizarJuegoEnTx(tx, partidaId, juegoEjecutadoId, resultado, finishReason, sessionId, onDone) {
+    const p1 = resultado.puntos_equipo_1;
+    const p2 = resultado.puntos_equipo_2;
+
+    this._verificarLeaseEnTx(tx, partidaId, sessionId, (ok) => {
+      if (!ok) {
+        onDone({ error: new SinControlError(partidaId) });
+        return;
+      }
+
+      if (
+        typeof p1 !== 'number' ||
+        !Number.isFinite(p1) ||
+        typeof p2 !== 'number' ||
+        !Number.isFinite(p2)
+      ) {
+        onDone({
+          error: new ValidacionError(
+            'Los puntos de ambos equipos deben ser números finitos'
+          )
+        });
+        return;
+      }
+
+      const partidasStore = tx.objectStore(STORE_PARTIDAS);
+      const jeStore = tx.objectStore(STORE_JUEGOS_EJECUTADOS);
+      const equiposStore = tx.objectStore(STORE_EQUIPOS_PARTIDA);
+
+      const reqPartida = partidasStore.get(partidaId);
+
+      reqPartida.onsuccess = () => {
+        const partida = reqPartida.result;
+
+        if (!partida) {
+          onDone({ error: new NoEncontradoError('Partida no encontrada') });
+          return;
+        }
+
+        if (partida.estado !== 'EN_CURSO') {
+          onDone({ error: new OperacionInvalidaError('La partida debe estar EN_CURSO') });
+          return;
+        }
+
+        const reqJE = jeStore.get(juegoEjecutadoId);
+
+        reqJE.onsuccess = () => {
+          const je = reqJE.result;
+
+          if (!je || je.partida_id !== partidaId) {
+            onDone({ error: new NoEncontradoError('JuegoEjecutado no encontrado en la partida') });
+            return;
+          }
+
+          if (!['EN_CURSO', 'PAUSADO'].includes(je.estado)) {
+            onDone({ error: new OperacionInvalidaError('El JuegoEjecutado debe estar EN_CURSO o PAUSADO') });
+            return;
+          }
+
+          const reqEquipos = equiposStore.getAll();
+
+          reqEquipos.onsuccess = () => {
+            const equipos = (reqEquipos.result || [])
+              .filter((e) => e.partida_id === partidaId)
+              .sort((a, b) => a.posicion - b.posicion);
+
+            if (equipos.length !== 2) {
+              onDone({ error: new OperacionInvalidaError('La partida debe tener exactamente 2 equipos') });
+              return;
+            }
+
+            const ts = ahora();
+
+            const nuevoJE = {
+              ...je,
+              estado: 'FINALIZADO',
+              resultado: {
+                ...resultado,
+                puntos_equipo_1: p1,
+                puntos_equipo_2: p2
+              },
+              finish_reason: finishReason ?? null,
+              finished_at: ts,
+              paused_at: null,
+              state_version: je.state_version + 1
+            };
+
+            jeStore.put(nuevoJE);
+
+            const equipo1 = {
+              ...equipos[0],
+              puntaje: equipos[0].puntaje + p1,
+              version: equipos[0].version + 1
+            };
+
+            const equipo2 = {
+              ...equipos[1],
+              puntaje: equipos[1].puntaje + p2,
+              version: equipos[1].version + 1
+            };
+
+            equiposStore.put(equipo1);
+            equiposStore.put(equipo2);
+
+            const idx = jeStore.index('juego_ejecutado_partida_id');
+            const reqJuegos = idx.getAll(partidaId);
+
+            reqJuegos.onsuccess = () => {
+              const juegos = (reqJuegos.result || [])
+                .map((j) => j.id === je.id ? nuevoJE : j);
+
+              const todosTerminales = juegos.every(
+                (j) => j.estado === 'FINALIZADO' || j.estado === 'NO_JUGADO'
+              );
+
+              const nuevaPartida = {
+                ...partida,
+                estado: todosTerminales ? 'FINALIZADA' : 'EN_CURSO',
+                finish_reason: todosTerminales
+                  ? 'CIRCUITO_COMPLETO'
+                  : partida.finish_reason ?? null,
+                finished_at: todosTerminales
+                  ? ts
+                  : partida.finished_at ?? null,
+                last_activity_at: ts,
+                updated_at: ts,
+                version: partida.version + 1
+              };
+
+              partidasStore.put(nuevaPartida);
+
+              onDone({ partida: nuevaPartida, juegoEjecutado: nuevoJE, equipos: [equipo1, equipo2] });
+            };
+
+            reqJuegos.onerror = () => tx.abort();
+          };
+
+          reqEquipos.onerror = () => tx.abort();
+        };
+
+        reqJE.onerror = () => tx.abort();
+      };
+
+      reqPartida.onerror = () => tx.abort();
+    });
+  }
+
+  async finalizarJuego(partidaId, juegoEjecutadoId, resultado, finishReason, sessionId, actionId) {
     validarNoVacio(partidaId, 'partidaId');
     validarNoVacio(juegoEjecutadoId, 'juegoEjecutadoId');
     validarNoVacio(sessionId, 'sessionId');
+    validarNoVacio(actionId, 'actionId');
 
     if (!resultado || typeof resultado !== 'object') {
       throw new ValidacionError('resultado debe ser un objeto');
     }
 
-    const p1 = resultado.puntos_equipo_1;
-    const p2 = resultado.puntos_equipo_2;
-
-    const stores = [
-      STORE_PARTIDAS,
-      STORE_JUEGOS_EJECUTADOS,
-      STORE_EQUIPOS_PARTIDA,
-      STORE_CONTROL
-    ];
-
-    const ahoraActual = ahora();
-
     return this.adapter.tx(
-      stores,
+      [
+        STORE_PARTIDAS,
+        STORE_JUEGOS_EJECUTADOS,
+        STORE_EQUIPOS_PARTIDA,
+        STORE_CONTROL,
+        STORE_ACCIONES
+      ],
       'readwrite',
       (tx, resolver) => {
-        this._verificarLeaseEnTx(
-          tx,
-          partidaId,
-          sessionId,
-          (ok) => {
-            if (!ok) {
-              resolver({
-                error: new SinControlError(partidaId)
-              });
-              return;
-            }
-
-            if (
-              typeof p1 !== 'number' ||
-              !Number.isFinite(p1) ||
-              typeof p2 !== 'number' ||
-              !Number.isFinite(p2)
-            ) {
-              resolver({
-                error: new ValidacionError(
-                  'Los puntos de ambos equipos deben ser números finitos'
-                )
-              });
-              return;
-            }
-
-            const partidasStore =
-              tx.objectStore(STORE_PARTIDAS);
-
-            const jeStore =
-              tx.objectStore(STORE_JUEGOS_EJECUTADOS);
-
-            const equiposStore =
-              tx.objectStore(STORE_EQUIPOS_PARTIDA);
-
-            const reqPartida =
-              partidasStore.get(partidaId);
-
-            reqPartida.onsuccess = () => {
-              const partida = reqPartida.result;
-
-              if (!partida) {
-                resolver({
-                  error: new NoEncontradoError(
-                    'Partida no encontrada'
-                  )
-                });
-                return;
-              }
-
-              if (partida.estado !== 'EN_CURSO') {
-                resolver({
-                  error: new OperacionInvalidaError(
-                    'La partida debe estar EN_CURSO'
-                  )
-                });
-                return;
-              }
-
-              const reqJE =
-                jeStore.get(juegoEjecutadoId);
-
-              reqJE.onsuccess = () => {
-                const je = reqJE.result;
-
-                if (
-                  !je ||
-                  je.partida_id !== partidaId
-                ) {
-                  resolver({
-                    error: new NoEncontradoError(
-                      'JuegoEjecutado no encontrado en la partida'
-                    )
-                  });
-                  return;
-                }
-
-                if (
-                  !['EN_CURSO', 'PAUSADO'].includes(
-                    je.estado
-                  )
-                ) {
-                  resolver({
-                    error: new OperacionInvalidaError(
-                      'El JuegoEjecutado debe estar EN_CURSO o PAUSADO'
-                    )
-                  });
-                  return;
-                }
-
-                const reqEquipos =
-                  equiposStore.getAll();
-
-                reqEquipos.onsuccess = () => {
-                  const equipos =
-                    (reqEquipos.result || [])
-                      .filter(
-                        (e) =>
-                          e.partida_id === partidaId
-                      )
-                      .sort(
-                        (a, b) =>
-                          a.posicion - b.posicion
-                      );
-
-                  if (equipos.length !== 2) {
-                    resolver({
-                      error: new OperacionInvalidaError(
-                        'La partida debe tener exactamente 2 equipos'
-                      )
-                    });
-                    return;
-                  }
-
-                  const nuevoJE = {
-                    ...je,
-                    estado: 'FINALIZADO',
-                    resultado: {
-                      ...resultado,
-                      puntos_equipo_1: p1,
-                      puntos_equipo_2: p2
-                    },
-                    finish_reason:
-                      finishReason ?? null,
-                    finished_at: ahoraActual,
-                    paused_at: null,
-                    state_version:
-                      je.state_version + 1
-                  };
-
-                  jeStore.put(nuevoJE);
-
-                  const equipo1 = {
-                    ...equipos[0],
-                    puntaje:
-                      equipos[0].puntaje + p1,
-                    version:
-                      equipos[0].version + 1
-                  };
-
-                  const equipo2 = {
-                    ...equipos[1],
-                    puntaje:
-                      equipos[1].puntaje + p2,
-                    version:
-                      equipos[1].version + 1
-                  };
-
-                  equiposStore.put(equipo1);
-                  equiposStore.put(equipo2);
-
-                  const idx =
-                    jeStore.index(
-                      'juego_ejecutado_partida_id'
-                    );
-
-                  const reqJuegos =
-                    idx.getAll(partidaId);
-
-                  reqJuegos.onsuccess = () => {
-                    const juegos =
-                      (reqJuegos.result || [])
-                        .map((j) =>
-                          j.id === je.id
-                            ? nuevoJE
-                            : j
-                        );
-
-                    const todosTerminales =
-                      juegos.every(
-                        (j) =>
-                          j.estado ===
-                            'FINALIZADO' ||
-                          j.estado ===
-                            'NO_JUGADO'
-                      );
-
-                    const nuevaPartida = {
-                      ...partida,
-                      estado:
-                        todosTerminales
-                          ? 'FINALIZADA'
-                          : 'EN_CURSO',
-                      finish_reason:
-                        todosTerminales
-                          ? 'CIRCUITO_COMPLETO'
-                          : partida.finish_reason ??
-                            null,
-                      finished_at:
-                        todosTerminales
-                          ? ahoraActual
-                          : partida.finished_at ??
-                            null,
-                      last_activity_at:
-                        ahoraActual,
-                      updated_at:
-                        ahoraActual,
-                      version:
-                        partida.version + 1
-                    };
-
-                    partidasStore.put(
-                      nuevaPartida
-                    );
-
-                    resolver({
-                      partida: nuevaPartida,
-                      juegoEjecutado: nuevoJE,
-                      equipos: [
-                        equipo1,
-                        equipo2
-                      ]
-                    });
-                  };
-
-                  reqJuegos.onerror = () => {
-                    tx.abort();
-                  };
-                };
-
-                reqEquipos.onerror = () => {
-                  tx.abort();
-                };
-              };
-
-              reqJE.onerror = () => {
-                tx.abort();
-              };
-            };
-
-            reqPartida.onerror = () => {
-              tx.abort();
-            };
+        this.acciones.reservarEnTx(tx, actionId, partidaId, TIPO_ACCION.FINALIZAR_JUEGO, (reserva) => {
+          if (reserva.yaProcesada) {
+            resolver({ juegoEjecutado: reserva.resultado.juegoEjecutado });
+            return;
           }
-        );
+
+          this._finalizarJuegoEnTx(tx, partidaId, juegoEjecutadoId, resultado, finishReason, sessionId, (resultadoTx) => {
+            if (resultadoTx.error) {
+              resolver({ error: resultadoTx.error });
+              return;
+            }
+            this.acciones.actualizarResultadoEnTx(tx, actionId, resultadoTx);
+            resolver({ juegoEjecutado: resultadoTx.juegoEjecutado });
+          });
+        });
       }
     ).then((r) => {
       if (r && r.error) {
         throw r.error;
       }
-
       return r.juegoEjecutado;
     });
   }
