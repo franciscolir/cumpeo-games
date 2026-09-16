@@ -76,6 +76,12 @@ async function _renderContenido(container, app, partidaId) {
         <p class="font-display-hero text-3xl text-primary">${partida.public_codigo || '—'}</p>
       </div>
 
+      <div class="mb-4 text-center">
+        <a href="#/publica/${partida.public_codigo}" target="_blank" class="font-label-md uppercase border-2.5 border-on-surface rounded-lg px-4 py-2 bg-surface-container-lowest shadow-comic-sm hover:shadow-comic-md transition inline-block">
+          Ver pantalla pública ↗
+        </a>
+      </div>
+
       <section class="space-y-6">
         ${cardControl}
         ${cardEquipos}

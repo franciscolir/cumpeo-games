@@ -14,6 +14,7 @@ import { renderFormularioSet } from './ui/sets/formulario.js';
 import { renderListaPartidas } from './ui/partidas/lista.js';
 import { renderNuevaPartida } from './ui/partidas/nueva.js';
 import { renderConsolaPartida } from './ui/partidas/consola.js';
+import { renderPantallaPublica } from './ui/publica/pantalla.js';
 
 /* =============================================================
    Tema
@@ -38,6 +39,7 @@ router.registrar('#/sets/:id', (c, a, p) => renderFormularioSet(c, a, p));
 router.registrar('#/partidas', renderListaPartidas);
 router.registrar('#/partidas/nueva', renderNuevaPartida);
 router.registrar('#/partidas/:id', renderConsolaPartida);
+router.registrar('#/publica/:codigo', renderPantallaPublica);
 router.setNotFound((c) => {
   c.innerHTML = `<main class="min-h-screen p-6"><h1 class="font-display-hero text-4xl">404</h1><p class="mt-4">Ruta no encontrada</p></main>`;
 });

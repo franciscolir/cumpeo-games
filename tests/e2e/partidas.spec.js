@@ -65,13 +65,43 @@ test('partida aparece en la lista', async ({ page }) => {
 
 test('ir a la consola desde la lista', async ({ page }) => {
   await page.goto('/');
-  await setupCircuitoYPartida(page);
-  await page.goto('/#/partidas/nueva');
-  await page.click('button[type="submit"]');
-  await page.waitForURL(/#\/partidas\/[^/]+$/);
+  const { codigo } = await page.evaluate(async () => {
+    const juegos = await window.cumpeo.services.juego.listarJuegos();
+    const trivia = juegos.find((j) => j.codigo === 'TRIVIA');
+
+    const circuito = await window.cumpeo.services.circuito.crearCircuito({
+      nombre: 'Test Circuito',
+      juegos: [{ juego_id: trivia.id }],
+      equipos: [
+        { posicion: 1, nombre: 'Rojo', color: '#E53E3E' },
+        { posicion: 2, nombre: 'Azul', color: '#3182CE' }
+      ]
+    });
+
+    await window.cumpeo.services.circuito.actualizarCircuito(
+      circuito.id, circuito.version,
+      {
+        nombre: 'Test Circuito',
+        juegos: [{ juego_id: trivia.id }],
+        equipos: [
+          { posicion: 1, nombre: 'Rojo', color: '#E53E3E' },
+          { posicion: 2, nombre: 'Azul', color: '#3182CE' }
+        ],
+        estado: 'LISTO'
+      }
+    );
+
+    const partida = await window.cumpeo.services.partida.crearPartida(
+      { circuito_id: circuito.id, public_codigo: 'IRCON' },
+      crypto.randomUUID()
+    );
+
+    return { codigo: partida.public_codigo };
+  });
 
   await page.goto('/#/partidas');
-  await page.click('a:has-text("Ir a la consola")');
+  await expect(page.getByText('Test Circuito')).toBeVisible({ timeout: 10000 });
+  await page.locator('a:has-text("Ir a la consola")').first().click();
   await expect(page.getByText(/Partida:/)).toBeVisible();
 });
 
