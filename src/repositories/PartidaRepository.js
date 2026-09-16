@@ -3,6 +3,7 @@
    ============================================================= */
 
 import { BaseRepository } from './BaseRepository.js';
+import { AccionProcesadaRepository } from './AccionProcesadaRepository.js';
 import {
   NoEncontradoError,
   ValidacionError,
@@ -12,6 +13,7 @@ import {
   PublicCodigoDuplicadoError
 } from './errors.js';
 import { ahora, nuevoId, validarNoVacio } from './utils.js';
+import { TIPO_ACCION } from '../services/acciones.js';
 
 const STORE_PARTIDAS = 'partidas';
 const STORE_JUEGOS_EJECUTADOS = 'juego_ejecutados';
@@ -21,10 +23,12 @@ const STORE_CONTROL = 'control_partidas';
 const STORE_CIRCUITO_JUEGOS = 'circuito_juegos';
 const STORE_EQUIPO_CIRCUITOS = 'equipo_circuitos';
 const STORE_CIRCUITOS = 'circuitos';
+const STORE_ACCIONES = 'accion_procesadas';
 
 export class PartidaRepository extends BaseRepository {
   constructor(adapter) {
     super(adapter, STORE_PARTIDAS);
+    this.acciones = new AccionProcesadaRepository(adapter);
   }
 
   async obtenerPartida(partidaId) {
@@ -143,9 +147,10 @@ export class PartidaRepository extends BaseRepository {
     );
   }
 
-  async crearPartida({ circuito_id, public_codigo }) {
+  async crearPartida({ circuito_id, public_codigo, actionId }) {
     validarNoVacio(circuito_id, 'circuito_id');
     validarNoVacio(public_codigo, 'public_codigo');
+    validarNoVacio(actionId, 'actionId');
 
     return this.adapter.tx(
       [
@@ -153,104 +158,33 @@ export class PartidaRepository extends BaseRepository {
         STORE_CONTROL,
         STORE_EQUIPOS_PARTIDA,
         STORE_CIRCUITOS,
-        STORE_EQUIPO_CIRCUITOS
+        STORE_EQUIPO_CIRCUITOS,
+        STORE_ACCIONES
       ],
       'readwrite',
       (tx, resolver) => {
-        const partidasStore = tx.objectStore(STORE_PARTIDAS);
-        const idxCodigo = partidasStore.index('partida_public_codigo');
-        const reqCodigo = idxCodigo.get(public_codigo);
-
-        reqCodigo.onsuccess = () => {
-          if (reqCodigo.result) {
-            resolver({ error: new PublicCodigoDuplicadoError(public_codigo) });
-            return;
-          }
-
-          const circStore = tx.objectStore(STORE_CIRCUITOS);
-          const reqCirc = circStore.get(circuito_id);
-
-          reqCirc.onsuccess = () => {
-            const circuito = reqCirc.result;
-            if (!circuito) {
-              resolver({ error: new NoEncontradoError('Circuito', circuito_id) });
-              return;
-            }
-            if (circuito.estado !== 'LISTO') {
-              resolver({ error: new OperacionInvalidaError(
-                'El circuito no está LISTO (estado actual: ' + circuito.estado + ')'
-              ) });
+        this.acciones.reservarEnTx(
+          tx,
+          actionId,
+          null,
+          TIPO_ACCION.CREAR_PARTIDA,
+          (reserva) => {
+            if (reserva.yaProcesada) {
+              resolver({ partida: reserva.resultado });
               return;
             }
 
-            const eqCircStore = tx.objectStore(STORE_EQUIPO_CIRCUITOS);
-            const reqEquipos = eqCircStore
-              .index('equipo_circuito_circuito_id')
-              .getAll(circuito_id);
-
-            reqEquipos.onsuccess = () => {
-              const equiposCirc = reqEquipos.result.sort((a, b) => a.posicion - b.posicion);
-              if (equiposCirc.length !== 2) {
-                resolver({ error: new OperacionInvalidaError(
-                  'El circuito debe tener exactamente 2 equipos (tiene ' + equiposCirc.length + ')'
-                ) });
+            this._crearPartidaEnTx(tx, circuito_id, public_codigo, (resultado) => {
+              if (resultado.error) {
+                resolver({ error: resultado.error });
                 return;
               }
 
-              const ts = ahora();
-              const partidaId = nuevoId();
-
-              const partida = {
-                id: partidaId,
-                circuito_id,
-                circuito_nombre: circuito.nombre,
-                public_codigo,
-                estado: 'CONFIGURANDO',
-                version: 1,
-                started_at: null,
-                finished_at: null,
-                finish_reason: null,
-                last_activity_at: ts,
-                created_at: ts,
-                updated_at: ts
-              };
-              partidasStore.add(partida);
-
-              tx.objectStore(STORE_CONTROL).add({
-                partida_id: partidaId,
-                session_id: null,
-                usuario_id: null,
-                acquired_at: null,
-                expires_at: null,
-                heartbeat_at: null
-              });
-
-              const eqPartStore = tx.objectStore(STORE_EQUIPOS_PARTIDA);
-              for (const ec of equiposCirc) {
-                eqPartStore.add({
-                  id: nuevoId(),
-                  partida_id: partidaId,
-                  equipo_circuito_id: ec.id,
-                  posicion: ec.posicion,
-                  nombre: ec.nombre,
-                  color: ec.color,
-                  puntaje: 0,
-                  version: 1,
-                  created_at: ts,
-                  updated_at: ts
-                });
-              }
-
-              resolver({ partida });
-            };
-
-            reqEquipos.onerror = () => tx.abort();
-          };
-
-          reqCirc.onerror = () => tx.abort();
-        };
-
-        reqCodigo.onerror = () => tx.abort();
+              this.acciones.actualizarResultadoEnTx(tx, actionId, resultado.partida);
+              resolver({ partida: resultado.partida });
+            });
+          }
+        );
       }
     ).then((r) => {
       if (r && r.error) throw r.error;
@@ -258,6 +192,102 @@ export class PartidaRepository extends BaseRepository {
     });
   }
 
+  _crearPartidaEnTx(tx, circuito_id, public_codigo, onDone) {
+    const partidasStore = tx.objectStore(STORE_PARTIDAS);
+    const idxCodigo = partidasStore.index('partida_public_codigo');
+    const reqCodigo = idxCodigo.get(public_codigo);
+
+    reqCodigo.onsuccess = () => {
+      if (reqCodigo.result) {
+        onDone({ error: new PublicCodigoDuplicadoError(public_codigo) });
+        return;
+      }
+
+      const circStore = tx.objectStore(STORE_CIRCUITOS);
+      const reqCirc = circStore.get(circuito_id);
+
+      reqCirc.onsuccess = () => {
+        const circuito = reqCirc.result;
+        if (!circuito) {
+          onDone({ error: new NoEncontradoError('Circuito', circuito_id) });
+          return;
+        }
+        if (circuito.estado !== 'LISTO') {
+          onDone({ error: new OperacionInvalidaError(
+            'El circuito no está LISTO (estado actual: ' + circuito.estado + ')'
+          ) });
+          return;
+        }
+
+        const eqCircStore = tx.objectStore(STORE_EQUIPO_CIRCUITOS);
+        const reqEquipos = eqCircStore
+          .index('equipo_circuito_circuito_id')
+          .getAll(circuito_id);
+
+        reqEquipos.onsuccess = () => {
+          const equiposCirc = reqEquipos.result.sort((a, b) => a.posicion - b.posicion);
+          if (equiposCirc.length !== 2) {
+            onDone({ error: new OperacionInvalidaError(
+              'El circuito debe tener exactamente 2 equipos (tiene ' + equiposCirc.length + ')'
+            ) });
+            return;
+          }
+
+          const ts = ahora();
+          const partidaId = nuevoId();
+
+          const partida = {
+            id: partidaId,
+            circuito_id,
+            circuito_nombre: circuito.nombre,
+            public_codigo,
+            estado: 'CONFIGURANDO',
+            version: 1,
+            started_at: null,
+            finished_at: null,
+            finish_reason: null,
+            last_activity_at: ts,
+            created_at: ts,
+            updated_at: ts
+          };
+          partidasStore.add(partida);
+
+          tx.objectStore(STORE_CONTROL).add({
+            partida_id: partidaId,
+            session_id: null,
+            usuario_id: null,
+            acquired_at: null,
+            expires_at: null,
+            heartbeat_at: null
+          });
+
+          const eqPartStore = tx.objectStore(STORE_EQUIPOS_PARTIDA);
+          for (const ec of equiposCirc) {
+            eqPartStore.add({
+              id: nuevoId(),
+              partida_id: partidaId,
+              equipo_circuito_id: ec.id,
+              posicion: ec.posicion,
+              nombre: ec.nombre,
+              color: ec.color,
+              puntaje: 0,
+              version: 1,
+              created_at: ts,
+              updated_at: ts
+            });
+          }
+
+          onDone({ partida });
+        };
+
+        reqEquipos.onerror = () => tx.abort();
+      };
+
+      reqCirc.onerror = () => tx.abort();
+    };
+
+    reqCodigo.onerror = () => tx.abort();
+  }
   async comenzarPartida(partidaId, sessionId) {
     validarNoVacio(partidaId, 'partidaId');
     validarNoVacio(sessionId, 'sessionId');

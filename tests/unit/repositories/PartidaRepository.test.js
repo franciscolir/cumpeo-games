@@ -5,6 +5,10 @@ import { LocalAdapter } from '../../../src/adapters/LocalAdapter.js';
 import { PartidaRepository } from '../../../src/repositories/PartidaRepository.js';
 import { DB_NAME } from '../../../src/adapters/schema.js';
 
+function nuevoActionId() {
+  return crypto.randomUUID();
+}
+
 function borrarBase() {
   return new Promise((resolve, reject) => {
     const req = indexedDB.deleteDatabase(DB_NAME);
@@ -106,7 +110,7 @@ describe('PartidaRepository', () => {
 
   async function escenarioPartidaEnCurso(circuitoId = 'c1', publicCodigo = 'ABC123', sessionId = SESION, nJuegos = 3) {
     await crearCircuitoListoConJuegos(circuitoId, nJuegos);
-    const p = await repo.crearPartida({ circuito_id: circuitoId, public_codigo: publicCodigo });
+    const p = await repo.crearPartida({ circuito_id: circuitoId, public_codigo: publicCodigo, actionId: nuevoActionId() });
     await tomarControl(p.id, sessionId);
     const r = await repo.comenzarPartida(p.id, sessionId);
     return { partida: p, juegos: r.juegos };
@@ -194,7 +198,8 @@ describe('PartidaRepository', () => {
 
       const p = await repo.crearPartida({
         circuito_id: 'exp-estados',
-        public_codigo: 'EXPEST'
+        public_codigo: 'EXPEST',
+        actionId: nuevoActionId()
       });
 
       await ajustarActividad(
@@ -228,7 +233,7 @@ describe('PartidaRepository', () => {
   describe('crearPartida', () => {
     it('crea partida en CONFIGURANDO con version=1 y metadata', async () => {
       await crearCircuitoListoConJuegos();
-      const p = await repo.crearPartida({ circuito_id: 'c1', public_codigo: 'ABC123' });
+      const p = await repo.crearPartida({ circuito_id: 'c1', public_codigo: 'ABC123', actionId: nuevoActionId() });
 
       expect(p.id).toBeTruthy();
       expect(p.estado).toBe('CONFIGURANDO');
@@ -241,7 +246,7 @@ describe('PartidaRepository', () => {
 
     it('crea 1 ControlPartida libre', async () => {
       await crearCircuitoListoConJuegos();
-      const p = await repo.crearPartida({ circuito_id: 'c1', public_codigo: 'X1' });
+      const p = await repo.crearPartida({ circuito_id: 'c1', public_codigo: 'X1', actionId: nuevoActionId() });
 
       const control = await adapter.tx(['control_partidas'], 'readonly', (tx, resolver) => {
         const req = tx.objectStore('control_partidas').get(p.id);
@@ -253,7 +258,7 @@ describe('PartidaRepository', () => {
 
     it('crea 2 EquipoPartida copiando nombre+color', async () => {
       await crearCircuitoListoConJuegos();
-      const p = await repo.crearPartida({ circuito_id: 'c1', public_codigo: 'X1' });
+      const p = await repo.crearPartida({ circuito_id: 'c1', public_codigo: 'X1', actionId: nuevoActionId() });
 
       const equipos = await adapter.tx(['equipo_partidas'], 'readonly', (tx, resolver) => {
         const req = tx.objectStore('equipo_partidas').index('equipo_partida_partida_id').getAll(p.id);
@@ -266,9 +271,9 @@ describe('PartidaRepository', () => {
 
     it('rechaza public_codigo duplicado', async () => {
       await crearCircuitoListoConJuegos();
-      await repo.crearPartida({ circuito_id: 'c1', public_codigo: 'X1' });
+      await repo.crearPartida({ circuito_id: 'c1', public_codigo: 'X1', actionId: nuevoActionId() });
       await expect(
-        repo.crearPartida({ circuito_id: 'c1', public_codigo: 'X1' })
+        repo.crearPartida({ circuito_id: 'c1', public_codigo: 'X1', actionId: nuevoActionId() })
       ).rejects.toThrow(/ya en uso/);
     });
 
@@ -281,13 +286,37 @@ describe('PartidaRepository', () => {
         };
       });
       await expect(
-        repo.crearPartida({ circuito_id: 'c1', public_codigo: 'X1' })
+        repo.crearPartida({ circuito_id: 'c1', public_codigo: 'X1', actionId: nuevoActionId() })
       ).rejects.toThrow(/LISTO/);
+    });
+
+    it('es idempotente: dos llamadas con el mismo actionId devuelven la misma partida', async () => {
+      await crearCircuitoListoConJuegos();
+      const actionId = nuevoActionId();
+
+      const p1 = await repo.crearPartida({
+        circuito_id: 'c1',
+        public_codigo: 'IDEM01',
+        actionId
+      });
+
+      const p2 = await repo.crearPartida({
+        circuito_id: 'c1',
+        public_codigo: 'IDEM01',
+        actionId
+      });
+
+      expect(p2.id).toBe(p1.id);
+      expect(p2.public_codigo).toBe('IDEM01');
+
+      // Solo debe haber 1 partida en la DB
+      const todas = await repo.listar();
+      expect(todas.length).toBe(1);
     });
 
     it('rechaza si el circuito no existe', async () => {
       await expect(
-        repo.crearPartida({ circuito_id: 'nope', public_codigo: 'X1' })
+        repo.crearPartida({ circuito_id: 'nope', public_codigo: 'X1', actionId: nuevoActionId() })
       ).rejects.toThrow(/no encontrado/);
     });
   });
@@ -299,7 +328,7 @@ describe('PartidaRepository', () => {
   describe('consultas', () => {
     it('obtenerPartidaPorCodigo devuelve la partida', async () => {
       await crearCircuitoListoConJuegos();
-      const p = await repo.crearPartida({ circuito_id: 'c1', public_codigo: 'FINDME' });
+      const p = await repo.crearPartida({ circuito_id: 'c1', public_codigo: 'FINDME', actionId: nuevoActionId() });
       const r = await repo.obtenerPartidaPorCodigo('FINDME');
       expect(r.id).toBe(p.id);
     });
@@ -317,7 +346,7 @@ describe('PartidaRepository', () => {
 
     it('listarPartidasRecuperables incluye CONFIGURANDO y EN_CURSO', async () => {
       await crearCircuitoListoConJuegos('cA', 2);
-      await repo.crearPartida({ circuito_id: 'cA', public_codigo: 'A1' });
+      await repo.crearPartida({ circuito_id: 'cA', public_codigo: 'A1', actionId: nuevoActionId() });
       await escenarioPartidaEnCurso('cB', 'B1');
       const lista = await repo.listarPartidasRecuperables();
       expect(lista.length).toBeGreaterThanOrEqual(2);
@@ -339,7 +368,7 @@ describe('PartidaRepository', () => {
   describe('comenzarPartida', () => {
     it('crea N JuegoEjecutado en PENDIENTE', async () => {
       await crearCircuitoListoConJuegos('c1', 3);
-      const p = await repo.crearPartida({ circuito_id: 'c1', public_codigo: 'A1' });
+      const p = await repo.crearPartida({ circuito_id: 'c1', public_codigo: 'A1', actionId: nuevoActionId() });
       await tomarControl(p.id);
       const r = await repo.comenzarPartida(p.id, SESION);
 
@@ -360,7 +389,7 @@ describe('PartidaRepository', () => {
 
     it('rechaza sin lease', async () => {
       await crearCircuitoListoConJuegos();
-      const p = await repo.crearPartida({ circuito_id: 'c1', public_codigo: 'A1' });
+      const p = await repo.crearPartida({ circuito_id: 'c1', public_codigo: 'A1', actionId: nuevoActionId() });
       await expect(
         repo.comenzarPartida(p.id, 'otra-sesion')
       ).rejects.toThrow(/Sin control/);
@@ -541,7 +570,7 @@ describe('PartidaRepository', () => {
 
     it('finaliza la partida cuando todos los juegos están terminales', async () => {
       await crearCircuitoListoConJuegos('c1', 1);
-      const p = await repo.crearPartida({ circuito_id: 'c1', public_codigo: 'A1' });
+      const p = await repo.crearPartida({ circuito_id: 'c1', public_codigo: 'A1', actionId: nuevoActionId() });
       await tomarControl(p.id);
       const r = await repo.comenzarPartida(p.id, SESION);
       await repo.iniciarJuego(p.id, r.juegos[0].id, SESION);
