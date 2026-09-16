@@ -410,7 +410,7 @@ describe('PartidaRepository', () => {
   describe('iniciarJuego', () => {
     it('pasa un JuegoEjecutado de PENDIENTE a EN_CURSO', async () => {
       const { partida, juegos } = await escenarioPartidaEnCurso();
-      const r = await repo.iniciarJuego(partida.id, juegos[0].id, SESION);
+      const r = await repo.iniciarJuego(partida.id, juegos[0].id, SESION, nuevoActionId());
       expect(r.estado).toBe('EN_CURSO');
       expect(r.started_at).not.toBeNull();
       expect(r.state_version).toBe(2);
@@ -418,17 +418,28 @@ describe('PartidaRepository', () => {
 
     it('rechaza si ya hay otro juego activo (INV-055)', async () => {
       const { partida, juegos } = await escenarioPartidaEnCurso();
-      await repo.iniciarJuego(partida.id, juegos[0].id, SESION);
+      await repo.iniciarJuego(partida.id, juegos[0].id, SESION, nuevoActionId());
       await expect(
-        repo.iniciarJuego(partida.id, juegos[1].id, SESION)
+        repo.iniciarJuego(partida.id, juegos[1].id, SESION, nuevoActionId())
       ).rejects.toThrow(/INV-055/);
     });
 
     it('rechaza sin lease', async () => {
       const { partida, juegos } = await escenarioPartidaEnCurso();
       await expect(
-        repo.iniciarJuego(partida.id, juegos[0].id, 'otra')
+        repo.iniciarJuego(partida.id, juegos[0].id, 'otra', nuevoActionId())
       ).rejects.toThrow(/Sin control/);
+    });
+
+    it('es idempotente: dos llamadas con el mismo actionId no duplican el cambio', async () => {
+      const { partida, juegos } = await escenarioPartidaEnCurso();
+      const actionId = nuevoActionId();
+      const r1 = await repo.iniciarJuego(partida.id, juegos[0].id, SESION, actionId);
+      const r2 = await repo.iniciarJuego(partida.id, juegos[0].id, SESION, actionId);
+      expect(r1.estado).toBe('EN_CURSO');
+      expect(r2.estado).toBe('EN_CURSO');
+      expect(r2.started_at).toBe(r1.started_at);
+      expect(r2.state_version).toBe(r1.state_version);
     });
   });
 
@@ -439,7 +450,7 @@ describe('PartidaRepository', () => {
   describe('pausar / reanudar', () => {
     it('pausar pone paused_at', async () => {
       const { partida, juegos } = await escenarioPartidaEnCurso();
-      await repo.iniciarJuego(partida.id, juegos[0].id, SESION);
+      await repo.iniciarJuego(partida.id, juegos[0].id, SESION, nuevoActionId());
       const r = await repo.pausarJuego(partida.id, juegos[0].id, SESION, nuevoActionId());
       expect(r.estado).toBe('PAUSADO');
       expect(r.paused_at).not.toBeNull();
@@ -447,7 +458,7 @@ describe('PartidaRepository', () => {
 
     it('reanudar limpia paused_at', async () => {
       const { partida, juegos } = await escenarioPartidaEnCurso();
-      await repo.iniciarJuego(partida.id, juegos[0].id, SESION);
+      await repo.iniciarJuego(partida.id, juegos[0].id, SESION, nuevoActionId());
       await repo.pausarJuego(partida.id, juegos[0].id, SESION, nuevoActionId());
       const r = await repo.reanudarJuego(partida.id, juegos[0].id, SESION, nuevoActionId());
       expect(r.estado).toBe('EN_CURSO');
@@ -457,7 +468,7 @@ describe('PartidaRepository', () => {
     it('pausar rechaza si la Partida no está EN_CURSO', async () => {
       const { partida, juegos } = await escenarioPartidaEnCurso('c1', 'ABC124', SESION, 1);
 
-      await repo.iniciarJuego(partida.id, juegos[0].id, SESION);
+      await repo.iniciarJuego(partida.id, juegos[0].id, SESION, nuevoActionId());
 
       await repo.finalizarJuego(
         partida.id,
@@ -504,7 +515,7 @@ describe('PartidaRepository', () => {
     it('reanudar rechaza si la Partida no está EN_CURSO', async () => {
       const { partida, juegos } = await escenarioPartidaEnCurso('c1', 'ABC125', SESION, 1);
 
-      await repo.iniciarJuego(partida.id, juegos[0].id, SESION);
+      await repo.iniciarJuego(partida.id, juegos[0].id, SESION, nuevoActionId());
       await repo.pausarJuego(partida.id, juegos[0].id, SESION, nuevoActionId());
 
       await repo.finalizarJuego(
@@ -528,7 +539,7 @@ describe('PartidaRepository', () => {
   describe('actualizarEstadoJuego', () => {
     it('actualiza estado_juego y state_version', async () => {
       const { partida, juegos } = await escenarioPartidaEnCurso();
-      const je = await repo.iniciarJuego(partida.id, juegos[0].id, SESION);
+      const je = await repo.iniciarJuego(partida.id, juegos[0].id, SESION, nuevoActionId());
       const r = await repo.actualizarEstadoJuego(
         partida.id, juegos[0].id,
         { fase: 'PREGUNTANDO' },
@@ -541,7 +552,7 @@ describe('PartidaRepository', () => {
 
     it('rechaza con expectedStateVersion incorrecta', async () => {
       const { partida, juegos } = await escenarioPartidaEnCurso();
-      await repo.iniciarJuego(partida.id, juegos[0].id, SESION);
+      await repo.iniciarJuego(partida.id, juegos[0].id, SESION, nuevoActionId());
       await expect(
         repo.actualizarEstadoJuego(partida.id, juegos[0].id, { fase: 'X' }, 99, SESION)
       ).rejects.toThrow(/Conflicto/);
@@ -555,7 +566,7 @@ describe('PartidaRepository', () => {
   describe('finalizarJuego', () => {
     it('finaliza el juego y suma puntos a los equipos', async () => {
       const { partida, juegos } = await escenarioPartidaEnCurso();
-      await repo.iniciarJuego(partida.id, juegos[0].id, SESION);
+      await repo.iniciarJuego(partida.id, juegos[0].id, SESION, nuevoActionId());
 
       const r = await repo.finalizarJuego(
         partida.id, juegos[0].id,
@@ -580,7 +591,8 @@ describe('PartidaRepository', () => {
       const iniciado = await repo.iniciarJuego(
         partida.id,
         juegos[0].id,
-        SESION
+        SESION,
+        nuevoActionId()
       );
 
       const antes = iniciado.updated_at;
@@ -602,7 +614,7 @@ describe('PartidaRepository', () => {
       const p = await repo.crearPartida({ circuito_id: 'c1', public_codigo: 'A1', actionId: nuevoActionId() });
       await tomarControl(p.id);
       const r = await repo.comenzarPartida(p.id, SESION);
-      await repo.iniciarJuego(p.id, r.juegos[0].id, SESION);
+      await repo.iniciarJuego(p.id, r.juegos[0].id, SESION, nuevoActionId());
 
       await repo.finalizarJuego(
         p.id, r.juegos[0].id,
@@ -618,7 +630,7 @@ describe('PartidaRepository', () => {
 
     it('rechaza sin lease', async () => {
       const { partida, juegos } = await escenarioPartidaEnCurso();
-      await repo.iniciarJuego(partida.id, juegos[0].id, SESION);
+      await repo.iniciarJuego(partida.id, juegos[0].id, SESION, nuevoActionId());
       await expect(
         repo.finalizarJuego(partida.id, juegos[0].id, { puntos_equipo_1: 1 }, 'NORMAL', 'otra')
       ).rejects.toThrow(/Sin control/);
@@ -632,7 +644,7 @@ describe('PartidaRepository', () => {
   describe('descartarPartida', () => {
     it('marca la partida DESCARTADA y los pendientes NO_JUGADO', async () => {
       const { partida, juegos } = await escenarioPartidaEnCurso();
-      await repo.iniciarJuego(partida.id, juegos[0].id, SESION);
+      await repo.iniciarJuego(partida.id, juegos[0].id, SESION, nuevoActionId());
 
       await repo.descartarPartida(partida.id, SESION, nuevoActionId());
 
@@ -658,7 +670,8 @@ describe('PartidaRepository', () => {
       await repo.iniciarJuego(
         partida.id,
         juegos[0].id,
-        SESION
+        SESION,
+        nuevoActionId()
       );
 
       await repo.finalizarCircuito(
@@ -738,7 +751,8 @@ describe('PartidaRepository', () => {
       await repo.iniciarJuego(
         partida.id,
         juegos[0].id,
-        SESION
+        SESION,
+        nuevoActionId()
       );
 
       await repo.expirarPartida(partida.id);
@@ -772,7 +786,8 @@ describe('PartidaRepository', () => {
       await repo.iniciarJuego(
         partida.id,
         juegos[0].id,
-        SESION
+        SESION,
+        nuevoActionId()
       );
 
       await repo.pausarJuego(

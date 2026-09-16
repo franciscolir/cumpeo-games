@@ -394,97 +394,116 @@ export class PartidaRepository extends BaseRepository {
     });
   }
 
-  async iniciarJuego(partidaId, juegoEjecutadoId, sessionId) {
+  async iniciarJuego(partidaId, juegoEjecutadoId, sessionId, actionId) {
     validarNoVacio(partidaId, 'partidaId');
     validarNoVacio(juegoEjecutadoId, 'juegoEjecutadoId');
     validarNoVacio(sessionId, 'sessionId');
+    validarNoVacio(actionId, 'actionId');
 
     return this.adapter.tx(
-      [STORE_PARTIDAS, STORE_JUEGOS_EJECUTADOS, STORE_CONTROL],
+      [STORE_PARTIDAS, STORE_JUEGOS_EJECUTADOS, STORE_CONTROL, STORE_ACCIONES],
       'readwrite',
       (tx, resolver) => {
-        this._verificarLeaseEnTx(tx, partidaId, sessionId, (ok) => {
-          if (!ok) {
-            resolver({ error: new SinControlError(partidaId) });
+        this.acciones.reservarEnTx(tx, actionId, partidaId, TIPO_ACCION.INICIAR_JUEGO, (reserva) => {
+          if (reserva.yaProcesada) {
+            resolver({ juegoEjecutado: reserva.resultado });
             return;
           }
 
-          const partidasStore = tx.objectStore(STORE_PARTIDAS);
-          const reqPartida = partidasStore.get(partidaId);
-
-          reqPartida.onsuccess = () => {
-            const partida = reqPartida.result;
-            if (!partida) {
-              resolver({ error: new NoEncontradoError('Partida', partidaId) });
+          this._iniciarJuegoEnTx(tx, partidaId, juegoEjecutadoId, sessionId, (resultado) => {
+            if (resultado.error) {
+              resolver({ error: resultado.error });
               return;
             }
-            if (partida.estado !== 'EN_CURSO') {
-              resolver({ error: new OperacionInvalidaError('La partida no está EN_CURSO') });
-              return;
-            }
-
-            const jeStore = tx.objectStore(STORE_JUEGOS_EJECUTADOS);
-            const reqJe = jeStore.get(juegoEjecutadoId);
-
-            reqJe.onsuccess = () => {
-              const je = reqJe.result;
-              if (!je || je.partida_id !== partidaId) {
-                resolver({ error: new NoEncontradoError('JuegoEjecutado', juegoEjecutadoId) });
-                return;
-              }
-              if (je.estado !== 'PENDIENTE') {
-                resolver({ error: new OperacionInvalidaError(
-                  'No se puede iniciar un juego en estado ' + je.estado
-                ) });
-                return;
-              }
-
-              const idxActivo = jeStore.index('juego_ejecutado_partida_id');
-              const reqActivo = idxActivo.getAll(partidaId);
-
-              reqActivo.onsuccess = () => {
-                const activos = reqActivo.result.filter(
-                  (j) => j.estado === 'EN_CURSO' || j.estado === 'PAUSADO'
-                );
-                if (activos.length > 0) {
-                  resolver({ error: new OperacionInvalidaError(
-                    'Ya existe un juego activo en esta partida (INV-055)'
-                  ) });
-                  return;
-                }
-
-                const ts = ahora();
-                const actualizado = {
-                  ...je,
-                  estado: 'EN_CURSO',
-                  started_at: ts,
-                  state_version: je.state_version + 1,
-                  updated_at: ts
-                };
-                jeStore.put(actualizado);
-
-                partidasStore.put({
-                  ...partida,
-                  last_activity_at: ts,
-                  version: partida.version + 1,
-                  updated_at: ts
-                });
-
-                resolver({ juegoEjecutado: actualizado });
-              };
-
-              reqActivo.onerror = () => tx.abort();
-            };
-
-            reqJe.onerror = () => tx.abort();
-          };
-
-          reqPartida.onerror = () => tx.abort();
+            this.acciones.actualizarResultadoEnTx(tx, actionId, resultado.juegoEjecutado);
+            resolver({ juegoEjecutado: resultado.juegoEjecutado });
+          });
         });
       }
     ).then((r) => {
       if (r && r.error) throw r.error;
       return r.juegoEjecutado;
+    });
+  }
+
+  _iniciarJuegoEnTx(tx, partidaId, juegoEjecutadoId, sessionId, onDone) {
+    this._verificarLeaseEnTx(tx, partidaId, sessionId, (ok) => {
+      if (!ok) {
+        onDone({ error: new SinControlError(partidaId) });
+        return;
+      }
+
+      const partidasStore = tx.objectStore(STORE_PARTIDAS);
+      const reqPartida = partidasStore.get(partidaId);
+
+      reqPartida.onsuccess = () => {
+        const partida = reqPartida.result;
+        if (!partida) {
+          onDone({ error: new NoEncontradoError('Partida', partidaId) });
+          return;
+        }
+        if (partida.estado !== 'EN_CURSO') {
+          onDone({ error: new OperacionInvalidaError('La partida no está EN_CURSO') });
+          return;
+        }
+
+        const jeStore = tx.objectStore(STORE_JUEGOS_EJECUTADOS);
+        const reqJe = jeStore.get(juegoEjecutadoId);
+
+        reqJe.onsuccess = () => {
+          const je = reqJe.result;
+          if (!je || je.partida_id !== partidaId) {
+            onDone({ error: new NoEncontradoError('JuegoEjecutado', juegoEjecutadoId) });
+            return;
+          }
+          if (je.estado !== 'PENDIENTE') {
+            onDone({ error: new OperacionInvalidaError(
+              'No se puede iniciar un juego en estado ' + je.estado
+            ) });
+            return;
+          }
+
+          const idxActivo = jeStore.index('juego_ejecutado_partida_id');
+          const reqActivo = idxActivo.getAll(partidaId);
+
+          reqActivo.onsuccess = () => {
+            const activos = reqActivo.result.filter(
+              (j) => j.estado === 'EN_CURSO' || j.estado === 'PAUSADO'
+            );
+            if (activos.length > 0) {
+              onDone({ error: new OperacionInvalidaError(
+                'Ya existe un juego activo en esta partida (INV-055)'
+              ) });
+              return;
+            }
+
+            const ts = ahora();
+            const actualizado = {
+              ...je,
+              estado: 'EN_CURSO',
+              started_at: ts,
+              state_version: je.state_version + 1,
+              updated_at: ts
+            };
+            jeStore.put(actualizado);
+
+            partidasStore.put({
+              ...partida,
+              last_activity_at: ts,
+              version: partida.version + 1,
+              updated_at: ts
+            });
+
+            onDone({ juegoEjecutado: actualizado });
+          };
+
+          reqActivo.onerror = () => tx.abort();
+        };
+
+        reqJe.onerror = () => tx.abort();
+      };
+
+      reqPartida.onerror = () => tx.abort();
     });
   }
 
