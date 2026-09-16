@@ -4,6 +4,7 @@ import './styles/comic.css';
 
 import { LocalAdapter } from './adapters/LocalAdapter.js';
 import { nombresDeStores } from './adapters/schema.js';
+import { bootstrap } from './app/bootstrap.js';
 
 /* =============================================================
    Tema
@@ -51,19 +52,21 @@ async function boot() {
 
   try {
     await adapter.abrir();
+    const { services, session } = await bootstrap(adapter);
     const stores = nombresDeStores();
+    const juegos = services.registry.listarCodigos();
 
     status.innerHTML = `
-      <span class="font-label-md uppercase text-tertiary">H2 · OK</span><br>
-      Base <code class="font-label-md">cumpeo</code> abierta · ${stores.length} stores
+      <span class="font-label-md uppercase text-tertiary">H6.1 · OK</span><br>
+      Base <code class="font-label-md">cumpeo</code> abierta · ${stores.length} stores<br>
+      Sesión: <code class="font-label-md">${session.sessionId.slice(0, 8)}…</code><br>
+      Juegos registrados: ${juegos.join(', ')}
     `;
-
-    window.cumpeo = { adapter, stores };
   } catch (err) {
-    console.error('[boot] Error abriendo IndexedDB:', err);
+    console.error('[boot] Error:', err);
     status.innerHTML = `
       <span class="font-label-md uppercase text-error">ERROR</span><br>
-      No se pudo abrir IndexedDB
+      ${err.message || 'Error inicializando'}
     `;
   }
 }
