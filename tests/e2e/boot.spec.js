@@ -59,3 +59,8 @@ test('los juegos están seedeados en la DB', async ({ page }) => {
   expect(trivia.id).not.toBe('TRIVIA');
   expect(trivia.id.length).toBeGreaterThan(20);
 });
+
+test('el dashboard muestra la card de partidas', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByText('Partidas', { exact: true }).first()).toBeVisible();
+});

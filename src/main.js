@@ -11,6 +11,9 @@ import { renderListaCircuitos } from './ui/circuitos/lista.js';
 import { renderFormularioCircuito } from './ui/circuitos/formulario.js';
 import { renderListaSets } from './ui/sets/lista.js';
 import { renderFormularioSet } from './ui/sets/formulario.js';
+import { renderListaPartidas } from './ui/partidas/lista.js';
+import { renderNuevaPartida } from './ui/partidas/nueva.js';
+import { renderConsolaPartida } from './ui/partidas/consola.js';
 
 /* =============================================================
    Tema
@@ -32,6 +35,9 @@ router.registrar('#/circuitos/:id', (c, a, p) => renderFormularioCircuito(c, a, 
 router.registrar('#/sets', renderListaSets);
 router.registrar('#/sets/nuevo', (c, a) => renderFormularioSet(c, a, {}));
 router.registrar('#/sets/:id', (c, a, p) => renderFormularioSet(c, a, p));
+router.registrar('#/partidas', renderListaPartidas);
+router.registrar('#/partidas/nueva', renderNuevaPartida);
+router.registrar('#/partidas/:id', renderConsolaPartida);
 router.setNotFound((c) => {
   c.innerHTML = `<main class="min-h-screen p-6"><h1 class="font-display-hero text-4xl">404</h1><p class="mt-4">Ruta no encontrada</p></main>`;
 });

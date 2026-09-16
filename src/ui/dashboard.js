@@ -86,6 +86,19 @@ export async function renderDashboard(container, app) {
     color: 'tertiary'
   });
 
+  const cardPartidas = Card({
+    titulo: 'Partidas',
+    contenido: `
+      <p class="font-body-md text-on-surface-variant">
+        Controlá las partidas en vivo.
+      </p>
+      <div class="mt-3">
+        <a href="#/partidas">${Boton({ texto: 'Ver partidas', variante: 'ghost', clase: 'text-sm' })}</a>
+      </div>
+    `,
+    color: 'primary'
+  });
+
   container.innerHTML = `
     <main class="min-h-screen p-6">
       ${Header({ subtitulo: 'Panel del conductor' })}
@@ -94,6 +107,7 @@ export async function renderDashboard(container, app) {
         ${cardSesion}
         ${cardCircuitos}
         ${cardSets}
+        ${cardPartidas}
         ${cardJuegos}
       </section>
     </main>
