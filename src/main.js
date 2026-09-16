@@ -4,28 +4,31 @@ import './styles/comic.css';
 
 import { LocalAdapter } from './adapters/LocalAdapter.js';
 import { bootstrap } from './app/bootstrap.js';
+import { Router } from './ui/router.js';
+import { applyTheme, resolveTheme } from './ui/theme.js';
 import { renderDashboard } from './ui/dashboard.js';
+import { renderListaCircuitos } from './ui/circuitos/lista.js';
+import { renderFormularioCircuito } from './ui/circuitos/formulario.js';
 
 /* =============================================================
    Tema
    ============================================================= */
-function resolveTheme() {
-  const saved = localStorage.getItem('cumpeo.tema');
-  if (saved === 'claro') return 'light';
-  if (saved === 'oscuro') return 'dark';
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  return prefersDark ? 'dark' : 'light';
-}
-function applyTheme(theme) {
-  const html = document.documentElement;
-  html.dataset.theme = theme;
-  html.classList.toggle('dark', theme === 'dark');
-}
 applyTheme(resolveTheme());
-
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
   if (localStorage.getItem('cumpeo.tema')) return;
   applyTheme(e.matches ? 'dark' : 'light');
+});
+
+/* =============================================================
+   Router
+   ============================================================= */
+const router = new Router();
+router.registrar('#/', renderDashboard);
+router.registrar('#/circuitos', renderListaCircuitos);
+router.registrar('#/circuitos/nuevo', (c, a) => renderFormularioCircuito(c, a, {}));
+router.registrar('#/circuitos/:id', (c, a, p) => renderFormularioCircuito(c, a, p));
+router.setNotFound((c) => {
+  c.innerHTML = `<main class="min-h-screen p-6"><h1 class="font-display-hero text-4xl">404</h1><p class="mt-4">Ruta no encontrada</p></main>`;
 });
 
 /* =============================================================
@@ -53,7 +56,7 @@ async function boot() {
   try {
     await adapter.abrir();
     const cumpeoApp = await bootstrap(adapter);
-    await renderDashboard(app, cumpeoApp);
+    await router.iniciar(app, cumpeoApp);
   } catch (err) {
     console.error('[boot] Error:', err);
     status.innerHTML = `
