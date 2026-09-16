@@ -60,8 +60,9 @@ async function _renderContenido(container, app, partidaId) {
   const { partida, juegos, equipos } = contexto;
   const sessionId = app.session.sessionId;
   const tieneControl = await app.services.partida.verificarControl(partidaId, sessionId);
+  const control = await app.services.control.obtenerControl(partidaId);
 
-  const cardControl = _renderCardControl(partida, tieneControl, app, partidaId);
+  const cardControl = _renderCardControl(partida, control, tieneControl, app, partidaId);
   const cardEquipos = _renderCardEquipos(equipos);
   const cardJuego = _renderCardJuego(partida, juegos, tieneControl, app, partidaId);
   const cardAcciones = _renderCardAcciones(partida, tieneControl, app, partidaId);
@@ -91,12 +92,13 @@ async function _renderContenido(container, app, partidaId) {
 /**
  * Card de control.
  */
-function _renderCardControl(partida, tieneControl, app, partidaId) {
+function _renderCardControl(partida, control, tieneControl, app, partidaId) {
+  const sessionId = app.session.sessionId;
   let contenido;
 
   if (tieneControl) {
     contenido = `<p class="font-body-md text-tertiary font-bold">✓ Tenés el control</p>`;
-  } else if (partida.control_session_id) {
+  } else if (control && control.session_id && control.session_id !== sessionId) {
     contenido = `<p class="font-body-md text-on-surface-variant">Controlado por otra sesión.</p>`;
   } else {
     contenido = `
