@@ -1,15 +1,35 @@
 import { test, expect } from '@playwright/test';
 
-test('la app arranca y muestra el título CUMPEO', async ({ page }) => {
+test('la app arranca y muestra el dashboard', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('.font-display-hero').first()).toContainText('CUMPEO');
-  await expect(page.getByText('H6.1 · OK')).toBeVisible();
+  await expect(page.getByText('Panel del conductor')).toBeVisible();
+  await expect(page.getByText(/Circuitos \(\d+\)/)).toBeVisible();
+  await expect(page.getByText(/Juegos disponibles \(\d+\)/)).toBeVisible();
+});
+
+test('el dashboard muestra la sesión', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByText(/Sesión:/)).toBeVisible();
+});
+
+test('el dashboard muestra TRIVIA como juego registrado', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByText('Trivia')).toBeVisible();
 });
 
 test('el tema se resuelve a light o dark', async ({ page }) => {
   await page.goto('/');
   const theme = await page.evaluate(() => document.documentElement.dataset.theme);
   expect(['light', 'dark']).toContain(theme);
+});
+
+test('el botón de tema cambia el tema', async ({ page }) => {
+  await page.goto('/');
+  const themeAntes = await page.evaluate(() => document.documentElement.dataset.theme);
+  await page.click('#toggle-theme');
+  const themeDespues = await page.evaluate(() => document.documentElement.dataset.theme);
+  expect(themeDespues).not.toBe(themeAntes);
 });
 
 test('los servicios quedan expuestos en window.cumpeo', async ({ page }) => {

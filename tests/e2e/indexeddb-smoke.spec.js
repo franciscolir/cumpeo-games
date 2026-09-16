@@ -2,8 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test('la app abre IndexedDB en el navegador', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByText('H2 · OK')).toBeVisible({ timeout: 10_000 });
-  await expect(page.getByText('17 stores')).toBeVisible();
+  await expect(page.getByText('Panel del conductor')).toBeVisible({ timeout: 10_000 });
 
   const existe = await page.evaluate(async () => {
     return new Promise((resolve) => {
