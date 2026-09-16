@@ -440,7 +440,7 @@ describe('PartidaRepository', () => {
     it('pausar pone paused_at', async () => {
       const { partida, juegos } = await escenarioPartidaEnCurso();
       await repo.iniciarJuego(partida.id, juegos[0].id, SESION);
-      const r = await repo.pausarJuego(partida.id, juegos[0].id, SESION);
+      const r = await repo.pausarJuego(partida.id, juegos[0].id, SESION, nuevoActionId());
       expect(r.estado).toBe('PAUSADO');
       expect(r.paused_at).not.toBeNull();
     });
@@ -448,8 +448,8 @@ describe('PartidaRepository', () => {
     it('reanudar limpia paused_at', async () => {
       const { partida, juegos } = await escenarioPartidaEnCurso();
       await repo.iniciarJuego(partida.id, juegos[0].id, SESION);
-      await repo.pausarJuego(partida.id, juegos[0].id, SESION);
-      const r = await repo.reanudarJuego(partida.id, juegos[0].id, SESION);
+      await repo.pausarJuego(partida.id, juegos[0].id, SESION, nuevoActionId());
+      const r = await repo.reanudarJuego(partida.id, juegos[0].id, SESION, nuevoActionId());
       expect(r.estado).toBe('EN_CURSO');
       expect(r.paused_at).toBeNull();
     });
@@ -468,15 +468,44 @@ describe('PartidaRepository', () => {
       );
 
       await expect(
-        repo.pausarJuego(partida.id, juegos[0].id, SESION)
+        repo.pausarJuego(partida.id, juegos[0].id, SESION, nuevoActionId())
       ).rejects.toThrow(/Partida no está EN_CURSO/);
+    });
+
+    it('pausar es idempotente: dos llamadas con el mismo actionId no duplican el cambio', async () => {
+      const { partida, juegos } = await escenarioPartidaEnCurso();
+      await repo.iniciarJuego(partida.id, juegos[0].id, SESION, nuevoActionId());
+
+      const actionId = nuevoActionId();
+
+      const r1 = await repo.pausarJuego(partida.id, juegos[0].id, SESION, actionId);
+      const r2 = await repo.pausarJuego(partida.id, juegos[0].id, SESION, actionId);
+
+      expect(r1.estado).toBe('PAUSADO');
+      expect(r2.estado).toBe('PAUSADO');
+      expect(r2.state_version).toBe(r1.state_version);
+    });
+
+    it('reanudar es idempotente: dos llamadas con el mismo actionId no duplican el cambio', async () => {
+      const { partida, juegos } = await escenarioPartidaEnCurso();
+      await repo.iniciarJuego(partida.id, juegos[0].id, SESION, nuevoActionId());
+      await repo.pausarJuego(partida.id, juegos[0].id, SESION, nuevoActionId());
+
+      const actionId = nuevoActionId();
+
+      const r1 = await repo.reanudarJuego(partida.id, juegos[0].id, SESION, actionId);
+      const r2 = await repo.reanudarJuego(partida.id, juegos[0].id, SESION, actionId);
+
+      expect(r1.estado).toBe('EN_CURSO');
+      expect(r2.estado).toBe('EN_CURSO');
+      expect(r2.state_version).toBe(r1.state_version);
     });
 
     it('reanudar rechaza si la Partida no está EN_CURSO', async () => {
       const { partida, juegos } = await escenarioPartidaEnCurso('c1', 'ABC125', SESION, 1);
 
       await repo.iniciarJuego(partida.id, juegos[0].id, SESION);
-      await repo.pausarJuego(partida.id, juegos[0].id, SESION);
+      await repo.pausarJuego(partida.id, juegos[0].id, SESION, nuevoActionId());
 
       await repo.finalizarJuego(
         partida.id,
@@ -487,7 +516,7 @@ describe('PartidaRepository', () => {
       );
 
       await expect(
-        repo.reanudarJuego(partida.id, juegos[0].id, SESION)
+        repo.reanudarJuego(partida.id, juegos[0].id, SESION, nuevoActionId())
       ).rejects.toThrow(/Partida no está EN_CURSO/);
     });
   });
@@ -721,7 +750,7 @@ describe('PartidaRepository', () => {
         partida.id,
         juegos[0].id,
         SESION
-      );
+      , nuevoActionId());
 
       await repo.expirarPartida(partida.id);
 

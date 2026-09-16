@@ -576,99 +576,127 @@ export class PartidaRepository extends BaseRepository {
     });
   }
 
-  async pausarJuego(partidaId, juegoEjecutadoId, sessionId) {
+  async pausarJuego(partidaId, juegoEjecutadoId, sessionId, actionId) {
     return this._cambiarEstadoJuego(
-      partidaId, juegoEjecutadoId, sessionId,
+      partidaId, juegoEjecutadoId, sessionId, actionId,
+      TIPO_ACCION.PAUSAR_JUEGO,
       'EN_CURSO', 'PAUSADO',
       (je, ts) => ({ ...je, paused_at: ts })
     );
   }
 
-  async reanudarJuego(partidaId, juegoEjecutadoId, sessionId) {
+  async reanudarJuego(partidaId, juegoEjecutadoId, sessionId, actionId) {
     return this._cambiarEstadoJuego(
-      partidaId, juegoEjecutadoId, sessionId,
+      partidaId, juegoEjecutadoId, sessionId, actionId,
+      TIPO_ACCION.REANUDAR_JUEGO,
       'PAUSADO', 'EN_CURSO',
       (je) => ({ ...je, paused_at: null })
     );
   }
 
-  async _cambiarEstadoJuego(partidaId, juegoEjecutadoId, sessionId, estadoEsperado, nuevoEstado, mutador) {
+  async _cambiarEstadoJuego(partidaId, juegoEjecutadoId, sessionId, actionId, tipoAccion, estadoEsperado, nuevoEstado, mutador) {
     validarNoVacio(partidaId, 'partidaId');
     validarNoVacio(juegoEjecutadoId, 'juegoEjecutadoId');
     validarNoVacio(sessionId, 'sessionId');
+    validarNoVacio(actionId, 'actionId');
+    validarNoVacio(tipoAccion, 'tipoAccion');
 
     return this.adapter.tx(
-      [STORE_PARTIDAS, STORE_JUEGOS_EJECUTADOS, STORE_CONTROL],
+      [STORE_PARTIDAS, STORE_JUEGOS_EJECUTADOS, STORE_CONTROL, STORE_ACCIONES],
       'readwrite',
       (tx, resolver) => {
-        this._verificarLeaseEnTx(tx, partidaId, sessionId, (ok) => {
-          if (!ok) {
-            resolver({ error: new SinControlError(partidaId) });
+        this.acciones.reservarEnTx(tx, actionId, partidaId, tipoAccion, (reserva) => {
+          if (reserva.yaProcesada) {
+            resolver({ juegoEjecutado: reserva.resultado });
             return;
           }
 
-          const partidasStore = tx.objectStore(STORE_PARTIDAS);
-          const reqPartida = partidasStore.get(partidaId);
-
-          reqPartida.onsuccess = () => {
-            const partida = reqPartida.result;
-            if (!partida) {
-              resolver({ error: new NoEncontradoError('Partida', partidaId) });
-              return;
-            }
-
-            if (partida.estado !== 'EN_CURSO') {
-              resolver({
-                error: new OperacionInvalidaError('Partida no está EN_CURSO')
-              });
-              return;
-            }
-
-            const jeStore = tx.objectStore(STORE_JUEGOS_EJECUTADOS);
-            const reqJe = jeStore.get(juegoEjecutadoId);
-
-            reqJe.onsuccess = () => {
-              const je = reqJe.result;
-              if (!je || je.partida_id !== partidaId) {
-                resolver({ error: new NoEncontradoError('JuegoEjecutado', juegoEjecutadoId) });
+          this._cambiarEstadoJuegoEnTx(
+            tx,
+            partidaId, juegoEjecutadoId, sessionId,
+            estadoEsperado, nuevoEstado, mutador,
+            (resultado) => {
+              if (resultado.error) {
+                resolver({ error: resultado.error });
                 return;
               }
-              if (je.estado !== estadoEsperado) {
-                resolver({ error: new OperacionInvalidaError(
-                  'Transición inválida: se esperaba ' + estadoEsperado + ', actual ' + je.estado
-                ) });
-                return;
-              }
-
-              const ts = ahora();
-              const mutado = mutador(je, ts);
-              const actualizado = {
-                ...mutado,
-                estado: nuevoEstado,
-                state_version: je.state_version + 1,
-                updated_at: ts
-              };
-              jeStore.put(actualizado);
-
-              partidasStore.put({
-                ...partida,
-                last_activity_at: ts,
-                version: partida.version + 1,
-                updated_at: ts
-              });
-
-              resolver({ juegoEjecutado: actualizado });
-            };
-
-            reqJe.onerror = () => tx.abort();
-          };
-
-          reqPartida.onerror = () => tx.abort();
+              this.acciones.actualizarResultadoEnTx(tx, actionId, resultado.juegoEjecutado);
+              resolver({ juegoEjecutado: resultado.juegoEjecutado });
+            }
+          );
         });
       }
     ).then((r) => {
       if (r && r.error) throw r.error;
       return r.juegoEjecutado;
+    });
+  }
+
+  /* =============================================================
+     Interno — trabajo real de _cambiarEstadoJuego dentro de la tx.
+     ============================================================= */
+  _cambiarEstadoJuegoEnTx(tx, partidaId, juegoEjecutadoId, sessionId, estadoEsperado, nuevoEstado, mutador, onDone) {
+    this._verificarLeaseEnTx(tx, partidaId, sessionId, (ok) => {
+      if (!ok) {
+        onDone({ error: new SinControlError(partidaId) });
+        return;
+      }
+
+      const partidasStore = tx.objectStore(STORE_PARTIDAS);
+      const reqPartida = partidasStore.get(partidaId);
+
+      reqPartida.onsuccess = () => {
+        const partida = reqPartida.result;
+        if (!partida) {
+          onDone({ error: new NoEncontradoError('Partida', partidaId) });
+          return;
+        }
+
+        if (partida.estado !== 'EN_CURSO') {
+          onDone({ error: new OperacionInvalidaError('Partida no está EN_CURSO') });
+          return;
+        }
+
+        const jeStore = tx.objectStore(STORE_JUEGOS_EJECUTADOS);
+        const reqJe = jeStore.get(juegoEjecutadoId);
+
+        reqJe.onsuccess = () => {
+          const je = reqJe.result;
+          if (!je || je.partida_id !== partidaId) {
+            onDone({ error: new NoEncontradoError('JuegoEjecutado', juegoEjecutadoId) });
+            return;
+          }
+          if (je.estado !== estadoEsperado) {
+            onDone({ error: new OperacionInvalidaError(
+              'Transición inválida: se esperaba ' + estadoEsperado + ', actual ' + je.estado
+            ) });
+            return;
+          }
+
+          const ts = ahora();
+          const mutado = mutador(je, ts);
+          const actualizado = {
+            ...mutado,
+            estado: nuevoEstado,
+            state_version: je.state_version + 1,
+            updated_at: ts
+          };
+          jeStore.put(actualizado);
+
+          partidasStore.put({
+            ...partida,
+            last_activity_at: ts,
+            version: partida.version + 1,
+            updated_at: ts
+          });
+
+          onDone({ juegoEjecutado: actualizado });
+        };
+
+        reqJe.onerror = () => tx.abort();
+      };
+
+      reqPartida.onerror = () => tx.abort();
     });
   }
 
