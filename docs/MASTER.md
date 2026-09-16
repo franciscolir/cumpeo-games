@@ -1,8 +1,8 @@
 # CUMPEO — Documento Maestro de Construcción
 
 **Versión:** 1.1
-**Estado:** H4 en progreso · ~35-40% proyecto completo · ~15-20% H4
-**Última actualización:** Post-commit `295e596`
+**Estado:** H4 en progreso · ~38-42% proyecto completo · ~25-30% H4
+**Última actualización:** Post-commit `c425013`
 **HEAD:** `feature/vertical-slice` — `295e596`
 **Tests:** 248 pasando (15 archivos de test)
 **Audiencia:** Desarrollador único / equipo reducido
@@ -536,7 +536,7 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 
 | Métrica | Valor |
 |---------|-------|
-| Progreso global | ~35-40% |
+| Progreso global | ~38-42% |
 | H4 completado | ~15-20% |
 | Tests pasando | 248 (15 archivos) |
 | Commits totales (rama) | 30+ |
@@ -570,16 +570,28 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 | `reanudarJuego` | A (vía `_cambiarEstadoJuego`) | ✅ | `3df8390` |
 | `descartarPartida` | A (vía `_terminarPartida`) | ✅ | `295e596` |
 | `finalizarCircuito` | A (vía `_terminarPartida`) | ✅ | `295e596` |
-| `iniciarJuego` | B (lógica intermedia) | ⬜ Siguiente — Bloque B.1 | |
-| `comenzarPartida` | B (lógica intermedia) | ⬜ Bloque B.2 | |
-| `actualizarEstadoJuego` | C (lógica compleja) | ⬜ Bloque C.1 | |
-| `finalizarJuego` | C (lógica compleja) | ⬜ Bloque C.2 | |
+| `iniciarJuego` | B (lógica intermedia) | ✅ | `ae649ca` |
+| `comenzarPartida` | B (lógica intermedia) | ✅ | `ebd19dd` |
+| `actualizarEstadoJuego` | C (lógica compleja) | ✅ | `8f40765` |
+| `finalizarJuego` | C (lógica compleja) | ✅ | `c425013` |
 
 #### Modelo de trabajo por sub-bloques
 
 - **Grupo A (✅ cerrado):** Métodos con helpers compartidos (`_cambiarEstadoJuego`, `_terminarPartida`). El wrapper público maneja idempotencia; el helper interno hace el trabajo real.
-- **Grupo B (siguiente):** Métodos con lógica intermedia. Requieren orquestación de múltiples repositorios.
-- **Grupo C:** Métodos con lógica compleja. Transacciones de alto riesgo.
+- **Grupo B (✅ cerrado):** Métodos con lógica intermedia. Requieren orquestación de múltiples repositorios.
+- **Grupo C (✅ cerrado):** Métodos con lógica compleja. Transacciones de alto riesgo.
+
+#### Estado final de idempotencia
+
+**9/9 métodos críticos idempotentes. 252 tests pasando.**
+
+Cada método sigue el mismo patrón:
+1. Wrapper público con `actionId` como último argumento.
+2. `STORE_ACCIONES` agregado a la tx.
+3. `reservarEnTx` al inicio de la tx.
+4. Si `yaProcesada` → devolver cache.
+5. Si no → llamar a `_<metodo>EnTx` y luego `actualizarResultadoEnTx`.
+6. Helper interno `_<metodo>EnTx` con la lógica real y JSDoc.
 
 ### 8.4 Commits clave
 
@@ -591,6 +603,10 @@ f8dc2da  feat(repositories): add AccionProcesadaRepository for idempotency
 c2962fa  refactor(partida): add idempotency to crearPartida via actionId
 3df8390  refactor(partida): add idempotency to pausar/reanudar via _cambiarEstadoJuego
 295e596  refactor(partida): add idempotency to descartarPartida/finalizarCircuito via _terminarPartida
+ae649ca  refactor(partida): add idempotency to iniciarJuego
+ebd19dd  refactor(partida): add idempotency to comenzarPartida
+8f40765  refactor(partida): add idempotency to actualizarEstadoJuego
+c425013  refactor(partida): add idempotency to finalizarJuego
 ```
 
 ### 8.3 Estructura del repositorio
@@ -658,7 +674,7 @@ c2962fa  refactor(partida): add idempotency to crearPartida via actionId
 
 ### Fase H3 - Repositorios (CERRADA)
 
-### Fase H4 - Servicios de dominio (EN PROGRESO ~15-20%)
+### Fase H4 - Servicios de dominio (EN PROGRESO ~25-30%)
 
 Servicios a implementar:
 
@@ -670,8 +686,10 @@ Servicios a implementar:
 
 **Sub-bloques de PartidaService:**
 - Grupo A (helpers compartidos): ✅ Cerrado — crearPartida, pausar/reanudar, descartar/finalizarCircuito
-- Grupo B (lógica intermedia): ⬜ Siguiente — iniciarJuego, comenzarPartida
-- Grupo C (lógica compleja): ⬜ Pendiente — actualizarEstadoJuego, finalizarJuego
+- Grupo B (lógica intermedia): ✅ Cerrado — iniciarJuego, comenzarPartida
+- Grupo C (lógica compleja): ✅ Cerrado — actualizarEstadoJuego, finalizarJuego
+
+**PartidaRepository completó su ciclo de idempotencia. 9/9 métodos críticos idempotentes. Siguiente: crear PartidaService como wrapper fino sobre el repo.**
 
 ### Fase H5 - GameDefinition Trivia
 
@@ -767,6 +785,9 @@ Migrar a Supabase, RPC, RLS, Realtime.
 | 17 | Scripts de Node en `/tmp/*.js` ejecutados con `node /tmp/script.js` | Nunca `node -e` — bash expande `!` y corrompe scripts silenciosamente. |
 | 18 | `node --check` después de cada refactor, antes de `npm test` | Detecta sintaxis rota en segundos, ahorra minutos de test fallido. |
 | 19 | Contrato de cierre de bloque (7 verificaciones) | Garantiza calidad antes de avanzar. Ver abajo. |
+| 20 | Helper interno monolítico por método (`_<metodo>EnTx`) | Consistencia de patrón. No dividir en sub-ayudas. |
+| 21 | Cache del objeto completo, retorno de la parte pública | API estable hacia el exterior, cache completo hacia adentro. |
+| 22 | `ahora()` calculado dentro del helper (una vez por operación) | Consistencia temporal entre entidades actualizadas. |
 
 ### 12.1 Contrato de cierre de bloque
 
