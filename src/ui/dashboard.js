@@ -73,6 +73,19 @@ export async function renderDashboard(container, app) {
     color: 'secondary-container'
   });
 
+  const cardSets = Card({
+    titulo: 'Sets',
+    contenido: `
+      <p class="font-body-md text-on-surface-variant">
+        Administra los sets de contenido para cada juego.
+      </p>
+      <div class="mt-3">
+        <a href="#/sets">${Boton({ texto: 'Ver sets', variante: 'ghost', clase: 'text-sm' })}</a>
+      </div>
+    `,
+    color: 'tertiary'
+  });
+
   container.innerHTML = `
     <main class="min-h-screen p-6">
       ${Header({ subtitulo: 'Panel del conductor' })}
@@ -80,6 +93,7 @@ export async function renderDashboard(container, app) {
       <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         ${cardSesion}
         ${cardCircuitos}
+        ${cardSets}
         ${cardJuegos}
       </section>
     </main>

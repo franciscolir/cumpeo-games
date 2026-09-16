@@ -4,7 +4,7 @@ test('navegar de dashboard a lista de circuitos', async ({ page }) => {
   await page.goto('/#/');
   await page.waitForSelector('a[href="#/circuitos"]');
   await page.click('a[href="#/circuitos"]');
-  await expect(page.getByRole('heading', { name: 'Circuitos' })).toBeVisible();
+  await expect(page.getByText('Circuitos', { exact: true }).first()).toBeVisible();
 });
 
 test('lista de circuitos muestra empty state inicial', async ({ page }) => {

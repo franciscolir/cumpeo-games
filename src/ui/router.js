@@ -87,8 +87,9 @@ export class Router {
 
   async _resolver(container, app) {
     const hash = window.location.hash || '#/';
+    const hashSinQuery = hash.split('?')[0];
     for (const ruta of this.rutas) {
-      const params = matchRoute(ruta.pattern, hash);
+      const params = matchRoute(ruta.pattern, hashSinQuery);
       if (params !== null) {
         if (this.onChange) this.onChange(hash);
         await ruta.handler(container, app, params);
