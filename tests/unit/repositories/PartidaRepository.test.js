@@ -556,7 +556,8 @@ describe('PartidaRepository', () => {
         partida.id, juegos[0].id,
         { fase: 'PREGUNTANDO' },
         je.state_version,
-        SESION
+        SESION,
+        nuevoActionId()
       );
       expect(r.estado_juego).toEqual({ fase: 'PREGUNTANDO' });
       expect(r.state_version).toBe(je.state_version + 1);
@@ -566,8 +567,31 @@ describe('PartidaRepository', () => {
       const { partida, juegos } = await escenarioPartidaEnCurso();
       await repo.iniciarJuego(partida.id, juegos[0].id, SESION, nuevoActionId());
       await expect(
-        repo.actualizarEstadoJuego(partida.id, juegos[0].id, { fase: 'X' }, 99, SESION)
+        repo.actualizarEstadoJuego(partida.id, juegos[0].id, { fase: 'X' }, 99, SESION, nuevoActionId())
       ).rejects.toThrow(/Conflicto/);
+    });
+
+    it('es idempotente: dos llamadas con el mismo actionId no duplican el cambio', async () => {
+      const { partida, juegos } = await escenarioPartidaEnCurso();
+      const je = await repo.iniciarJuego(partida.id, juegos[0].id, SESION, nuevoActionId());
+      const actionId = nuevoActionId();
+      const r1 = await repo.actualizarEstadoJuego(
+        partida.id, juegos[0].id,
+        { fase: 'PREGUNTANDO' },
+        je.state_version,
+        SESION,
+        actionId
+      );
+      const r2 = await repo.actualizarEstadoJuego(
+        partida.id, juegos[0].id,
+        { fase: 'PREGUNTANDO' },
+        je.state_version,
+        SESION,
+        actionId
+      );
+      expect(r2.id).toBe(r1.id);
+      expect(r2.state_version).toBe(r1.state_version);
+      expect(r2.estado_juego).toEqual(r1.estado_juego);
     });
   });
 
