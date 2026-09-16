@@ -976,184 +976,192 @@ export class PartidaRepository extends BaseRepository {
     });
   }
 
-  async descartarPartida(partidaId, sessionId) {
-    return this._terminarPartida(partidaId, sessionId, 'DESCARTADA', null);
+  async descartarPartida(partidaId, sessionId, actionId) {
+    return this._terminarPartida(
+      partidaId, sessionId, actionId,
+      TIPO_ACCION.DESCARTAR_PARTIDA,
+      'DESCARTADA', null
+    );
   }
 
-  async finalizarCircuito(partidaId, sessionId) {
-    return this._terminarPartida(partidaId, sessionId, 'FINALIZADA', 'CIRCUITO_COMPLETO');
+  async finalizarCircuito(partidaId, sessionId, actionId) {
+    return this._terminarPartida(
+      partidaId, sessionId, actionId,
+      TIPO_ACCION.FINALIZAR_CIRCUITO,
+      'FINALIZADA', 'CIRCUITO_COMPLETO'
+    );
   }
 
   async _terminarPartida(
     partidaId,
     sessionId,
+    actionId,
+    tipoAccion,
     estadoFinal,
     finishReasonPartida
   ) {
     validarNoVacio(partidaId, 'partidaId');
     validarNoVacio(sessionId, 'sessionId');
-
-    const stores = [
-      STORE_PARTIDAS,
-      STORE_JUEGOS_EJECUTADOS,
-      STORE_CONTROL
-    ];
-
-    const ahoraActual = ahora();
+    validarNoVacio(actionId, 'actionId');
+    validarNoVacio(tipoAccion, 'tipoAccion');
 
     return this.adapter.tx(
-      stores,
+      [
+        STORE_PARTIDAS,
+        STORE_JUEGOS_EJECUTADOS,
+        STORE_CONTROL,
+        STORE_ACCIONES
+      ],
       'readwrite',
       (tx, resolver) => {
-        this._verificarLeaseEnTx(
-          tx,
-          partidaId,
-          sessionId,
-          (ok) => {
-            if (!ok) {
-              resolver({
-                error: new SinControlError(partidaId)
-              });
-              return;
-            }
-
-            const partidasStore =
-              tx.objectStore(STORE_PARTIDAS);
-
-            const jeStore =
-              tx.objectStore(STORE_JUEGOS_EJECUTADOS);
-
-            const reqPartida =
-              partidasStore.get(partidaId);
-
-            reqPartida.onsuccess = () => {
-              const partida = reqPartida.result;
-
-              if (!partida) {
-                resolver({
-                  error: new NoEncontradoError(
-                    'Partida',
-                    partidaId
-                  )
-                });
-                return;
-              }
-
-              if (partida.estado !== 'EN_CURSO') {
-                resolver({
-                  error: new OperacionInvalidaError(
-                    'La partida debe estar EN_CURSO'
-                  )
-                });
-                return;
-              }
-
-              const idx =
-                jeStore.index(
-                  'juego_ejecutado_partida_id'
-                );
-
-              const reqJuegos =
-                idx.getAll(partidaId);
-
-              reqJuegos.onsuccess = () => {
-                const juegos =
-                  reqJuegos.result || [];
-
-                const juegosActualizados = [];
-
-                for (const juego of juegos) {
-                  if (
-                    juego.estado === 'EN_CURSO' ||
-                    juego.estado === 'PAUSADO'
-                  ) {
-                    const actualizado = {
-                      ...juego,
-                      estado: 'FINALIZADO',
-                      resultado:
-                        juego.resultado ?? {
-                          puntos_equipo_1: 0,
-                          puntos_equipo_2: 0
-                        },
-                      finish_reason:
-                        estadoFinal === 'DESCARTADA'
-                          ? 'PARTIDA_DESCARTADA'
-                          : 'PARTIDA_FINALIZADA',
-                      finished_at: ahoraActual,
-                      paused_at: null,
-                      state_version:
-                        juego.state_version + 1
-                    };
-
-                    jeStore.put(actualizado);
-
-                    juegosActualizados.push(
-                      actualizado
-                    );
-                  } else if (
-                    juego.estado === 'PENDIENTE'
-                  ) {
-                    const actualizado = {
-                      ...juego,
-                      estado: 'NO_JUGADO',
-                      resultado: null,
-                      finish_reason:
-                        estadoFinal === 'DESCARTADA'
-                          ? 'PARTIDA_DESCARTADA'
-                          : 'PARTIDA_FINALIZADA',
-                      finished_at: ahoraActual,
-                      paused_at: null,
-                      state_version:
-                        juego.state_version + 1
-                    };
-
-                    jeStore.put(actualizado);
-
-                    juegosActualizados.push(
-                      actualizado
-                    );
-                  } else {
-                    juegosActualizados.push(juego);
-                  }
-                }
-
-                const nuevaPartida = {
-                  ...partida,
-                  estado: estadoFinal,
-                  finish_reason:
-                    finishReasonPartida,
-                  finished_at: ahoraActual,
-                  last_activity_at: ahoraActual,
-                  updated_at: ahoraActual,
-                  version: partida.version + 1
-                };
-
-                partidasStore.put(nuevaPartida);
-
-                resolver({
-                  partida: nuevaPartida,
-                  juegos: juegosActualizados
-                });
-              };
-
-              reqJuegos.onerror = () => {
-                tx.abort();
-              };
-            };
-
-            reqPartida.onerror = () => {
-              tx.abort();
-            };
+        this.acciones.reservarEnTx(tx, actionId, partidaId, tipoAccion, (reserva) => {
+          if (reserva.yaProcesada) {
+            resolver(reserva.resultado);
+            return;
           }
-        );
+
+          this._terminarPartidaEnTx(
+            tx,
+            partidaId,
+            sessionId,
+            estadoFinal,
+            finishReasonPartida,
+            (resultado) => {
+              if (resultado.error) {
+                resolver({ error: resultado.error });
+                return;
+              }
+              this.acciones.actualizarResultadoEnTx(tx, actionId, resultado);
+              resolver(resultado);
+            }
+          );
+        });
       }
     ).then((r) => {
       if (r && r.error) {
         throw r.error;
       }
-
       return r;
     });
+  }
+
+  /* =============================================================
+     Interno — trabajo real de _terminarPartida dentro de la tx.
+     ============================================================= */
+  _terminarPartidaEnTx(
+    tx,
+    partidaId,
+    sessionId,
+    estadoFinal,
+    finishReasonPartida,
+    onDone
+  ) {
+    const ahoraActual = ahora();
+
+    this._verificarLeaseEnTx(
+      tx,
+      partidaId,
+      sessionId,
+      (ok) => {
+        if (!ok) {
+          onDone({ error: new SinControlError(partidaId) });
+          return;
+        }
+
+        const partidasStore = tx.objectStore(STORE_PARTIDAS);
+        const jeStore = tx.objectStore(STORE_JUEGOS_EJECUTADOS);
+
+        const reqPartida = partidasStore.get(partidaId);
+
+        reqPartida.onsuccess = () => {
+          const partida = reqPartida.result;
+
+          if (!partida) {
+            onDone({ error: new NoEncontradoError('Partida', partidaId) });
+            return;
+          }
+
+          if (partida.estado !== 'EN_CURSO') {
+            onDone({ error: new OperacionInvalidaError('La partida debe estar EN_CURSO') });
+            return;
+          }
+
+          const idx = jeStore.index('juego_ejecutado_partida_id');
+          const reqJuegos = idx.getAll(partidaId);
+
+          reqJuegos.onsuccess = () => {
+            const juegos = reqJuegos.result || [];
+            const juegosActualizados = [];
+
+            for (const juego of juegos) {
+              if (
+                juego.estado === 'EN_CURSO' ||
+                juego.estado === 'PAUSADO'
+              ) {
+                const actualizado = {
+                  ...juego,
+                  estado: 'FINALIZADO',
+                  resultado:
+                    juego.resultado ?? {
+                      puntos_equipo_1: 0,
+                      puntos_equipo_2: 0
+                    },
+                  finish_reason:
+                    estadoFinal === 'DESCARTADA'
+                      ? 'PARTIDA_DESCARTADA'
+                      : 'PARTIDA_FINALIZADA',
+                  finished_at: ahoraActual,
+                  paused_at: null,
+                  state_version: juego.state_version + 1
+                };
+
+                jeStore.put(actualizado);
+                juegosActualizados.push(actualizado);
+              } else if (juego.estado === 'PENDIENTE') {
+                const actualizado = {
+                  ...juego,
+                  estado: 'NO_JUGADO',
+                  resultado: null,
+                  finish_reason:
+                    estadoFinal === 'DESCARTADA'
+                      ? 'PARTIDA_DESCARTADA'
+                      : 'PARTIDA_FINALIZADA',
+                  finished_at: ahoraActual,
+                  paused_at: null,
+                  state_version: juego.state_version + 1
+                };
+
+                jeStore.put(actualizado);
+                juegosActualizados.push(actualizado);
+              } else {
+                juegosActualizados.push(juego);
+              }
+            }
+
+            const nuevaPartida = {
+              ...partida,
+              estado: estadoFinal,
+              finish_reason: finishReasonPartida,
+              finished_at: ahoraActual,
+              last_activity_at: ahoraActual,
+              updated_at: ahoraActual,
+              version: partida.version + 1
+            };
+
+            partidasStore.put(nuevaPartida);
+
+            onDone({
+              partida: nuevaPartida,
+              juegos: juegosActualizados
+            });
+          };
+
+          reqJuegos.onerror = () => tx.abort();
+        };
+
+        reqPartida.onerror = () => tx.abort();
+      }
+    );
   }
 
   async expirarPartida(partidaId) {

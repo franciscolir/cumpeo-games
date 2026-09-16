@@ -634,7 +634,7 @@ describe('PartidaRepository', () => {
       const { partida, juegos } = await escenarioPartidaEnCurso();
       await repo.iniciarJuego(partida.id, juegos[0].id, SESION);
 
-      await repo.descartarPartida(partida.id, SESION);
+      await repo.descartarPartida(partida.id, SESION, nuevoActionId());
 
       const p = await repo.obtenerPartida(partida.id);
       expect(p.estado).toBe('DESCARTADA');
@@ -663,7 +663,8 @@ describe('PartidaRepository', () => {
 
       await repo.finalizarCircuito(
         partida.id,
-        SESION
+        SESION,
+        nuevoActionId()
       );
 
       const p = await repo.obtenerPartida(partida.id);
@@ -689,6 +690,34 @@ describe('PartidaRepository', () => {
       }
     });
   });
+
+    it('descartarPartida es idempotente: dos llamadas con el mismo actionId no duplican el cambio', async () => {
+      const { partida, juegos } = await escenarioPartidaEnCurso();
+      await repo.iniciarJuego(partida.id, juegos[0].id, SESION, nuevoActionId());
+
+      const actionId = nuevoActionId();
+
+      const r1 = await repo.descartarPartida(partida.id, SESION, actionId);
+      const r2 = await repo.descartarPartida(partida.id, SESION, actionId);
+
+      expect(r1.partida.estado).toBe('DESCARTADA');
+      expect(r2.partida.estado).toBe('DESCARTADA');
+      expect(r2.partida.version).toBe(r1.partida.version);
+    });
+
+    it('finalizarCircuito es idempotente: dos llamadas con el mismo actionId no duplican el cambio', async () => {
+      const { partida, juegos } = await escenarioPartidaEnCurso();
+      await repo.iniciarJuego(partida.id, juegos[0].id, SESION, nuevoActionId());
+
+      const actionId = nuevoActionId();
+
+      const r1 = await repo.finalizarCircuito(partida.id, SESION, actionId);
+      const r2 = await repo.finalizarCircuito(partida.id, SESION, actionId);
+
+      expect(r1.partida.estado).toBe('FINALIZADA');
+      expect(r2.partida.estado).toBe('FINALIZADA');
+      expect(r2.partida.version).toBe(r1.partida.version);
+    });
 
   /* =============================================================
      expirarPartida
