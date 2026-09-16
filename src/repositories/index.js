@@ -7,5 +7,7 @@ export { CircuitoRepository } from './CircuitoRepository.js';
 export { SnapshotRepository } from './SnapshotRepository.js';
 export { ControlRepository } from './ControlRepository.js';
 export { ParticipanteRepository } from './ParticipanteRepository.js';
+export { PartidaRepository } from './PartidaRepository.js';
+export { AccionProcesadaRepository } from './AccionProcesadaRepository.js';
 export * from './errors.js';
 export * from './utils.js';
