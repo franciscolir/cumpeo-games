@@ -1,10 +1,10 @@
 # CUMPEO — Documento Maestro de Construcción
 
-**Versión:** 1.1
-**Estado:** H4 en progreso · ~38-42% proyecto completo · ~25-30% H4
-**Última actualización:** Post-commit `c425013`
-**HEAD:** `feature/vertical-slice` — `295e596`
-**Tests:** 248 pasando (15 archivos de test)
+**Versión:** 1.2
+**Estado:** H4 COMPLETO · ~42-46% proyecto completo · 5/5 servicios
+**Última actualización:** Post-commit `d8e07ec`
+**HEAD:** `feature/vertical-slice` — `d8e07ec`
+**Tests:** 318 pasando (19 archivos de test)
 **Audiencia:** Desarrollador único / equipo reducido
 **Propósito:** Guía única de referencia para construcción, consulta y auditoría del sistema.
 
@@ -536,10 +536,10 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 
 | Métrica | Valor |
 |---------|-------|
-| Progreso global | ~38-42% |
-| H4 completado | ~15-20% |
-| Tests pasando | 248 (15 archivos) |
-| Commits totales (rama) | 30+ |
+| Progreso global | ~42-46% |
+| H4 completado | 100% (5/5 servicios) |
+| Tests pasando | 318 (19 archivos) |
+| Commits totales (rama) | 35+ |
 
 ### 8.2 Fases cerradas
 
@@ -553,13 +553,13 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 
 #### Estado de servicios
 
-| Servicio | Estado | Notas |
-|----------|--------|-------|
-| ControlService | ✅ Cerrado | Lease de control, heartbeat |
-| PartidaService | 🟡 En progreso | Absorbió idempotencia en PartidaRepository |
-| CircuitoService | ⬜ Pendiente | |
-| SetService | ⬜ Pendiente | |
-| GameDefinitionRegistry | ⬜ Pendiente | |
+| Servicio | Estado | Commit | Tests | Notas |
+|----------|--------|--------|-------|-------|
+| ControlService | ✅ Cerrado | `414cd2e` | 12 | Lease de control, heartbeat |
+| PartidaService | ✅ Cerrado | `61862e3` | 24 | Fachada sobre PartidaRepository + ControlService |
+| CircuitoService | ✅ Cerrado | `3d413ba` | 8 | Fachada sobre CircuitoRepository |
+| SetService | ✅ Cerrado | `6294d75` | 16 | Fachada sobre SetRepository |
+| GameDefinitionRegistry | ✅ Cerrado | `d8e07ec` | 18 | Registro de contratos de juegos |
 
 #### PartidaService — Métodos refactorizados
 
@@ -593,6 +593,30 @@ Cada método sigue el mismo patrón:
 5. Si no → llamar a `_<metodo>EnTx` y luego `actualizarResultadoEnTx`.
 6. Helper interno `_<metodo>EnTx` con la lógica real y JSDoc.
 
+### 8.3.2 Contrato GameDefinition
+
+Cada `GameDefinition` es un objeto que declara el comportamiento de un juego concreto. El `GameDefinitionRegistry` valida este contrato al registrar.
+
+**Estructura:**
+
+```js
+{
+  codigo: 'TRIVIA',                       // string, único, inmutable
+  nombre: 'Trivia',                       // string, legible
+  requiere_set: true,                     // boolean (INV-130)
+
+  validarConfiguracion(config),           // (config) => boolean | throws
+  validarContenidoSet(contenido),         // (contenido) => boolean | throws
+  validarEstadoJuego(estado),             // (estado) => boolean | throws
+  calcularResultado(estadoJuego),         // (estado) => { puntos_equipo_1, puntos_equipo_2 }
+  aplicarTimeUp(estadoJuego)              // (estado) => nuevoEstadoJuego (o null si no aplica)
+}
+```
+
+**Métodos obligatorios:** `validarConfiguracion`, `validarContenidoSet`, `validarEstadoJuego`, `calcularResultado`, `aplicarTimeUp`.
+
+El registry **no invoca** estos métodos. Solo verifica que existan. La invocación la hace cada juego concreto o la UI cuando corresponda.
+
 ### 8.4 Commits clave
 
 ```
@@ -607,6 +631,10 @@ ae649ca  refactor(partida): add idempotency to iniciarJuego
 ebd19dd  refactor(partida): add idempotency to comenzarPartida
 8f40765  refactor(partida): add idempotency to actualizarEstadoJuego
 c425013  refactor(partida): add idempotency to finalizarJuego
+61862e3  feat(services): add PartidaService as facade over PartidaRepository and ControlService
+3d413ba  feat(services): add CircuitoService as facade over CircuitoRepository
+6294d75  feat(services): add SetService as facade over SetRepository
+d8e07ec  feat(services): add GameDefinitionRegistry for game contracts
 ```
 
 ### 8.3 Estructura del repositorio
@@ -674,15 +702,15 @@ c425013  refactor(partida): add idempotency to finalizarJuego
 
 ### Fase H3 - Repositorios (CERRADA)
 
-### Fase H4 - Servicios de dominio (EN PROGRESO ~25-30%)
+### Fase H4 - Servicios de dominio (CERRADA 100%)
 
-Servicios a implementar:
+5/5 servicios implementados, testeados y commiteados:
 
-1. **ControlService** — ✅ Cerrado.
-2. **PartidaService** — 🟡 En progreso. Ver sección 8.3 para detalle de métodos.
-3. **CircuitoService** — ⬜ Pendiente.
-4. **SetService** — ⬜ Pendiente.
-5. **GameDefinitionRegistry** — ⬜ Pendiente.
+1. **ControlService** — ✅ Cerrado (`414cd2e`).
+2. **PartidaService** — ✅ Cerrado (`61862e3`).
+3. **CircuitoService** — ✅ Cerrado (`3d413ba`).
+4. **SetService** — ✅ Cerrado (`6294d75`).
+5. **GameDefinitionRegistry** — ✅ Cerrado (`d8e07ec`).
 
 **Sub-bloques de PartidaService:**
 - Grupo A (helpers compartidos): ✅ Cerrado — crearPartida, pausar/reanudar, descartar/finalizarCircuito
@@ -691,9 +719,9 @@ Servicios a implementar:
 
 **PartidaRepository completó su ciclo de idempotencia. 9/9 métodos críticos idempotentes. Siguiente: crear PartidaService como wrapper fino sobre el repo.**
 
-### Fase H5 - GameDefinition Trivia
+### Fase H5 - GameDefinition Trivia (SIGUIENTE)
 
-`TriviaGameDefinition` con contratos y `aplicarTimeUp`.
+Primera implementación concreta del contrato `GameDefinition`. El `TriviaGameDefinition` implementará los 5 métodos del contrato (`validarConfiguracion`, `validarContenidoSet`, `validarEstadoJuego`, `calcularResultado`, `aplicarTimeUp`) para el juego de Trivia.
 
 ### Fase H6 - Interfaz de Usuario
 
@@ -788,6 +816,9 @@ Migrar a Supabase, RPC, RLS, Realtime.
 | 20 | Helper interno monolítico por método (`_<metodo>EnTx`) | Consistencia de patrón. No dividir en sub-ayudas. |
 | 21 | Cache del objeto completo, retorno de la parte pública | API estable hacia el exterior, cache completo hacia adentro. |
 | 22 | `ahora()` calculado dentro del helper (una vez por operación) | Consistencia temporal entre entidades actualizadas. |
+| 23 | `GameDefinitionRegistry` instanciable con `Map` interno | Consistencia con otros services. Sin estado global. |
+| 24 | Contrato `GameDefinition` definido en E.3 | H5 solo implementa el contrato para Trivia, sin decidir estructura. |
+| 25 | Registry síncrono, sin `adapter` | En memoria pura, sin persistencia. No necesita I/O. |
 
 ### 12.1 Contrato de cierre de bloque
 
