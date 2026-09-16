@@ -1,10 +1,10 @@
 # CUMPEO — Documento Maestro de Construcción
 
-**Versión:** 1.4
-**Estado:** H4 · H5.1 · H6.1 · H6.2 COMPLETOS · ~55-58% proyecto completo
-**Última actualización:** Post-commit `3fbd526`
-**HEAD:** `feature/vertical-slice` — `3fbd526`
-**Tests:** 362 unit + 7 e2e (21 archivos unit)
+**Versión:** 1.5
+**Estado:** H4 · H5.1 · H6.1 · H6.2 · H6.3 COMPLETOS · ~60-62% proyecto completo
+**Última actualización:** Post-commit `97f816f`
+**HEAD:** `feature/vertical-slice` — `97f816f`
+**Tests:** 362 unit + 13 e2e
 **Audiencia:** Desarrollador único / equipo reducido
 **Propósito:** Guía única de referencia para construcción, consulta y auditoría del sistema.
 
@@ -536,14 +536,15 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 
 | Métrica | Valor |
 |---------|-------|
-| Progreso global | ~55-58% |
+| Progreso global | ~60-62% |
 | H4 completado | 100% (5/5 servicios) |
 | H5.1 completado | 100% (Trivia definido) |
 | H6.1 completado | 100% (Bootstrap) |
 | H6.2 completado | 100% (Dashboard) |
+| H6.3 completado | 100% (CRUD circuitos) |
 | Tests unit | 362 (21 archivos) |
-| Tests e2e | 7 |
-| Commits totales (rama) | 45+ |
+| Tests e2e | 13 |
+| Commits totales (rama) | 50+ |
 
 ### 8.2 Fases cerradas
 
@@ -705,6 +706,44 @@ Implementación concreta del contrato `GameDefinition` para el juego Trivia.
 - Sin frameworks, sin router todavía.
 - Estética cómic consistente con Tailwind custom.
 
+### 8.3.5 CRUD de Circuitos (H6.3)
+
+Implementación del primer CRUD completo con router y componentes reutilizables.
+
+**Archivos nuevos:**
+
+- `src/ui/theme.js` — lógica de tema centralizada (`applyTheme`, `resolveTheme`, `toggleTheme`).
+- `src/ui/router.js` — hash router con soporte de parámetros (`:id`).
+- `src/ui/components/boton.js` — botón cómic con 4 variantes (`primary`, `secondary`, `danger`, `ghost`).
+- `src/ui/components/input.js` — input cómic.
+- `src/ui/components/header.js` — header común con botón de tema y botón volver.
+- `src/ui/circuitos/lista.js` — pantalla de listado con eliminar.
+- `src/ui/circuitos/formulario.js` — formulario de crear/editar.
+
+**Rutas registradas:**
+
+| Hash | Handler |
+|------|---------|
+| `#/` | `renderDashboard` |
+| `#/circuitos` | `renderListaCircuitos` |
+| `#/circuitos/nuevo` | `renderFormularioCircuito` (crear) |
+| `#/circuitos/:id` | `renderFormularioCircuito` (editar) |
+
+**Bug del router arreglado:**
+
+El handler de `hashchange` llamaba `this._resolver()` sin `container` ni `app`. La navegación posterior al primer render fallaba silenciosamente. Fix: guardar `container` y `app` como instance variables en `iniciar()`.
+
+**Testing e2e (6 tests nuevos):**
+
+- Navegar de dashboard a circuitos.
+- Empty state inicial.
+- Crear circuito.
+- Eliminar circuito (con `window.confirm`).
+- Editar circuito.
+- Ruta 404.
+
+**Total: 362 unit + 13 e2e.**
+
 ### 8.4 Commits clave
 
 ```
@@ -727,6 +766,7 @@ d8e07ec  feat(services): add GameDefinitionRegistry for game contracts
 240964e  feat(app): add bootstrap initializing services and games
 747a164  fix(games): restore comment in registro and export registrarTodos
 3fbd526  feat(ui): add dashboard as first screen
+97f816f  feat(ui): add circuitos CRUD with router and shared components
 ```
 
 ### 8.3 Estructura del repositorio
@@ -819,14 +859,14 @@ d8e07ec  feat(services): add GameDefinitionRegistry for game contracts
 
 **H5.2 (opcional, pospuesto):** implementación de un segundo juego (Rosco, Pictionary) para validar el contrato. Pospuesto hasta que la UI lo requiera.
 
-### Fase H6 - Interfaz de Usuario (EN PROGRESO ~30%)
+### Fase H6 - Interfaz de Usuario (EN PROGRESO ~50%)
 
 **Sub-bloques:**
 
-1. **H6.1 — Bootstrap** ✅ Cerrado (`240964e`). Servicios + registry + session.
-2. **H6.2 — Dashboard** ✅ Cerrado (`3fbd526`). Primera pantalla con cards.
-3. **H6.3 — CRUD de circuitos** ⬜ Siguiente. Crear, editar, eliminar circuitos.
-4. **H6.4 — CRUD de sets** ⬜ Pendiente. Sets + items.
+1. **H6.1 — Bootstrap** ✅ Cerrado (`240964e`).
+2. **H6.2 — Dashboard** ✅ Cerrado (`3fbd526`).
+3. **H6.3 — CRUD de circuitos** ✅ Cerrado (`97f816f`).
+4. **H6.4 — CRUD de sets** ⬜ Siguiente. Sets + items.
 5. **H6.5 — Consola del conductor** ⬜ Pendiente. Flujo de partida.
 6. **H6.6 — Pantalla pública** ⬜ Pendiente.
 
@@ -934,6 +974,9 @@ Migrar a Supabase, RPC, RLS, Realtime.
 | 30 | Dashboard como primera pantalla de la consola del conductor | Punto de entrada a todas las operaciones. |
 | 31 | Sin tests unitarios de UI, solo e2e con Playwright | Evita dependencias frágiles (jsdom). Verifica UI real. |
 | 32 | Componentes de UI como funciones puras que devuelven HTML | Consistencia con vanilla JS. Sin frameworks. |
+| 33 | Hash router propio con soporte de parámetros (`:id`) | Sin dependencias. URLs compartibles. Back/forward nativo. |
+| 34 | `window.confirm()` para acciones destructivas (MVP) | Pragmático. Modal propio después si es necesario. |
+| 35 | Formulario con estado en DOM, no en memoria JS | Simple y suficiente para el MVP. |
 
 ### 12.1 Contrato de cierre de bloque
 
