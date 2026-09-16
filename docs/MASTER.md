@@ -1,10 +1,10 @@
 # CUMPEO — Documento Maestro de Construcción
 
-**Versión:** 1.5
-**Estado:** H4 · H5.1 · H6.1 · H6.2 · H6.3 COMPLETOS · ~60-62% proyecto completo
-**Última actualización:** Post-commit `97f816f`
-**HEAD:** `feature/vertical-slice` — `97f816f`
-**Tests:** 362 unit + 13 e2e
+**Versión:** 1.6
+**Estado:** H4 · H5.1 · H6.1 a H6.5 COMPLETOS · ~68-70% proyecto completo
+**Última actualización:** Post-commit `6164386`
+**HEAD:** `feature/vertical-slice` — `6164386`
+**Tests:** 376 unit + 29 e2e
 **Audiencia:** Desarrollador único / equipo reducido
 **Propósito:** Guía única de referencia para construcción, consulta y auditoría del sistema.
 
@@ -536,15 +536,18 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 
 | Métrica | Valor |
 |---------|-------|
-| Progreso global | ~60-62% |
+| Progreso global | ~68-70% |
 | H4 completado | 100% (5/5 servicios) |
 | H5.1 completado | 100% (Trivia definido) |
 | H6.1 completado | 100% (Bootstrap) |
 | H6.2 completado | 100% (Dashboard) |
 | H6.3 completado | 100% (CRUD circuitos) |
-| Tests unit | 362 (21 archivos) |
-| Tests e2e | 13 |
-| Commits totales (rama) | 50+ |
+| H6.4a completado | 100% (JuegoService + seed) |
+| H6.4b completado | 100% (CRUD sets) |
+| H6.5 completado | 100% (Consola del conductor) |
+| Tests unit | 376 (23 archivos) |
+| Tests e2e | 29 |
+| Commits totales (rama) | 55+ |
 
 ### 8.2 Fases cerradas
 
@@ -744,6 +747,39 @@ El handler de `hashchange` llamaba `this._resolver()` sin `container` ni `app`. 
 
 **Total: 362 unit + 13 e2e.**
 
+### 8.3.6 Infraestructura de Juegos + CRUD de Sets + Consola (H6.4a, H6.4b, H6.5)
+
+**H6.4a — JuegoService + seed** (commit `c812b1f`):
+
+- `src/services/JuegoService.js` — fachada sobre `JuegoRepository` (6 métodos).
+- `src/app/seed.js` — `seedJuegos(services, registry)`, idempotente.
+- `src/app/bootstrap.js` — instancia `JuegoService` y llama a `seedJuegos`.
+- `src/ui/circuitos/formulario.js` — usa UUIDs reales de juegos.
+- **Fix crítico:** la desconexión entre el registry (códigos) y la DB (UUIDs) queda resuelta. Al arrancar, cada `GameDefinition` registrada se persiste como fila `Juego`.
+
+**H6.4b — CRUD de Sets** (commit `84164d8`):
+
+- `src/ui/sets/lista.js` — pantalla `#/sets` con filtro por juego vía URL query.
+- `src/ui/sets/formulario.js` — crear/editar sets (sin items).
+- `src/ui/router.js` — ignora query string en el matching.
+- `src/main.js` — 3 rutas nuevas.
+- `src/ui/dashboard.js` — card "Sets".
+- **6 tests e2e.**
+
+**H6.5 — Consola del conductor** (commit `db0fe46`, fixup `c908bb5`):
+
+- `src/ui/partidas/utils.js` — helpers (`generarPublicCodigo`, `nuevoActionId`, `fmtPuntos`).
+- `src/ui/partidas/lista.js` — lista partidas recuperables.
+- `src/ui/partidas/nueva.js` — crear partida desde circuito LISTO, retry ×3 para colisión de `public_codigo`.
+- `src/ui/partidas/consola.js` — consola con auto-refresh 2s, 4 cards (Control, Equipos, Juego, Acciones), limpieza de interval al desmontar.
+- **Acciones:** tomar control, comenzar, iniciar juego, pausar, reanudar, finalizar circuito, descartar.
+- `src/main.js` — 3 rutas nuevas.
+- `src/ui/dashboard.js` — card "Partidas".
+- **8 tests e2e + 1 en boot.spec.**
+- **Fixup:** la detección de "tengo el control" usa `ControlPartida` (no un campo inexistente en `Partida`).
+
+**Total: 376 unit + 29 e2e.**
+
 ### 8.4 Commits clave
 
 ```
@@ -767,6 +803,11 @@ d8e07ec  feat(services): add GameDefinitionRegistry for game contracts
 747a164  fix(games): restore comment in registro and export registrarTodos
 3fbd526  feat(ui): add dashboard as first screen
 97f816f  feat(ui): add circuitos CRUD with router and shared components
+c812b1f  feat(services): add JuegoService and seed juegos from registry
+84164d8  feat(ui): add sets CRUD with URL filter
+db0fe46  feat(ui): add conductor console for partidas
+c908bb5  fix(ui): use ControlPartida entity for control check
+6164386  docs: add games manual (GAMES.md)
 ```
 
 ### 8.3 Estructura del repositorio
@@ -859,16 +900,18 @@ d8e07ec  feat(services): add GameDefinitionRegistry for game contracts
 
 **H5.2 (opcional, pospuesto):** implementación de un segundo juego (Rosco, Pictionary) para validar el contrato. Pospuesto hasta que la UI lo requiera.
 
-### Fase H6 - Interfaz de Usuario (EN PROGRESO ~50%)
+### Fase H6 - Interfaz de Usuario (EN PROGRESO ~85%)
 
 **Sub-bloques:**
 
 1. **H6.1 — Bootstrap** ✅ Cerrado (`240964e`).
 2. **H6.2 — Dashboard** ✅ Cerrado (`3fbd526`).
 3. **H6.3 — CRUD de circuitos** ✅ Cerrado (`97f816f`).
-4. **H6.4 — CRUD de sets** ⬜ Siguiente. Sets + items.
-5. **H6.5 — Consola del conductor** ⬜ Pendiente. Flujo de partida.
-6. **H6.6 — Pantalla pública** ⬜ Pendiente.
+4. **H6.4a — JuegoService + seed** ✅ Cerrado (`c812b1f`).
+5. **H6.4b — CRUD de sets** ✅ Cerrado (`84164d8`).
+6. **H6.4c — Editor de items** ⬜ Pospuesto. Editor específico por juego.
+7. **H6.5 — Consola del conductor** ✅ Cerrado (`db0fe46`, fixup `c908bb5`).
+8. **H6.6 — Pantalla pública** ⬜ Siguiente.
 
 ### Fase H7 - Producción
 
@@ -977,6 +1020,9 @@ Migrar a Supabase, RPC, RLS, Realtime.
 | 33 | Hash router propio con soporte de parámetros (`:id`) | Sin dependencias. URLs compartibles. Back/forward nativo. |
 | 34 | `window.confirm()` para acciones destructivas (MVP) | Pragmático. Modal propio después si es necesario. |
 | 35 | Formulario con estado en DOM, no en memoria JS | Simple y suficiente para el MVP. |
+| 36 | `Juego.id` es UUID; `codigo` es el identificador lógico compartido registry ↔ DB | Seed automático al arrancar. Rompe la desconexión entre registry y DB. |
+| 37 | `public_codigo` auto-generado, 6 chars alfanuméricos mayúsculas (sin 0/O/1/I) | Fácil de compartir con el público. Retry ×3 si colisiona. |
+| 38 | Auto-refresh 2s en consola y pantalla pública (hasta H7 Realtime) | Solución pragmática hasta Supabase Realtime. Limpieza estricta de interval. |
 
 ### 12.1 Contrato de cierre de bloque
 
