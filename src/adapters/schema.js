@@ -6,7 +6,7 @@
    ============================================================= */
 
 export const DB_NAME = 'cumpeo';
-export const DB_VERSION = 1;
+export const DB_VERSION = 2;
 
 export const STORES = [
   {
@@ -141,7 +141,7 @@ export const STORES = [
   },
   {
     nombre: 'accion_procesadas',
-    keyPath: 'id',
+    keyPath: 'action_id',
     indexes: [
       { name: 'accion_procesada_partida_id', keyPath: 'partida_id', unique: false },
       { name: 'accion_procesada_created_at', keyPath: 'created_at', unique: false },
