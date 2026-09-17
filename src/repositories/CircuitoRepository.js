@@ -34,16 +34,34 @@ export class CircuitoRepository extends BaseRepository {
     super(adapter, STORE_CIRCUITOS);
   }
 
+  /**
+   * Obtiene un circuito por su id.
+   *
+   * @param {string} circuitoId - ID del circuito.
+   * @returns {Promise<object|null>} El circuito o null.
+   */
   async obtenerCircuito(circuitoId) {
     return this.obtener(circuitoId);
   }
 
+  /**
+   * Lista circuitos, opcionalmente filtrando plantillas.
+   *
+   * @param {object} opciones - Opciones de filtrado.
+   * @param {boolean} opciones.incluirPlantillas - Si es false, excluye plantillas.
+   * @returns {Promise<Array>} Lista de circuitos.
+   */
   async listarCircuitos({ incluirPlantillas = true } = {}) {
     const todos = await this.listar();
     const filtrados = incluirPlantillas ? todos : todos.filter((c) => !c.es_plantilla);
     return filtrados.sort((a, b) => this._comparar(a, b));
   }
 
+  /**
+   * Lista solo circuitos que son plantillas.
+   *
+   * @returns {Promise<Array>} Lista de plantillas.
+   */
   async listarPlantillas() {
     const todos = await this.listar();
     return todos
@@ -51,8 +69,31 @@ export class CircuitoRepository extends BaseRepository {
       .sort((a, b) => this._comparar(a, b));
   }
 
+  /**
+   * Obtiene un circuito completo con sus juegos y equipos.
+   *
+   * @param {string} circuitoId - ID del circuito.
+   * @returns {Promise<object>} { circuito, juegos, equipos }.
+   */
   async obtenerCircuitoCompleto(circuitoId) {
     validarNoVacio(circuitoId, 'circuitoId');
+
+    if (this.modo === 'supabase') {
+      const circuito = await this.obtener(circuitoId);
+      if (!circuito) return { circuito: null, juegos: [], equipos: [] };
+
+      const juegos = await this.adapter.query(STORE_JUEGOS, {
+        eq: { circuito_id: circuitoId }
+      });
+      juegos.sort((a, b) => a.orden - b.orden);
+
+      const equipos = await this.adapter.query(STORE_EQUIPOS, {
+        eq: { circuito_id: circuitoId }
+      });
+      equipos.sort((a, b) => a.posicion - b.posicion);
+
+      return { circuito, juegos, equipos };
+    }
 
     return this.adapter.tx(
       [STORE_CIRCUITOS, STORE_JUEGOS, STORE_EQUIPOS],
@@ -87,8 +128,52 @@ export class CircuitoRepository extends BaseRepository {
     );
   }
 
+  /**
+   * Crea un circuito completo con juegos y equipos.
+   *
+   * IMPORTANTE: firma sobrecargada.
+   * - Modo Supabase: crearCircuito(payload) usa RPC crear_circuito_completo.
+   * - Modo IndexedDB: crearCircuito(payload) usa transacción nativa.
+   *
+   * @param {object} payload - Datos del circuito.
+   * @param {string} payload.nombre - Nombre del circuito.
+   * @param {string} [payload.descripcion] - Descripción.
+   * @param {Array} payload.juegos - Lista de juegos [{ juego_id, configuracion?, snapshot_id? }].
+   * @param {Array} payload.equipos - Lista de equipos [{ posicion, nombre, color }].
+   * @returns {Promise<object>} El circuito creado.
+   */
   async crearCircuito(payload) {
     this._validarPayload(payload);
+
+    if (this.modo === 'supabase') {
+      const actionId = nuevoId();
+      const juegos = payload.juegos.map((j, i) => ({
+        juego_id: j.juego_id,
+        orden: i + 1,
+        configuracion: j.configuracion ?? {},
+        snapshot_id: j.snapshot_id ?? null
+      }));
+      const equipos = payload.equipos.map((e) => ({
+        posicion: e.posicion,
+        nombre: e.nombre,
+        color: e.color,
+        equipo_guardado_id: e.equipo_guardado_id ?? null
+      }));
+
+      const result = await this.adapter.rpc('crear_circuito_completo', {
+        p_nombre: payload.nombre,
+        p_descripcion: payload.descripcion ?? null,
+        p_juegos: juegos,
+        p_equipos: equipos,
+        p_action_id: actionId
+      });
+
+      if (!result.ok) {
+        throw new ValidacionError(result.error || 'Error creando circuito');
+      }
+
+      return this.obtener(result.circuito_id);
+    }
 
     const ts = ahora();
     const circuitoId = nuevoId();
@@ -139,6 +224,15 @@ export class CircuitoRepository extends BaseRepository {
     return circuito;
   }
 
+  /**
+   * Actualiza un circuito completo (nombre, estado, juegos, equipos).
+   * Solo permite si estado = BORRADOR.
+   *
+   * @param {string} circuitoId - ID del circuito.
+   * @param {number} expectedVersion - Versión esperada para concurrencia.
+   * @param {object} payload - Nuevos datos.
+   * @returns {Promise<object>} El circuito actualizado.
+   */
   async actualizarCircuito(circuitoId, expectedVersion, payload) {
     validarNoVacio(circuitoId, 'circuitoId');
 
@@ -159,6 +253,59 @@ export class CircuitoRepository extends BaseRepository {
       throw new ValidacionError(
         'es_plantilla=true solo puede coexistir con estado=LISTO'
       );
+    }
+
+    if (this.modo === 'supabase') {
+      const actual = await this.obtener(circuitoId);
+      if (!actual) throw new NoEncontradoError('Circuito', circuitoId);
+      if (actual.estado !== 'BORRADOR') throw new CircuitoNoEditableError(circuitoId, actual.estado);
+      if (actual.version !== expectedVersion) {
+        throw new ConflictoVersionError('Circuito', expectedVersion, actual.version);
+      }
+
+      const ts = ahora();
+
+      await this.adapter.update(STORE_CIRCUITOS, {
+        eq: { id: circuitoId }
+      }, {
+        ...actual,
+        nombre: payload.nombre,
+        descripcion: payload.descripcion ?? null,
+        estado: estadoFinal,
+        es_plantilla: esPlantillaFinal,
+        version: actual.version + 1,
+        updated_at: ts
+      });
+
+      await this.adapter.delete(STORE_JUEGOS, { eq: { circuito_id: circuitoId } });
+      await this.adapter.delete(STORE_EQUIPOS, { eq: { circuito_id: circuitoId } });
+
+      const juegos = payload.juegos.map((j, i) => ({
+        id: nuevoId(),
+        circuito_id: circuitoId,
+        juego_id: j.juego_id,
+        orden: i + 1,
+        configuracion: j.configuracion ?? {},
+        snapshot_id: j.snapshot_id ?? null,
+        created_at: ts,
+        updated_at: ts
+      }));
+
+      const equipos = payload.equipos.map((e) => ({
+        id: nuevoId(),
+        circuito_id: circuitoId,
+        equipo_guardado_id: e.equipo_guardado_id ?? null,
+        posicion: e.posicion,
+        nombre: e.nombre,
+        color: e.color,
+        created_at: ts,
+        updated_at: ts
+      }));
+
+      await this.adapter.insert(STORE_JUEGOS, juegos);
+      await this.adapter.insert(STORE_EQUIPOS, equipos);
+
+      return this.obtener(circuitoId);
     }
 
     const ts = ahora();
@@ -298,8 +445,34 @@ export class CircuitoRepository extends BaseRepository {
     return circuitoActualizado;
   }
 
+  /**
+   * Elimina un circuito y sus hijos.
+   * Rechaza si hay partidas en curso.
+   *
+   * @param {string} circuitoId - ID del circuito.
+   * @returns {Promise<boolean>} true si se eliminó.
+   */
   async eliminarCircuito(circuitoId) {
     validarNoVacio(circuitoId, 'circuitoId');
+
+    if (this.modo === 'supabase') {
+      const actual = await this.obtener(circuitoId);
+      if (!actual) throw new NoEncontradoError('Circuito', circuitoId);
+
+      const partidas = await this.adapter.query(STORE_PARTIDAS, {
+        eq: { circuito_id: circuitoId }
+      });
+      const hayEnCurso = partidas.some((p) => p.estado === 'EN_CURSO');
+      if (hayEnCurso) {
+        throw new ValidacionError('No se puede eliminar un circuito con partidas en curso');
+      }
+
+      await this.adapter.delete(STORE_JUEGOS, { eq: { circuito_id: circuitoId } });
+      await this.adapter.delete(STORE_EQUIPOS, { eq: { circuito_id: circuitoId } });
+      await this.eliminarRegistro(circuitoId);
+
+      return true;
+    }
 
     const actual = await this.obtener(circuitoId);
     if (!actual) throw new NoEncontradoError('Circuito', circuitoId);
