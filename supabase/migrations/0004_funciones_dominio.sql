@@ -26,12 +26,14 @@ BEGIN
   END IF;
 
   IF p_set_id IS NULL THEN
+    DELETE FROM accion_procesadas WHERE action_id = p_action_id;
     RETURN jsonb_build_object('ok', false, 'error', 'set_id_requerido');
   END IF;
 
   -- Verificar que el Set exista
   SELECT * INTO v_set FROM sets WHERE id = p_set_id;
   IF NOT FOUND THEN
+    DELETE FROM accion_procesadas WHERE action_id = p_action_id;
     RETURN jsonb_build_object('ok', false, 'error', 'set_no_encontrado');
   END IF;
 
@@ -106,24 +108,29 @@ BEGIN
   -- Validar control
   SELECT * INTO v_control FROM control_partidas WHERE partida_id = p_partida_id;
   IF NOT FOUND OR v_control.session_id IS NULL THEN
+    DELETE FROM accion_procesadas WHERE action_id = p_action_id;
     RETURN jsonb_build_object('ok', false, 'error', 'sin_control');
   END IF;
   IF v_control.session_id != p_session_id THEN
+    DELETE FROM accion_procesadas WHERE action_id = p_action_id;
     RETURN jsonb_build_object('ok', false, 'error', 'control_perteneciente_otra_sesion');
   END IF;
   IF v_control.expires_at <= now() THEN
+    DELETE FROM accion_procesadas WHERE action_id = p_action_id;
     RETURN jsonb_build_object('ok', false, 'error', 'control_expirado');
   END IF;
 
   -- Validar partida
   SELECT * INTO v_partida FROM partidas WHERE id = p_partida_id;
   IF NOT FOUND OR v_partida.estado != 'EN_CURSO' THEN
+    DELETE FROM accion_procesadas WHERE action_id = p_action_id;
     RETURN jsonb_build_object('ok', false, 'error', 'partida_no_en_curso');
   END IF;
 
   -- Validar extra
   SELECT * INTO v_extra FROM extras WHERE id = p_extra_id;
   IF NOT FOUND THEN
+    DELETE FROM accion_procesadas WHERE action_id = p_action_id;
     RETURN jsonb_build_object('ok', false, 'error', 'extra_no_encontrado');
   END IF;
 
@@ -190,17 +197,21 @@ BEGIN
   -- Validar control
   SELECT * INTO v_control FROM control_partidas WHERE partida_id = p_partida_id;
   IF NOT FOUND OR v_control.session_id IS NULL THEN
+    DELETE FROM accion_procesadas WHERE action_id = p_action_id;
     RETURN jsonb_build_object('ok', false, 'error', 'sin_control');
   END IF;
   IF v_control.session_id != p_session_id THEN
+    DELETE FROM accion_procesadas WHERE action_id = p_action_id;
     RETURN jsonb_build_object('ok', false, 'error', 'control_perteneciente_otra_sesion');
   END IF;
   IF v_control.expires_at <= now() THEN
+    DELETE FROM accion_procesadas WHERE action_id = p_action_id;
     RETURN jsonb_build_object('ok', false, 'error', 'control_expirado');
   END IF;
 
   -- Validar nombre
   IF p_nombre IS NULL OR p_nombre = '' THEN
+    DELETE FROM accion_procesadas WHERE action_id = p_action_id;
     RETURN jsonb_build_object('ok', false, 'error', 'nombre_requerido');
   END IF;
 
@@ -210,6 +221,7 @@ BEGIN
   WHERE id = p_equipo_partida_id AND partida_id = p_partida_id;
 
   IF NOT FOUND THEN
+    DELETE FROM accion_procesadas WHERE action_id = p_action_id;
     RETURN jsonb_build_object('ok', false, 'error', 'equipo_no_pertenece_a_partida');
   END IF;
 
@@ -218,6 +230,7 @@ BEGIN
     SELECT 1 FROM participante_partidas
     WHERE partida_id = p_partida_id AND nombre = p_nombre
   ) THEN
+    DELETE FROM accion_procesadas WHERE action_id = p_action_id;
     RETURN jsonb_build_object('ok', false, 'error', 'participante_duplicado');
   END IF;
 
@@ -276,18 +289,22 @@ BEGIN
   WHERE id = p_participante_partida_id;
 
   IF NOT FOUND THEN
+    DELETE FROM accion_procesadas WHERE action_id = p_action_id;
     RETURN jsonb_build_object('ok', false, 'error', 'participante_no_encontrado');
   END IF;
 
   -- Validar control de la partida
   SELECT * INTO v_control FROM control_partidas WHERE partida_id = v_pp.partida_id;
   IF NOT FOUND OR v_control.session_id IS NULL THEN
+    DELETE FROM accion_procesadas WHERE action_id = p_action_id;
     RETURN jsonb_build_object('ok', false, 'error', 'sin_control');
   END IF;
   IF v_control.session_id != p_session_id THEN
+    DELETE FROM accion_procesadas WHERE action_id = p_action_id;
     RETURN jsonb_build_object('ok', false, 'error', 'control_perteneciente_otra_sesion');
   END IF;
   IF v_control.expires_at <= now() THEN
+    DELETE FROM accion_procesadas WHERE action_id = p_action_id;
     RETURN jsonb_build_object('ok', false, 'error', 'control_expirado');
   END IF;
 
