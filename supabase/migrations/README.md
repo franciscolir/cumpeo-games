@@ -17,11 +17,16 @@
 
 | Archivo | Contenido | Estado |
 |---------|-----------|--------|
-| `0001_ejemplo_funciones.sql` | 5 funciones plpgsql de ejemplo (reservar_accion, tomar_control, iniciar_juego, finalizar_juego, crear_partida_ejemplo) | Ejemplo — no definitivo |
+| `0001_ejemplo_funciones.sql` | 5 funciones plpgsql de ejemplo (reservar_accion, tomar_control, iniciar_juego, finalizar_juego, crear_partida_ejemplo) | Ejemplo — reemplazado por 0002-0004 |
+| `0002_funciones_control.sql` | 3 funciones: reservar_accion (definitiva), tomar_control (definitiva), actualizar_resultado_accion (auxiliar) | Definitivo |
+| `0003_funciones_partida.sql` | 9 funciones: crear_partida, comenzar_partida, descartar_partida, iniciar_juego, pausar_juego, reanudar_juego, finalizar_juego, finalizar_circuito, expirar_partidas_inactivas | Definitivo |
+| `0004_funciones_dominio.sql` | 4 funciones: crear_snapshot, registrar_uso_extra, agregar_participante, marcar_participacion | Definitivo |
 
 ## Notas
 
-- Estas funciones son **ejemplos** para validar el patrón del adapter con `rpc()`.
-- Las funciones definitivas (~50) se escriben en **H7.3**.
+- Las funciones de 0001 son **ejemplos** reemplazados por las definitivas en 0002-0004.
+- Las funciones definitivas (15 en total) implementan idempotencia vía `reservar_accion`.
 - Cada función devuelve `jsonb` con estructura `{ ok: true/false, ... }`.
-- La función `reservar_accion` implementa idempotencia: si el `action_id` ya existe, devuelve `yaProcesada: true`.
+- Todas las funciones críticas verifican lease de control (excepto `expirar_partidas_inactivas` y `crear_snapshot`).
+- Los archivos se aplican en orden: 0002 → 0003 → 0004.
+- **IMPORTANTE**: antes de aplicar 0002-0004, eliminar las funciones de ejemplo de 0001 (o aplicar en orden, ya que CREATE OR REPLACE sobreescribe).
