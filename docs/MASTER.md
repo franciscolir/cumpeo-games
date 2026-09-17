@@ -1,10 +1,10 @@
 # CUMPEO — Documento Maestro de Construcción
 
-**Versión:** 1.8
-**Estado:** H4 · H5.1 · H6 · H7.1 COMPLETOS · ~78% proyecto completo
-**Última actualización:** Post-commit `c66fbc2`
-**HEAD:** `feature/vertical-slice` — `c66fbc2`
-**Tests:** 376 unit + 35 e2e
+**Versión:** 1.9
+**Estado:** H4 · H5.1 · H6 · H7.1 · H7.2 COMPLETOS · ~82% proyecto completo
+**Última actualización:** Post-commit `54be9a6`
+**HEAD:** `feature/vertical-slice` — `54be9a6`
+**Tests:** 433 unit + 35 e2e + 12 integration
 **Audiencia:** Desarrollador único / equipo reducido
 **Propósito:** Guía única de referencia para construcción, consulta y auditoría del sistema.
 
@@ -540,7 +540,7 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 
 | Métrica | Valor |
 |---------|-------|
-| Progreso global | ~78% |
+| Progreso global | ~82% |
 | H4 completado | 100% (5/5 servicios) |
 | H5.1 completado | 100% (Trivia definido) |
 | H6.1 completado | 100% (Bootstrap) |
@@ -550,8 +550,9 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 | H6.4b completado | 100% (CRUD sets) |
 | H6.5 completado | 100% (Consola del conductor) |
 | H6.6 completado | 100% (Pantalla pública) |
-| Tests unit | 376 (23 archivos) |
+| Tests unit | 433 (26 archivos) |
 | Tests e2e | 35 |
+| Tests integration | 12 (contra Supabase Cloud) |
 | Commits totales (rama) | 60+ |
 
 ### 8.2 Fases cerradas
@@ -562,6 +563,8 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 | Arquitectura | Server-first, RPC, Realtime, adaptador | Cerrado |
 | Capa de repositorios (H3) | 14 repositorios + adaptador | Cerrado |
 | H7.1 — Fundaciones de Supabase | Schema, client, esqueleto adapter | Cerrado (c66fbc2) |
+| H7.2 — SupabaseAdapter query/rpc | Adapter CRUD + rpc contra Supabase | Cerrado (dabce6c) |
+| H7.2a — Fixes críticos de H7.2 | Validación de filtros + single null | Cerrado (54be9a6) |
 
 ### 8.3 H4 — Servicios de dominio (CERRADA)
 
@@ -841,6 +844,48 @@ Vista de solo lectura para el público. Cierra la fase H6.
 - 376 unit (sin cambios).
 - 35 e2e (+1 respecto a H6.6, todos activos).
 
+### 8.3.9 H7.2 — SupabaseAdapter con query/rpc
+
+**Archivos nuevos:**
+- `src/adapters/supabase/queries.js` — Helpers puros para PostgREST (aplicarFiltros, aplicarOpciones, normalizarRespuesta).
+- `src/adapters/supabase/errors.js` — Traducción de códigos Postgres/PgREST a errores del dominio.
+- `supabase/migrations/0001_ejemplo_funciones.sql` — 5 funciones plpgsql de ejemplo.
+- `supabase/migrations/README.md` — Instrucciones para aplicar migraciones.
+- `tests/unit/adapters/supabase/queries.test.js` — 25 tests.
+- `tests/unit/adapters/SupabaseAdapter.test.js` — 21 tests.
+- `tests/integration/adapters/SupabaseAdapter.test.js` — 12 tests de integración.
+- `vitest.config.integration.js` — Config separada para tests de integración.
+
+**Archivos modificados:**
+- `src/adapters/SupabaseAdapter.js` — Implementación completa de query/insert/update/delete/rpc. tx/suscribir siguen como stubs.
+- `package.json` — Agregado `test:integration` script.
+- `vitest.config.js` — Excluye `tests/integration/**`.
+
+**Interfaz del adapter:**
+- `query(tabla, opciones)` — CRUD lectura con filtros eq/neq/in, order, limit, single.
+- `insert(tabla, filas, opciones)` — Inserción simple o múltiple.
+- `update(tabla, filtros, cambios, opciones)` — Update con filtros obligatorios.
+- `delete(tabla, filtros)` — Delete con filtros obligatorios.
+- `rpc(nombre, params)` — Llamada a funciones plpgsql.
+- `tx()` — NO implementado (H7.3+).
+- `suscribir()` — NO implementado (H7.9).
+
+**Validaciones (H7.2a):**
+- `update`/`delete` requieren filtros no vacíos (previene borrar/actualizar toda la tabla).
+- `query`/`insert`/`update`/`delete` validan tabla no vacía.
+- `insert` valida filas no vacío.
+- `update` valida cambios no vacío.
+- `rpc` valida nombre no vacío.
+- `single: true` + sin filas (PGRST116) devuelve `null`, no lanza.
+
+**Tests de integración:**
+- 12 tests contra Supabase Cloud real.
+- Skipeables si no hay credenciales (`describe.skip`).
+- `describe.sequential` para evitar race conditions.
+- Requieren: RLS deshabilitado, GRANTs aplicados, funciones plpgsql aplicadas.
+
+**Total: 433 unit + 35 e2e + 12 integration.**
+
 ### 8.4 Commits clave
 
 ```
@@ -872,6 +917,8 @@ c908bb5  fix(ui): use ControlPartida entity for control check
 256c2b5  docs: update master with H6.4 and H6.5 completion
 a0a7f07  feat(ui): add public screen for partidas
 c66fbc2  feat(adapters): add Supabase infrastructure and schema
+dabce6c  feat(adapters): implement SupabaseAdapter with query and rpc
+54be9a6  fix(adapters): validate filters and fix single-row response handling
 ```
 
 ### 8.3 Estructura del repositorio
@@ -977,7 +1024,7 @@ c66fbc2  feat(adapters): add Supabase infrastructure and schema
 7. **H6.5 — Consola del conductor** ✅ Cerrado (`db0fe46`, fixup `c908bb5`).
 8. **H6.6 — Pantalla pública** ✅ Cerrado (`a0a7f07`).
 
-### Fase H7 - Producción (EN PROGRESO — H7.1 cerrado)
+### Fase H7 - Producción (EN PROGRESO — H7.1, H7.2 cerrados)
 
 Migrar a Supabase. Sub-bloques:
 
@@ -987,35 +1034,43 @@ Migrar a Supabase. Sub-bloques:
    - `SupabaseAdapter` esqueleto.
    - Flag `VITE_SUPABASE_ADAPTER`.
 
-2. **H7.2 — SupabaseAdapter.tx() con queries** ⬜ Pendiente.
-   - Implementar `tx(stores, mode, fn)` emulando IndexedDB contra Supabase.
-   - Implementar `query`, `insert`, `update`, `delete` como métodos internos.
-   - Un roundtrip por operación (no atómico — limitación conocida).
+2. **H7.2 — SupabaseAdapter con query/rpc** ✅ Cerrado (`dabce6c`).
+   - Adapter con query/insert/update/delete/rpc.
+   - Helpers de queries y traducción de errores.
+   - 5 funciones plpgsql de ejemplo.
+   - 12 tests de integración contra Supabase Cloud.
 
-3. **H7.3 — RPC transaccionales** ⬜ Pendiente.
+3. **H7.2a — Fixes críticos de H7.2** ✅ Cerrado (`54be9a6`).
+   - Validación de filtros en update/delete.
+   - `single: true` + PGRST116 devuelve null.
+   - 25 tests unitarios nuevos.
+   - Validación manual end-to-end.
+
+4. **H7.3 — RPC transaccionales definitivas** ⬜ Pendiente.
    - ~50 funciones plpgsql (una por método público de repo).
-   - Adapter expone `rpc(nombre, params)`.
+   - Reemplazar el uso de query/insert/update/delete directo por rpc donde aplique.
+   - Refactor del adapter según aprendizajes.
 
-4. **H7.4 — Migrar repos: catálogo (5)** ⬜ Pendiente.
+5. **H7.4 — Migrar repos: catálogo (5)** ⬜ Pendiente.
    - JuegoRepository, ExtraRepository, EquipoRepository, SetRepository, SnapshotRepository.
 
-5. **H7.5 — Migrar repos: config (3)** ⬜ Pendiente.
+6. **H7.5 — Migrar repos: config (3)** ⬜ Pendiente.
    - CircuitoRepository, ParticipanteRepository, ControlRepository.
 
-6. **H7.6 — Migrar repos: partida (5)** ⬜ Pendiente.
+7. **H7.6 — Migrar repos: partida (5)** ⬜ Pendiente.
    - PartidaRepository, AccionProcesadaRepository, etc.
 
-7. **H7.7 — Migrar repos: técnicos (2)** ⬜ Pendiente.
+8. **H7.7 — Migrar repos: técnicos (2)** ⬜ Pendiente.
    - EventoTecnicoRepository, etc.
 
-8. **H7.8 — RLS + Auth** ⬜ Pendiente.
+9. **H7.8 — RLS + Auth** ⬜ Pendiente.
    - Row Level Security por tabla.
    - Supabase Auth reemplaza SessionContext.
 
-9. **H7.9 — Realtime** ⬜ Pendiente.
-   - Reemplaza el auto-refresh 2s de consola y pantalla pública.
+10. **H7.9 — Realtime** ⬜ Pendiente.
+    - Reemplaza el auto-refresh 2s de consola y pantalla pública.
 
-10. **H7.10 — Migración de e2e a Supabase** ⬜ Pendiente.
+11. **H7.10 — Migración de e2e a Supabase** ⬜ Pendiente.
 
 ---
 
@@ -1130,6 +1185,15 @@ Migrar a Supabase. Sub-bloques:
 | 43 | Partida NO tiene estado BORRADOR | Solo Circuito tiene BORRADOR. El modelo real de Partida arranca en CONFIGURANDO. Corregido en H7.1b. |
 | 44 | Partida.finish_reason = null en DESCARTADA | INV-138 solo exige finish_reason no-null en FINALIZADA. DESCARTADA no lo requiere. |
 | 45 | JuegoEjecutado.finish_reason puede ser NORMAL o PARTIDA_* | NORMAL si el juego cerró por su cuenta. PARTIDA_DESCARTADA/PARTIDA_FINALIZADA/PARTIDA_EXPIRADA si cerró por arrastre. |
+| 46 | Estrategia de migración: query para CRUD simple, rpc para operaciones atómicas | PostgREST no soporta transacciones multi-tabla. RPC las soporta nativamente. |
+| 47 | No implementar tx() en el SupabaseAdapter | tx() es la interfaz de IndexedDB. Supabase usa query/rpc. Los repos migran a la nueva interfaz en H7.4+. |
+| 48 | `single: true` devuelve null si no hay filas (PGRST116) | Más útil que lanzar NoEncontradoError. El repo decide si lanzar. |
+| 49 | update/delete requieren filtros no vacíos | Previene pérdida de datos por bugs en repos. |
+| 50 | Traducción de errores Postgres/PgREST a errores del dominio en el adapter | Aísla a los repos del código Postgres. |
+| 51 | Tests de integración separados de los unitarios (vitest.config.integration.js) | Los unitarios usan mocks (rápidos, sin red). Los de integración van contra Supabase Cloud (lentos, requieren credenciales). |
+| 52 | GRANTs manuales a anon/authenticated (no automáticos) | Supabase cambió el default: con "Automatically expose new tables" deshabilitado, hay que otorgar permisos explícitamente. |
+| 53 | RLS deshabilitado temporalmente, se implementa en H7.8 | RLS sin políticas bloquea todo. Se difiere a H7.8 donde se implementa bien con Supabase Auth. |
+| 54 | GRANTs y RLS son capas ortogonales | GRANT = "¿puede tocar la tabla?". RLS = "¿qué filas puede ver/tocar?". Ambas necesarias en producción. |
 
 ### 12.1 Contrato de cierre de bloque
 
@@ -1149,6 +1213,49 @@ Cada bloque de desarrollo debe cumplir estas 7 verificaciones antes de ser consi
 
 ---
 
-**Fin del Documento Maestro v1.0**
+## 13. Notas de infraestructura Supabase
+
+### 13.1 GRANTs y RLS son capas distintas
+
+Cuando se configure RLS en H7.8, recordar:
+
+1. **GRANT** otorga el permiso base para tocar la tabla:
+   ```sql
+   GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE tabla TO authenticated;
+   ```
+   Sin GRANT, el rol no puede acceder aunque RLS esté deshabilitado.
+
+2. **RLS** filtra qué filas puede ver/tocar el rol una vez que tiene GRANT:
+   ```sql
+   ALTER TABLE tabla ENABLE ROW LEVEL SECURITY;
+   CREATE POLICY "policy_name" ON tabla FOR ... USING (...) WITH CHECK (...);
+   ```
+
+Ambas son necesarias en producción. Sin GRANT, no hay acceso. Sin política, RLS bloquea todo.
+
+### 13.2 Estado actual de Supabase Cloud (post-H7.2)
+
+- **Schema**: aplicado con 17 tablas, FKs, CHECKs, UNIQUEs, índices.
+- **RLS**: deshabilitado temporalmente en las 17 tablas.
+- **GRANTs**: SELECT, INSERT, UPDATE, DELETE otorgados a `anon` y `authenticated` sobre todas las tablas.
+- **Funciones plpgsql**: 5 de ejemplo aplicadas (reservar_accion, tomar_control, iniciar_juego, finalizar_juego, crear_partida_ejemplo).
+- **Variables de entorno**: VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, VITE_SUPABASE_ADAPTER=false.
+
+### 13.3 Aplicar migraciones
+
+Ver `supabase/migrations/README.md`. Cada archivo `.sql` se pega en el SQL Editor de Supabase y se ejecuta.
+
+### 13.4 Aprendizaje para H7.8
+
+Cuando se implemente RLS + Auth:
+
+- Los GRANTs actuales (todo a `anon`) se van a reemplazar por GRANTs más restrictivos.
+- `anon` probablemente solo tenga SELECT sobre catálogos.
+- `authenticated` tenga CRUD según políticas.
+- `service_role` mantenga todos los permisos para tareas admin.
+
+---
+
+**Fin del Documento Maestro v1.9**
 
 Este documento debe actualizarse con cada decisión relevante.
