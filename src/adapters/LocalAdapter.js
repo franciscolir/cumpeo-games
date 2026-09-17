@@ -14,6 +14,8 @@ import {
 import { crearCanal } from '../infrastructure/broadcast.js';
 
 export class LocalAdapter {
+  static modo = 'indexeddb';
+
   constructor({ broadcast = null } = {}) {
     this.db = null;
     this.canal = broadcast || crearCanal();

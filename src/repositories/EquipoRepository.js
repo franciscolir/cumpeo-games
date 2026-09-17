@@ -28,6 +28,10 @@ export class EquipoRepository extends BaseRepository {
       updated_at: ts
     };
 
+    if (this.modo === 'supabase') {
+      return this.agregarRegistro(equipo);
+    }
+
     await this.adapter.tx([STORE], 'readwrite', (tx) => {
       this.agregar(tx, equipo);
     });
@@ -53,6 +57,11 @@ export class EquipoRepository extends BaseRepository {
 
     actualizado.updated_at = ahora();
 
+    if (this.modo === 'supabase') {
+      await this.actualizarRegistro(actualizado);
+      return actualizado;
+    }
+
     await this.adapter.tx([STORE], 'readwrite', (tx) => {
       this.insertarOActualizar(tx, actualizado);
     });
@@ -63,6 +72,11 @@ export class EquipoRepository extends BaseRepository {
   async eliminarEquipoGuardado(equipoId) {
     const actual = await this.obtener(equipoId);
     if (!actual) throw new NoEncontradoError('EquipoGuardado', equipoId);
+
+    if (this.modo === 'supabase') {
+      await this.eliminarRegistro(equipoId);
+      return;
+    }
 
     await this.adapter.tx([STORE], 'readwrite', (tx) => {
       this.eliminar(tx, equipoId);

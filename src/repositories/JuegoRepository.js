@@ -27,18 +27,23 @@ export class JuegoRepository extends BaseRepository {
 
   async obtenerJuegoPorCodigo(codigo) {
     validarNoVacio(codigo, 'codigo');
+
+    if (this.modo === 'supabase') {
+      const filas = await this.adapter.query(this.storeName, {
+        eq: { codigo },
+        single: true
+      });
+      return filas || null;
+    }
+
     const lista = await this.listarPorIndice('juego_codigo', codigo);
     return lista[0] || null;
   }
 
   async listarJuegos({ incluirInactivos = false } = {}) {
     const todos = await this.listar();
-    if (incluirInactivos) {
-      return todos.sort((a, b) => this._comparar(a, b));
-    }
-    return todos
-      .filter((j) => j.activo === true)
-      .sort((a, b) => this._comparar(a, b));
+    const filtrados = incluirInactivos ? todos : todos.filter((j) => j.activo === true);
+    return filtrados.sort((a, b) => this._comparar(a, b));
   }
 
   async crearJuego({ codigo, nombre, descripcion = null, requiere_set = false, orden_catalogo = null }) {
@@ -57,6 +62,12 @@ export class JuegoRepository extends BaseRepository {
       created_at: ts,
       updated_at: ts
     };
+
+    if (this.modo === 'supabase') {
+      const existente = await this.obtenerJuegoPorCodigo(codigo);
+      if (existente) throw new YaExisteError('Juego', codigo);
+      return this.agregarRegistro(juego);
+    }
 
     let errorInterno = null;
 
@@ -121,6 +132,11 @@ export class JuegoRepository extends BaseRepository {
 
     actualizado.updated_at = ahora();
 
+    if (this.modo === 'supabase') {
+      await this.actualizarRegistro(actualizado);
+      return actualizado;
+    }
+
     await this.adapter.tx([STORE], 'readwrite', (tx) => {
       this.insertarOActualizar(tx, actualizado);
     });
@@ -134,6 +150,11 @@ export class JuegoRepository extends BaseRepository {
 
     const actualizado = { ...actual, activo: false, updated_at: ahora() };
 
+    if (this.modo === 'supabase') {
+      await this.actualizarRegistro(actualizado);
+      return actualizado;
+    }
+
     await this.adapter.tx([STORE], 'readwrite', (tx) => {
       this.insertarOActualizar(tx, actualizado);
     });
@@ -144,6 +165,50 @@ export class JuegoRepository extends BaseRepository {
   async reordenarJuegos(ordenFinal) {
     if (!Array.isArray(ordenFinal)) {
       throw new ValidacionError('ordenFinal debe ser un array');
+    }
+
+    if (this.modo === 'supabase') {
+      const todos = await this.listar();
+      const mapa = new Map(todos.map((j) => [j.id, j]));
+
+      if (ordenFinal.length !== todos.length) {
+        throw new ValidacionError(
+          'ordenFinal debe contener todos los juegos exactamente una vez'
+        );
+      }
+
+      const idsEnviados = new Set();
+
+      for (let i = 0; i < ordenFinal.length; i++) {
+        const entrada = ordenFinal[i];
+
+        if (!entrada || typeof entrada.id !== 'string') {
+          throw new ValidacionError(`ordenFinal[${i}].id inválido`);
+        }
+
+        if (!mapa.has(entrada.id)) {
+          throw new ValidacionError(`El juego ${entrada.id} no existe`);
+        }
+
+        if (idsEnviados.has(entrada.id)) {
+          throw new ValidacionError(`El juego ${entrada.id} está repetido`);
+        }
+
+        idsEnviados.add(entrada.id);
+      }
+
+      const ts = ahora();
+
+      for (let i = 0; i < ordenFinal.length; i++) {
+        const original = mapa.get(ordenFinal[i].id);
+        await this.actualizarRegistro({
+          ...original,
+          orden_catalogo: i + 1,
+          updated_at: ts
+        });
+      }
+
+      return;
     }
 
     let errorInterno = null;

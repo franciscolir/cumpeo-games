@@ -24,6 +24,15 @@ export class ExtraRepository extends BaseRepository {
 
   async obtenerExtraPorCodigo(codigo) {
     validarNoVacio(codigo, 'codigo');
+
+    if (this.modo === 'supabase') {
+      const filas = await this.adapter.query(this.storeName, {
+        eq: { codigo },
+        single: true
+      });
+      return filas || null;
+    }
+
     const lista = await this.listarPorIndice('extra_codigo', codigo);
     return lista[0] || null;
   }
@@ -60,6 +69,10 @@ export class ExtraRepository extends BaseRepository {
       updated_at: ts
     };
 
+    if (this.modo === 'supabase') {
+      return this.agregarRegistro(extra);
+    }
+
     await this.adapter.tx([STORE], 'readwrite', (tx) => {
       this.agregar(tx, extra);
     });
@@ -89,6 +102,11 @@ export class ExtraRepository extends BaseRepository {
 
     actualizado.updated_at = ahora();
 
+    if (this.modo === 'supabase') {
+      await this.actualizarRegistro(actualizado);
+      return actualizado;
+    }
+
     await this.adapter.tx([STORE], 'readwrite', (tx) => {
       this.insertarOActualizar(tx, actualizado);
     });
@@ -102,6 +120,11 @@ export class ExtraRepository extends BaseRepository {
 
     const actualizado = { ...actual, activo: false, updated_at: ahora() };
 
+    if (this.modo === 'supabase') {
+      await this.actualizarRegistro(actualizado);
+      return actualizado;
+    }
+
     await this.adapter.tx([STORE], 'readwrite', (tx) => {
       this.insertarOActualizar(tx, actualizado);
     });
@@ -112,6 +135,44 @@ export class ExtraRepository extends BaseRepository {
   async reordenarExtras(ordenFinal) {
     if (!Array.isArray(ordenFinal)) {
       throw new ValidacionError('ordenFinal debe ser un array');
+    }
+
+    if (this.modo === 'supabase') {
+      const todos = await this.listar();
+      const mapa = new Map(todos.map((e) => [e.id, e]));
+
+      if (ordenFinal.length !== todos.length) {
+        throw new ValidacionError(
+          'ordenFinal debe contener todos los extras exactamente una vez'
+        );
+      }
+
+      const ids = new Set();
+      for (let i = 0; i < ordenFinal.length; i++) {
+        const entrada = ordenFinal[i];
+        if (!entrada || typeof entrada.id !== 'string') {
+          throw new ValidacionError(`ordenFinal[${i}].id inválido`);
+        }
+        if (!mapa.has(entrada.id)) {
+          throw new ValidacionError(`El extra ${entrada.id} no existe`);
+        }
+        if (ids.has(entrada.id)) {
+          throw new ValidacionError(`El extra ${entrada.id} está repetido`);
+        }
+        ids.add(entrada.id);
+      }
+
+      const ts = ahora();
+      for (let i = 0; i < ordenFinal.length; i++) {
+        const original = mapa.get(ordenFinal[i].id);
+        await this.actualizarRegistro({
+          ...original,
+          orden_catalogo: i + 1,
+          updated_at: ts
+        });
+      }
+
+      return;
     }
 
     await this.adapter.tx([STORE], 'readwrite', (tx, resolver) => {
