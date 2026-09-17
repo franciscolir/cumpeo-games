@@ -1,10 +1,10 @@
 # CUMPEO — Documento Maestro de Construcción
 
-**Versión:** 1.7
-**Estado:** H4 · H5.1 · H6 COMPLETOS · ~75% proyecto completo
-**Última actualización:** Post-commit `a0a7f07`
-**HEAD:** `feature/vertical-slice` — `a0a7f07`
-**Tests:** 376 unit + 34 e2e
+**Versión:** 1.8
+**Estado:** H4 · H5.1 · H6 · H7.1 COMPLETOS · ~78% proyecto completo
+**Última actualización:** Post-commit `c66fbc2`
+**HEAD:** `feature/vertical-slice` — `c66fbc2`
+**Tests:** 376 unit + 35 e2e
 **Audiencia:** Desarrollador único / equipo reducido
 **Propósito:** Guía única de referencia para construcción, consulta y auditoría del sistema.
 
@@ -135,7 +135,7 @@ Cliente (navegador)
 ### 3.2 Máquinas de estado
 
 #### Partida.estado
-BORRADOR -> CONFIGURANDO -> EN_CURSO -> { FINALIZADA, DESCARTADA, EXPIRADA }
+CONFIGURANDO -> EN_CURSO -> { FINALIZADA, DESCARTADA, EXPIRADA }
 
 #### Circuito.estado
 BORRADOR <-> LISTO
@@ -213,7 +213,7 @@ PENDIENTE -> EN_CURSO <-> PAUSADO -> FINALIZADO
 
 ### 4.7 Partidas
 
-- **INV-041**: Partida.estado en dominio cerrado.
+- **INV-041**: Partida.estado en { CONFIGURANDO, EN_CURSO, FINALIZADA, DESCARTADA, EXPIRADA }. No existe estado BORRADOR para Partida (solo para Circuito).
 - **INV-042**: Progresión unidireccional.
 - **INV-043**: Estados terminales inmutables.
 - **INV-044**: Partida.circuito_id nullable.
@@ -349,9 +349,9 @@ PENDIENTE -> EN_CURSO <-> PAUSADO -> FINALIZADO
 - **INV-135**: Snapshot_id RESTRICT desde CircuitoJuego y JuegoEjecutado.
 - **INV-136**: SetSnapshot no modificable (refuerzo de INV-013).
 - **INV-137**: SetSnapshot.contenido JSON con contrato por Juego.
-- **INV-138**: Partida.finish_reason en { NORMAL, CIRCUITO_COMPLETO, TERMINADA_POR_CONDUCTOR }.
+- **INV-138**: Partida.finish_reason en { CIRCUITO_COMPLETO, EXPIRACION } o null. Es null en estados no terminales y en DESCARTADA. Es CIRCUITO_COMPLETO cuando todos los juegos quedaron terminales o cuando el conductor forzó el cierre. Es EXPIRACION cuando la partida expiró por inactividad.
 - **INV-139**: finish_reason obligatorio si y solo si estado = FINALIZADA.
-- **INV-140**: started_at null si estado en { BORRADOR, CONFIGURANDO }.
+- **INV-140**: started_at null si estado = CONFIGURANDO.
 - **INV-141**: EquipoPartida.posicion único 1 o 2.
 - **INV-142**: JuegoEjecutado.orden único por Partida.
 - **INV-143**: timer_actual estructura JSON definida.
@@ -362,13 +362,17 @@ PENDIENTE -> EN_CURSO <-> PAUSADO -> FINALIZADO
 - **INV-148**: AccionProcesada.tipo_accion string libre.
 - **INV-149**: AccionProcesada inmutable tras inserción.
 - **INV-151**: Todas las FKs de EventoTecnico son SET NULL.
-- **INV-153**: Partida.started_at null en BORRADOR/CONFIGURANDO.
+- **INV-153**: Partida.started_at null en CONFIGURANDO.
 - **INV-154**: Partida.finished_at null en no-terminal, no-null en terminal.
 - **INV-155**: JuegoEjecutado.finished_at null en no-terminal, no-null en terminal.
 - **INV-156**: Partida -> FINALIZADA cuando todos los JuegoEjecutado son terminales.
 - **INV-157**: Partida -> DESCARTADA solo por acción explícita.
 - **INV-158**: Partida -> EXPIRADA solo por evaluación de inactividad.
 - **INV-159**: ParticipantePartida.ha_participado -> true después de jugar; no se elimina si ya participó.
+
+### 4.8.1 Finish reason de JuegoEjecutado
+
+- **INV-160**: JuegoEjecutado.finish_reason en { NORMAL, PARTIDA_DESCARTADA, PARTIDA_FINALIZADA, PARTIDA_EXPIRADA }. Es null en estados no terminales. NORMAL cuando el juego terminó por su cuenta. Los valores PARTIDA_* indican que el juego se cerró por arrastre de una acción sobre la Partida.
 
 
 ---
@@ -536,7 +540,7 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 
 | Métrica | Valor |
 |---------|-------|
-| Progreso global | ~75% |
+| Progreso global | ~78% |
 | H4 completado | 100% (5/5 servicios) |
 | H5.1 completado | 100% (Trivia definido) |
 | H6.1 completado | 100% (Bootstrap) |
@@ -547,7 +551,7 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 | H6.5 completado | 100% (Consola del conductor) |
 | H6.6 completado | 100% (Pantalla pública) |
 | Tests unit | 376 (23 archivos) |
-| Tests e2e | 34 |
+| Tests e2e | 35 |
 | Commits totales (rama) | 60+ |
 
 ### 8.2 Fases cerradas
@@ -557,8 +561,9 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 | Diseño conceptual | 17 entidades, 156 invariantes, ciclo de vida | Cerrado |
 | Arquitectura | Server-first, RPC, Realtime, adaptador | Cerrado |
 | Capa de repositorios (H3) | 14 repositorios + adaptador | Cerrado |
+| H7.1 — Fundaciones de Supabase | Schema, client, esqueleto adapter | Cerrado (c66fbc2) |
 
-### 8.3 H4 — Servicios de dominio (EN PROGRESO)
+### 8.3 H4 — Servicios de dominio (CERRADA)
 
 #### Estado de servicios
 
@@ -805,6 +810,37 @@ Vista de solo lectura para el público. Cierra la fase H6.
 
 **Total: 376 unit + 34 e2e.**
 
+### 8.3.8 H7.1 — Fundaciones de Supabase
+
+**Archivos nuevos:**
+- `src/adapters/supabase/client.js` — Singleton del cliente Supabase con validación de env vars.
+- `src/adapters/supabase/schema.sql` — Schema Postgres completo (17 tablas) traducido desde IndexedDB.
+- `src/adapters/supabase/README.md` — Instrucciones de setup y aplicación del schema.
+- `src/adapters/SupabaseAdapter.js` — Esqueleto con NotImplementedError.
+- `.env.example` — Plantilla de variables de entorno.
+- `tests/e2e/adapter-switch.spec.js` — 1 test (verifica que con VITE_SUPABASE_ADAPTER=false usa LocalAdapter).
+
+**Archivos modificados:**
+- `package.json` — Agregado `@supabase/supabase-js` a dependencies.
+- `.gitignore` — Agregado `.env`, `.env.local`, `.env.*.local`.
+- `src/main.js` — `crearAdapter()` con flag `VITE_SUPABASE_ADAPTER`. Manejo de error en `boot()`.
+
+**Schema Postgres:**
+- 17 tablas, orden de creación respeta FKs.
+- `pgcrypto` habilitado para `gen_random_uuid()`.
+- CHECKs de enums: partidas.estado, circuitos.estado, juego_ejecutados.estado, evento_tecnicos.level.
+- UNIQUEs compuestos: item_sets(set_id, orden), circuito_juegos(circuito_id, orden), equipo_circuitos(circuito_id, posicion), juego_ejecutados(partida_id, orden), equipo_partidas(partida_id, posicion).
+- Índices sobre booleanos (juegos.activo, sets.activo, extras.activo).
+
+**Decisión de adapter:**
+- Flag estático en build time (`import.meta.env.VITE_SUPABASE_ADAPTER`).
+- Sin flag → LocalAdapter (default). Con flag → SupabaseAdapter (que lanza NotImplementedError en `abrir()`).
+- El error se muestra en la UI con `err.message`.
+
+**Tests:**
+- 376 unit (sin cambios).
+- 35 e2e (+1 respecto a H6.6, todos activos).
+
 ### 8.4 Commits clave
 
 ```
@@ -835,6 +871,7 @@ c908bb5  fix(ui): use ControlPartida entity for control check
 6164386  docs: add games manual (GAMES.md)
 256c2b5  docs: update master with H6.4 and H6.5 completion
 a0a7f07  feat(ui): add public screen for partidas
+c66fbc2  feat(adapters): add Supabase infrastructure and schema
 ```
 
 ### 8.3 Estructura del repositorio
@@ -940,20 +977,45 @@ a0a7f07  feat(ui): add public screen for partidas
 7. **H6.5 — Consola del conductor** ✅ Cerrado (`db0fe46`, fixup `c908bb5`).
 8. **H6.6 — Pantalla pública** ✅ Cerrado (`a0a7f07`).
 
-### Fase H7 - Producción (SIGUIENTE)
+### Fase H7 - Producción (EN PROGRESO — H7.1 cerrado)
 
-Migración a Supabase. Sub-bloques propuestos:
+Migrar a Supabase. Sub-bloques:
 
-1. **H7.1 — SupabaseAdapter** (implementación del adapter contra Supabase).
-2. **H7.2 — RPC transaccionales** en PostgreSQL.
-3. **H7.3 — RLS** por tabla.
-4. **H7.4 — Realtime** (reemplaza el auto-refresh de la consola y la pantalla pública).
-5. **H7.5 — Auth de Supabase** (reemplaza el `SessionContext`).
-6. **H7.6 — Migración de tests** a Supabase.
+1. **H7.1 — Fundaciones de Supabase** ✅ Cerrado (`c66fbc2`).
+   - Instalación de `@supabase/supabase-js`.
+   - Schema Postgres (17 tablas).
+   - `SupabaseAdapter` esqueleto.
+   - Flag `VITE_SUPABASE_ADAPTER`.
 
-### Fase H7 - Producción
+2. **H7.2 — SupabaseAdapter.tx() con queries** ⬜ Pendiente.
+   - Implementar `tx(stores, mode, fn)` emulando IndexedDB contra Supabase.
+   - Implementar `query`, `insert`, `update`, `delete` como métodos internos.
+   - Un roundtrip por operación (no atómico — limitación conocida).
 
-Migrar a Supabase, RPC, RLS, Realtime.
+3. **H7.3 — RPC transaccionales** ⬜ Pendiente.
+   - ~50 funciones plpgsql (una por método público de repo).
+   - Adapter expone `rpc(nombre, params)`.
+
+4. **H7.4 — Migrar repos: catálogo (5)** ⬜ Pendiente.
+   - JuegoRepository, ExtraRepository, EquipoRepository, SetRepository, SnapshotRepository.
+
+5. **H7.5 — Migrar repos: config (3)** ⬜ Pendiente.
+   - CircuitoRepository, ParticipanteRepository, ControlRepository.
+
+6. **H7.6 — Migrar repos: partida (5)** ⬜ Pendiente.
+   - PartidaRepository, AccionProcesadaRepository, etc.
+
+7. **H7.7 — Migrar repos: técnicos (2)** ⬜ Pendiente.
+   - EventoTecnicoRepository, etc.
+
+8. **H7.8 — RLS + Auth** ⬜ Pendiente.
+   - Row Level Security por tabla.
+   - Supabase Auth reemplaza SessionContext.
+
+9. **H7.9 — Realtime** ⬜ Pendiente.
+   - Reemplaza el auto-refresh 2s de consola y pantalla pública.
+
+10. **H7.10 — Migración de e2e a Supabase** ⬜ Pendiente.
 
 ---
 
@@ -1061,6 +1123,13 @@ Migrar a Supabase, RPC, RLS, Realtime.
 | 36 | `Juego.id` es UUID; `codigo` es el identificador lógico compartido registry ↔ DB | Seed automático al arrancar. Rompe la desconexión entre registry y DB. |
 | 37 | `public_codigo` auto-generado, 6 chars alfanuméricos mayúsculas (sin 0/O/1/I) | Fácil de compartir con el público. Retry ×3 si colisiona. |
 | 38 | Auto-refresh 2s en consola y pantalla pública (hasta H7 Realtime) | Solución pragmática hasta Supabase Realtime. Limpieza estricta de interval. |
+| 39 | Schema Postgres traducido de IndexedDB en H7.1 | Base para toda la migración a Supabase. |
+| 40 | SupabaseAdapter es esqueleto en H7.1 (NotImplementedError) | Infraestructura primero, implementación en H7.2. |
+| 41 | Flag de adapter: variable de entorno VITE_SUPABASE_ADAPTER | Estático en build time. No soporta cambio en runtime. |
+| 42 | Tests unitarios siguen con LocalAdapter | Los 376 tests no se tocan durante la migración. |
+| 43 | Partida NO tiene estado BORRADOR | Solo Circuito tiene BORRADOR. El modelo real de Partida arranca en CONFIGURANDO. Corregido en H7.1b. |
+| 44 | Partida.finish_reason = null en DESCARTADA | INV-138 solo exige finish_reason no-null en FINALIZADA. DESCARTADA no lo requiere. |
+| 45 | JuegoEjecutado.finish_reason puede ser NORMAL o PARTIDA_* | NORMAL si el juego cerró por su cuenta. PARTIDA_DESCARTADA/PARTIDA_FINALIZADA/PARTIDA_EXPIRADA si cerró por arrastre. |
 
 ### 12.1 Contrato de cierre de bloque
 
