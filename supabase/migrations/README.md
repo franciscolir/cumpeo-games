@@ -23,6 +23,7 @@
 | `0004_funciones_dominio.sql` | 4 funciones: crear_snapshot, registrar_uso_extra, agregar_participante, marcar_participacion | Definitivo |
 | `0005_limpieza_test.sql` | 1 función: limpiar_acciones_test (limpia accion_procesadas de tests) | Utilidad |
 | `0006_funciones_circuito.sql` | 1 función: crear_circuito_completo (crea circuito + hijos atómicamente) | Definitivo |
+| `0007_funciones_set.sql` | 1 función: crear_set_completo (crea set + item_sets atómicamente) | Definitivo |
 
 ## Notas
 
