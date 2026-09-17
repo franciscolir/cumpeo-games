@@ -40,6 +40,43 @@ export class ParticipanteRepository extends BaseRepository {
     validarNoVacio(equipoPartidaId, 'equipoPartidaId');
     validarNoVacio(nombre, 'nombre');
 
+    if (this.modo === 'supabase') {
+      const partida = await this.adapter.query(STORE_PARTIDAS, {
+        eq: { id: partidaId },
+        single: true
+      });
+      if (!partida) throw new NoEncontradoError('Partida', partidaId);
+      if (partida.estado === 'FINALIZADA' ||
+          partida.estado === 'DESCARTADA' ||
+          partida.estado === 'EXPIRADA') {
+        throw new OperacionInvalidaError(
+          `No se pueden agregar participantes a una partida en estado ${partida.estado}`
+        );
+      }
+
+      const equipo = await this.adapter.query(STORE_EQUIPOS_PARTIDA, {
+        eq: { id: equipoPartidaId },
+        single: true
+      });
+      if (!equipo) throw new NoEncontradoError('EquipoPartida', equipoPartidaId);
+      if (equipo.partida_id !== partidaId) {
+        throw new ValidacionError(
+          'El equipo no pertenece a la partida indicada (INV-070)'
+        );
+      }
+
+      const participante = {
+        id: nuevoId(),
+        partida_id: partidaId,
+        equipo_partida_id: equipoPartidaId,
+        nombre,
+        ha_participado: false,
+        created_at: ahora()
+      };
+
+      return this.agregarRegistro(participante);
+    }
+
     return this.adapter.tx(
       [STORE, STORE_EQUIPOS_PARTIDA, STORE_PARTIDAS],
       'readwrite',
@@ -105,6 +142,18 @@ export class ParticipanteRepository extends BaseRepository {
   async eliminarParticipante(participanteId) {
     validarNoVacio(participanteId, 'participanteId');
 
+    if (this.modo === 'supabase') {
+      const p = await this.obtener(participanteId);
+      if (!p) throw new NoEncontradoError('ParticipantePartida', participanteId);
+      if (p.ha_participado === true) {
+        throw new OperacionInvalidaError(
+          'No se puede eliminar un participante que ya participó (INV-159)'
+        );
+      }
+      await this.eliminarRegistro(participanteId);
+      return undefined;
+    }
+
     return this.adapter.tx([STORE], 'readwrite', (tx, resolver) => {
       const store = tx.objectStore(STORE);
       const req = store.get(participanteId);
@@ -134,6 +183,17 @@ export class ParticipanteRepository extends BaseRepository {
 
   async marcarParticipacion(participanteId) {
     validarNoVacio(participanteId, 'participanteId');
+
+    if (this.modo === 'supabase') {
+      const p = await this.obtener(participanteId);
+      if (!p) throw new NoEncontradoError('ParticipantePartida', participanteId);
+      if (p.ha_participado === true) {
+        return p;
+      }
+      const actualizado = { ...p, ha_participado: true };
+      await this.actualizarRegistro(actualizado);
+      return actualizado;
+    }
 
     return this.adapter.tx([STORE], 'readwrite', (tx, resolver) => {
       const store = tx.objectStore(STORE);

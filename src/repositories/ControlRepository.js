@@ -14,10 +14,28 @@ export class ControlRepository extends BaseRepository {
     super(adapter, STORE);
   }
 
-  async crearControlParaPartida(tx, partidaId) {
-    validarNoVacio(partidaId, 'partidaId');
+  /**
+   * Crea un registro de control vacío para una partida.
+   * En Supabase, inserta directamente. En IndexedDB, requiere tx.
+   */
+  async crearControlParaPartida(txOrPartidaId, partidaIdMaybe) {
+    if (this.modo === 'supabase') {
+      const pid = txOrPartidaId;
+      validarNoVacio(pid, 'partidaId');
+      return this.agregarRegistro({
+        partida_id: pid,
+        session_id: null,
+        usuario_id: null,
+        acquired_at: null,
+        expires_at: null,
+        heartbeat_at: null
+      });
+    }
+    const tx = txOrPartidaId;
+    const pid = partidaIdMaybe;
+    validarNoVacio(pid, 'partidaId');
     tx.objectStore(STORE).add({
-      partida_id: partidaId,
+      partida_id: pid,
       session_id: null,
       usuario_id: null,
       acquired_at: null,
@@ -38,6 +56,34 @@ export class ControlRepository extends BaseRepository {
   async tomarControl(partidaId, sessionId, usuarioId = null) {
     validarNoVacio(partidaId, 'partidaId');
     validarNoVacio(sessionId, 'sessionId');
+
+    if (this.modo === 'supabase') {
+      const control = await this.obtener(partidaId);
+      if (!control) {
+        return { adquirido: false, motivo: new NoEncontradoError('ControlPartida', partidaId) };
+      }
+
+      const ts = ahora();
+      const puedeAdquirir =
+        control.session_id === null ||
+        control.session_id === sessionId ||
+        (control.expires_at && control.expires_at <= ts);
+
+      if (!puedeAdquirir) {
+        return { adquirido: false, motivo: new SinControlError(partidaId) };
+      }
+
+      await this.actualizarRegistro({
+        partida_id: partidaId,
+        session_id: sessionId,
+        usuario_id: usuarioId,
+        acquired_at: ts,
+        heartbeat_at: ts,
+        expires_at: new Date(Date.now() + LEASE_MS).toISOString()
+      });
+
+      return { adquirido: true };
+    }
 
     return this.adapter.tx([STORE], 'readwrite', (tx, resolver) => {
       const store = tx.objectStore(STORE);
@@ -80,6 +126,37 @@ export class ControlRepository extends BaseRepository {
   async renovarControl(partidaId, sessionId) {
     validarNoVacio(partidaId, 'partidaId');
     validarNoVacio(sessionId, 'sessionId');
+
+    if (this.modo === 'supabase') {
+      const control = await this.obtener(partidaId);
+
+      if (!control) {
+        return {
+          renovado: false,
+          motivo: new NoEncontradoError('ControlPartida', partidaId)
+        };
+      }
+
+      const ts = ahora();
+      const leaseVigente =
+        control.expires_at !== null &&
+        control.expires_at > ts;
+
+      if (control.session_id !== sessionId || !leaseVigente) {
+        return {
+          renovado: false,
+          motivo: new SinControlError(partidaId)
+        };
+      }
+
+      await this.actualizarRegistro({
+        ...control,
+        heartbeat_at: ts,
+        expires_at: new Date(Date.now() + LEASE_MS).toISOString()
+      });
+
+      return { renovado: true };
+    }
 
     return this.adapter.tx([STORE], 'readwrite', (tx, resolver) => {
       const store = tx.objectStore(STORE);
@@ -137,6 +214,30 @@ export class ControlRepository extends BaseRepository {
     validarNoVacio(partidaId, 'partidaId');
     validarNoVacio(sessionId, 'sessionId');
 
+    if (this.modo === 'supabase') {
+      const control = await this.obtener(partidaId);
+      if (!control) {
+        return { liberado: false, motivo: new NoEncontradoError('ControlPartida', partidaId) };
+      }
+      if (control.session_id !== sessionId) {
+        return {
+          liberado: false,
+          motivo: new SinControlError(partidaId)
+        };
+      }
+
+      await this.actualizarRegistro({
+        partida_id: partidaId,
+        session_id: null,
+        usuario_id: null,
+        acquired_at: null,
+        expires_at: null,
+        heartbeat_at: null
+      });
+
+      return { liberado: true };
+    }
+
     return this.adapter.tx([STORE], 'readwrite', (tx, resolver) => {
       const store = tx.objectStore(STORE);
       const req = store.get(partidaId);
@@ -190,6 +291,17 @@ export class ControlRepository extends BaseRepository {
   async verificarControl(partidaId, sessionId) {
     validarNoVacio(partidaId, 'partidaId');
     validarNoVacio(sessionId, 'sessionId');
+
+    if (this.modo === 'supabase') {
+      const control = await this.obtener(partidaId);
+      if (!control) return false;
+      const ts = ahora();
+      return (
+        control.session_id === sessionId &&
+        control.expires_at !== null &&
+        control.expires_at > ts
+      );
+    }
 
     return this.adapter.tx([STORE], 'readonly', (tx, resolver) => {
       this.verificarControlEnTx(tx, partidaId, sessionId, (ok) => resolver(ok));
