@@ -37,12 +37,27 @@ export class PartidaRepository extends BaseRepository {
 
   async obtenerPartidaPorCodigo(publicCodigo) {
     validarNoVacio(publicCodigo, 'publicCodigo');
+
+    if (this.modo === 'supabase') {
+      const lista = await this.adapter.query(this.storeName, {
+        eq: { public_codigo: publicCodigo }
+      });
+      return lista[0] || null;
+    }
+
     const lista = await this.listarPorIndice('partida_public_codigo', publicCodigo);
     return lista[0] || null;
   }
 
   async listarPartidasPorEstado(estado) {
     validarNoVacio(estado, 'estado');
+
+    if (this.modo === 'supabase') {
+      return this.adapter.query(this.storeName, {
+        eq: { estado }
+      });
+    }
+
     return this.listarPorIndice('partida_estado', estado);
   }
 
@@ -55,6 +70,15 @@ export class PartidaRepository extends BaseRepository {
     const limite = new Date(
       Date.now() - 24 * 60 * 60 * 1000
     ).toISOString();
+
+    if (this.modo === 'supabase') {
+      return this.adapter.query(this.storeName, {
+        eq: { estado: 'EN_CURSO' },
+        neq: { last_activity_at: null }
+      }).then((lista) =>
+        lista.filter((p) => p.last_activity_at && p.last_activity_at < limite)
+      );
+    }
 
     return this.adapter.tx(
       [STORE_PARTIDAS],
@@ -91,6 +115,28 @@ export class PartidaRepository extends BaseRepository {
 
   async obtenerContextoEspera(partidaId) {
     validarNoVacio(partidaId, 'partidaId');
+
+    if (this.modo === 'supabase') {
+      const partida = await this.obtener(partidaId);
+      if (!partida) return { partida: null, equipos: [], participantes: [], juegos: [] };
+
+      const equipos = await this.adapter.query(STORE_EQUIPOS_PARTIDA, {
+        eq: { partida_id: partidaId }
+      });
+      const participantes = await this.adapter.query(STORE_PARTICIPANTES, {
+        eq: { partida_id: partidaId }
+      });
+      const juegos = await this.adapter.query(STORE_JUEGOS_EJECUTADOS, {
+        eq: { partida_id: partidaId }
+      });
+
+      return {
+        partida,
+        equipos: equipos.sort((a, b) => a.posicion - b.posicion),
+        participantes,
+        juegos: juegos.sort((a, b) => a.orden - b.orden)
+      };
+    }
 
     return this.adapter.tx(
       [
@@ -151,6 +197,19 @@ export class PartidaRepository extends BaseRepository {
     validarNoVacio(circuito_id, 'circuito_id');
     validarNoVacio(public_codigo, 'public_codigo');
     validarNoVacio(actionId, 'actionId');
+
+    if (this.modo === 'supabase') {
+      const resultado = await this.adapter.rpc('crear_partida', {
+        p_circuito_id: circuito_id,
+        p_public_codigo: public_codigo,
+        p_session_id: null,
+        p_action_id: actionId
+      });
+      if (!resultado.ok) {
+        throw new ValidacionError(resultado.error || 'Error creando partida');
+      }
+      return this.obtenerPartida(resultado.partida_id);
+    }
 
     return this.adapter.tx(
       [
@@ -392,6 +451,18 @@ export class PartidaRepository extends BaseRepository {
     validarNoVacio(sessionId, 'sessionId');
     validarNoVacio(actionId, 'actionId');
 
+    if (this.modo === 'supabase') {
+      const resultado = await this.adapter.rpc('comenzar_partida', {
+        p_partida_id: partidaId,
+        p_session_id: sessionId,
+        p_action_id: actionId
+      });
+      if (!resultado.ok) {
+        throw new ValidacionError(resultado.error || 'Error comenzando partida');
+      }
+      return resultado;
+    }
+
     return this.adapter.tx(
       [
         STORE_PARTIDAS,
@@ -429,6 +500,19 @@ export class PartidaRepository extends BaseRepository {
     validarNoVacio(juegoEjecutadoId, 'juegoEjecutadoId');
     validarNoVacio(sessionId, 'sessionId');
     validarNoVacio(actionId, 'actionId');
+
+    if (this.modo === 'supabase') {
+      const resultado = await this.adapter.rpc('iniciar_juego', {
+        p_partida_id: partidaId,
+        p_juego_ejecutado_id: juegoEjecutadoId,
+        p_session_id: sessionId,
+        p_action_id: actionId
+      });
+      if (!resultado.ok) {
+        throw new ValidacionError(resultado.error || 'Error iniciando juego');
+      }
+      return resultado;
+    }
 
     return this.adapter.tx(
       [STORE_PARTIDAS, STORE_JUEGOS_EJECUTADOS, STORE_CONTROL, STORE_ACCIONES],
@@ -630,6 +714,49 @@ export class PartidaRepository extends BaseRepository {
       throw new ValidacionError('estadoJuego debe ser un objeto');
     }
 
+    if (this.modo === 'supabase') {
+      const partida = await this.obtener(partidaId);
+      if (!partida) throw new NoEncontradoError('Partida', partidaId);
+      if (partida.estado !== 'EN_CURSO') {
+        throw new OperacionInvalidaError('La partida no está EN_CURSO');
+      }
+
+      const je = await this.adapter.query(STORE_JUEGOS_EJECUTADOS, {
+        eq: { id: juegoEjecutadoId, partida_id: partidaId },
+        single: true
+      });
+      if (!je) throw new NoEncontradoError('JuegoEjecutado', juegoEjecutadoId);
+      if (je.estado !== 'EN_CURSO') {
+        throw new OperacionInvalidaError('El juego no está EN_CURSO');
+      }
+      if (je.state_version !== expectedStateVersion) {
+        throw new ConflictoVersionError('JuegoEjecutado', expectedStateVersion, je.state_version);
+      }
+
+      const ts = ahora();
+      const actualizado = {
+        ...je,
+        estado_juego: estadoJuego,
+        state_version: je.state_version + 1,
+        updated_at: ts
+      };
+
+      await this.adapter.update(STORE_JUEGOS_EJECUTADOS, {
+        eq: { id: juegoEjecutadoId }
+      }, actualizado);
+
+      await this.adapter.update(this.storeName, {
+        eq: { id: partidaId }
+      }, {
+        ...partida,
+        last_activity_at: ts,
+        version: partida.version + 1,
+        updated_at: ts
+      });
+
+      return actualizado;
+    }
+
     return this.adapter.tx(
       [STORE_PARTIDAS, STORE_JUEGOS_EJECUTADOS, STORE_CONTROL, STORE_ACCIONES],
       'readwrite',
@@ -657,6 +784,19 @@ export class PartidaRepository extends BaseRepository {
   }
 
   async pausarJuego(partidaId, juegoEjecutadoId, sessionId, actionId) {
+    if (this.modo === 'supabase') {
+      const resultado = await this.adapter.rpc('pausar_juego', {
+        p_partida_id: partidaId,
+        p_juego_ejecutado_id: juegoEjecutadoId,
+        p_session_id: sessionId,
+        p_action_id: actionId
+      });
+      if (!resultado.ok) {
+        throw new ValidacionError(resultado.error || 'Error pausando juego');
+      }
+      return resultado;
+    }
+
     return this._cambiarEstadoJuego(
       partidaId, juegoEjecutadoId, sessionId, actionId,
       TIPO_ACCION.PAUSAR_JUEGO,
@@ -666,6 +806,19 @@ export class PartidaRepository extends BaseRepository {
   }
 
   async reanudarJuego(partidaId, juegoEjecutadoId, sessionId, actionId) {
+    if (this.modo === 'supabase') {
+      const resultado = await this.adapter.rpc('reanudar_juego', {
+        p_partida_id: partidaId,
+        p_juego_ejecutado_id: juegoEjecutadoId,
+        p_session_id: sessionId,
+        p_action_id: actionId
+      });
+      if (!resultado.ok) {
+        throw new ValidacionError(resultado.error || 'Error reanudando juego');
+      }
+      return resultado;
+    }
+
     return this._cambiarEstadoJuego(
       partidaId, juegoEjecutadoId, sessionId, actionId,
       TIPO_ACCION.REANUDAR_JUEGO,
@@ -949,6 +1102,23 @@ export class PartidaRepository extends BaseRepository {
       throw new ValidacionError('resultado debe ser un objeto');
     }
 
+    if (this.modo === 'supabase') {
+      const rpcResultado = await this.adapter.rpc('finalizar_juego', {
+        p_partida_id: partidaId,
+        p_juego_ejecutado_id: juegoEjecutadoId,
+        p_resultado: resultado,
+        p_puntos_equipo_1: resultado.puntos_equipo_1 ?? 0,
+        p_puntos_equipo_2: resultado.puntos_equipo_2 ?? 0,
+        p_finish_reason: finishReason ?? null,
+        p_session_id: sessionId,
+        p_action_id: actionId
+      });
+      if (!rpcResultado.ok) {
+        throw new ValidacionError(rpcResultado.error || 'Error finalizando juego');
+      }
+      return rpcResultado;
+    }
+
     return this.adapter.tx(
       [
         STORE_PARTIDAS,
@@ -984,6 +1154,18 @@ export class PartidaRepository extends BaseRepository {
   }
 
   async descartarPartida(partidaId, sessionId, actionId) {
+    if (this.modo === 'supabase') {
+      const resultado = await this.adapter.rpc('descartar_partida', {
+        p_partida_id: partidaId,
+        p_session_id: sessionId,
+        p_action_id: actionId
+      });
+      if (!resultado.ok) {
+        throw new ValidacionError(resultado.error || 'Error descartando partida');
+      }
+      return resultado;
+    }
+
     return this._terminarPartida(
       partidaId, sessionId, actionId,
       TIPO_ACCION.DESCARTAR_PARTIDA,
@@ -992,6 +1174,18 @@ export class PartidaRepository extends BaseRepository {
   }
 
   async finalizarCircuito(partidaId, sessionId, actionId) {
+    if (this.modo === 'supabase') {
+      const resultado = await this.adapter.rpc('finalizar_circuito', {
+        p_partida_id: partidaId,
+        p_session_id: sessionId,
+        p_action_id: actionId
+      });
+      if (!resultado.ok) {
+        throw new ValidacionError(resultado.error || 'Error finalizando circuito');
+      }
+      return resultado;
+    }
+
     return this._terminarPartida(
       partidaId, sessionId, actionId,
       TIPO_ACCION.FINALIZAR_CIRCUITO,
@@ -1173,6 +1367,71 @@ export class PartidaRepository extends BaseRepository {
 
   async expirarPartida(partidaId) {
     validarNoVacio(partidaId, 'partidaId');
+
+    if (this.modo === 'supabase') {
+      const partida = await this.obtener(partidaId);
+      if (!partida) throw new NoEncontradoError('Partida', partidaId);
+      if (partida.estado !== 'EN_CURSO') {
+        throw new OperacionInvalidaError('Solo se puede expirar una partida EN_CURSO');
+      }
+
+      const juegos = await this.adapter.query(STORE_JUEGOS_EJECUTADOS, {
+        eq: { partida_id: partidaId }
+      });
+
+      const ahoraActual = ahora();
+      const juegosActualizados = [];
+
+      for (const juego of juegos) {
+        if (juego.estado === 'EN_CURSO' || juego.estado === 'PAUSADO') {
+          const actualizado = {
+            ...juego,
+            estado: 'FINALIZADO',
+            resultado: juego.resultado ?? { puntos_equipo_1: 0, puntos_equipo_2: 0 },
+            finish_reason: 'PARTIDA_EXPIRADA',
+            finished_at: ahoraActual,
+            paused_at: null,
+            state_version: juego.state_version + 1
+          };
+          await this.adapter.update(STORE_JUEGOS_EJECUTADOS, {
+            eq: { id: juego.id }
+          }, actualizado);
+          juegosActualizados.push(actualizado);
+        } else if (juego.estado === 'PENDIENTE') {
+          const actualizado = {
+            ...juego,
+            estado: 'NO_JUGADO',
+            resultado: null,
+            finish_reason: 'PARTIDA_EXPIRADA',
+            finished_at: ahoraActual,
+            paused_at: null,
+            state_version: juego.state_version + 1
+          };
+          await this.adapter.update(STORE_JUEGOS_EJECUTADOS, {
+            eq: { id: juego.id }
+          }, actualizado);
+          juegosActualizados.push(actualizado);
+        } else {
+          juegosActualizados.push(juego);
+        }
+      }
+
+      const nuevaPartida = {
+        ...partida,
+        estado: 'EXPIRADA',
+        finish_reason: 'EXPIRACION',
+        finished_at: ahoraActual,
+        last_activity_at: ahoraActual,
+        updated_at: ahoraActual,
+        version: partida.version + 1
+      };
+
+      await this.adapter.update(this.storeName, {
+        eq: { id: partidaId }
+      }, nuevaPartida);
+
+      return { partida: nuevaPartida, juegos: juegosActualizados };
+    }
 
     const stores = [
       STORE_PARTIDAS,
