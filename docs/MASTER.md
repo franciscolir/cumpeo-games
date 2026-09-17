@@ -2,8 +2,8 @@
 
 **Versión:** 2.1
 **Estado:** H4 · H5.1 · H6 · H7.1 · H7.2 · H7.3 COMPLETOS · ~85% proyecto completo
-**Última actualización:** Post-commit `H7.3a`
-**HEAD:** `feature/vertical-slice` — `H7.3a`
+**Última actualización:** Post-commit `1bf23a9`
+**HEAD:** `feature/vertical-slice` — `1bf23a9`
 **Tests:** 433 unit + 35 e2e + 28 integration
 **Audiencia:** Desarrollador único / equipo reducido
 **Propósito:** Guía única de referencia para construcción, consulta y auditoría del sistema.
@@ -977,7 +977,9 @@ dabce6c  feat(adapters): implement SupabaseAdapter with query and rpc
 54be9a6  fix(adapters): validate filters and fix single-row response handling
 ee5fbda  docs: update master with H7.2 completion
 0c7dfcd  feat(migrations): add critical plpgsql functions for atomic operations
-H7.3a    fix(migrations): correct finish_reason constraint and idempotency tests
+0c849d7  fix(migrations): correct finish_reason constraint and idempotency tests
+e0fd65a  fix(migrations): clear accion_procesadas on validation errors
+1bf23a9  test(integration): use unique action_ids and clear test data
 ```
 
 ### 8.3 Estructura del repositorio
@@ -1259,6 +1261,9 @@ Migrar a Supabase. Sub-bloques:
 | 58 | `crear_snapshot` es idempotente por `action_id` | Permite reintentos seguros sin duplicar snapshots. |
 | 59 | Estados terminales (FINALIZADA, DESCARTADA, EXPIRADA) tienen finish_reason no-null | Todos los estados terminales documentan por qué terminó la partida. Actualización de INV-138/INV-139. |
 | 60 | Idempotencia vía action_id devuelve el mismo resultado en reintentos, no un resultado actualizado | El cache de reservar_accion preserva el resultado original, no el estado actual. |
+| 61 | Funciones plpgsql limpian accion_procesadas en errores de validación post-reserva | Sin esto, el siguiente intento con el mismo action_id devuelve un resultado vacío. |
+| 62 | Tests de integración usan `uniqueActionId()` con Date.now + random | Evita colisiones de action_id entre corridas consecutivas. |
+| 63 | `limpiar_acciones_test()` existe en el repo pero NO se aplica en Supabase Cloud | Los tests pasan sin ella. Menos superficie de ataque. |
 
 ### 12.1 Contrato de cierre de bloque
 
