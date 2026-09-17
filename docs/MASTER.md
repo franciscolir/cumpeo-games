@@ -1,10 +1,10 @@
 # CUMPEO — Documento Maestro de Construcción
 
-**Versión:** 2.1
-**Estado:** H4 · H5.1 · H6 · H7.1 · H7.2 · H7.3 COMPLETOS · ~85% proyecto completo
-**Última actualización:** Post-commit `1bf23a9`
-**HEAD:** `feature/vertical-slice` — `1bf23a9`
-**Tests:** 433 unit + 35 e2e + 28 integration
+**Versión:** 2.2
+**Estado:** H4 · H5.1 · H6 · H7.1 · H7.2 · H7.3 · H7.4 COMPLETOS · ~87% proyecto completo
+**Última actualización:** Post-commit `8dfba1e`
+**HEAD:** `feature/vertical-slice` — `8dfba1e`
+**Tests:** 433 unit + 35 e2e + 43 integration
 **Audiencia:** Desarrollador único / equipo reducido
 **Propósito:** Guía única de referencia para construcción, consulta y auditoría del sistema.
 
@@ -540,7 +540,7 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 
 | Métrica | Valor |
 |---------|-------|
-| Progreso global | ~85% |
+| Progreso global | ~87% |
 | H4 completado | 100% (5/5 servicios) |
 | H5.1 completado | 100% (Trivia definido) |
 | H6.1 completado | 100% (Bootstrap) |
@@ -552,7 +552,7 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 | H6.6 completado | 100% (Pantalla pública) |
 | Tests unit | 433 (26 archivos) |
 | Tests e2e | 35 |
-| Tests integration | 28 (contra Supabase Cloud) |
+| Tests integration | 43 (contra Supabase Cloud) |
 | Commits totales (rama) | 60+ |
 
 ### 8.2 Fases cerradas
@@ -566,6 +566,7 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 | H7.2 — SupabaseAdapter query/rpc | Adapter CRUD + rpc contra Supabase | Cerrado (dabce6c) |
 | H7.2a — Fixes críticos de H7.2 | Validación de filtros + single null | Cerrado (54be9a6) |
 | H7.3 — RPC transaccionales | 15 funciones plpgsql definitivas | Cerrado (0c7dfcd) |
+| H7.4 — Repos de catálogo migrados | BaseRepository polimórfico + Juego/Extra/Equipo repos | Cerrado (8dfba1e) |
 
 ### 8.3 H4 — Servicios de dominio (CERRADA)
 
@@ -942,6 +943,32 @@ Vista de solo lectura para el público. Cierra la fase H6.
 
 **Total: 433 unit + 35 e2e + 28 integration.**
 
+### 8.3.11 H7.4 — Repositorios de catálogo migrados a Supabase
+
+**BaseRepository polimórfico:**
+- Soporta dos modos: `indexeddb` (LocalAdapter) y `supabase` (SupabaseAdapter).
+- Detección vía `this.adapter.constructor.modo` (static property en cada adapter).
+- Métodos base: `obtener`, `listar`, `listarPorIndice`, `contarTodos`, `agregarRegistro`, `agregarMuchos`, `actualizarRegistro`, `eliminarRegistro`.
+- Helpers de transacción (`leer`, `leerTodos`, `leerPorIndice`, `contar`, `agregar`, `insertarOActualizar`, `eliminar`) se mantienen públicos para compatibilidad con tests unitarios existentes.
+
+**Repos migrados (3):**
+- JuegoRepository: CRUD básico + filtro activo + reordenar + inmutabilidad de código.
+- ExtraRepository: CRUD básico + filtro activo + reordenar + inmutabilidad de código.
+- EquipoRepository: CRUD básico + validación de color hex.
+
+**Adaptadores modificados:**
+- LocalAdapter: agregado `static modo = 'indexeddb'`.
+- SupabaseAdapter: agregado `static modo = 'supabase'`.
+
+**Tests de integración nuevos (15):**
+- JuegoRepository: 5 tests (agregar+obtener, obtenerPorCodigo, listarTodos, filtrarActivos, eliminar).
+- ExtraRepository: 5 tests.
+- EquipoRepository: 5 tests.
+- Todos usan `uniqueId()` con Date.now + random.
+- `afterAll` limpia los datos creados.
+
+**Total: 433 unit + 35 e2e + 43 integration.**
+
 ### 8.4 Commits clave
 
 ```
@@ -980,6 +1007,7 @@ ee5fbda  docs: update master with H7.2 completion
 0c849d7  fix(migrations): correct finish_reason constraint and idempotency tests
 e0fd65a  fix(migrations): clear accion_procesadas on validation errors
 1bf23a9  test(integration): use unique action_ids and clear test data
+8dfba1e  feat(repositories): migrate catalog repositories to Supabase
 ```
 
 ### 8.3 Estructura del repositorio
@@ -1112,8 +1140,10 @@ Migrar a Supabase. Sub-bloques:
    - Reemplazan las 5 funciones de ejemplo de H7.2.
    - 28 tests de integración (15 nuevos).
 
-5. **H7.4 — Migrar repos: catálogo (5)** ⬜ Pendiente.
-   - JuegoRepository, ExtraRepository, EquipoRepository, SetRepository, SnapshotRepository.
+5. **H7.4 — Migrar repos: catálogo (3)** ✅ Cerrado (`8dfba1e`).
+   - BaseRepository polimórfico.
+   - JuegoRepository, ExtraRepository, EquipoRepository migrados.
+   - 15 tests de integración.
 
 6. **H7.5 — Migrar repos: config (3)** ⬜ Pendiente.
    - CircuitoRepository, ParticipanteRepository, ControlRepository.
@@ -1264,6 +1294,9 @@ Migrar a Supabase. Sub-bloques:
 | 61 | Funciones plpgsql limpian accion_procesadas en errores de validación post-reserva | Sin esto, el siguiente intento con el mismo action_id devuelve un resultado vacío. |
 | 62 | Tests de integración usan `uniqueActionId()` con Date.now + random | Evita colisiones de action_id entre corridas consecutivas. |
 | 63 | `limpiar_acciones_test()` existe en el repo pero NO se aplica en Supabase Cloud | Los tests pasan sin ella. Menos superficie de ataque. |
+| 64 | BaseRepository polimórfico vía `adapter.constructor.modo` | Los repos concretos no saben qué adapter tienen. |
+| 65 | 3 repos de catálogo migrados en H7.4 | Juego, Extra, Equipo. Los demás en H7.5+. |
+| 66 | Tests de integración de repos usan `uniqueId()` + `afterAll` cleanup | Evita colisiones y limpia datos. |
 
 ### 12.1 Contrato de cierre de bloque
 
@@ -1311,9 +1344,9 @@ Ambas son necesarias en producción. Sin GRANT, no hay acceso. Sin política, RL
 - **Funciones plpgsql**: 5 de ejemplo aplicadas (reservar_accion, tomar_control, iniciar_juego, finalizar_juego, crear_partida_ejemplo).
 - **Variables de entorno**: VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, VITE_SUPABASE_ADAPTER=false.
 
-### 13.3 Funciones plpgsql definitivas (H7.3) — PENDIENTE DE APLICAR
+### 13.3 Funciones plpgsql definitivas (H7.3) — APLICADAS
 
-Los archivos `0002_funciones_control.sql`, `0003_funciones_partida.sql`, `0004_funciones_dominio.sql` contienen las 15 funciones definitivas que reemplazan las 5 de ejemplo. **Deben aplicarse en orden** (0002 → 0003 → 0004) antes de ejecutar `npm run test:integration`.
+Las 16 funciones plpgsql están aplicadas en Supabase Cloud. Los 28 tests de integración de adapters pasan contra la base real.
 
 ### 13.3 Aplicar migraciones
 
@@ -1330,6 +1363,6 @@ Cuando se implemente RLS + Auth:
 
 ---
 
-**Fin del Documento Maestro v1.9**
+**Fin del Documento Maestro v2.2**
 
 Este documento debe actualizarse con cada decisión relevante.
