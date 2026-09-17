@@ -39,11 +39,6 @@ BEGIN
     RETURN jsonb_build_object('ok', false, 'error', 'public_codigo_requerido');
   END IF;
 
-  IF p_session_id IS NULL OR p_session_id = '' THEN
-    DELETE FROM accion_procesadas WHERE action_id = p_action_id;
-    RETURN jsonb_build_object('ok', false, 'error', 'session_id_requerido');
-  END IF;
-
   SELECT * INTO v_circuito
   FROM circuitos
   WHERE id = p_circuito_id;
