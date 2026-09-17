@@ -16,13 +16,12 @@ import { traducirError } from './supabase/errors.js';
 import { ValidacionError, OperacionInvalidaError } from '../repositories/errors.js';
 
 export class SupabaseAdapter {
-  static modo = 'supabase';
-
   /**
    * @param {object} [opciones={}]
    * @param {object} [opciones.client] - Cliente Supabase inyectado (para tests).
    */
   constructor({ client = null } = {}) {
+    this.modo = 'supabase';
     this._clientOpcional = client;
     this.client = null;
   }

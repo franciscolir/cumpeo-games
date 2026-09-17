@@ -29,7 +29,7 @@ export class BaseRepository {
 
   /** @returns {'indexeddb'|'supabase'} */
   get modo() {
-    return this.adapter.constructor.modo;
+    return this.adapter.modo;
   }
 
   /* =============================================================
