@@ -1,10 +1,10 @@
 # CUMPEO — Documento Maestro de Construcción
 
-**Versión:** 2.5
-**Estado:** H4 · H5.1 · H6 · H7.1 · H7.2 · H7.3 · H7.4 · H7.5 · H7.6 · H7.7 COMPLETOS · ~91% proyecto completo
-**Última actualización:** Post-commit `154d878`
-**HEAD:** `feature/vertical-slice` — `154d878`
-**Tests:** 433 unit + 35 e2e + 78 integration
+**Versión:** 2.6
+**Estado:** H4 · H5.1 · H6 · H7.1 · H7.2 · H7.3 · H7.4 · H7.5 · H7.6 · H7.7 · H7.8 COMPLETOS · ~93% proyecto completo
+**Última actualización:** Post-commit `2ed1b25`
+**HEAD:** `feature/vertical-slice` — `2ed1b25`
+**Tests:** 433 unit + 35 e2e + 86 integration
 **Audiencia:** Desarrollador único / equipo reducido
 **Propósito:** Guía única de referencia para construcción, consulta y auditoría del sistema.
 
@@ -540,7 +540,7 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 
 | Métrica | Valor |
 |---------|-------|
-| Progreso global | ~91% |
+| Progreso global | ~93% |
 | H4 completado | 100% (5/5 servicios) |
 | H5.1 completado | 100% (Trivia definido) |
 | H6.1 completado | 100% (Bootstrap) |
@@ -552,7 +552,7 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 | H6.6 completado | 100% (Pantalla pública) |
 | Tests unit | 433 (26 archivos) |
 | Tests e2e | 35 |
-| Tests integration | 78 (contra Supabase Cloud) |
+| Tests integration | 86 (contra Supabase Cloud) |
 | Commits totales (rama) | 60+ |
 
 ### 8.2 Fases cerradas
@@ -571,6 +571,7 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 | H7.5a — Fix 3 bugs de Control/Participante | idField partida_id + paths Supabase | Cerrado (ff5e60a) |
 | H7.6 — Circuito + Snapshot migrados | RPC crear_circuito_completo + 2 repos | Cerrado (29dbd98, fc6b46d) |
 | H7.7 — Set + AccionProcesada migrados | RPC crear_set_completo + 2 repos | Cerrado (5efe5dd, e05b9f2) |
+| H7.8 — PartidaRepository migrado | RPC transaccionales + 8 tests | Cerrado (b11437d, 2df33c5) |
 
 ### 8.3 H4 — Servicios de dominio (CERRADA)
 
@@ -1037,6 +1038,27 @@ Vista de solo lectura para el público. Cierra la fase H6.
 
 **Total: 433 unit + 35 e2e + 78 integration.**
 
+### 8.3.15 H7.8 — PartidaRepository migrado
+
+**PartidaRepository (10 métodos migrados):**
+- Métodos con RPC: crearPartida, comenzarPartida, iniciarJuego, pausarJuego, reanudarJuego, finalizarJuego, descartarPartida, finalizarCircuito.
+- Métodos con query directo: obtenerPartida, obtenerPartidaPorCodigo, listarPartidasPorEstado, listarPartidasEnCurso, listarPartidasExpirables, listarPartidasRecuperables, obtenerContextoEspera, actualizarEstadoJuego, expirarPartida.
+
+**Bug corregido en H7.8a:**
+- La RPC crear_partida validaba p_session_id como requerido. El repo pasa null.
+- Fix: eliminada la validación de session_id en crear_partida.
+- Decisión: crear partida y tomar control son operaciones distintas.
+
+**Tests de integración nuevos (8):**
+- Crear partida, obtener por id, obtener por codigo, listar, contexto de espera, idempotencia.
+
+**Deuda técnica identificada:**
+- actualizarEstadoJuego en Supabase no es atómico (2 updates sin transacción).
+- expirarPartida en Supabase no es atómico (múltiples updates sin transacción).
+- Ambos podrían requerir RPC nuevas en el futuro.
+
+**Total: 433 unit + 35 e2e + 86 integration.**
+
 ### 8.4 Commits clave
 
 ```
@@ -1084,6 +1106,10 @@ fc6b46d  feat(repositories): migrate circuito and snapshot repos to Supabase
 5efe5dd  feat(migrations): add crear_set_completo RPC
 e05b9f2  feat(repositories): migrate set and accion_procesada repos to Supabase
 154d878  docs: update OPENSPEC to H7.6
+b11437d  fix(migrations): remove session_id validation from crear_partida
+2df33c5  feat(repositories): migrate partida repository to Supabase
+6b10aae  chore(env): update .env.example with new variable names
+2ed1b25  fix(env): remove real credentials from .env.example
 ```
 
 ### 8.3 Estructura del repositorio
@@ -1230,8 +1256,9 @@ Migrar a Supabase. Sub-bloques:
 8. **H7.7 — Migrar repos: set + accion_procesada** ✅ Cerrado (`5efe5dd`, `e05b9f2`).
    - SetRepository, AccionProcesadaRepository migrados.
 
-9. **H7.8 — PartidaRepository migrado** ⬜ Pendiente.
-   - PartidaRepository usa RPC transaccionales.
+9. **H7.8 — PartidaRepository migrado** ✅ Cerrado (`b11437d`, `2df33c5`).
+   - 10 métodos migrados con patrón polimórfico.
+   - 8 tests de integración.
 
 10. **H7.9 — EventoTecnicoRepository + RLS + Auth** ⬜ Pendiente.
     - EventoTecnicoRepository migrado.
@@ -1384,6 +1411,9 @@ Migrar a Supabase. Sub-bloques:
 | 73 | RPC `crear_set_completo` para creación atómica de sets | Set + item_sets en una transacción. |
 | 74 | `AccionProcesadaRepository` con idField = 'action_id' | PK custom (text, no uuid). |
 | 75 | Test de AccionProcesada crea partida real para FKs | El UUID hardcodeado no existe en partidas. |
+| 76 | crear_partida sin validación de session_id | Crear partida y tomar control son operaciones distintas. |
+| 77 | PartidaRepository usa 8 RPC transaccionales | Los métodos críticos son atómicos vía plpgsql. |
+| 78 | .env.example con placeholders, no credenciales reales | Las credenciales van en .env (gitignored). |
 
 ### 12.1 Contrato de cierre de bloque
 
