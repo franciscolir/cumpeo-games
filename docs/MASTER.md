@@ -1,10 +1,10 @@
 # CUMPEO — Documento Maestro de Construcción
 
-**Versión:** 2.2
-**Estado:** H4 · H5.1 · H6 · H7.1 · H7.2 · H7.3 · H7.4 COMPLETOS · ~87% proyecto completo
-**Última actualización:** Post-commit `8dfba1e`
-**HEAD:** `feature/vertical-slice` — `8dfba1e`
-**Tests:** 433 unit + 35 e2e + 43 integration
+**Versión:** 2.3
+**Estado:** H4 · H5.1 · H6 · H7.1 · H7.2 · H7.3 · H7.4 · H7.5 COMPLETOS · ~88% proyecto completo
+**Última actualización:** Post-commit `ff5e60a`
+**HEAD:** `feature/vertical-slice` — `ff5e60a`
+**Tests:** 433 unit + 35 e2e + 53 integration
 **Audiencia:** Desarrollador único / equipo reducido
 **Propósito:** Guía única de referencia para construcción, consulta y auditoría del sistema.
 
@@ -540,7 +540,7 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 
 | Métrica | Valor |
 |---------|-------|
-| Progreso global | ~87% |
+| Progreso global | ~88% |
 | H4 completado | 100% (5/5 servicios) |
 | H5.1 completado | 100% (Trivia definido) |
 | H6.1 completado | 100% (Bootstrap) |
@@ -552,7 +552,7 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 | H6.6 completado | 100% (Pantalla pública) |
 | Tests unit | 433 (26 archivos) |
 | Tests e2e | 35 |
-| Tests integration | 43 (contra Supabase Cloud) |
+| Tests integration | 53 (contra Supabase Cloud) |
 | Commits totales (rama) | 60+ |
 
 ### 8.2 Fases cerradas
@@ -567,6 +567,8 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 | H7.2a — Fixes críticos de H7.2 | Validación de filtros + single null | Cerrado (54be9a6) |
 | H7.3 — RPC transaccionales | 15 funciones plpgsql definitivas | Cerrado (0c7dfcd) |
 | H7.4 — Repos de catálogo migrados | BaseRepository polimórfico + Juego/Extra/Equipo repos | Cerrado (8dfba1e) |
+| H7.5 — Fix modo + Control/Participante | modo instance property + 2 repos migrados | Cerrado (d36aa7a, 7b321c8) |
+| H7.5a — Fix 3 bugs de Control/Participante | idField partida_id + paths Supabase | Cerrado (ff5e60a) |
 
 ### 8.3 H4 — Servicios de dominio (CERRADA)
 
@@ -969,6 +971,33 @@ Vista de solo lectura para el público. Cierra la fase H6.
 
 **Total: 433 unit + 35 e2e + 43 integration.**
 
+### 8.3.12 H7.5 + H7.5a — Migración de Control y Participante
+
+**Cambio estructural (H7.5):**
+- `LocalAdapter.modo` y `SupabaseAdapter.modo` pasan de `static` a instance property.
+- `BaseRepository.modo` lee `this.adapter.modo` (no más `this.adapter.constructor.modo`).
+
+**Repos migrados (2):**
+- `ControlRepository`: idField = 'partida_id' (PK custom). Métodos con path Supabase: tomarControl, renovarControl, liberarControl, verificarControl, listarControlesPorSesion, crearControlParaPartida.
+- `ParticipanteRepository`: métodos con path Supabase: agregarParticipante, eliminarParticipante, marcarParticipacion, listarParticipantesDePartida, listarParticipantesDeEquipo.
+
+**Tests de integración nuevos (10):**
+- ControlRepository: 5 tests (obtener, null, tomar, renovar, liberar).
+- ParticipanteRepository: 5 tests (agregar, null, listar, marcar, eliminar).
+
+**Bugs corregidos en H7.5a:**
+- Bug #1: ControlRepository usaba idField = 'id' por defecto, pero control_partidas tiene PK = partida_id.
+- Bug #2: ParticipanteRepository.listarParticipantesDePartida/DeEquipo usaba índices IndexedDB (participante_partida_partida_id) como si fueran columnas Supabase (partida_id).
+- Bug #3: ControlRepository.listarControlesPorSesion tenía el mismo problema con 'control_partida_session_id'.
+
+**Sobrecarga documentada:**
+- `crearControlParaPartida(txOrPartidaId, partidaIdMaybe)` tiene firma sobrecargada:
+  - Modo Supabase: `crearControlParaPartida(partidaId)`
+  - Modo IndexedDB: `crearControlParaPartida(tx, partidaId)`
+- La sobrecarga existe porque IndexedDB requiere tx externa para atomicidad.
+
+**Total: 433 unit + 35 e2e + 53 integration.**
+
 ### 8.4 Commits clave
 
 ```
@@ -1008,6 +1037,9 @@ ee5fbda  docs: update master with H7.2 completion
 e0fd65a  fix(migrations): clear accion_procesadas on validation errors
 1bf23a9  test(integration): use unique action_ids and clear test data
 8dfba1e  feat(repositories): migrate catalog repositories to Supabase
+d36aa7a  refactor(adapters): make modo an instance property
+7b321c8  feat(repositories): migrate control and participante repos to Supabase
+ff5e60a  fix(repositories): correct control and participante repos for Supabase mode
 ```
 
 ### 8.3 Estructura del repositorio
@@ -1145,7 +1177,7 @@ Migrar a Supabase. Sub-bloques:
    - JuegoRepository, ExtraRepository, EquipoRepository migrados.
    - 15 tests de integración.
 
-6. **H7.5 — Migrar repos: config (3)** ⬜ Pendiente.
+6. **H7.5 — Migrar repos: config (3)** ✅ Cerrado (`7b321c8`, `ff5e60a`).
    - CircuitoRepository, ParticipanteRepository, ControlRepository.
 
 7. **H7.6 — Migrar repos: partida (5)** ⬜ Pendiente.
@@ -1294,9 +1326,12 @@ Migrar a Supabase. Sub-bloques:
 | 61 | Funciones plpgsql limpian accion_procesadas en errores de validación post-reserva | Sin esto, el siguiente intento con el mismo action_id devuelve un resultado vacío. |
 | 62 | Tests de integración usan `uniqueActionId()` con Date.now + random | Evita colisiones de action_id entre corridas consecutivas. |
 | 63 | `limpiar_acciones_test()` existe en el repo pero NO se aplica en Supabase Cloud | Los tests pasan sin ella. Menos superficie de ataque. |
-| 64 | BaseRepository polimórfico vía `adapter.constructor.modo` | Los repos concretos no saben qué adapter tienen. |
+| 64 | BaseRepository polimórfico vía `adapter.modo` (actualizado en H7.5) | Los repos concretos no saben qué adapter tienen. |
 | 65 | 3 repos de catálogo migrados en H7.4 | Juego, Extra, Equipo. Los demás en H7.5+. |
 | 66 | Tests de integración de repos usan `uniqueId()` + `afterAll` cleanup | Evita colisiones y limpia datos. |
+| 67 | `modo` como instance property en adapters | Static no permite inyección ni instancias con modo distinto. |
+| 68 | `ControlRepository` con `idField = 'partida_id'` | PK custom: control_partidas no tiene columna id. |
+| 69 | Índices de IndexedDB y columnas Supabase son nombres distintos | En Supabase se usa el nombre plano (partida_id, no participante_partida_partida_id). |
 
 ### 12.1 Contrato de cierre de bloque
 
