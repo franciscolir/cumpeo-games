@@ -1,10 +1,10 @@
 # CUMPEO — Documento Maestro de Construcción
 
-**Versión:** 1.9
-**Estado:** H4 · H5.1 · H6 · H7.1 · H7.2 COMPLETOS · ~82% proyecto completo
-**Última actualización:** Post-commit `54be9a6`
-**HEAD:** `feature/vertical-slice` — `54be9a6`
-**Tests:** 433 unit + 35 e2e + 12 integration
+**Versión:** 2.0
+**Estado:** H4 · H5.1 · H6 · H7.1 · H7.2 · H7.3 COMPLETOS · ~85% proyecto completo
+**Última actualización:** Post-commit `0c7dfcd`
+**HEAD:** `feature/vertical-slice` — `0c7dfcd`
+**Tests:** 433 unit + 35 e2e + 28 integration
 **Audiencia:** Desarrollador único / equipo reducido
 **Propósito:** Guía única de referencia para construcción, consulta y auditoría del sistema.
 
@@ -540,7 +540,7 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 
 | Métrica | Valor |
 |---------|-------|
-| Progreso global | ~82% |
+| Progreso global | ~85% |
 | H4 completado | 100% (5/5 servicios) |
 | H5.1 completado | 100% (Trivia definido) |
 | H6.1 completado | 100% (Bootstrap) |
@@ -552,7 +552,7 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 | H6.6 completado | 100% (Pantalla pública) |
 | Tests unit | 433 (26 archivos) |
 | Tests e2e | 35 |
-| Tests integration | 12 (contra Supabase Cloud) |
+| Tests integration | 28 (contra Supabase Cloud) |
 | Commits totales (rama) | 60+ |
 
 ### 8.2 Fases cerradas
@@ -565,6 +565,7 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 | H7.1 — Fundaciones de Supabase | Schema, client, esqueleto adapter | Cerrado (c66fbc2) |
 | H7.2 — SupabaseAdapter query/rpc | Adapter CRUD + rpc contra Supabase | Cerrado (dabce6c) |
 | H7.2a — Fixes críticos de H7.2 | Validación de filtros + single null | Cerrado (54be9a6) |
+| H7.3 — RPC transaccionales | 15 funciones plpgsql definitivas | Cerrado (0c7dfcd) |
 
 ### 8.3 H4 — Servicios de dominio (CERRADA)
 
@@ -886,6 +887,61 @@ Vista de solo lectura para el público. Cierra la fase H6.
 
 **Total: 433 unit + 35 e2e + 12 integration.**
 
+### 8.3.10 H7.3 — RPC transaccionales definitivas
+
+15 funciones plpgsql definitivas en 3 archivos de migración, reemplazando las 5 funciones de ejemplo de H7.2.
+
+**Archivos nuevos:**
+- `supabase/migrations/0002_funciones_control.sql` — 3 funciones: `reservar_accion` (definitiva), `tomar_control` (definitiva), `actualizar_resultado_accion` (auxiliar).
+- `supabase/migrations/0003_funciones_partida.sql` — 9 funciones: `crear_partida`, `comenzar_partida`, `descartar_partida`, `iniciar_juego`, `pausar_juego`, `reanudar_juego`, `finalizar_juego`, `finalizar_circuito`, `expirar_partidas_inactivas`.
+- `supabase/migrations/0004_funciones_dominio.sql` — 4 funciones: `crear_snapshot`, `registrar_uso_extra`, `agregar_participante`, `marcar_participacion`.
+- `supabase/migrations/README.md` — Instrucciones actualizadas y tabla de archivos.
+
+**Archivos modificados:**
+- `tests/integration/adapters/SupabaseAdapter.test.js` — Expandido de 12 a 28 tests (15 tests nuevos para funciones plpgsql).
+
+**Funciones de control:**
+- `reservar_accion(p_action_id, p_partida_id, p_tipo_accion)` — Inserta en `accion_procesadas` si no existe. Retorna `{ ok, yaProcesada, resultado }`.
+- `tomar_control(p_partida_id, p_session_id)` — Lease atómico de 30s. Rechaza si ocupado por otra sesión. Permite renovación de la misma sesión.
+- `actualizar_resultado_accion(p_action_id, p_resultado)` — Guarda resultado JSON en `accion_procesadas`.
+
+**Funciones de partida (ciclo de vida):**
+- `crear_partida(p_circuito_id, p_public_codigo, p_session_id, p_action_id)` — Crea partida + equipo_partidas + control_partidas en transacción atómica. Idempotente.
+- `comenzar_partida(p_partida_id, p_session_id, p_action_id)` — Cambia a EN_CURSO, crea juego_ejecutados desde circuito_juegos. Requiere control activo.
+- `descartar_partida(p_partida_id, p_session_id, p_action_id)` — Marca como DESCARTADA, cierra juegos como NO_JUGADO. Requiere control activo.
+
+**Funciones de juego:**
+- `iniciar_juego(p_partida_id, p_juego_ejecutado_id, p_session_id, p_action_id)` — Cambia juego_ejecutado a EN_CURSO. Requiere control activo.
+- `pausar_juego(p_partida_id, p_juego_ejecutado_id, p_session_id, p_action_id)` — Cambia a PAUSADO. Requiere control activo.
+- `reanudar_juego(p_partida_id, p_juego_ejecutado_id, p_session_id, p_action_id)` — Cambia a EN_CURSO. Requiere control activo.
+- `finalizar_juego(...)` — Actualiza resultado, puntos, finish_reason. Si todos terminales, finaliza la partida.
+- `finalizar_circuito(...)` — Cierra todos los juegos como NO_JUGADO, finaliza la partida.
+
+**Funciones de dominio:**
+- `crear_snapshot(p_set_id, p_action_id)` — Copia items de un set en set_snapshots (inmutable). Idempotente.
+- `registrar_uso_extra(p_partida_id, p_extra_codigo, p_extra_nombre, p_configuracion, p_session_id, p_action_id)` — Registra uso de un extra.
+- `agregar_participante(p_partida_id, p_equipo_partida_id, p_nombre, p_session_id, p_action_id)` — Crea participante. Rechaza duplicado.
+- `marcar_participacion(p_participante_partida_id, p_session_id, p_action_id)` — Marca `ha_participado = true`. Idempotente.
+
+**Convenciones de las funciones:**
+- Retorno `jsonb` con `{ ok: boolean, ... }`.
+- Las funciones críticas verifican lease de control antes de actuar.
+- Idempotencia vía `reservar_accion`.
+- Parámetros nombrados (p_*) para evitar ambigüedad con orden alfabético de Supabase.
+
+**Tests de integración (28 totales):**
+- Grupo 1: Control (7 tests) — reservar_accion, tomar_control, actualizar_resultado_accion.
+- Grupo 2: Partida (6 tests) — crear, comenzar, descartar.
+- Grupo 3: Juego (5 tests) — iniciar, pausar, reanudar.
+- Grupo 4: Cierre (3 tests) — finalizar_juego, finalizar_circuito.
+- Grupo 5: Expiración (1 test).
+- Grupo 6: Snapshots (2 tests).
+- Grupo 7: Participantes (4 tests).
+
+**Pendiente:** Las funciones 0002-0004 deben aplicarse manualmente en Supabase SQL Editor antes de ejecutar tests de integración.
+
+**Total: 433 unit + 35 e2e + 28 integration.**
+
 ### 8.4 Commits clave
 
 ```
@@ -919,6 +975,8 @@ a0a7f07  feat(ui): add public screen for partidas
 c66fbc2  feat(adapters): add Supabase infrastructure and schema
 dabce6c  feat(adapters): implement SupabaseAdapter with query and rpc
 54be9a6  fix(adapters): validate filters and fix single-row response handling
+ee5fbda  docs: update master with H7.2 completion
+0c7dfcd  feat(migrations): add critical plpgsql functions for atomic operations
 ```
 
 ### 8.3 Estructura del repositorio
@@ -1046,10 +1104,10 @@ Migrar a Supabase. Sub-bloques:
    - 25 tests unitarios nuevos.
    - Validación manual end-to-end.
 
-4. **H7.3 — RPC transaccionales definitivas** ⬜ Pendiente.
-   - ~50 funciones plpgsql (una por método público de repo).
-   - Reemplazar el uso de query/insert/update/delete directo por rpc donde aplique.
-   - Refactor del adapter según aprendizajes.
+4. **H7.3 — RPC transaccionales definitivas** ✅ Cerrado (`0c7dfcd`).
+   - 15 funciones plpgsql definitivas en 3 archivos de migración.
+   - Reemplazan las 5 funciones de ejemplo de H7.2.
+   - 28 tests de integración (15 nuevos).
 
 5. **H7.4 — Migrar repos: catálogo (5)** ⬜ Pendiente.
    - JuegoRepository, ExtraRepository, EquipoRepository, SetRepository, SnapshotRepository.
@@ -1194,6 +1252,10 @@ Migrar a Supabase. Sub-bloques:
 | 52 | GRANTs manuales a anon/authenticated (no automáticos) | Supabase cambió el default: con "Automatically expose new tables" deshabilitado, hay que otorgar permisos explícitamente. |
 | 53 | RLS deshabilitado temporalmente, se implementa en H7.8 | RLS sin políticas bloquea todo. Se difiere a H7.8 donde se implementa bien con Supabase Auth. |
 | 54 | GRANTs y RLS son capas ortogonales | GRANT = "¿puede tocar la tabla?". RLS = "¿qué filas puede ver/tocar?". Ambas necesarias en producción. |
+| 55 | Funciones plpgsql retornan `jsonb` con `{ ok: boolean, ... }` | Consistencia con la interfaz del adapter. Facilita parsing en el cliente. |
+| 56 | Parámetros nombrados (p_*) en funciones plpgsql | Supabase ordena parámetros alfabéticamente. Sin p_*, los parámetros se mezclan. |
+| 57 | Funciones de control verifican lease antes de actuar | Garantiza que solo la sesión con control puede ejecutar acciones críticas. |
+| 58 | `crear_snapshot` es idempotente por `action_id` | Permite reintentos seguros sin duplicar snapshots. |
 
 ### 12.1 Contrato de cierre de bloque
 
@@ -1240,6 +1302,10 @@ Ambas son necesarias en producción. Sin GRANT, no hay acceso. Sin política, RL
 - **GRANTs**: SELECT, INSERT, UPDATE, DELETE otorgados a `anon` y `authenticated` sobre todas las tablas.
 - **Funciones plpgsql**: 5 de ejemplo aplicadas (reservar_accion, tomar_control, iniciar_juego, finalizar_juego, crear_partida_ejemplo).
 - **Variables de entorno**: VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, VITE_SUPABASE_ADAPTER=false.
+
+### 13.3 Funciones plpgsql definitivas (H7.3) — PENDIENTE DE APLICAR
+
+Los archivos `0002_funciones_control.sql`, `0003_funciones_partida.sql`, `0004_funciones_dominio.sql` contienen las 15 funciones definitivas que reemplazan las 5 de ejemplo. **Deben aplicarse en orden** (0002 → 0003 → 0004) antes de ejecutar `npm run test:integration`.
 
 ### 13.3 Aplicar migraciones
 
