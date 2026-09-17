@@ -11,12 +11,19 @@ const LEASE_MS = 30000;
 
 export class ControlRepository extends BaseRepository {
   constructor(adapter) {
-    super(adapter, STORE);
+    super(adapter, STORE, 'partida_id');
   }
 
   /**
-   * Crea un registro de control vacío para una partida.
-   * En Supabase, inserta directamente. En IndexedDB, requiere tx.
+   * Crea un registro de control vacío.
+   *
+   * IMPORTANTE: firma sobrecargada.
+   * - Modo Supabase: crearControlParaPartida(partidaId)
+   * - Modo IndexedDB: crearControlParaPartida(tx, partidaId)
+   *
+   * La sobrecarga existe porque en IndexedDB el control debe crearse
+   * en la misma transacción que la partida (atomicidad). En Supabase,
+   * el insert es atómico por sí solo.
    */
   async crearControlParaPartida(txOrPartidaId, partidaIdMaybe) {
     if (this.modo === 'supabase') {
@@ -48,8 +55,19 @@ export class ControlRepository extends BaseRepository {
     return this.obtener(partidaId);
   }
 
+  /**
+   * Lista todos los controles asociados a una sesión.
+   *
+   * @param {string} sessionId - ID de la sesión a buscar.
+   * @returns {Promise<Array>} Lista de controles de la sesión.
+   */
   async listarControlesPorSesion(sessionId) {
     validarNoVacio(sessionId, 'sessionId');
+    if (this.modo === 'supabase') {
+      return this.adapter.query(this.storeName, {
+        eq: { session_id: sessionId }
+      });
+    }
     return this.listarPorIndice('control_partida_session_id', sessionId);
   }
 

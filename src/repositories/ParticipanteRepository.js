@@ -23,14 +23,38 @@ export class ParticipanteRepository extends BaseRepository {
     return this.obtener(participanteId);
   }
 
+  /**
+   * Lista participantes de una partida, ordenados por nombre.
+   *
+   * @param {string} partidaId - ID de la partida.
+   * @returns {Promise<Array>} Lista de participantes ordenada por nombre.
+   */
   async listarParticipantesDePartida(partidaId) {
     validarNoVacio(partidaId, 'partidaId');
+    if (this.modo === 'supabase') {
+      const lista = await this.adapter.query(this.storeName, {
+        eq: { partida_id: partidaId }
+      });
+      return lista.sort((a, b) => String(a.nombre).localeCompare(String(b.nombre), 'es'));
+    }
     const lista = await this.listarPorIndice('participante_partida_partida_id', partidaId);
     return lista.sort((a, b) => String(a.nombre).localeCompare(String(b.nombre), 'es'));
   }
 
+  /**
+   * Lista participantes de un equipo, ordenados por nombre.
+   *
+   * @param {string} equipoPartidaId - ID del equipo.
+   * @returns {Promise<Array>} Lista de participantes ordenada por nombre.
+   */
   async listarParticipantesDeEquipo(equipoPartidaId) {
     validarNoVacio(equipoPartidaId, 'equipoPartidaId');
+    if (this.modo === 'supabase') {
+      const lista = await this.adapter.query(this.storeName, {
+        eq: { equipo_partida_id: equipoPartidaId }
+      });
+      return lista.sort((a, b) => String(a.nombre).localeCompare(String(b.nombre), 'es'));
+    }
     const lista = await this.listarPorIndice('participante_partida_equipo_partida_id', equipoPartidaId);
     return lista.sort((a, b) => String(a.nombre).localeCompare(String(b.nombre), 'es'));
   }
