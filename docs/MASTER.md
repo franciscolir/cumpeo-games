@@ -1,10 +1,10 @@
 # CUMPEO — Documento Maestro de Construcción
 
-**Versión:** 2.4
-**Estado:** H4 · H5.1 · H6 · H7.1 · H7.2 · H7.3 · H7.4 · H7.5 · H7.6 COMPLETOS · ~89% proyecto completo
-**Última actualización:** Post-commit `fc6b46d`
-**HEAD:** `feature/vertical-slice` — `fc6b46d`
-**Tests:** 433 unit + 35 e2e + 65 integration
+**Versión:** 2.5
+**Estado:** H4 · H5.1 · H6 · H7.1 · H7.2 · H7.3 · H7.4 · H7.5 · H7.6 · H7.7 COMPLETOS · ~91% proyecto completo
+**Última actualización:** Post-commit `154d878`
+**HEAD:** `feature/vertical-slice` — `154d878`
+**Tests:** 433 unit + 35 e2e + 78 integration
 **Audiencia:** Desarrollador único / equipo reducido
 **Propósito:** Guía única de referencia para construcción, consulta y auditoría del sistema.
 
@@ -540,7 +540,7 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 
 | Métrica | Valor |
 |---------|-------|
-| Progreso global | ~89% |
+| Progreso global | ~91% |
 | H4 completado | 100% (5/5 servicios) |
 | H5.1 completado | 100% (Trivia definido) |
 | H6.1 completado | 100% (Bootstrap) |
@@ -552,7 +552,7 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 | H6.6 completado | 100% (Pantalla pública) |
 | Tests unit | 433 (26 archivos) |
 | Tests e2e | 35 |
-| Tests integration | 65 (contra Supabase Cloud) |
+| Tests integration | 78 (contra Supabase Cloud) |
 | Commits totales (rama) | 60+ |
 
 ### 8.2 Fases cerradas
@@ -570,6 +570,7 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 | H7.5 — Fix modo + Control/Participante | modo instance property + 2 repos migrados | Cerrado (d36aa7a, 7b321c8) |
 | H7.5a — Fix 3 bugs de Control/Participante | idField partida_id + paths Supabase | Cerrado (ff5e60a) |
 | H7.6 — Circuito + Snapshot migrados | RPC crear_circuito_completo + 2 repos | Cerrado (29dbd98, fc6b46d) |
+| H7.7 — Set + AccionProcesada migrados | RPC crear_set_completo + 2 repos | Cerrado (5efe5dd, e05b9f2) |
 
 ### 8.3 H4 — Servicios de dominio (CERRADA)
 
@@ -1016,6 +1017,26 @@ Vista de solo lectura para el público. Cierra la fase H6.
 
 **Total: 433 unit + 35 e2e + 65 integration.**
 
+### 8.3.14 H7.7 — Set y AccionProcesada migrados
+
+**Función SQL nueva (0007):**
+- `crear_set_completo(p_juego_id, p_nombre, p_descripcion, p_items, p_action_id)` — Crea set + item_sets atómicamente. Idempotente.
+- Validaciones: juego_id, nombre, al menos 1 item.
+- DELETE de accion_procesadas en errores de validación.
+
+**Repos migrados (2):**
+- `SetRepository`: crearSet, crearSetCompleto via RPC, listarSetsPorJuego, listarSetsActivosPorJuego, actualizarSet, desactivarSet, eliminarSet, agregarItem (fix H7.7a), actualizarItem, eliminarItem, reordenarItems.
+- `AccionProcesadaRepository`: reservar via RPC, actualizarResultado via RPC, obtenerPorActionId, listarPorPartida. idField = action_id.
+
+**Tests de integración nuevos (13):**
+- SetRepository: 7 tests (crear, obtener, null, listar, actualizar, agregar item, eliminar).
+- AccionProcesadaRepository: 6 tests (reservar, obtener, null, idempotente, con partida, listar).
+
+**Bug corregido en H7.7a:**
+- SetRepository.agregarItem usaba this.agregarRegistro() (que inserta en sets) en vez de adapter.insert(STORE_ITEMS, ...).
+
+**Total: 433 unit + 35 e2e + 78 integration.**
+
 ### 8.4 Commits clave
 
 ```
@@ -1060,6 +1081,9 @@ d36aa7a  refactor(adapters): make modo an instance property
 ff5e60a  fix(repositories): correct control and participante repos for Supabase mode
 29dbd98  feat(migrations): add crear_circuito_completo RPC
 fc6b46d  feat(repositories): migrate circuito and snapshot repos to Supabase
+5efe5dd  feat(migrations): add crear_set_completo RPC
+e05b9f2  feat(repositories): migrate set and accion_procesada repos to Supabase
+154d878  docs: update OPENSPEC to H7.6
 ```
 
 ### 8.3 Estructura del repositorio
@@ -1201,6 +1225,7 @@ Migrar a Supabase. Sub-bloques:
    - CircuitoRepository, ParticipanteRepository, ControlRepository.
 
 7. **H7.6 — Migrar repos: circuito + snapshot** ✅ Cerrado (`29dbd98`, `fc6b46d`).
+8. **H7.7 — Migrar repos: set + accion_procesada** ✅ Cerrado (`5efe5dd`, `e05b9f2`).
    - PartidaRepository, AccionProcesadaRepository, etc.
 
 8. **H7.7 — Migrar repos: técnicos (2)** ⬜ Pendiente.
@@ -1355,6 +1380,9 @@ Migrar a Supabase. Sub-bloques:
 | 70 | RPC `crear_circuito_completo` para creación atómica | Circuito + circuito_juegos + equipo_circuitos en una sola transacción. |
 | 71 | SnapshotRepository usa RPC `crear_snapshot` existente | La RPC ya existía desde H7.3. Solo se conecta desde el repo. |
 | 72 | Tests de CircuitoRepository dependen de al menos 1 juego en la BD | Frágil pero funcional: si no hay juegos, el test pasa silenciosamente. Mejora pendiente para H7.7+. |
+| 73 | RPC `crear_set_completo` para creación atómica de sets | Set + item_sets en una transacción. |
+| 74 | `AccionProcesadaRepository` con idField = 'action_id' | PK custom (text, no uuid). |
+| 75 | Test de AccionProcesada crea partida real para FKs | El UUID hardcodeado no existe en partidas. |
 
 ### 12.1 Contrato de cierre de bloque
 
