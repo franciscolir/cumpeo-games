@@ -1402,21 +1402,24 @@ Ambas son necesarias en producción. Sin GRANT, no hay acceso. Sin política, RL
 - **Funciones plpgsql**: 5 de ejemplo aplicadas (reservar_accion, tomar_control, iniciar_juego, finalizar_juego, crear_partida_ejemplo).
 - **Variables de entorno**: VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, VITE_SUPABASE_ADAPTER=false.
 
-### 13.4 Migración 0006 — Circuito completo
-
-La migración `0006_funciones_circuito.sql` agrega la RPC `crear_circuito_completo`.
-Aplicada en Supabase Cloud.
-Verificación: `SELECT proname FROM pg_proc WHERE proname = 'crear_circuito_completo';`
-
-
-
 Las 16 funciones plpgsql están aplicadas en Supabase Cloud. Los 28 tests de integración de adapters pasan contra la base real.
 
 ### 13.3 Aplicar migraciones
 
 Ver `supabase/migrations/README.md`. Cada archivo `.sql` se pega en el SQL Editor de Supabase y se ejecuta.
 
-### 13.4 Aprendizaje para H7.8
+### 13.4 Funciones plpgsql definitivas (H7.3) — APLICADAS
+
+Las 16 funciones plpgsql están aplicadas en Supabase Cloud. Los 65 tests de integración pasan contra la base real.
+
+### 13.5 Migración 0006 — Circuito completo
+
+La migración `0006_funciones_circuito.sql` agrega la RPC `crear_circuito_completo`.
+Aplicada en Supabase Cloud.
+Verificación: `SELECT proname FROM pg_proc WHERE proname = 'crear_circuito_completo';`
+
+
+### 13.6 Aprendizaje para H7.8
 
 Cuando se implemente RLS + Auth:
 
@@ -1427,6 +1430,6 @@ Cuando se implemente RLS + Auth:
 
 ---
 
-**Fin del Documento Maestro v2.2**
+**Fin del Documento Maestro v2.4**
 
 Este documento debe actualizarse con cada decisión relevante.
