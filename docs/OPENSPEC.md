@@ -1,8 +1,8 @@
 # CUMPEO — OpenSpec (Especificación Abierta)
 
-**Versión:** 1.0
+**Versión:** 1.1
 **Fecha:** 2026-09-17
-**Estado:** Especificación del sistema actual (fase H7)
+**Estado:** Especificación del sistema actual (post-H7.6)
 **Propósito:** Referencia única para desarrollo, auditoría e integraciones.
 
 ---
@@ -901,6 +901,35 @@ Todos los errores de control aparecen en múltiples funciones:
 
 ---
 
+### 5.6 Función de Circuito
+
+#### `crear_circuito_completo`
+
+Crea circuito + circuito_juegos + equipo_circuitos atómicamente.
+Idempotente vía action_id.
+
+```sql
+crear_circuito_completo(
+  p_nombre text,
+  p_descripcion text,
+  p_juegos jsonb,       -- array de { juego_id, orden, configuracion, snapshot_id }
+  p_equipos jsonb,      -- array de { nombre, color, posicion }
+  p_action_id text
+) RETURNS jsonb
+```
+
+**Retorno exitoso:**
+```json
+{ "ok": true, "circuito_id": "uuid", "estado": "BORRADOR" }
+```
+
+**Errores:**
+- `nombre_requerido`
+- `al_menos_un_juego_requerido`
+- `exactamente_2_equipos_requeridos`
+
+---
+
 ## 6. Esquema de Datos
 
 ### 6.1 Tablas
@@ -1136,6 +1165,19 @@ Implementación concreta para el juego Trivia.
 | 48 | `single: true` devuelve null si no hay filas | Más útil que lanzar error. |
 | 55 | Funciones plpgsql retornan `jsonb` con `{ ok: boolean }` | Consistencia con interfaz del adapter. |
 | 56 | Parámetros nombrados (p_*) en funciones | Supabase ordena alfabéticamente. |
+| 60 | Idempotencia vía action_id devuelve el mismo resultado en reintentos | |
+| 61 | Funciones plpgsql limpian accion_procesadas en errores de validación | |
+| 62 | Tests de integración usan uniqueActionId() con Date.now + random | |
+| 63 | limpiar_acciones_test() existe pero NO se aplica en Supabase Cloud | |
+| 64 | BaseRepository polimórfico vía adapter.modo | |
+| 65 | 3 repos de catálogo migrados en H7.4 | |
+| 66 | Tests de integración usan uniqueId() + afterAll cleanup | |
+| 67 | modo como instance property en adapters | |
+| 68 | ControlRepository con idField = 'partida_id' | |
+| 69 | Índices de IndexedDB y columnas Supabase son nombres distintos | |
+| 70 | RPC crear_circuito_completo para creación atómica | |
+| 71 | SnapshotRepository usa RPC crear_snapshot existente | |
+| 72 | Tests de CircuitoRepository dependen de al menos 1 juego | |
 
 ---
 
