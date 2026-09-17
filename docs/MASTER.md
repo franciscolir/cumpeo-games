@@ -1,9 +1,9 @@
 # CUMPEO — Documento Maestro de Construcción
 
-**Versión:** 2.0
+**Versión:** 2.1
 **Estado:** H4 · H5.1 · H6 · H7.1 · H7.2 · H7.3 COMPLETOS · ~85% proyecto completo
-**Última actualización:** Post-commit `0c7dfcd`
-**HEAD:** `feature/vertical-slice` — `0c7dfcd`
+**Última actualización:** Post-commit `H7.3a`
+**HEAD:** `feature/vertical-slice` — `H7.3a`
 **Tests:** 433 unit + 35 e2e + 28 integration
 **Audiencia:** Desarrollador único / equipo reducido
 **Propósito:** Guía única de referencia para construcción, consulta y auditoría del sistema.
@@ -349,8 +349,8 @@ PENDIENTE -> EN_CURSO <-> PAUSADO -> FINALIZADO
 - **INV-135**: Snapshot_id RESTRICT desde CircuitoJuego y JuegoEjecutado.
 - **INV-136**: SetSnapshot no modificable (refuerzo de INV-013).
 - **INV-137**: SetSnapshot.contenido JSON con contrato por Juego.
-- **INV-138**: Partida.finish_reason en { CIRCUITO_COMPLETO, EXPIRACION } o null. Es null en estados no terminales y en DESCARTADA. Es CIRCUITO_COMPLETO cuando todos los juegos quedaron terminales o cuando el conductor forzó el cierre. Es EXPIRACION cuando la partida expiró por inactividad.
-- **INV-139**: finish_reason obligatorio si y solo si estado = FINALIZADA.
+- **INV-138**: Partida.finish_reason en { CIRCUITO_COMPLETO, EXPIRACION, DESCARTADA_POR_CONDUCTOR }. Es null en estados no terminales (CONFIGURANDO, EN_CURSO). Es no-null en estados terminales (FINALIZADA, DESCARTADA, EXPIRADA).
+- **INV-139**: finish_reason obligatorio si y solo si estado IN (FINALIZADA, DESCARTADA, EXPIRADA).
 - **INV-140**: started_at null si estado = CONFIGURANDO.
 - **INV-141**: EquipoPartida.posicion único 1 o 2.
 - **INV-142**: JuegoEjecutado.orden único por Partida.
@@ -977,6 +977,7 @@ dabce6c  feat(adapters): implement SupabaseAdapter with query and rpc
 54be9a6  fix(adapters): validate filters and fix single-row response handling
 ee5fbda  docs: update master with H7.2 completion
 0c7dfcd  feat(migrations): add critical plpgsql functions for atomic operations
+H7.3a    fix(migrations): correct finish_reason constraint and idempotency tests
 ```
 
 ### 8.3 Estructura del repositorio
@@ -1256,6 +1257,8 @@ Migrar a Supabase. Sub-bloques:
 | 56 | Parámetros nombrados (p_*) en funciones plpgsql | Supabase ordena parámetros alfabéticamente. Sin p_*, los parámetros se mezclan. |
 | 57 | Funciones de control verifican lease antes de actuar | Garantiza que solo la sesión con control puede ejecutar acciones críticas. |
 | 58 | `crear_snapshot` es idempotente por `action_id` | Permite reintentos seguros sin duplicar snapshots. |
+| 59 | Estados terminales (FINALIZADA, DESCARTADA, EXPIRADA) tienen finish_reason no-null | Todos los estados terminales documentan por qué terminó la partida. Actualización de INV-138/INV-139. |
+| 60 | Idempotencia vía action_id devuelve el mismo resultado en reintentos, no un resultado actualizado | El cache de reservar_accion preserva el resultado original, no el estado actual. |
 
 ### 12.1 Contrato de cierre de bloque
 
