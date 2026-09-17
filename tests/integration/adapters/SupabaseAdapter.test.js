@@ -18,7 +18,7 @@ afterAll(async () => {
   if (adapter) await adapter.cerrar();
 });
 
-describeSiCredenciales('SupabaseAdapter — integración con Supabase Cloud', () => {
+describeSiCredenciales.sequential('SupabaseAdapter — integración con Supabase Cloud', () => {
   beforeEach(async () => {
     await adapter.delete('accion_procesadas', {
       eq: { tipo_accion: 'TEST_INTEGRACION' }
@@ -151,5 +151,17 @@ describeSiCredenciales('SupabaseAdapter — integración con Supabase Cloud', ()
 
   it('suscribir lanza NotImplementedError', () => {
     expect(() => adapter.suscribir('extras', {}, () => {})).toThrow('no implementado');
+  });
+
+  it('delete sin filtros lanza error', async () => {
+    await expect(
+      adapter.delete('extras', {})
+    ).rejects.toThrow(/sin filtros/);
+  });
+
+  it('update sin filtros lanza error', async () => {
+    await expect(
+      adapter.update('extras', {}, { nombre: 'x' })
+    ).rejects.toThrow(/sin filtros/);
   });
 });

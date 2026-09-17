@@ -191,4 +191,38 @@ describe('normalizarRespuesta', () => {
       normalizarRespuesta({ data: null, error: { code: 'XXX' } });
     }).toThrow('Error en operación Supabase');
   });
+
+  it('retorna null si single=true y error es PGRST116', () => {
+    const result = normalizarRespuesta(
+      { data: null, error: { code: 'PGRST116', message: 'Row not found' } },
+      true
+    );
+    expect(result).toBeNull();
+  });
+
+  it('retorna null si single=true y error.message contiene "no rows"', () => {
+    const result = normalizarRespuesta(
+      { data: null, error: { code: 'OTHER', message: 'no rows found' } },
+      true
+    );
+    expect(result).toBeNull();
+  });
+
+  it('lanza error si single=true y error es otro código', () => {
+    expect(() => {
+      normalizarRespuesta(
+        { data: null, error: { code: '23505', message: 'duplicate' } },
+        true
+      );
+    }).toThrow('duplicate');
+  });
+
+  it('lanza error si single=false y hay error', () => {
+    expect(() => {
+      normalizarRespuesta(
+        { data: null, error: { code: 'PGRST116', message: 'no rows' } },
+        false
+      );
+    }).toThrow('no rows');
+  });
 });

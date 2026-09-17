@@ -13,6 +13,7 @@
 import { getSupabaseClient } from './supabase/client.js';
 import { aplicarFiltros, aplicarOpciones, normalizarRespuesta } from './supabase/queries.js';
 import { traducirError } from './supabase/errors.js';
+import { ValidacionError, OperacionInvalidaError } from '../repositories/errors.js';
 
 export class SupabaseAdapter {
   /**
@@ -65,6 +66,7 @@ export class SupabaseAdapter {
    */
   async query(tabla, opciones = {}) {
     this._verificarAbierto();
+    this._verificarTabla(tabla);
 
     try {
       let q = this.client.from(tabla).select(opciones.select || '*');
@@ -88,6 +90,11 @@ export class SupabaseAdapter {
    */
   async insert(tabla, filas, opciones = {}) {
     this._verificarAbierto();
+    this._verificarTabla(tabla);
+
+    if (!filas || (Array.isArray(filas) && filas.length === 0)) {
+      throw new ValidacionError('filas requeridas para insert');
+    }
 
     try {
       const returning = opciones.returning || '*';
@@ -95,7 +102,7 @@ export class SupabaseAdapter {
         .from(tabla)
         .insert(filas)
         .select(returning);
-      return normalizarRespuesta(respuesta);
+      return normalizarRespuesta(respuesta, opciones.single);
     } catch (err) {
       throw traducirError(err);
     }
@@ -113,6 +120,12 @@ export class SupabaseAdapter {
    */
   async update(tabla, filtros, cambios, opciones = {}) {
     this._verificarAbierto();
+    this._verificarTabla(tabla);
+    this._verificarFiltros(filtros, 'update');
+
+    if (!cambios || Object.keys(cambios).length === 0) {
+      throw new ValidacionError('cambios requeridos para update');
+    }
 
     try {
       const returning = opciones.returning || '*';
@@ -122,7 +135,7 @@ export class SupabaseAdapter {
         .select(returning);
       q = aplicarFiltros(q, filtros);
       const respuesta = await q;
-      return normalizarRespuesta(respuesta);
+      return normalizarRespuesta(respuesta, opciones.single);
     } catch (err) {
       throw traducirError(err);
     }
@@ -137,17 +150,16 @@ export class SupabaseAdapter {
    */
   async delete(tabla, filtros) {
     this._verificarAbierto();
+    this._verificarTabla(tabla);
+    this._verificarFiltros(filtros, 'delete');
 
     try {
       let q = this.client.from(tabla).delete();
       q = aplicarFiltros(q, filtros);
       const respuesta = await q;
-
-      if (respuesta.error) {
-        throw traducirError(respuesta.error);
-      }
+      normalizarRespuesta(respuesta);
+      return;
     } catch (err) {
-      if (err.name?.includes('Error') && 'entidad' in err) throw err;
       throw traducirError(err);
     }
   }
@@ -166,16 +178,14 @@ export class SupabaseAdapter {
   async rpc(nombre, params = {}) {
     this._verificarAbierto();
 
+    if (!nombre || typeof nombre !== 'string' || nombre.trim() === '') {
+      throw new ValidacionError('nombre de función requerido');
+    }
+
     try {
       const respuesta = await this.client.rpc(nombre, params);
-
-      if (respuesta.error) {
-        throw traducirError(respuesta.error);
-      }
-
-      return respuesta.data;
+      return normalizarRespuesta(respuesta);
     } catch (err) {
-      if (err.name?.includes('Error') && 'entidad' in err) throw err;
       throw traducirError(err);
     }
   }
@@ -225,6 +235,38 @@ export class SupabaseAdapter {
   _verificarAbierto() {
     if (!this.client) {
       throw new Error('SupabaseAdapter no está abierto. Llamá a abrir() primero.');
+    }
+  }
+
+  /**
+   * Verifica que el nombre de tabla sea válido.
+   * @param {string} tabla
+   * @throws {ValidacionError} Si la tabla es vacía o no es string.
+   */
+  _verificarTabla(tabla) {
+    if (!tabla || typeof tabla !== 'string' || tabla.trim() === '') {
+      throw new ValidacionError('nombre de tabla requerido');
+    }
+  }
+
+  /**
+   * Verifica que los filtros no estén vacíos.
+   * Protege contra update/delete sin filtro (que afectarían toda la tabla).
+   *
+   * @param {object} filtros - Filtros a verificar.
+   * @param {string} operacion - Nombre de la operación (para el mensaje de error).
+   * @throws {OperacionInvalidaError} Si los filtros están vacíos.
+   */
+  _verificarFiltros(filtros, operacion) {
+    const tieneEq = filtros?.eq && Object.keys(filtros.eq).length > 0;
+    const tieneNeq = filtros?.neq && Object.keys(filtros.neq).length > 0;
+    const tieneIn = filtros?.in && Object.keys(filtros.in).length > 0;
+
+    if (!tieneEq && !tieneNeq && !tieneIn) {
+      throw new OperacionInvalidaError(
+        `No se puede ejecutar ${operacion} sin filtros. ` +
+        `Si querés afectar todas las filas, usá un filtro explícito.`
+      );
     }
   }
 }

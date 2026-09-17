@@ -68,25 +68,33 @@ export function aplicarOpciones(query, opciones = {}) {
 
 /**
  * Normaliza la respuesta de supabase-js.
- * Extrae `data` o lanza el error si la operación falló.
+ *
+ * Comportamiento con single=true:
+ * - Si hay 1 fila → la devuelve.
+ * - Si hay 0 filas (PGRST116) → devuelve null.
+ * - Si hay más de 1 fila → lanza error (no debería pasar con single).
+ *
+ * Con single=false:
+ * - Siempre devuelve array (puede ser vacío).
+ *
  * @param {object} respuesta - Respuesta de supabase-js { data, error }.
  * @param {boolean} [single=false] - Si se espera una sola fila.
  * @returns {Array|Object|null} Datos de la respuesta.
- * @throws {Error} Si la respuesta contiene un error.
+ * @throws {Error} Si la respuesta contiene un error distinto de PGRST116 con single.
  */
 export function normalizarRespuesta(respuesta, single = false) {
   const { data, error } = respuesta;
 
   if (error) {
+    if (single && (error.code === 'PGRST116' || /no rows/i.test(error.message || ''))) {
+      return null;
+    }
+
     const err = new Error(error.message || 'Error en operación Supabase');
     err.code = error.code;
     err.details = error.details;
     err.hint = error.hint;
     throw err;
-  }
-
-  if (single && data === null) {
-    return null;
   }
 
   return data;
