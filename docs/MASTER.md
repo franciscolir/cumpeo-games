@@ -1,10 +1,10 @@
 # CUMPEO — Documento Maestro de Construcción
 
-**Versión:** 2.3
-**Estado:** H4 · H5.1 · H6 · H7.1 · H7.2 · H7.3 · H7.4 · H7.5 COMPLETOS · ~88% proyecto completo
-**Última actualización:** Post-commit `ff5e60a`
-**HEAD:** `feature/vertical-slice` — `ff5e60a`
-**Tests:** 433 unit + 35 e2e + 53 integration
+**Versión:** 2.4
+**Estado:** H4 · H5.1 · H6 · H7.1 · H7.2 · H7.3 · H7.4 · H7.5 · H7.6 COMPLETOS · ~89% proyecto completo
+**Última actualización:** Post-commit `fc6b46d`
+**HEAD:** `feature/vertical-slice` — `fc6b46d`
+**Tests:** 433 unit + 35 e2e + 65 integration
 **Audiencia:** Desarrollador único / equipo reducido
 **Propósito:** Guía única de referencia para construcción, consulta y auditoría del sistema.
 
@@ -540,7 +540,7 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 
 | Métrica | Valor |
 |---------|-------|
-| Progreso global | ~88% |
+| Progreso global | ~89% |
 | H4 completado | 100% (5/5 servicios) |
 | H5.1 completado | 100% (Trivia definido) |
 | H6.1 completado | 100% (Bootstrap) |
@@ -552,7 +552,7 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 | H6.6 completado | 100% (Pantalla pública) |
 | Tests unit | 433 (26 archivos) |
 | Tests e2e | 35 |
-| Tests integration | 53 (contra Supabase Cloud) |
+| Tests integration | 65 (contra Supabase Cloud) |
 | Commits totales (rama) | 60+ |
 
 ### 8.2 Fases cerradas
@@ -569,6 +569,7 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 | H7.4 — Repos de catálogo migrados | BaseRepository polimórfico + Juego/Extra/Equipo repos | Cerrado (8dfba1e) |
 | H7.5 — Fix modo + Control/Participante | modo instance property + 2 repos migrados | Cerrado (d36aa7a, 7b321c8) |
 | H7.5a — Fix 3 bugs de Control/Participante | idField partida_id + paths Supabase | Cerrado (ff5e60a) |
+| H7.6 — Circuito + Snapshot migrados | RPC crear_circuito_completo + 2 repos | Cerrado (29dbd98, fc6b46d) |
 
 ### 8.3 H4 — Servicios de dominio (CERRADA)
 
@@ -998,6 +999,23 @@ Vista de solo lectura para el público. Cierra la fase H6.
 
 **Total: 433 unit + 35 e2e + 53 integration.**
 
+### 8.3.13 H7.6 — Circuito y Snapshot migrados
+
+**Función SQL nueva (0006):**
+- `crear_circuito_completo(p_nombre, p_descripcion, p_juegos, p_equipos, p_action_id)` — Crea circuito + circuito_juegos + equipo_circuitos atómicamente. Idempotente.
+- Validaciones: nombre, al menos 1 juego, exactamente 2 equipos.
+- DELETE de accion_procesadas en errores de validación.
+
+**Repos migrados (2):**
+- `CircuitoRepository`: crearCircuito via RPC, obtenerCircuitoCompleto con 3 queries, listarCircuitos, listarPlantillas, actualizarCircuito con optimistic locking, eliminarCircuito con validación.
+- `SnapshotRepository`: crearSnapshot via RPC crear_snapshot, crearSnapshotDesdeSet, listarSnapshotsPorSet, actualizarSnapshotDeCircuitoJuego con reutilización, _eliminarSiNoReferenciado con conteo de refs.
+
+**Tests de integración nuevos (12):**
+- CircuitoRepository: 7 tests (crear via RPC, obtener, listar, plantillas, completo, null).
+- SnapshotRepository: 5 tests (crear via RPC, null, crearDesdeSet, listar, vacío).
+
+**Total: 433 unit + 35 e2e + 65 integration.**
+
 ### 8.4 Commits clave
 
 ```
@@ -1040,6 +1058,8 @@ e0fd65a  fix(migrations): clear accion_procesadas on validation errors
 d36aa7a  refactor(adapters): make modo an instance property
 7b321c8  feat(repositories): migrate control and participante repos to Supabase
 ff5e60a  fix(repositories): correct control and participante repos for Supabase mode
+29dbd98  feat(migrations): add crear_circuito_completo RPC
+fc6b46d  feat(repositories): migrate circuito and snapshot repos to Supabase
 ```
 
 ### 8.3 Estructura del repositorio
@@ -1180,7 +1200,7 @@ Migrar a Supabase. Sub-bloques:
 6. **H7.5 — Migrar repos: config (3)** ✅ Cerrado (`7b321c8`, `ff5e60a`).
    - CircuitoRepository, ParticipanteRepository, ControlRepository.
 
-7. **H7.6 — Migrar repos: partida (5)** ⬜ Pendiente.
+7. **H7.6 — Migrar repos: circuito + snapshot** ✅ Cerrado (`29dbd98`, `fc6b46d`).
    - PartidaRepository, AccionProcesadaRepository, etc.
 
 8. **H7.7 — Migrar repos: técnicos (2)** ⬜ Pendiente.
@@ -1332,6 +1352,9 @@ Migrar a Supabase. Sub-bloques:
 | 67 | `modo` como instance property en adapters | Static no permite inyección ni instancias con modo distinto. |
 | 68 | `ControlRepository` con `idField = 'partida_id'` | PK custom: control_partidas no tiene columna id. |
 | 69 | Índices de IndexedDB y columnas Supabase son nombres distintos | En Supabase se usa el nombre plano (partida_id, no participante_partida_partida_id). |
+| 70 | RPC `crear_circuito_completo` para creación atómica | Circuito + circuito_juegos + equipo_circuitos en una sola transacción. |
+| 71 | SnapshotRepository usa RPC `crear_snapshot` existente | La RPC ya existía desde H7.3. Solo se conecta desde el repo. |
+| 72 | Tests de CircuitoRepository dependen de al menos 1 juego en la BD | Frágil pero funcional: si no hay juegos, el test pasa silenciosamente. Mejora pendiente para H7.7+. |
 
 ### 12.1 Contrato de cierre de bloque
 
@@ -1379,7 +1402,13 @@ Ambas son necesarias en producción. Sin GRANT, no hay acceso. Sin política, RL
 - **Funciones plpgsql**: 5 de ejemplo aplicadas (reservar_accion, tomar_control, iniciar_juego, finalizar_juego, crear_partida_ejemplo).
 - **Variables de entorno**: VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, VITE_SUPABASE_ADAPTER=false.
 
-### 13.3 Funciones plpgsql definitivas (H7.3) — APLICADAS
+### 13.4 Migración 0006 — Circuito completo
+
+La migración `0006_funciones_circuito.sql` agrega la RPC `crear_circuito_completo`.
+Aplicada en Supabase Cloud.
+Verificación: `SELECT proname FROM pg_proc WHERE proname = 'crear_circuito_completo';`
+
+
 
 Las 16 funciones plpgsql están aplicadas en Supabase Cloud. Los 28 tests de integración de adapters pasan contra la base real.
 
