@@ -1225,22 +1225,23 @@ Migrar a Supabase. Sub-bloques:
    - CircuitoRepository, ParticipanteRepository, ControlRepository.
 
 7. **H7.6 — Migrar repos: circuito + snapshot** ✅ Cerrado (`29dbd98`, `fc6b46d`).
+   - CircuitoRepository, SnapshotRepository migrados.
+
 8. **H7.7 — Migrar repos: set + accion_procesada** ✅ Cerrado (`5efe5dd`, `e05b9f2`).
-   - PartidaRepository, AccionProcesadaRepository, etc.
+   - SetRepository, AccionProcesadaRepository migrados.
 
-8. **H7.7 — Migrar repos: técnicos (2)** ⬜ Pendiente.
-   - EventoTecnicoRepository, etc.
+9. **H7.8 — PartidaRepository migrado** ⬜ Pendiente.
+   - PartidaRepository usa RPC transaccionales.
 
-9. **H7.8 — RLS + Auth** ⬜ Pendiente.
-   - Row Level Security por tabla.
-   - Supabase Auth reemplaza SessionContext.
+10. **H7.9 — EventoTecnicoRepository + RLS + Auth** ⬜ Pendiente.
+    - EventoTecnicoRepository migrado.
+    - Row Level Security por tabla.
+    - Supabase Auth reemplaza SessionContext.
 
-10. **H7.9 — Realtime** ⬜ Pendiente.
+11. **H7.10 — Realtime** ⬜ Pendiente.
     - Reemplaza el auto-refresh 2s de consola y pantalla pública.
 
-11. **H7.10 — Migración de e2e a Supabase** ⬜ Pendiente.
-
----
+12. **H7.11 — Migración de e2e a Supabase** ⬜ Pendiente.
 
 ## 10. Convenciones de Trabajo
 
