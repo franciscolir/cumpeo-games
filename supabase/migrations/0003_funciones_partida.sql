@@ -242,9 +242,11 @@ BEGIN
   WHERE partida_id = p_partida_id
     AND estado NOT IN ('FINALIZADO', 'NO_JUGADO');
 
-  -- Cambiar partida a DESCARTADA (finish_reason = null, INV-138)
+  -- Cambiar partida a DESCARTADA
   UPDATE partidas
   SET estado = 'DESCARTADA',
+      finish_reason = 'DESCARTADA_POR_CONDUCTOR',
+      finished_at = now(),
       last_activity_at = now(),
       version = version + 1,
       updated_at = now()

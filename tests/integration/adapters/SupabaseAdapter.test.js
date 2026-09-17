@@ -120,8 +120,9 @@ async function limpiarEscenario(escenario) {
    ============================================================= */
 describeSiCredenciales.sequential('Funciones de control — reservar_accion y tomar_control', () => {
   it('reservar_accion crea acción nueva', async () => {
+    const actionId = `TEST_CTRL_${Date.now()}_${Math.random().toString(36).slice(2)}`;
     const r = await adapter.rpc('reservar_accion', {
-      p_action_id: 'TEST_CTRL_001',
+      p_action_id: actionId,
       p_partida_id: null,
       p_tipo_accion: 'TEST_CTRL'
     });
@@ -835,12 +836,12 @@ describeSiCredenciales.sequential('Funciones de participantes', () => {
       await adapter.rpc('marcar_participacion', {
         p_participante_partida_id: crear.participante_partida_id,
         p_session_id: 's1',
-        p_action_id: 'TEST_MP_002'
+        p_action_id: 'TEST_MP_002A'
       });
       const r2 = await adapter.rpc('marcar_participacion', {
         p_participante_partida_id: crear.participante_partida_id,
         p_session_id: 's1',
-        p_action_id: 'TEST_MP_002'
+        p_action_id: 'TEST_MP_002B'
       });
       expect(r2.ok).toBe(true);
       expect(r2.ya_marcado).toBe(true);

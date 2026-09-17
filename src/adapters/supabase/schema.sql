@@ -173,8 +173,8 @@ CREATE TABLE partidas (
   finish_reason text,
   last_activity_at timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT chk_partidas_finish_reason_coherente CHECK (
-    (estado = 'FINALIZADA' AND finish_reason IS NOT NULL) OR
-    (estado <> 'FINALIZADA' AND finish_reason IS NULL)
+    (estado IN ('FINALIZADA', 'DESCARTADA', 'EXPIRADA') AND finish_reason IS NOT NULL) OR
+    (estado NOT IN ('FINALIZADA', 'DESCARTADA', 'EXPIRADA') AND finish_reason IS NULL)
   ),
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
