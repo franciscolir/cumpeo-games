@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import { SupabaseAdapter } from '../../../src/adapters/SupabaseAdapter.js';
 
 const TIENE_CREDENCIALES =
@@ -8,6 +8,10 @@ const describeSiCredenciales = TIENE_CREDENCIALES ? describe : describe.skip;
 
 let adapter;
 
+function uniqueActionId(prefix) {
+  return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
 beforeAll(async () => {
   if (!TIENE_CREDENCIALES) return;
   adapter = new SupabaseAdapter();
@@ -16,6 +20,15 @@ beforeAll(async () => {
 
 afterAll(async () => {
   if (adapter) await adapter.cerrar();
+});
+
+beforeEach(async () => {
+  if (!TIENE_CREDENCIALES) return;
+  try {
+    await adapter.rpc('limpiar_acciones_test');
+  } catch (e) {
+    console.warn('Limpieza de acciones falló:', e.message);
+  }
 });
 
 /* =============================================================
@@ -50,7 +63,7 @@ async function crearEscenario(actionPrefix) {
   // 3. Crear snapshot
   const snapResult = await adapter.rpc('crear_snapshot', {
     p_set_id: setId,
-    p_action_id: `${actionPrefix}_SNAP_${ts}`
+    p_action_id: uniqueActionId(`${actionPrefix}_SNAP`)
   });
   const snapshotId = snapResult.snapshot_id;
 
@@ -120,9 +133,8 @@ async function limpiarEscenario(escenario) {
    ============================================================= */
 describeSiCredenciales.sequential('Funciones de control — reservar_accion y tomar_control', () => {
   it('reservar_accion crea acción nueva', async () => {
-    const actionId = `TEST_CTRL_${Date.now()}_${Math.random().toString(36).slice(2)}`;
     const r = await adapter.rpc('reservar_accion', {
-      p_action_id: actionId,
+      p_action_id: uniqueActionId('TEST_CTRL'),
       p_partida_id: null,
       p_tipo_accion: 'TEST_CTRL'
     });
@@ -131,13 +143,14 @@ describeSiCredenciales.sequential('Funciones de control — reservar_accion y to
   });
 
   it('reservar_accion es idempotente', async () => {
+    const actionId = uniqueActionId('TEST_CTRL');
     await adapter.rpc('reservar_accion', {
-      p_action_id: 'TEST_CTRL_002',
+      p_action_id: actionId,
       p_partida_id: null,
       p_tipo_accion: 'TEST_CTRL'
     });
     const r2 = await adapter.rpc('reservar_accion', {
-      p_action_id: 'TEST_CTRL_002',
+      p_action_id: actionId,
       p_partida_id: null,
       p_tipo_accion: 'TEST_CTRL'
     });
@@ -159,9 +172,9 @@ describeSiCredenciales.sequential('Funciones de control — reservar_accion y to
     try {
       const crear = await adapter.rpc('crear_partida', {
         p_circuito_id: esc.circuitoId,
-        p_public_codigo: 'TST_TC01',
+        p_public_codigo: uniqueActionId('TST_TC01'),
         p_session_id: 'session_abc',
-        p_action_id: 'TEST_TC_CREAR_001'
+        p_action_id: uniqueActionId('TEST_TC_CREAR')
       });
       expect(crear.ok).toBe(true);
 
@@ -181,9 +194,9 @@ describeSiCredenciales.sequential('Funciones de control — reservar_accion y to
     try {
       const crear = await adapter.rpc('crear_partida', {
         p_circuito_id: esc.circuitoId,
-        p_public_codigo: 'TST_TC02',
+        p_public_codigo: uniqueActionId('TST_TC02'),
         p_session_id: 'session_a',
-        p_action_id: 'TEST_TC_CREAR_002'
+        p_action_id: uniqueActionId('TEST_TC_CREAR')
       });
       expect(crear.ok).toBe(true);
 
@@ -208,9 +221,9 @@ describeSiCredenciales.sequential('Funciones de control — reservar_accion y to
     try {
       const crear = await adapter.rpc('crear_partida', {
         p_circuito_id: esc.circuitoId,
-        p_public_codigo: 'TST_TC03',
+        p_public_codigo: uniqueActionId('TST_TC03'),
         p_session_id: 'session_x',
-        p_action_id: 'TEST_TC_CREAR_003'
+        p_action_id: uniqueActionId('TEST_TC_CREAR')
       });
       expect(crear.ok).toBe(true);
 
@@ -231,17 +244,18 @@ describeSiCredenciales.sequential('Funciones de control — reservar_accion y to
   });
 
   it('actualizar_resultado_accion guarda resultado', async () => {
+    const actionId = uniqueActionId('TEST_AR');
     await adapter.rpc('reservar_accion', {
-      p_action_id: 'TEST_AR_001',
+      p_action_id: actionId,
       p_partida_id: null,
       p_tipo_accion: 'TEST_CTRL'
     });
     await adapter.rpc('actualizar_resultado_accion', {
-      p_action_id: 'TEST_AR_001',
+      p_action_id: actionId,
       p_resultado: { ok: true, custom: 'data' }
     });
     const r2 = await adapter.rpc('reservar_accion', {
-      p_action_id: 'TEST_AR_001',
+      p_action_id: actionId,
       p_partida_id: null,
       p_tipo_accion: 'TEST_CTRL'
     });
@@ -259,9 +273,9 @@ describeSiCredenciales.sequential('Funciones de partida — crear, comenzar, des
     try {
       const r = await adapter.rpc('crear_partida', {
         p_circuito_id: esc.circuitoId,
-        p_public_codigo: 'TST_CP01',
+        p_public_codigo: uniqueActionId('TST_CP01'),
         p_session_id: 's1',
-        p_action_id: 'TEST_CP_001'
+        p_action_id: uniqueActionId('TEST_CP')
       });
       expect(r.ok).toBe(true);
       expect(r.partida_id).toBeDefined();
@@ -280,17 +294,18 @@ describeSiCredenciales.sequential('Funciones de partida — crear, comenzar, des
   it('crear_partida es idempotente', async () => {
     const esc = await crearEscenario('CP02');
     try {
+      const actionId = uniqueActionId('TEST_CP');
       const r1 = await adapter.rpc('crear_partida', {
         p_circuito_id: esc.circuitoId,
-        p_public_codigo: 'TST_CP02',
+        p_public_codigo: uniqueActionId('TST_CP02'),
         p_session_id: 's1',
-        p_action_id: 'TEST_CP_002'
+        p_action_id: actionId
       });
       const r2 = await adapter.rpc('crear_partida', {
         p_circuito_id: esc.circuitoId,
-        p_public_codigo: 'TST_CP02',
+        p_public_codigo: uniqueActionId('TST_CP02'),
         p_session_id: 's1',
-        p_action_id: 'TEST_CP_002'
+        p_action_id: actionId
       });
       expect(r2.ok).toBe(true);
       expect(r2.partida_id).toBe(r1.partida_id);
@@ -302,17 +317,18 @@ describeSiCredenciales.sequential('Funciones de partida — crear, comenzar, des
   it('crear_partida rechaza public_codigo duplicado', async () => {
     const esc = await crearEscenario('CP03');
     try {
+      const publicCodigo = uniqueActionId('TST_CP03');
       await adapter.rpc('crear_partida', {
         p_circuito_id: esc.circuitoId,
-        p_public_codigo: 'TST_CP03',
+        p_public_codigo: publicCodigo,
         p_session_id: 's1',
-        p_action_id: 'TEST_CP_003A'
+        p_action_id: uniqueActionId('TEST_CP')
       });
       const r = await adapter.rpc('crear_partida', {
         p_circuito_id: esc.circuitoId,
-        p_public_codigo: 'TST_CP03',
+        p_public_codigo: publicCodigo,
         p_session_id: 's1',
-        p_action_id: 'TEST_CP_003B'
+        p_action_id: uniqueActionId('TEST_CP')
       });
       expect(r.ok).toBe(false);
       expect(r.error).toBe('public_codigo_duplicado');
@@ -326,9 +342,9 @@ describeSiCredenciales.sequential('Funciones de partida — crear, comenzar, des
     try {
       const crear = await adapter.rpc('crear_partida', {
         p_circuito_id: esc.circuitoId,
-        p_public_codigo: 'TST_BP01',
+        p_public_codigo: uniqueActionId('TST_BP01'),
         p_session_id: 's1',
-        p_action_id: 'TEST_BP_CREAR_001'
+        p_action_id: uniqueActionId('TEST_BP_CREAR')
       });
       expect(crear.ok).toBe(true);
 
@@ -340,7 +356,7 @@ describeSiCredenciales.sequential('Funciones de partida — crear, comenzar, des
       const r = await adapter.rpc('comenzar_partida', {
         p_partida_id: crear.partida_id,
         p_session_id: 's1',
-        p_action_id: 'TEST_BP_001'
+        p_action_id: uniqueActionId('TEST_BP')
       });
       expect(r.ok).toBe(true);
       expect(r.estado).toBe('EN_CURSO');
@@ -358,16 +374,16 @@ describeSiCredenciales.sequential('Funciones de partida — crear, comenzar, des
     try {
       const crear = await adapter.rpc('crear_partida', {
         p_circuito_id: esc.circuitoId,
-        p_public_codigo: 'TST_BP02',
+        p_public_codigo: uniqueActionId('TST_BP02'),
         p_session_id: 's1',
-        p_action_id: 'TEST_BP_CREAR_002'
+        p_action_id: uniqueActionId('TEST_BP_CREAR')
       });
       expect(crear.ok).toBe(true);
 
       const r = await adapter.rpc('comenzar_partida', {
         p_partida_id: crear.partida_id,
         p_session_id: 's_wrong',
-        p_action_id: 'TEST_BP_002'
+        p_action_id: uniqueActionId('TEST_BP')
       });
       expect(r.ok).toBe(false);
       expect(r.error).toMatch(/control/);
@@ -381,21 +397,21 @@ describeSiCredenciales.sequential('Funciones de partida — crear, comenzar, des
     try {
       const crear = await adapter.rpc('crear_partida', {
         p_circuito_id: esc.circuitoId,
-        p_public_codigo: 'TST_DP01',
+        p_public_codigo: uniqueActionId('TST_DP01'),
         p_session_id: 's1',
-        p_action_id: 'TEST_DP_CREAR_001'
+        p_action_id: uniqueActionId('TEST_DP_CREAR')
       });
       await adapter.rpc('tomar_control', { p_partida_id: crear.partida_id, p_session_id: 's1' });
       await adapter.rpc('comenzar_partida', {
         p_partida_id: crear.partida_id,
         p_session_id: 's1',
-        p_action_id: 'TEST_DP_COMENZAR_001'
+        p_action_id: uniqueActionId('TEST_DP_COMENZAR')
       });
 
       const r = await adapter.rpc('descartar_partida', {
         p_partida_id: crear.partida_id,
         p_session_id: 's1',
-        p_action_id: 'TEST_DP_001'
+        p_action_id: uniqueActionId('TEST_DP')
       });
       expect(r.ok).toBe(true);
       expect(r.estado).toBe('DESCARTADA');
@@ -416,15 +432,15 @@ describeSiCredenciales.sequential('Funciones de juego — iniciar, pausar, reanu
     const esc = await crearEscenario(prefix);
     const crear = await adapter.rpc('crear_partida', {
       p_circuito_id: esc.circuitoId,
-      p_public_codigo: `TST_${prefix}`,
+      p_public_codigo: uniqueActionId(`TST_${prefix}`),
       p_session_id: 's1',
-      p_action_id: `${prefix}_CREAR`
+      p_action_id: uniqueActionId(`${prefix}_CREAR`)
     });
     await adapter.rpc('tomar_control', { p_partida_id: crear.partida_id, p_session_id: 's1' });
     await adapter.rpc('comenzar_partida', {
       p_partida_id: crear.partida_id,
       p_session_id: 's1',
-      p_action_id: `${prefix}_COMENZAR`
+      p_action_id: uniqueActionId(`${prefix}_COMENZAR`)
     });
     const jes = await adapter.query('juego_ejecutados', { eq: { partida_id: crear.partida_id } });
     return { esc, partidaId: crear.partida_id, juegoEjecutadoId: jes[0].id };
@@ -437,7 +453,7 @@ describeSiCredenciales.sequential('Funciones de juego — iniciar, pausar, reanu
         p_partida_id: partidaId,
         p_juego_ejecutado_id: juegoEjecutadoId,
         p_session_id: 's1',
-        p_action_id: 'TEST_IJ_001'
+        p_action_id: uniqueActionId('TEST_IJ')
       });
       expect(r.ok).toBe(true);
       expect(r.estado).toBe('EN_CURSO');
@@ -449,17 +465,18 @@ describeSiCredenciales.sequential('Funciones de juego — iniciar, pausar, reanu
   it('iniciar_juego es idempotente', async () => {
     const { esc, partidaId, juegoEjecutadoId } = await prepararJuego('IJ02');
     try {
+      const actionId = uniqueActionId('TEST_IJ');
       await adapter.rpc('iniciar_juego', {
         p_partida_id: partidaId,
         p_juego_ejecutado_id: juegoEjecutadoId,
         p_session_id: 's1',
-        p_action_id: 'TEST_IJ_002'
+        p_action_id: actionId
       });
       const r2 = await adapter.rpc('iniciar_juego', {
         p_partida_id: partidaId,
         p_juego_ejecutado_id: juegoEjecutadoId,
         p_session_id: 's1',
-        p_action_id: 'TEST_IJ_002'
+        p_action_id: actionId
       });
       expect(r2.ok).toBe(true);
       expect(r2.estado).toBe('EN_CURSO');
@@ -475,13 +492,13 @@ describeSiCredenciales.sequential('Funciones de juego — iniciar, pausar, reanu
         p_partida_id: partidaId,
         p_juego_ejecutado_id: juegoEjecutadoId,
         p_session_id: 's1',
-        p_action_id: 'TEST_PJ_INICIAR_001'
+        p_action_id: uniqueActionId('TEST_PJ_INICIAR')
       });
       const r = await adapter.rpc('pausar_juego', {
         p_partida_id: partidaId,
         p_juego_ejecutado_id: juegoEjecutadoId,
         p_session_id: 's1',
-        p_action_id: 'TEST_PJ_001'
+        p_action_id: uniqueActionId('TEST_PJ')
       });
       expect(r.ok).toBe(true);
       expect(r.estado).toBe('PAUSADO');
@@ -497,19 +514,19 @@ describeSiCredenciales.sequential('Funciones de juego — iniciar, pausar, reanu
         p_partida_id: partidaId,
         p_juego_ejecutado_id: juegoEjecutadoId,
         p_session_id: 's1',
-        p_action_id: 'TEST_RJ_INICIAR_001'
+        p_action_id: uniqueActionId('TEST_RJ_INICIAR')
       });
       await adapter.rpc('pausar_juego', {
         p_partida_id: partidaId,
         p_juego_ejecutado_id: juegoEjecutadoId,
         p_session_id: 's1',
-        p_action_id: 'TEST_RJ_PAUSAR_001'
+        p_action_id: uniqueActionId('TEST_RJ_PAUSAR')
       });
       const r = await adapter.rpc('reanudar_juego', {
         p_partida_id: partidaId,
         p_juego_ejecutado_id: juegoEjecutadoId,
         p_session_id: 's1',
-        p_action_id: 'TEST_RJ_001'
+        p_action_id: uniqueActionId('TEST_RJ')
       });
       expect(r.ok).toBe(true);
       expect(r.estado).toBe('EN_CURSO');
@@ -525,7 +542,7 @@ describeSiCredenciales.sequential('Funciones de juego — iniciar, pausar, reanu
         p_partida_id: partidaId,
         p_juego_ejecutado_id: juegoEjecutadoId,
         p_session_id: 's1',
-        p_action_id: 'TEST_PJ_002'
+        p_action_id: uniqueActionId('TEST_PJ')
       });
       expect(r.ok).toBe(false);
       expect(r.error).toBe('juego_no_en_curso');
@@ -544,15 +561,15 @@ describeSiCredenciales.sequential('Funciones de cierre — finalizar_juego, fina
     try {
       const crear = await adapter.rpc('crear_partida', {
         p_circuito_id: esc.circuitoId,
-        p_public_codigo: 'TST_FJ01',
+        p_public_codigo: uniqueActionId('TST_FJ01'),
         p_session_id: 's1',
-        p_action_id: 'TEST_FJ_CREAR_001'
+        p_action_id: uniqueActionId('TEST_FJ_CREAR')
       });
       await adapter.rpc('tomar_control', { p_partida_id: crear.partida_id, p_session_id: 's1' });
       await adapter.rpc('comenzar_partida', {
         p_partida_id: crear.partida_id,
         p_session_id: 's1',
-        p_action_id: 'TEST_FJ_COMENZAR_001'
+        p_action_id: uniqueActionId('TEST_FJ_COMENZAR')
       });
       const jes = await adapter.query('juego_ejecutados', { eq: { partida_id: crear.partida_id } });
       const jeId = jes[0].id;
@@ -561,7 +578,7 @@ describeSiCredenciales.sequential('Funciones de cierre — finalizar_juego, fina
         p_partida_id: crear.partida_id,
         p_juego_ejecutado_id: jeId,
         p_session_id: 's1',
-        p_action_id: 'TEST_FJ_INICIAR_001'
+        p_action_id: uniqueActionId('TEST_FJ_INICIAR')
       });
 
       const r = await adapter.rpc('finalizar_juego', {
@@ -572,7 +589,7 @@ describeSiCredenciales.sequential('Funciones de cierre — finalizar_juego, fina
         p_puntos_equipo_2: 5,
         p_finish_reason: 'NORMAL',
         p_session_id: 's1',
-        p_action_id: 'TEST_FJ_001'
+        p_action_id: uniqueActionId('TEST_FJ')
       });
       expect(r.ok).toBe(true);
       expect(r.estado).toBe('FINALIZADO');
@@ -597,21 +614,21 @@ describeSiCredenciales.sequential('Funciones de cierre — finalizar_juego, fina
     try {
       const crear = await adapter.rpc('crear_partida', {
         p_circuito_id: esc.circuitoId,
-        p_public_codigo: 'TST_FC01',
+        p_public_codigo: uniqueActionId('TST_FC01'),
         p_session_id: 's1',
-        p_action_id: 'TEST_FC_CREAR_001'
+        p_action_id: uniqueActionId('TEST_FC_CREAR')
       });
       await adapter.rpc('tomar_control', { p_partida_id: crear.partida_id, p_session_id: 's1' });
       await adapter.rpc('comenzar_partida', {
         p_partida_id: crear.partida_id,
         p_session_id: 's1',
-        p_action_id: 'TEST_FC_COMENZAR_001'
+        p_action_id: uniqueActionId('TEST_FC_COMENZAR')
       });
 
       const r = await adapter.rpc('finalizar_circuito', {
         p_partida_id: crear.partida_id,
         p_session_id: 's1',
-        p_action_id: 'TEST_FC_001'
+        p_action_id: uniqueActionId('TEST_FC')
       });
       expect(r.ok).toBe(true);
       expect(r.estado).toBe('FINALIZADA');
@@ -628,25 +645,26 @@ describeSiCredenciales.sequential('Funciones de cierre — finalizar_juego, fina
     try {
       const crear = await adapter.rpc('crear_partida', {
         p_circuito_id: esc.circuitoId,
-        p_public_codigo: 'TST_FC02',
+        p_public_codigo: uniqueActionId('TST_FC02'),
         p_session_id: 's1',
-        p_action_id: 'TEST_FC2_CREAR_001'
+        p_action_id: uniqueActionId('TEST_FC2_CREAR')
       });
       await adapter.rpc('tomar_control', { p_partida_id: crear.partida_id, p_session_id: 's1' });
       await adapter.rpc('comenzar_partida', {
         p_partida_id: crear.partida_id,
         p_session_id: 's1',
-        p_action_id: 'TEST_FC2_COMENZAR_001'
+        p_action_id: uniqueActionId('TEST_FC2_COMENZAR')
       });
+      const actionId = uniqueActionId('TEST_FC');
       await adapter.rpc('finalizar_circuito', {
         p_partida_id: crear.partida_id,
         p_session_id: 's1',
-        p_action_id: 'TEST_FC_002'
+        p_action_id: actionId
       });
       const r2 = await adapter.rpc('finalizar_circuito', {
         p_partida_id: crear.partida_id,
         p_session_id: 's1',
-        p_action_id: 'TEST_FC_002'
+        p_action_id: actionId
       });
       expect(r2.ok).toBe(true);
     } finally {
@@ -694,7 +712,7 @@ describeSiCredenciales.sequential('Funciones de snapshot', () => {
 
     const r = await adapter.rpc('crear_snapshot', {
       p_set_id: setId,
-      p_action_id: 'TEST_SNAP_001'
+      p_action_id: uniqueActionId('TEST_SNAP')
     });
     expect(r.ok).toBe(true);
     expect(r.snapshot_id).toBeDefined();
@@ -723,13 +741,14 @@ describeSiCredenciales.sequential('Funciones de snapshot', () => {
       { set_id: setId, orden: 1, contenido: { pregunta: 'P1' } }
     ]);
 
+    const actionId = uniqueActionId('TEST_SNAP');
     const r1 = await adapter.rpc('crear_snapshot', {
       p_set_id: setId,
-      p_action_id: 'TEST_SNAP_002'
+      p_action_id: actionId
     });
     const r2 = await adapter.rpc('crear_snapshot', {
       p_set_id: setId,
-      p_action_id: 'TEST_SNAP_002'
+      p_action_id: actionId
     });
     expect(r2.ok).toBe(true);
     expect(r2.snapshot_id).toBe(r1.snapshot_id);
@@ -744,15 +763,15 @@ describeSiCredenciales.sequential('Funciones de participantes', () => {
     const esc = await crearEscenario(prefix);
     const crear = await adapter.rpc('crear_partida', {
       p_circuito_id: esc.circuitoId,
-      p_public_codigo: `TST_${prefix}`,
+      p_public_codigo: uniqueActionId(`TST_${prefix}`),
       p_session_id: 's1',
-      p_action_id: `${prefix}_CREAR`
+      p_action_id: uniqueActionId(`${prefix}_CREAR`)
     });
     await adapter.rpc('tomar_control', { p_partida_id: crear.partida_id, p_session_id: 's1' });
     await adapter.rpc('comenzar_partida', {
       p_partida_id: crear.partida_id,
       p_session_id: 's1',
-      p_action_id: `${prefix}_COMENZAR`
+      p_action_id: uniqueActionId(`${prefix}_COMENZAR`)
     });
     const eps = await adapter.query('equipo_partidas', { eq: { partida_id: crear.partida_id } });
     return { esc, partidaId: crear.partida_id, equipoPartidaId: eps[0].id };
@@ -766,7 +785,7 @@ describeSiCredenciales.sequential('Funciones de participantes', () => {
         p_equipo_partida_id: equipoPartidaId,
         p_nombre: 'Juan',
         p_session_id: 's1',
-        p_action_id: 'TEST_AP_001'
+        p_action_id: uniqueActionId('TEST_AP')
       });
       expect(r.ok).toBe(true);
       expect(r.nombre).toBe('Juan');
@@ -783,14 +802,14 @@ describeSiCredenciales.sequential('Funciones de participantes', () => {
         p_equipo_partida_id: equipoPartidaId,
         p_nombre: 'Pedro',
         p_session_id: 's1',
-        p_action_id: 'TEST_AP_002A'
+        p_action_id: uniqueActionId('TEST_AP')
       });
       const r = await adapter.rpc('agregar_participante', {
         p_partida_id: partidaId,
         p_equipo_partida_id: equipoPartidaId,
         p_nombre: 'Pedro',
         p_session_id: 's1',
-        p_action_id: 'TEST_AP_002B'
+        p_action_id: uniqueActionId('TEST_AP')
       });
       expect(r.ok).toBe(false);
       expect(r.error).toBe('participante_duplicado');
@@ -807,14 +826,14 @@ describeSiCredenciales.sequential('Funciones de participantes', () => {
         p_equipo_partida_id: equipoPartidaId,
         p_nombre: 'Ana',
         p_session_id: 's1',
-        p_action_id: 'TEST_MP_CREAR_001'
+        p_action_id: uniqueActionId('TEST_MP_CREAR')
       });
       expect(crear.ok).toBe(true);
 
       const r = await adapter.rpc('marcar_participacion', {
         p_participante_partida_id: crear.participante_partida_id,
         p_session_id: 's1',
-        p_action_id: 'TEST_MP_001'
+        p_action_id: uniqueActionId('TEST_MP')
       });
       expect(r.ok).toBe(true);
       expect(r.ha_participado).toBe(true);
@@ -831,17 +850,17 @@ describeSiCredenciales.sequential('Funciones de participantes', () => {
         p_equipo_partida_id: equipoPartidaId,
         p_nombre: 'Luis',
         p_session_id: 's1',
-        p_action_id: 'TEST_MP2_CREAR_001'
+        p_action_id: uniqueActionId('TEST_MP_CREAR')
       });
       await adapter.rpc('marcar_participacion', {
         p_participante_partida_id: crear.participante_partida_id,
         p_session_id: 's1',
-        p_action_id: 'TEST_MP_002A'
+        p_action_id: uniqueActionId('TEST_MP')
       });
       const r2 = await adapter.rpc('marcar_participacion', {
         p_participante_partida_id: crear.participante_partida_id,
         p_session_id: 's1',
-        p_action_id: 'TEST_MP_002B'
+        p_action_id: uniqueActionId('TEST_MP')
       });
       expect(r2.ok).toBe(true);
       expect(r2.ya_marcado).toBe(true);
