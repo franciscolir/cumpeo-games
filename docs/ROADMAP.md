@@ -2,7 +2,7 @@
 
 **Versión:** 1.0
 **Última actualización:** 2026-09-18
-**Estado global:** Bloque 0 cerrado · Bloque 1 en preparación
+**Estado global:** Bloque 0 cerrado · Bloque 1 en progreso (1/7)
 **Rama:** feature/vertical-slice
 
 ---
@@ -85,7 +85,7 @@
 
 #### Paso actual
 
-**Ninguno. Bloque en preparación.**
+**Paso 1.2 en preparación.**
 
 #### Criterios de cierre del bloque
 
