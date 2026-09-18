@@ -65,7 +65,7 @@
 
 ---
 
-### Bloque 1 — Modelo de datos extendido ⬜ PENDIENTE
+### Bloque 1 — Modelo de datos extendido 🔄 EN PROGRESO (1/7)
 
 **Objetivo:** Crear las entidades `MensajePublico` y `FotoPublica`, extender `ParticipantePartida` con `session_token`, e introducir la abstracción de Storage.
 
@@ -75,7 +75,7 @@
 
 | # | Paso | Estado | Commit | Prompt archivado |
 |---|------|--------|--------|------------------|
-| 1.1 | Migración IndexedDB v3 + schema Postgres | ⬜ PENDIENTE | — | — |
+| 1.1 | Migración IndexedDB v3 + schema Postgres | ✅ | 7726c29 | bloque-1-paso-1.md |
 | 1.2 | StorageAdapter (contrato + Local) | ⬜ PENDIENTE | — | — |
 | 1.3 | MensajePublicoRepository + tests | ⬜ PENDIENTE | — | — |
 | 1.4 | FotoPublicaRepository + tests | ⬜ PENDIENTE | — | — |
