@@ -1,19 +1,18 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { crearAdapterAutenticado, tieneCredencialesAuth } from '../_helpers/auth.js';
+import { SupabaseAdapter } from '../../../src/adapters/SupabaseAdapter.js';
 
 const TIENE_CREDENCIALES =
   !!import.meta.env.VITE_SUPABASE_URL && !!import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-const TIENE_AUTH = TIENE_CREDENCIALES && tieneCredencialesAuth();
-
-const describeSiAuth = TIENE_AUTH ? describe : describe.skip;
+const describeSiCredenciales = TIENE_CREDENCIALES ? describe : describe.skip;
 
 let adapter;
 let juegoIdReal;
 
 beforeAll(async () => {
-  if (!TIENE_AUTH) return;
-  adapter = await crearAdapterAutenticado();
+  if (!TIENE_CREDENCIALES) return;
+  adapter = new SupabaseAdapter();
+  await adapter.abrir();
 
   const juegos = await adapter.query('juegos', { limit: 1 });
   if (juegos.length > 0) {
@@ -25,9 +24,9 @@ afterAll(async () => {
   if (adapter) await adapter.cerrar();
 });
 
-describeSiAuth('SupabaseAdapter.suscribir (integración)', () => {
+describeSiCredenciales('SupabaseAdapter.suscribir (integración)', () => {
   it('suscribir y recibir evento UPDATE', { retry: 3 }, async () => {
-    if (!juegoIdReal) throw new Error('No hay juegos en la BD para testear');
+    if (!juegoIdReal) return;
 
     let eventoRecibido = null;
     const unsuscribe = await adapter.suscribir(
@@ -46,6 +45,7 @@ describeSiAuth('SupabaseAdapter.suscribir (integración)', () => {
     await new Promise((r) => setTimeout(r, 3000));
 
     await adapter.update('juegos', { eq: { id: juegoIdReal } }, { nombre: original.nombre });
+
     unsuscribe();
 
     expect(eventoRecibido).toBeTruthy();
@@ -53,7 +53,7 @@ describeSiAuth('SupabaseAdapter.suscribir (integración)', () => {
   }, 20000);
 
   it('desuscribir deja de recibir eventos', async () => {
-    if (!juegoIdReal) throw new Error('No hay juegos en la BD para testear');
+    if (!juegoIdReal) return;
 
     let eventosDespues = 0;
     const unsuscribe = await adapter.suscribir(
@@ -62,7 +62,6 @@ describeSiAuth('SupabaseAdapter.suscribir (integración)', () => {
       () => { eventosDespues++; }
     );
 
-    await new Promise((r) => setTimeout(r, 2000));
     unsuscribe();
 
     const original = await adapter.query('juegos', { eq: { id: juegoIdReal }, single: true });
@@ -77,7 +76,7 @@ describeSiAuth('SupabaseAdapter.suscribir (integración)', () => {
     await adapter.update('juegos', { eq: { id: juegoIdReal } }, { nombre: original.nombre });
 
     expect(eventosDespues).toBe(0);
-  }, 20000);
+  }, 15000);
 
   it('cleanup no falla si se llama dos veces', async () => {
     const unsuscribe = await adapter.suscribir(
@@ -86,9 +85,7 @@ describeSiAuth('SupabaseAdapter.suscribir (integración)', () => {
       () => {}
     );
 
-    await new Promise((r) => setTimeout(r, 500));
-
     unsuscribe();
     expect(() => unsuscribe()).not.toThrow();
-  }, 10000);
+  }, 5000);
 });

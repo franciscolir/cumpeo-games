@@ -1,13 +1,16 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { SupabaseAdapter } from '../../../src/adapters/SupabaseAdapter.js';
 import { PartidaRepository } from '../../../src/repositories/PartidaRepository.js';
+import { crearAdapterAutenticado, tieneCredencialesAuth } from '../_helpers/auth.js';
 
 const TIENE_CREDENCIALES =
   !!import.meta.env.VITE_SUPABASE_URL && !!import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-const describeSiCredenciales = TIENE_CREDENCIALES ? describe : describe.skip;
+const TIENE_AUTH = TIENE_CREDENCIALES && tieneCredencialesAuth();
 
-let adapter;
+const describeSiCredenciales = TIENE_AUTH ? describe : describe.skip;
+
+let adapterAuth;
 let repo;
 let juegoIdReal;
 let setIdReal;
@@ -23,18 +26,17 @@ function uniqueId(prefix) {
 }
 
 beforeAll(async () => {
-  if (!TIENE_CREDENCIALES) return;
-  adapter = new SupabaseAdapter();
-  await adapter.abrir();
-  repo = new PartidaRepository(adapter);
+  if (!TIENE_AUTH) return;
+  adapterAuth = await crearAdapterAutenticado();
+  repo = new PartidaRepository(adapterAuth);
 
-  const juegos = await adapter.query('juegos', { limit: 1 });
+  const juegos = await adapterAuth.query('juegos', { limit: 1 });
   if (juegos.length > 0) {
     juegoIdReal = juegos[0].id;
   }
 
   if (juegoIdReal) {
-    const setRows = await adapter.insert('sets', {
+    const setRows = await adapterAuth.insert('sets', {
       juego_id: juegoIdReal,
       nombre: uniqueId('SET_TEST'),
       version: 1,
@@ -43,13 +45,13 @@ beforeAll(async () => {
     setIdReal = setRows[0].id;
     setsCreados.push(setIdReal);
 
-    await adapter.insert('item_sets', {
+    await adapterAuth.insert('item_sets', {
       set_id: setIdReal,
       orden: 1,
       contenido: { pregunta: 'P1', respuesta: 'R1' }
     });
 
-    const circuitoRows = await adapter.insert('circuitos', {
+    const circuitoRows = await adapterAuth.insert('circuitos', {
       nombre: uniqueId('CIRC_TEST'),
       estado: 'LISTO',
       version: 1
@@ -57,7 +59,7 @@ beforeAll(async () => {
     circuitoIdReal = circuitoRows[0].id;
     circuitosCreados.push(circuitoIdReal);
 
-    const cjRows = await adapter.insert('circuito_juegos', {
+    const cjRows = await adapterAuth.insert('circuito_juegos', {
       circuito_id: circuitoIdReal,
       juego_id: juegoIdReal,
       orden: 1,
@@ -65,13 +67,13 @@ beforeAll(async () => {
     }, { returning: 'id' });
     circuitoJuegoIdReal = cjRows[0].id;
 
-    await adapter.insert('equipo_circuitos', {
+    await adapterAuth.insert('equipo_circuitos', {
       circuito_id: circuitoIdReal,
       posicion: 1,
       nombre: 'Alpha',
       color: '#FF0000'
     });
-    await adapter.insert('equipo_circuitos', {
+    await adapterAuth.insert('equipo_circuitos', {
       circuito_id: circuitoIdReal,
       posicion: 2,
       nombre: 'Beta',
@@ -81,24 +83,24 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  if (!adapter) return;
+  if (!adapterAuth) return;
   for (const pid of partidasCreadas) {
-    try { await adapter.delete('juego_ejecutados', { eq: { partida_id: pid } }); } catch (_) {}
-    try { await adapter.delete('equipo_partidas', { eq: { partida_id: pid } }); } catch (_) {}
-    try { await adapter.delete('control_partidas', { eq: { partida_id: pid } }); } catch (_) {}
-    try { await adapter.delete('accion_procesadas', { eq: { partida_id: pid } }); } catch (_) {}
-    try { await adapter.delete('partidas', { eq: { id: pid } }); } catch (_) {}
+    try { await adapterAuth.delete('juego_ejecutados', { eq: { partida_id: pid } }); } catch (_) {}
+    try { await adapterAuth.delete('equipo_partidas', { eq: { partida_id: pid } }); } catch (_) {}
+    try { await adapterAuth.delete('control_partidas', { eq: { partida_id: pid } }); } catch (_) {}
+    try { await adapterAuth.delete('accion_procesadas', { eq: { partida_id: pid } }); } catch (_) {}
+    try { await adapterAuth.delete('partidas', { eq: { id: pid } }); } catch (_) {}
   }
   for (const cid of circuitosCreados) {
-    try { await adapter.delete('circuito_juegos', { eq: { circuito_id: cid } }); } catch (_) {}
-    try { await adapter.delete('equipo_circuitos', { eq: { circuito_id: cid } }); } catch (_) {}
-    try { await adapter.delete('circuitos', { eq: { id: cid } }); } catch (_) {}
+    try { await adapterAuth.delete('circuito_juegos', { eq: { circuito_id: cid } }); } catch (_) {}
+    try { await adapterAuth.delete('equipo_circuitos', { eq: { circuito_id: cid } }); } catch (_) {}
+    try { await adapterAuth.delete('circuitos', { eq: { id: cid } }); } catch (_) {}
   }
   for (const sid of setsCreados) {
-    try { await adapter.delete('item_sets', { eq: { set_id: sid } }); } catch (_) {}
-    try { await adapter.delete('sets', { eq: { id: sid } }); } catch (_) {}
+    try { await adapterAuth.delete('item_sets', { eq: { set_id: sid } }); } catch (_) {}
+    try { await adapterAuth.delete('sets', { eq: { id: sid } }); } catch (_) {}
   }
-  await adapter.cerrar();
+  await adapterAuth.cerrar();
 });
 
 describeSiCredenciales('PartidaRepository (integración Supabase)', () => {

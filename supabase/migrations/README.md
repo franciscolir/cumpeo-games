@@ -25,6 +25,7 @@
 | `0006_funciones_circuito.sql` | 1 función: crear_circuito_completo (crea circuito + hijos atómicamente) | Definitivo |
 | `0007_funciones_set.sql` | 1 función: crear_set_completo (crea set + item_sets atómicamente) | Definitivo |
 | `0008_rls_permisivo.sql` | Habilita RLS en 17 tablas + 34 políticas permisivas (anon + authenticated) | Definitivo |
+| `0009_rls_estricto.sql` | Revoca 34 políticas permisivas, crea políticas específicas por tipo de tabla | Definitivo |
 
 ## Notas
 

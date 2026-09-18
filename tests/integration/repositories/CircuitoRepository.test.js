@@ -1,11 +1,13 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { SupabaseAdapter } from '../../../src/adapters/SupabaseAdapter.js';
 import { CircuitoRepository } from '../../../src/repositories/CircuitoRepository.js';
+import { crearAdapterAutenticado, tieneCredencialesAuth } from '../_helpers/auth.js';
 
 const TIENE_CREDENCIALES =
   !!import.meta.env.VITE_SUPABASE_URL && !!import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-const describeSiCredenciales = TIENE_CREDENCIALES ? describe : describe.skip;
+const TIENE_AUTH = TIENE_CREDENCIALES && tieneCredencialesAuth();
+
+const describeSiCredenciales = TIENE_AUTH ? describe : describe.skip;
 
 let adapter;
 let repo;
@@ -17,9 +19,8 @@ function uniqueId(prefix) {
 }
 
 beforeAll(async () => {
-  if (!TIENE_CREDENCIALES) return;
-  adapter = new SupabaseAdapter();
-  await adapter.abrir();
+  if (!TIENE_AUTH) return;
+  adapter = await crearAdapterAutenticado();
   repo = new CircuitoRepository(adapter);
 
   const juegos = await adapter.query('juegos', { limit: 1 });

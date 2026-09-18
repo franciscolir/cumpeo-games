@@ -1,13 +1,16 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { SupabaseAdapter } from '../../../src/adapters/SupabaseAdapter.js';
 import { ControlRepository } from '../../../src/repositories/ControlRepository.js';
+import { crearAdapterAutenticado, tieneCredencialesAuth } from '../_helpers/auth.js';
 
 const TIENE_CREDENCIALES =
   !!import.meta.env.VITE_SUPABASE_URL && !!import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-const describeSiCredenciales = TIENE_CREDENCIALES ? describe : describe.skip;
+const TIENE_AUTH = TIENE_CREDENCIALES && tieneCredencialesAuth();
 
-let adapter;
+const describeSiCredenciales = TIENE_AUTH ? describe : describe.skip;
+
+let adapterAuth;
 let repo;
 const partidasCreadas = [];
 const controlesCreados = [];
@@ -17,30 +20,29 @@ function uniqueId(prefix) {
 }
 
 beforeAll(async () => {
-  if (!TIENE_CREDENCIALES) return;
-  adapter = new SupabaseAdapter();
-  await adapter.abrir();
-  repo = new ControlRepository(adapter);
+  if (!TIENE_AUTH) return;
+  adapterAuth = await crearAdapterAutenticado();
+  repo = new ControlRepository(adapterAuth);
 });
 
 afterAll(async () => {
-  if (!adapter) return;
+  if (!adapterAuth) return;
   for (const pid of controlesCreados) {
     try {
-      await adapter.delete('control_partidas', { eq: { partida_id: pid } });
+      await adapterAuth.delete('control_partidas', { eq: { partida_id: pid } });
     } catch (_) { /* cleanup best-effort */ }
   }
   for (const pid of partidasCreadas) {
     try {
-      await adapter.delete('partidas', { eq: { id: pid } });
+      await adapterAuth.delete('partidas', { eq: { id: pid } });
     } catch (_) { /* cleanup best-effort */ }
   }
-  await adapter.cerrar();
+  await adapterAuth.cerrar();
 });
 
 async function crearPartidaDePrueba() {
   const codigo = uniqueId('CTRL_PART');
-  const rows = await adapter.insert('partidas', {
+  const rows = await adapterAuth.insert('partidas', {
     circuito_nombre: 'Circuito Test',
     public_codigo: codigo,
     estado: 'CONFIGURANDO',
@@ -50,7 +52,7 @@ async function crearPartidaDePrueba() {
   const partidaId = rows[0].id;
   partidasCreadas.push(partidaId);
 
-  await adapter.insert('control_partidas', {
+  await adapterAuth.insert('control_partidas', {
     partida_id: partidaId,
     session_id: null,
     usuario_id: null,

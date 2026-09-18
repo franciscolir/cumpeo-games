@@ -1,13 +1,16 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { SupabaseAdapter } from '../../../src/adapters/SupabaseAdapter.js';
 import { AccionProcesadaRepository } from '../../../src/repositories/AccionProcesadaRepository.js';
+import { crearAdapterAutenticado, tieneCredencialesAuth } from '../_helpers/auth.js';
 
 const TIENE_CREDENCIALES =
   !!import.meta.env.VITE_SUPABASE_URL && !!import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-const describeSiCredenciales = TIENE_CREDENCIALES ? describe : describe.skip;
+const TIENE_AUTH = TIENE_CREDENCIALES && tieneCredencialesAuth();
 
-let adapter;
+const describeSiCredenciales = TIENE_AUTH ? describe : describe.skip;
+
+let adapterAuth;
 let repo;
 const accionesCreadas = [];
 const partidasCreadas = [];
@@ -17,29 +20,28 @@ function uniqueId(prefix) {
 }
 
 beforeAll(async () => {
-  if (!TIENE_CREDENCIALES) return;
-  adapter = new SupabaseAdapter();
-  await adapter.abrir();
-  repo = new AccionProcesadaRepository(adapter);
+  if (!TIENE_AUTH) return;
+  adapterAuth = await crearAdapterAutenticado();
+  repo = new AccionProcesadaRepository(adapterAuth);
 });
 
 afterAll(async () => {
-  if (!adapter) return;
+  if (!adapterAuth) return;
   for (const actionId of accionesCreadas) {
     try {
-      await adapter.delete('accion_procesadas', { eq: { action_id: actionId } });
+      await adapterAuth.delete('accion_procesadas', { eq: { action_id: actionId } });
     } catch (_) { /* cleanup best-effort */ }
   }
   for (const pid of partidasCreadas) {
     try {
-      await adapter.delete('partidas', { eq: { id: pid } });
+      await adapterAuth.delete('partidas', { eq: { id: pid } });
     } catch (_) { /* cleanup best-effort */ }
   }
-  await adapter.cerrar();
+  await adapterAuth.cerrar();
 });
 
 async function crearPartidaDePrueba() {
-  const rows = await adapter.insert('partidas', {
+  const rows = await adapterAuth.insert('partidas', {
     circuito_nombre: 'Test Partida',
     public_codigo: uniqueId('PUB'),
     estado: 'CONFIGURANDO',
