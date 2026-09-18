@@ -35,3 +35,5 @@ _(ninguna)_
 | 2 | `expirarPartida` en Supabase no es atómico | H7.8 | Media |
 | 3 | MASTER pendiente de integrar secciones del Bloque 0 | Bloque 0 | Alta |
 | 2026-09-18 | 1 | 1.1 | ✅ APROBADO | Migración v3 + schema Postgres. Corrección aplicada (openCursor). 439 tests. | 7726c29 |
+
+| 2026-09-18 | 1 | 1.2 | ✅ APROBADO | StorageAdapter + LocalStorageAdapter. Agregado NotImplementedError. 450 tests. | 70034a1 |
