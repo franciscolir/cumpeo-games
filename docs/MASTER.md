@@ -1,10 +1,10 @@
 # CUMPEO — Documento Maestro de Construcción
 
-**Versión:** 2.6
-**Estado:** H4 · H5.1 · H6 · H7.1 · H7.2 · H7.3 · H7.4 · H7.5 · H7.6 · H7.7 · H7.8 COMPLETOS · ~93% proyecto completo
-**Última actualización:** Post-commit `2ed1b25`
-**HEAD:** `feature/vertical-slice` — `2ed1b25`
-**Tests:** 433 unit + 35 e2e + 86 integration
+**Versión:** 2.7
+**Estado:** H4 · H5.1 · H6 · H7.1 · H7.2 · H7.3 · H7.4 · H7.5 · H7.6 · H7.7 · H7.8 · H7.9 · H7.10 COMPLETOS · ~95% proyecto completo
+**Última actualización:** Post-commit `2067d48`
+**HEAD:** `feature/vertical-slice` — `2067d48`
+**Tests:** 433 unit + 35 e2e + 94 integration
 **Audiencia:** Desarrollador único / equipo reducido
 **Propósito:** Guía única de referencia para construcción, consulta y auditoría del sistema.
 
@@ -540,7 +540,7 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 
 | Métrica | Valor |
 |---------|-------|
-| Progreso global | ~93% |
+| Progreso global | ~95% |
 | H4 completado | 100% (5/5 servicios) |
 | H5.1 completado | 100% (Trivia definido) |
 | H6.1 completado | 100% (Bootstrap) |
@@ -552,7 +552,7 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 | H6.6 completado | 100% (Pantalla pública) |
 | Tests unit | 433 (26 archivos) |
 | Tests e2e | 35 |
-| Tests integration | 86 (contra Supabase Cloud) |
+| Tests integration | 94 (contra Supabase Cloud) |
 | Commits totales (rama) | 60+ |
 
 ### 8.2 Fases cerradas
@@ -572,6 +572,8 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 | H7.6 — Circuito + Snapshot migrados | RPC crear_circuito_completo + 2 repos | Cerrado (29dbd98, fc6b46d) |
 | H7.7 — Set + AccionProcesada migrados | RPC crear_set_completo + 2 repos | Cerrado (5efe5dd, e05b9f2) |
 | H7.8 — PartidaRepository migrado | RPC transaccionales + 8 tests | Cerrado (b11437d, 2df33c5) |
+| H7.9b.1 — RLS permisivo | 17 tablas + 34 políticas | Cerrado (44fc12e) |
+| H7.10 — Realtime | SupabaseAdapter.suscribir + UI | Cerrado (e06e480, 0cd1512, 2067d48) |
 
 ### 8.3 H4 — Servicios de dominio (CERRADA)
 
@@ -1059,6 +1061,33 @@ Vista de solo lectura para el público. Cierra la fase H6.
 
 **Total: 433 unit + 35 e2e + 86 integration.**
 
+### 8.3.16 H7.9b.1 + H7.10 — RLS permisivo + Realtime
+
+**H7.9b.1 — RLS permisivo (Fase 1 de 3):**
+- 17 tablas con RLS habilitado.
+- 34 políticas permisivas (17 anon + 17 auth).
+- Se restringirán en H7.9b.3 (después de Auth).
+- Archivo: supabase/migrations/0008_rls_permisivo.sql
+
+**H7.10 — Realtime:**
+- SupabaseAdapter.suscribir(tabla, filtros, callback) implementado.
+- Retorna Promise que resuelve con cleanup cuando status === SUBSCRIBED.
+- LocalAdapter.suscribir() lanza NotImplementedError.
+- consola.js y pantalla.js detectan el adapter y usan Realtime o setInterval.
+- pantalla.js resuelve partida_id desde public_codigo antes de suscribir.
+- Tablas suscritas: partidas, juego_ejecutados, equipo_partidas, control_partidas (consola); partidas, juego_ejecutados, equipo_partidas (pantalla pública).
+- Realtime solo funciona con VITE_SUPABASE_ADAPTER=true. LocalAdapter sigue con setInterval + BroadcastChannel.
+
+**Correcciones:**
+- Bug de timing: suscribir retornaba el cleanup antes de que el canal estuviera conectado.
+- Fix: retorna Promise que espera status === SUBSCRIBED.
+
+**Tests de integración nuevos (8):**
+- 5 RLS (anon puede hacer SELECT en 5 tablas).
+- 3 Realtime (recibir UPDATE, desuscribir, cleanup doble).
+
+**Total: 433 unit + 35 e2e + 94 integration.**
+
 ### 8.4 Commits clave
 
 ```
@@ -1110,6 +1139,10 @@ b11437d  fix(migrations): remove session_id validation from crear_partida
 2df33c5  feat(repositories): migrate partida repository to Supabase
 6b10aae  chore(env): update .env.example with new variable names
 2ed1b25  fix(env): remove real credentials from .env.example
+44fc12e  feat(security): enable RLS with permissive policies
+e06e480  feat(adapters): await Realtime subscription before returning cleanup
+0cd1512  feat(ui): use Realtime for console and public screen
+2067d48  test(integration): add Realtime subscription tests
 ```
 
 ### 8.3 Estructura del repositorio
@@ -1257,18 +1290,22 @@ Migrar a Supabase. Sub-bloques:
    - SetRepository, AccionProcesadaRepository migrados.
 
 9. **H7.8 — PartidaRepository migrado** ✅ Cerrado (`b11437d`, `2df33c5`).
-   - 10 métodos migrados con patrón polimórfico.
-   - 8 tests de integración.
 
-10. **H7.9 — EventoTecnicoRepository + RLS + Auth** ⬜ Pendiente.
-    - EventoTecnicoRepository migrado.
-    - Row Level Security por tabla.
-    - Supabase Auth reemplaza SessionContext.
+10. **H7.9b.1 — RLS permisivo** ✅ Cerrado (`44fc12e`).
+    - 17 tablas + 34 políticas permisivas.
 
-11. **H7.10 — Realtime** ⬜ Pendiente.
-    - Reemplaza el auto-refresh 2s de consola y pantalla pública.
+11. **H7.10 — Realtime** ✅ Cerrado (`e06e480`, `0cd1512`, `2067d48`).
+    - SupabaseAdapter.suscribir con Promise.
+    - consola.js y pantalla.js usan Realtime si el adapter lo soporta.
 
 12. **H7.11 — Migración de e2e a Supabase** ⬜ Pendiente.
+    - Los tests e2e siguen con LocalAdapter.
+    - Opcional: crear tests e2e contra SupabaseAdapter.
+
+13. **H7.12 — Auth + RLS estricto** ⬜ Pendiente (al final).
+    - Supabase Auth (Magic Link) reemplaza SessionContext.
+    - Políticas RLS restrictivas.
+    - Revocar permisos permisivos de anon.
 
 ## 10. Convenciones de Trabajo
 
@@ -1414,6 +1451,10 @@ Migrar a Supabase. Sub-bloques:
 | 76 | crear_partida sin validación de session_id | Crear partida y tomar control son operaciones distintas. |
 | 77 | PartidaRepository usa 8 RPC transaccionales | Los métodos críticos son atómicos vía plpgsql. |
 | 78 | .env.example con placeholders, no credenciales reales | Las credenciales van en .env (gitignored). |
+| 79 | RLS habilitado con políticas permisivas (Fase 1) | Prepara infraestructura. Restricción en Fase 3. |
+| 80 | RLS estructural se verifica desde SQL Editor, no desde tests JS | exec_sql no está expuesto a anon. |
+| 81 | SupabaseAdapter.suscribir retorna Promise<cleanup> | Espera status === SUBSCRIBED antes de resolver. |
+| 82 | Realtime solo en modo Supabase. LocalAdapter usa setInterval. | LocalAdapter.suscribir lanza NotImplementedError. |
 
 ### 12.1 Contrato de cierre de bloque
 
