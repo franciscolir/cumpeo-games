@@ -44,3 +44,5 @@ _(ninguna)_
 
 | 2026-09-18 | 1 | 1.5 | ✅ APROBADO | ParticipanteRepository con session_token. Índice único en IndexedDB v4. 14 tests. | 2aee4f6 |
 | 4 | `validarNoVacio` lanza `Error` genérico en vez de `ValidacionError` | Paso 1.5 (detectado) | Baja |
+| 2026-09-18 | 1 | 1.6 | ✅ APROBADO | SupabaseStorageAdapter con signed URLs. 6 unit + 6 integration tests. | 7c3288f |
+| 5 | `crearStorageAdapter` no se invoca en bootstrap ni en repos. StorageAdapter desconectado. | Paso 1.6 (detectado) | Alta |
