@@ -1,10 +1,10 @@
 # CUMPEO — Documento Maestro de Construcción
 
-**Versión:** 2.7
-**Estado:** H4 · H5.1 · H6 · H7.1 · H7.2 · H7.3 · H7.4 · H7.5 · H7.6 · H7.7 · H7.8 · H7.9 · H7.10 COMPLETOS · ~95% proyecto completo
-**Última actualización:** Post-commit `2067d48`
-**HEAD:** `feature/vertical-slice` — `2067d48`
-**Tests:** 433 unit + 35 e2e + 94 integration
+**Versión:** 2.8
+**Estado:** H4 · H5.1 · H6 · H7.1 · H7.2 · H7.3 · H7.4 · H7.5 · H7.6 · H7.7 · H7.8 · H7.9 · H7.10 · H7.12 COMPLETOS · ~97% proyecto completo
+**Última actualización:** Post-commit `25b3ec6`
+**HEAD:** `feature/vertical-slice` — `25b3ec6`
+**Tests:** 433 unit + 35 e2e + 99 integration
 **Audiencia:** Desarrollador único / equipo reducido
 **Propósito:** Guía única de referencia para construcción, consulta y auditoría del sistema.
 
@@ -540,7 +540,7 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 
 | Métrica | Valor |
 |---------|-------|
-| Progreso global | ~95% |
+| Progreso global | ~97% |
 | H4 completado | 100% (5/5 servicios) |
 | H5.1 completado | 100% (Trivia definido) |
 | H6.1 completado | 100% (Bootstrap) |
@@ -552,7 +552,7 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 | H6.6 completado | 100% (Pantalla pública) |
 | Tests unit | 433 (26 archivos) |
 | Tests e2e | 35 |
-| Tests integration | 94 (contra Supabase Cloud) |
+| Tests integration | 99 (contra Supabase Cloud) |
 | Commits totales (rama) | 60+ |
 
 ### 8.2 Fases cerradas
@@ -574,6 +574,8 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 | H7.8 — PartidaRepository migrado | RPC transaccionales + 8 tests | Cerrado (b11437d, 2df33c5) |
 | H7.9b.1 — RLS permisivo | 17 tablas + 34 políticas | Cerrado (44fc12e) |
 | H7.10 — Realtime | SupabaseAdapter.suscribir + UI | Cerrado (e06e480, 0cd1512, 2067d48) |
+| H7.12a — Auth Magic Link | Login/logout con Supabase Auth | Cerrado (145772e) |
+| H7.12b — RLS restrictivo | Políticas específicas + revocación de anon | Cerrado (08e760c) |
 
 ### 8.3 H4 — Servicios de dominio (CERRADA)
 
@@ -1088,6 +1090,38 @@ Vista de solo lectura para el público. Cierra la fase H6.
 
 **Total: 433 unit + 35 e2e + 94 integration.**
 
+### 8.3.17 H7.12 — Auth + RLS restrictivo
+
+**H7.12a — Auth Magic Link:**
+- src/app/auth.js con 5 funciones: obtenerUsuarioActual, obtenerSesion, loginConMagicLink, logout, suscribirCambiosDeAuth.
+- src/ui/login.js: pantalla de login con input email + botón enviar.
+- session-context.js acepta usuarioId.
+- bootstrap.js acepta usuarioId.
+- main.js detecta adapter Supabase y muestra login si no hay sesión.
+- dashboard.js muestra usuario logueado + botón logout.
+- Magic Link probado manualmente: pantalla login → email → link → dashboard → logout.
+
+**H7.12b — RLS restrictivo:**
+- supabase/migrations/0009_rls_estricto.sql: revocar 34 políticas permisivas + crear políticas específicas.
+- Catálogo (9 tablas): anon SELECT, authenticated ALL.
+- Partida (5 tablas): anon SELECT, authenticated ALL.
+- Control (2 tablas): solo authenticated ALL.
+- Técnica (1 tabla): solo authenticated SELECT/INSERT.
+- Revocado SELECT a anon en control_partidas, accion_procesadas, evento_tecnicos.
+
+**H7.12b-fix — Adaptación de tests:**
+- tests/integration/_helpers/auth.js: crearAdapterAutenticado() con signInWithPassword + abrir().
+- 7 archivos de repositorios usan crearAdapterAutenticado() en vez de new SupabaseAdapter().
+- rls.test.js: cliente anon aislado con persistSession: false. Tests verifican rejects.toThrow() para anon.
+- SupabaseAdapter.suscribir.test.js: usa crearAdapterAutenticado + retry: 3.
+
+**Configuración Supabase Cloud:**
+- Realtime habilitado para 5 tablas en publicación supabase_realtime.
+- Realtime RLS evalúa políticas: authenticated recibe eventos, anon solo de tablas públicas.
+- Test user: test@cumpeo.local (con password).
+
+**Total: 433 unit + 35 e2e + 99 integration.**
+
 ### 8.4 Commits clave
 
 ```
@@ -1143,6 +1177,10 @@ b11437d  fix(migrations): remove session_id validation from crear_partida
 e06e480  feat(adapters): await Realtime subscription before returning cleanup
 0cd1512  feat(ui): use Realtime for console and public screen
 2067d48  test(integration): add Realtime subscription tests
+44fc12e  feat(security): enable RLS with permissive policies
+145772e  feat(auth): add Magic Link authentication
+08e760c  feat(security): restrict RLS policies and adapt tests
+25b3ec6  chore: remove accidentally committed .bak file
 ```
 
 ### 8.3 Estructura del repositorio
@@ -1298,14 +1336,13 @@ Migrar a Supabase. Sub-bloques:
     - SupabaseAdapter.suscribir con Promise.
     - consola.js y pantalla.js usan Realtime si el adapter lo soporta.
 
-12. **H7.11 — Migración de e2e a Supabase** ⬜ Pendiente.
+12. **H7.11 — Migración de e2e a Supabase** ⬜ Pendiente (opcional).
     - Los tests e2e siguen con LocalAdapter.
-    - Opcional: crear tests e2e contra SupabaseAdapter.
 
-13. **H7.12 — Auth + RLS estricto** ⬜ Pendiente (al final).
-    - Supabase Auth (Magic Link) reemplaza SessionContext.
-    - Políticas RLS restrictivas.
-    - Revocar permisos permisivos de anon.
+13. **H7.12 — Auth + RLS restrictivo** ✅ Cerrado (`145772e`, `08e760c`, `25b3ec6`).
+    - Magic Link Auth + RLS restrictivo por tipo de tabla.
+    - 99 integration tests passing.
+
 
 ## 10. Convenciones de Trabajo
 
@@ -1455,6 +1492,12 @@ Migrar a Supabase. Sub-bloques:
 | 80 | RLS estructural se verifica desde SQL Editor, no desde tests JS | exec_sql no está expuesto a anon. |
 | 81 | SupabaseAdapter.suscribir retorna Promise<cleanup> | Espera status === SUBSCRIBED antes de resolver. |
 | 82 | Realtime solo en modo Supabase. LocalAdapter usa setInterval. | LocalAdapter.suscribir lanza NotImplementedError. |
+| 83 | Auth Magic Link con Supabase | Sin password. Apropiado para single-user. |
+| 84 | RLS restrictivo: políticas por tipo de tabla (catálogo/partida/control/técnica) | anon solo SELECT en catálogo y partida. |
+| 85 | Revocado SELECT a anon en control_partidas, accion_procesadas, evento_tecnicos | Esas tablas no se exponen al público. |
+| 86 | Tests de integración usan test user (test@cumpeo.local) | Permite testear RLS real con authenticated. |
+| 87 | rls.test.js usa cliente anon aislado con persistSession: false | El cliente singleton mantiene sesión; el test necesita un cliente limpio. |
+| 88 | Test de Realtime con retry: 3 | Acepta flakiness de WebSocket. |
 
 ### 12.1 Contrato de cierre de bloque
 
