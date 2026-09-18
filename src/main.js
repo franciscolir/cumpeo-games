@@ -5,9 +5,11 @@ import './styles/comic.css';
 import { LocalAdapter } from './adapters/LocalAdapter.js';
 import { SupabaseAdapter } from './adapters/SupabaseAdapter.js';
 import { bootstrap } from './app/bootstrap.js';
+import { obtenerSesion } from './app/auth.js';
 import { Router } from './ui/router.js';
 import { applyTheme, resolveTheme } from './ui/theme.js';
 import { renderDashboard } from './ui/dashboard.js';
+import { renderLogin } from './ui/login.js';
 import { renderListaCircuitos } from './ui/circuitos/lista.js';
 import { renderFormularioCircuito } from './ui/circuitos/formulario.js';
 import { renderListaSets } from './ui/sets/lista.js';
@@ -77,8 +79,20 @@ async function boot() {
 
   try {
     await adapter.abrir();
-    const cumpeoApp = await bootstrap(adapter);
-    await router.iniciar(app, cumpeoApp);
+
+    if (adapter.modo === 'supabase') {
+      const sesion = await obtenerSesion();
+      if (!sesion) {
+        renderLogin(app, { onLoginExitoso: () => boot() });
+        return;
+      }
+      const usuarioId = sesion.user?.id || null;
+      const cumpeoApp = await bootstrap(adapter, { usuarioId });
+      await router.iniciar(app, cumpeoApp);
+    } else {
+      const cumpeoApp = await bootstrap(adapter);
+      await router.iniciar(app, cumpeoApp);
+    }
   } catch (err) {
     console.error('[boot] Error:', err);
     status.innerHTML = `

@@ -18,28 +18,18 @@ import { seedJuegos } from './seed.js';
 /**
  * Inicializa la aplicación: servicios, session, registro de juegos.
  *
- * @param {LocalAdapter} adapter - Adapter ya abierto.
- * @returns {Promise<{
- *   adapter: LocalAdapter,
- *   session: SessionContext,
- *   services: {
- *     control: ControlService,
- *     partida: PartidaService,
- *     circuito: CircuitoService,
- *     set: SetService,
- *     juego: JuegoService,
- *     registry: GameDefinitionRegistry
- *   },
- *   registry: GameDefinitionRegistry
- * }>}
+ * @param {LocalAdapter|SupabaseAdapter} adapter - Adapter ya abierto.
+ * @param {object} [opciones={}]
+ * @param {string|null} [opciones.usuarioId=null] - ID del usuario autenticado.
+ * @returns {Promise<object>} Objeto app con adapter, session, services, registry.
  * @throws {Error} si el adapter no está abierto o algún service falla.
  */
-export async function bootstrap(adapter) {
+export async function bootstrap(adapter, { usuarioId = null } = {}) {
   if (!adapter) {
     throw new Error('bootstrap: adapter requerido');
   }
 
-  const session = new SessionContext();
+  const session = new SessionContext({ usuarioId });
 
   const services = {
     control: new ControlService(adapter),

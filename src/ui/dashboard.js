@@ -18,12 +18,24 @@ export async function renderDashboard(container, app) {
   const circuitos = await services.circuito.listarCircuitos();
   const juegos = services.registry.listarCodigos();
 
+  const sessionLabel = session.usuarioId
+    ? session.usuarioId.slice(0, 8)
+    : session.sessionId.slice(0, 8);
+
   const cardSesion = Card({
     titulo: 'Sesión',
     contenido: `
       <p class="font-body-md text-on-surface-variant">
-        Sesión: <code class="font-label-md bg-surface-container px-2 py-1 rounded">${session.sessionId.slice(0, 8)}…</code>
+        Sesión: <code class="font-label-md bg-surface-container px-2 py-1 rounded">${sessionLabel}…</code>
       </p>
+      ${session.usuarioId ? `
+        <button
+          id="btn-logout"
+          class="mt-3 font-label-md uppercase border-2.5 border-on-surface rounded-lg px-3 py-1 bg-error text-on-error text-sm shadow-comic-sm hover:shadow-comic-md transition"
+        >
+          Cerrar sesión
+        </button>
+      ` : ''}
     `,
     color: 'tertiary'
   });
@@ -114,4 +126,13 @@ export async function renderDashboard(container, app) {
   `;
 
   bindHeaderListeners(container);
+
+  const btnLogout = container.querySelector('#btn-logout');
+  if (btnLogout) {
+    btnLogout.addEventListener('click', async () => {
+      const { logout } = await import('../app/auth.js');
+      await logout();
+      window.location.reload();
+    });
+  }
 }

@@ -6,10 +6,15 @@
    ============================================================= */
 
 export class SessionContext {
-  constructor({ storageKey = 'cumpeo.session' } = {}) {
+  /**
+   * @param {object} [opciones={}]
+   * @param {string} [opciones.storageKey='cumpeo.session'] - Clave de sessionStorage.
+   * @param {string|null} [opciones.usuarioId=null] - ID del usuario autenticado (Supabase Auth).
+   */
+  constructor({ storageKey = 'cumpeo.session', usuarioId = null } = {}) {
     this.storageKey = storageKey;
     this.sessionId = this._cargarOCrearSessionId();
-    this.usuarioId = null;
+    this.usuarioId = usuarioId;
   }
 
   _cargarOCrearSessionId() {
