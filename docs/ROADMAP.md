@@ -2,7 +2,7 @@
 
 **Versión:** 1.0
 **Última actualización:** 2026-09-18
-**Estado global:** Bloque 1 cerrado · Bloque 2 en preparación
+**Estado global:** Bloque 1 cerrado · Bloque 2 en progreso (1/7)
 **Rama:** feature/vertical-slice
 
 ---
@@ -100,20 +100,25 @@
 
 ---
 
-### Bloque 2 — Shell de partida (Conductor + Pública) 🔄 EN PREPARACIÓN.
-
+### Bloque 2 — Shell de partida (Conductor + Pública) 🔄 EN PROGRESO (1/7)
+| 2 | Shell de partida (Conductor + Pública) | EN PROGRESO | 1/7 | — | — |
 **Objetivo:** Crear el shell común de partida que permite enchufar cualquier juego sin rehacer UI.
 
 #### Pasos (preliminares)
 
-| # | Paso | Estado |
-|---|------|--------|
-| 2.1 | `ShellPartida`: cabecera + marcador + área de juego + panel conductor | ⬜ |
-| 2.2 | `ShellPublica`: cabecera + marcador + área de juego (solo lectura) | ⬜ |
-| 2.3 | Contrato `GameUI` | ⬜ |
-| 2.4 | `estado_publico` derivado de `estado_juego` | ⬜ |
-| 2.5 | Criterios de aceptación visuales | ⬜ |
+| # | Paso | Estado | Commit | Prompt archivado |
+|---|------|--------|--------|------------------|
+| 2.1 | Criterios de aceptación visuales (AC-VISUAL) | ✅ | — | — |
+| 2.2 | Contrato GameUI | ⬜ PENDIENTE | — | — |
+| 2.3 | ShellPartida (Conductor) | ⬜ PENDIENTE | — | — |
+| 2.4 | Portar lógica de consola.js | ⬜ PENDIENTE | — | — |
+| 2.5 | ShellPublica (Pública) | ⬜ PENDIENTE | — | — |
+| 2.6 | Migrar Trivia al shell | ⬜ PENDIENTE | — | — |
+| 2.7 | Eliminar consola.js viejo | ⬜ PENDIENTE | — | — |
 
+
+
+**Paso 2.1 en cierre (AC-VISUAL). Paso 2.2 en preparación (Contrato GameUI).**
 ---
 
 ### Bloque 3 — Móvil + moderación ⬜ PENDIENTE
@@ -191,6 +196,7 @@ Cada juego se cierra con su propio bloque interno (GameDefinition + UI Conductor
 |---------|-------|--------|
 | 1.0 | 2026-09-18 | Creación del roadmap. Bloque 0 cerrado. Bloque 1 en preparación. |
 | 1.1 | 2026-09-18 | Bloque 1 cerrado. 6 pasos, 517 unit / 105 integration tests. |
+| 1.2 | 2026-09-18 | Bloque 2 iniciado. AC-VISUAL definidos. 7 pasos. |
 ---
 
 ## 5. Convenciones
