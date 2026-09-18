@@ -19,7 +19,6 @@
 
 ## 1. Estado global
 
-| Métrica | Valor |
 |---------|-------|
 | Bloques totales | 7 (0 al 6) |
 | Bloques cerrados | 1 (Bloque 0) |
@@ -75,7 +74,6 @@
 
 | # | Paso | Estado | Commit | Prompt archivado |
 |---|------|--------|--------|------------------|
-| 1 | Modelo de datos extendido | ✅ CERRADO | 6/6 | 7c3288f | 2026-09-18 |
 | 1.1 | Migración IndexedDB v3 + schema Postgres | ✅ | 7726c29 | bloque-1-paso-1.md |
 | 1.2 | StorageAdapter (contrato + Local) | ✅ | 70034a1 | bloque-1-paso-2.md |
 | 1.3 | MensajePublicoRepository + tests | ✅ | 4b6d350 | bloque-1-paso-3.md |
