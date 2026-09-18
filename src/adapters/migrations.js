@@ -9,6 +9,7 @@ export function aplicarMigraciones(db, oldVersion, upgradeTx) {
   if (oldVersion < 1) migracionV1(db);
   if (oldVersion < 2) migracionV2(db);
   if (oldVersion < 3) migracionV3(db, upgradeTx);
+  if (oldVersion < 4) migracionV4(db, upgradeTx);
 }
 
 function migracionV1(db) {
@@ -90,4 +91,19 @@ function migracionV3(db, upgradeTx) {
       cursor.continue();
     };
   }
+}
+
+/* =============================================================
+   V4 — Índice único de session_token en participante_partidas.
+   INV-171: session_token único por participación.
+   ============================================================= */
+
+function migracionV4(db, upgradeTx) {
+  if (!db.objectStoreNames.contains('participante_partidas')) return;
+  if (!upgradeTx) return;
+
+  const store = upgradeTx.objectStore('participante_partidas');
+  if (store.indexNames.contains('participante_partida_session_token')) return;
+
+  store.createIndex('participante_partida_session_token', 'session_token', { unique: true });
 }

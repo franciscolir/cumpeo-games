@@ -1,12 +1,12 @@
 /* =============================================================
    Esquema de IndexedDB  CUMPEO
-   1 base, 20 object stores, 56 índices secundarios, 8 únicos.
+   1 base, 20 object stores, 57 índices secundarios, 9 únicos.
    Nota: IndexedDB no admite boolean como clave de índice.
    Los campos "activo" se filtran en memoria desde los repositorios.
    ============================================================= */
 
 export const DB_NAME = 'cumpeo';
-export const DB_VERSION = 3;
+export const DB_VERSION = 4;
 
 export const STORES = [
   {
@@ -119,7 +119,8 @@ export const STORES = [
     indexes: [
       { name: 'participante_partida_partida_id', keyPath: 'partida_id', unique: false },
       { name: 'participante_partida_equipo_partida_id', keyPath: 'equipo_partida_id', unique: false },
-      { name: 'participante_partida_partida_id_nombre', keyPath: ['partida_id', 'nombre'], unique: false }
+      { name: 'participante_partida_partida_id_nombre', keyPath: ['partida_id', 'nombre'], unique: false },
+      { name: 'participante_partida_session_token', keyPath: 'session_token', unique: true }
     ]
   },
   {

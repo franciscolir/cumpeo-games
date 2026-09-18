@@ -6,7 +6,8 @@ import { BaseRepository } from './BaseRepository.js';
 import {
   NoEncontradoError,
   ValidacionError,
-  OperacionInvalidaError
+  OperacionInvalidaError,
+  YaExisteError
 } from './errors.js';
 import { ahora, nuevoId, validarNoVacio } from './utils.js';
 
@@ -243,5 +244,75 @@ export class ParticipanteRepository extends BaseRepository {
       if (r && r.error) throw r.error;
       return r.participante;
     });
+  }
+
+  /* =============================================================
+     Session Token — identidad móvil (INV-171 a INV-174)
+     ============================================================= */
+
+  /**
+   * Crea un participante con session_token.
+   *
+   * @param {object} params - Parámetros.
+   * @param {string} params.partidaId - ID de la partida.
+   * @param {string} params.equipoPartidaId - ID del equipo.
+   * @param {string} params.nombre - Nombre del participante.
+   * @param {string} params.sessionToken - Token de sesión único.
+   * @returns {Promise<object>} El participante creado.
+   */
+  async crearParticipanteConToken({ partidaId, equipoPartidaId, nombre, sessionToken }) {
+    validarNoVacio(partidaId, 'partidaId');
+    validarNoVacio(equipoPartidaId, 'equipoPartidaId');
+    validarNoVacio(nombre, 'nombre');
+    validarNoVacio(sessionToken, 'sessionToken');
+
+    const existente = await this.obtenerPorSessionToken(sessionToken);
+    if (existente) throw new YaExisteError('ParticipantePartida', 'session_token');
+
+    const participante = {
+      id: nuevoId(),
+      partida_id: partidaId,
+      equipo_partida_id: equipoPartidaId,
+      nombre,
+      session_token: sessionToken,
+      ha_participado: false,
+      created_at: ahora()
+    };
+
+    await this.agregarRegistro(participante);
+    return participante;
+  }
+
+  /**
+   * Busca un participante por su session_token.
+   *
+   * @param {string} sessionToken - Token de sesión.
+   * @returns {Promise<object|undefined>} El participante o undefined.
+   */
+  async obtenerPorSessionToken(sessionToken) {
+    validarNoVacio(sessionToken, 'sessionToken');
+
+    if (this.modo === 'supabase') {
+      return this.adapter.query(this.storeName, {
+        eq: { session_token: sessionToken },
+        single: true
+      });
+    }
+
+    return this.listarPorIndice('participante_partida_session_token', sessionToken)
+      .then((lista) => lista[0] || undefined);
+  }
+
+  /**
+   * Verifica si existe un participante con el session_token dado.
+   *
+   * @param {string} sessionToken - Token de sesión.
+   * @returns {Promise<boolean>} true si existe, false si no.
+   */
+  async existeSessionToken(sessionToken) {
+    validarNoVacio(sessionToken, 'sessionToken');
+
+    const encontrado = await this.obtenerPorSessionToken(sessionToken);
+    return encontrado !== undefined;
   }
 }

@@ -4,6 +4,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { LocalAdapter } from '../../../src/adapters/LocalAdapter.js';
 import { ParticipanteRepository } from '../../../src/repositories/ParticipanteRepository.js';
 import { DB_NAME } from '../../../src/adapters/schema.js';
+import { YaExisteError } from '../../../src/repositories/errors.js';
 
 function borrarBase() {
   return new Promise((resolve, reject) => {
@@ -178,6 +179,123 @@ describe('ParticipanteRepository', () => {
 
     it('rechaza si no existe', async () => {
       await expect(repo.marcarParticipacion('nope')).rejects.toThrow(/no encontrado/);
+    });
+  });
+
+  describe('crearParticipanteConToken', () => {
+    it('crea participante con session_token', async () => {
+      const p = await repo.crearParticipanteConToken({
+        partidaId: 'p1',
+        equipoPartidaId: 'eq1',
+        nombre: 'Juan',
+        sessionToken: 'tok-123'
+      });
+      expect(p.id).toBeTruthy();
+      expect(p.partida_id).toBe('p1');
+      expect(p.equipo_partida_id).toBe('eq1');
+      expect(p.nombre).toBe('Juan');
+      expect(p.session_token).toBe('tok-123');
+      expect(p.ha_participado).toBe(false);
+      expect(p.created_at).toBeTruthy();
+    });
+
+    it('token duplicado lanza YaExisteError', async () => {
+      await repo.crearParticipanteConToken({
+        partidaId: 'p1',
+        equipoPartidaId: 'eq1',
+        nombre: 'Juan',
+        sessionToken: 'tok-dup'
+      });
+
+      await expect(
+        repo.crearParticipanteConToken({
+          partidaId: 'p1',
+          equipoPartidaId: 'eq1',
+          nombre: 'Otro',
+          sessionToken: 'tok-dup'
+        })
+      ).rejects.toThrow(YaExisteError);
+    });
+
+    it('campos vacíos lanza Error de validación', async () => {
+      await expect(
+        repo.crearParticipanteConToken({
+          partidaId: '',
+          equipoPartidaId: 'eq1',
+          nombre: 'Juan',
+          sessionToken: 'tok-1'
+        })
+      ).rejects.toThrow(/requerido vacío/);
+
+      await expect(
+        repo.crearParticipanteConToken({
+          partidaId: 'p1',
+          equipoPartidaId: '',
+          nombre: 'Juan',
+          sessionToken: 'tok-2'
+        })
+      ).rejects.toThrow(/requerido vacío/);
+
+      await expect(
+        repo.crearParticipanteConToken({
+          partidaId: 'p1',
+          equipoPartidaId: 'eq1',
+          nombre: '',
+          sessionToken: 'tok-3'
+        })
+      ).rejects.toThrow(/requerido vacío/);
+
+      await expect(
+        repo.crearParticipanteConToken({
+          partidaId: 'p1',
+          equipoPartidaId: 'eq1',
+          nombre: 'Juan',
+          sessionToken: ''
+        })
+      ).rejects.toThrow(/requerido vacío/);
+    });
+  });
+
+  describe('obtenerPorSessionToken', () => {
+    it('devuelve entidad existente', async () => {
+      const creado = await repo.crearParticipanteConToken({
+        partidaId: 'p1',
+        equipoPartidaId: 'eq1',
+        nombre: 'Juan',
+        sessionToken: 'tok-find'
+      });
+      const encontrado = await repo.obtenerPorSessionToken('tok-find');
+      expect(encontrado.id).toBe(creado.id);
+      expect(encontrado.session_token).toBe('tok-find');
+    });
+
+    it('devuelve undefined si no existe', async () => {
+      const resultado = await repo.obtenerPorSessionToken('tok-noexiste');
+      expect(resultado).toBeUndefined();
+    });
+
+    it('token vacío lanza Error de validación', async () => {
+      await expect(repo.obtenerPorSessionToken('')).rejects.toThrow(/requerido vacío/);
+    });
+  });
+
+  describe('existeSessionToken', () => {
+    it('devuelve true si existe', async () => {
+      await repo.crearParticipanteConToken({
+        partidaId: 'p1',
+        equipoPartidaId: 'eq1',
+        nombre: 'Juan',
+        sessionToken: 'tok-existe'
+      });
+      expect(await repo.existeSessionToken('tok-existe')).toBe(true);
+    });
+
+    it('devuelve false si no existe', async () => {
+      expect(await repo.existeSessionToken('tok-noexiste')).toBe(false);
+    });
+
+    it('token vacío lanza Error de validación', async () => {
+      await expect(repo.existeSessionToken('')).rejects.toThrow(/requerido vacío/);
     });
   });
 });

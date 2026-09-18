@@ -82,8 +82,8 @@ describe('LocalAdapter', () => {
         }
       }
 
-      expect(total).toBe(56);
-      expect(unicos).toBe(8);
+      expect(total).toBe(57);
+      expect(unicos).toBe(9);
     });
 
     it('cada store tiene exactamente los índices declarados', () => {
