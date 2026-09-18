@@ -46,3 +46,8 @@ _(ninguna)_
 | 4 | `validarNoVacio` lanza `Error` genérico en vez de `ValidacionError` | Paso 1.5 (detectado) | Baja |
 | 2026-09-18 | 1 | 1.6 | ✅ APROBADO | SupabaseStorageAdapter con signed URLs. 6 unit + 6 integration tests. | 7c3288f |
 | 5 | `crearStorageAdapter` no se invoca en bootstrap ni en repos. StorageAdapter desconectado. | Paso 1.6 (detectado) | Alta |
+## Cierre de bloque
+
+| Fecha | Bloque | Estado | Notas |
+|-------|--------|--------|-------|
+| 2026-09-18 | 1 | ✅ CERRADO | 6/6 pasos. 517 unit + 105 integration. Commit de cierre: 7c3288f. |
