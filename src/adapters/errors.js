@@ -31,6 +31,13 @@ export class TransaccionError extends DataError {
   }
 }
 
+export class NotImplementedError extends DataError {
+  constructor(metodo) {
+    super(`${metodo} no implementado`);
+    this.name = 'NotImplementedError';
+  }
+}
+
 export class StoreNoExisteError extends DataError {
   constructor(store) {
     super(`Object store inexistente: "${store}"`);
