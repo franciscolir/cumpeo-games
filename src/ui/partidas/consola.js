@@ -1,7 +1,8 @@
 /* =============================================================
    Consola del Conductor — control de una partida en vivo.
 
-   Auto-refresh cada 2s. Limpia el interval al desmontar.
+   Usa Realtime (Supabase) o setInterval (LocalAdapter) según
+   el adapter activo.
    ============================================================= */
 
 import { Header, bindHeaderListeners } from '../components/header.js';
@@ -9,6 +10,7 @@ import { Boton } from '../components/boton.js';
 import { Card } from '../components/card.js';
 import { nuevoActionId, fmtPuntos } from './utils.js';
 
+let cleanupSuscripciones = null;
 let intervalId = null;
 
 /**
@@ -18,21 +20,75 @@ let intervalId = null;
  * @param {object} params - { id: partidaId }
  */
 export async function renderConsolaPartida(container, app, params) {
-  if (intervalId) {
-    clearInterval(intervalId);
-    intervalId = null;
-  }
+  _limpiarSuscripciones();
+  if (intervalId) { clearInterval(intervalId); intervalId = null; }
 
   await _renderContenido(container, app, params.id);
 
+  if (_adapterSoportaRealtime(app)) {
+    _iniciarRealtime(container, app, params.id);
+  } else {
+    _iniciarPolling(container, app, params.id);
+  }
+}
+
+/**
+ * Detecta si el adapter soporta Realtime.
+ * @param {object} app
+ * @returns {boolean}
+ */
+function _adapterSoportaRealtime(app) {
+  return app.adapter && app.adapter.modo === 'supabase';
+}
+
+/**
+ * Inicia suscripciones Realtime a las tablas de la consola.
+ * @param {HTMLElement} container
+ * @param {object} app
+ * @param {string} partidaId
+ */
+async function _iniciarRealtime(container, app, partidaId) {
+  const tablas = ['partidas', 'juego_ejecutados', 'equipo_partidas', 'control_partidas'];
+  const unsubs = await Promise.all(tablas.map((tabla) => {
+    const filter = tabla === 'partidas'
+      ? `id=eq.${partidaId}`
+      : `partida_id=eq.${partidaId}`;
+    return app.adapter.suscribir(tabla, { filter }, () => {
+      _renderContenido(container, app, partidaId);
+    });
+  }));
+  cleanupSuscripciones = () => {
+    for (const unsub of unsubs) {
+      try { unsub(); } catch (_) {}
+    }
+  };
+}
+
+/**
+ * Inicia polling cada 2s como fallback para LocalAdapter.
+ * @param {HTMLElement} container
+ * @param {object} app
+ * @param {string} partidaId
+ */
+function _iniciarPolling(container, app, partidaId) {
   intervalId = setInterval(async () => {
     if (!window.location.hash.match(/^#\/partidas\/[^/?]+$/)) {
       clearInterval(intervalId);
       intervalId = null;
       return;
     }
-    await _renderContenido(container, app, params.id);
+    await _renderContenido(container, app, partidaId);
   }, 2000);
+}
+
+/**
+ * Limpia las suscripciones Realtime activas.
+ */
+function _limpiarSuscripciones() {
+  if (cleanupSuscripciones) {
+    cleanupSuscripciones();
+    cleanupSuscripciones = null;
+  }
 }
 
 /**
@@ -53,6 +109,7 @@ async function _renderContenido(container, app, partidaId) {
       </main>
     `;
     bindHeaderListeners(container);
+    _limpiarSuscripciones();
     if (intervalId) { clearInterval(intervalId); intervalId = null; }
     return;
   }

@@ -1,9 +1,12 @@
 /* =============================================================
    Pantalla Pública — vista de solo lectura para el público.
    Acceso vía código público: #/publica/ABC123
-   Auto-refresh cada 2s.
+
+   Usa Realtime (Supabase) o setInterval (LocalAdapter) según
+   el adapter activo.
    ============================================================= */
 
+let cleanupSuscripciones = null;
 let intervalId = null;
 
 /**
@@ -13,21 +16,79 @@ let intervalId = null;
  * @param {object} params - { codigo: 'ABC123' }
  */
 export async function renderPantallaPublica(container, app, params) {
-  if (intervalId) {
-    clearInterval(intervalId);
-    intervalId = null;
-  }
+  _limpiarSuscripciones();
+  if (intervalId) { clearInterval(intervalId); intervalId = null; }
 
   await _renderContenido(container, app, params.codigo);
 
+  if (_adapterSoportaRealtime(app)) {
+    _iniciarRealtime(container, app, params.codigo);
+  } else {
+    _iniciarPolling(container, app, params.codigo);
+  }
+}
+
+/**
+ * Detecta si el adapter soporta Realtime.
+ * @param {object} app
+ * @returns {boolean}
+ */
+function _adapterSoportaRealtime(app) {
+  return app.adapter && app.adapter.modo === 'supabase';
+}
+
+/**
+ * Inicia suscripciones Realtime a las tablas de la pantalla pública.
+ * @param {HTMLElement} container
+ * @param {object} app
+ * @param {string} codigo
+ */
+async function _iniciarRealtime(container, app, codigo) {
+  const partida = await app.services.partida.obtenerPartidaPorCodigo(codigo);
+  if (!partida) return;
+
+  const partidaId = partida.id;
+  const tablas = ['partidas', 'juego_ejecutados', 'equipo_partidas'];
+  const unsubs = await Promise.all(tablas.map((tabla) => {
+    const filter = tabla === 'partidas'
+      ? `id=eq.${partidaId}`
+      : `partida_id=eq.${partidaId}`;
+    return app.adapter.suscribir(tabla, { filter }, () => {
+      _renderContenido(container, app, codigo);
+    });
+  }));
+  cleanupSuscripciones = () => {
+    for (const unsub of unsubs) {
+      try { unsub(); } catch (_) {}
+    }
+  };
+}
+
+/**
+ * Inicia polling cada 2s como fallback para LocalAdapter.
+ * @param {HTMLElement} container
+ * @param {object} app
+ * @param {string} codigo
+ */
+function _iniciarPolling(container, app, codigo) {
   intervalId = setInterval(async () => {
     if (!window.location.hash.match(/^#\/publica\/[^/?]+$/)) {
       clearInterval(intervalId);
       intervalId = null;
       return;
     }
-    await _renderContenido(container, app, params.codigo);
+    await _renderContenido(container, app, codigo);
   }, 2000);
+}
+
+/**
+ * Limpia las suscripciones Realtime activas.
+ */
+function _limpiarSuscripciones() {
+  if (cleanupSuscripciones) {
+    cleanupSuscripciones();
+    cleanupSuscripciones = null;
+  }
 }
 
 /**
@@ -50,6 +111,7 @@ async function _renderContenido(container, app, codigo) {
         </div>
       </main>
     `;
+    _limpiarSuscripciones();
     if (intervalId) { clearInterval(intervalId); intervalId = null; }
     return;
   }
