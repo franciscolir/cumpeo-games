@@ -51,3 +51,5 @@ _(ninguna)_
 | Fecha | Bloque | Estado | Notas |
 |-------|--------|--------|-------|
 | 2026-09-18 | 1 | ✅ CERRADO | 6/6 pasos. 517 unit + 105 integration. Commit de cierre: 7c3288f. |
+
+| 2026-09-18 | 2 | 2.2 | ✅ APROBADO | GameUIRegistry con contrato validado. 17 tests. | 42d622c |

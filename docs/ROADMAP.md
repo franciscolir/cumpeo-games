@@ -2,7 +2,7 @@
 
 **Versión:** 1.0
 **Última actualización:** 2026-09-18
-**Estado global:** Bloque 1 cerrado · Bloque 2 en progreso (1/7)
+**Estado global:** Bloque 1 cerrado · Bloque 2 en progreso (2/7)
 **Rama:** feature/vertical-slice
 
 ---
@@ -100,8 +100,8 @@
 
 ---
 
-### Bloque 2 — Shell de partida (Conductor + Pública) 🔄 EN PROGRESO (1/7)
-| 2 | Shell de partida (Conductor + Pública) | EN PROGRESO | 1/7 | — | — |
+### Bloque 2 — Shell de partida (Conductor + Pública) 🔄 EN PROGRESO (2/7)
+| 2 | Shell de partida (Conductor + Pública) | EN PROGRESO | 2/7 | — | — |
 **Objetivo:** Crear el shell común de partida que permite enchufar cualquier juego sin rehacer UI.
 
 #### Pasos (preliminares)
@@ -109,7 +109,7 @@
 | # | Paso | Estado | Commit | Prompt archivado |
 |---|------|--------|--------|------------------|
 | 2.1 | Criterios de aceptación visuales (AC-VISUAL) | ✅ | — | — |
-| 2.2 | Contrato GameUI | ⬜ PENDIENTE | — | — |
+| 2.2 | Contrato GameUI | ✅ | 42d622c | bloque-2-paso-2.md |
 | 2.3 | ShellPartida (Conductor) | ⬜ PENDIENTE | — | — |
 | 2.4 | Portar lógica de consola.js | ⬜ PENDIENTE | — | — |
 | 2.5 | ShellPublica (Pública) | ⬜ PENDIENTE | — | — |
@@ -118,7 +118,7 @@
 
 
 
-**Paso 2.1 en cierre (AC-VISUAL). Paso 2.2 en preparación (Contrato GameUI).**
+**Paso 2.3 en preparación (ShellPartida Conductor).**
 ---
 
 ### Bloque 3 — Móvil + moderación ⬜ PENDIENTE
