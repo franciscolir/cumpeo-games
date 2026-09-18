@@ -2,7 +2,7 @@
 
 **Versión:** 1.0
 **Última actualización:** 2026-09-18
-**Estado global:** Bloque 0 cerrado · Bloque 1 en progreso (4/7)
+**Estado global:** Bloque 0 cerrado · Bloque 1 en progreso (5/7)
 **Rama:** feature/vertical-slice
 
 ---
@@ -65,7 +65,7 @@
 
 ---
 
-### Bloque 1 — Modelo de datos extendido 🔄 EN PROGRESO (4/7)
+### Bloque 1 — Modelo de datos extendido 🔄 EN PROGRESO (5/7)
 
 **Objetivo:** Crear las entidades `MensajePublico` y `FotoPublica`, extender `ParticipantePartida` con `session_token`, e introducir la abstracción de Storage.
 
@@ -75,19 +75,18 @@
 
 | # | Paso | Estado | Commit | Prompt archivado |
 |---|------|--------|--------|------------------|
-| 1 | Modelo de datos extendido | EN PROGRESO | 4/7 | — | — |
+| 1 | Modelo de datos extendido | EN PROGRESO | 5/7 | — | — |
 | 1.1 | Migración IndexedDB v3 + schema Postgres | ✅ | 7726c29 | bloque-1-paso-1.md |
 | 1.2 | StorageAdapter (contrato + Local) | ✅ | 70034a1 | bloque-1-paso-2.md |
 | 1.3 | MensajePublicoRepository + tests | ✅ | 4b6d350 | bloque-1-paso-3.md |
 | 1.4 | FotoPublicaRepository + tests | ✅ | 801bf0a | bloque-1-paso-4.md |
-| 1.5 | Extensión ParticipanteRepository | ⬜ PENDIENTE | — | — |
+| 1.5 | Extensión ParticipanteRepository | ✅ | 2aee4f6 | bloque-1-paso-5.md |
 | 1.6 | StorageAdapter Supabase + integration | ⬜ PENDIENTE | — | — |
 | 1.7 | Commit atómico del bloque | ⬜ PENDIENTE | — | — |
 
 #### Paso actual
 
-**Paso 1.5 en preparación (Extensión ParticipanteRepository).**
-
+**Paso 1.6 en preparación (StorageAdapter Supabase + integration).**
 #### Criterios de cierre del bloque
 
 - [ ] Migración IndexedDB v3 aplicada sin pérdida de datos

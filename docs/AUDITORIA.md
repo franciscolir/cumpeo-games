@@ -41,3 +41,6 @@ _(ninguna)_
 | 2026-09-18 | 1 | 1.3 | ✅ APROBADO | MensajePublicoRepository. 8 métodos, 19 tests. Corrección de JSDoc. | 4b6d350 |
 
 | 2026-09-18 | 1 | 1.4 | ✅ APROBADO | FotoPublicaRepository. 9 métodos, 28 tests. Integración Storage. | 801bf0a |
+
+| 2026-09-18 | 1 | 1.5 | ✅ APROBADO | ParticipanteRepository con session_token. Índice único en IndexedDB v4. 14 tests. | 2aee4f6 |
+| 4 | `validarNoVacio` lanza `Error` genérico en vez de `ValidacionError` | Paso 1.5 (detectado) | Baja |
