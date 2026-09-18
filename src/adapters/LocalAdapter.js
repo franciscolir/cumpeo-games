@@ -144,4 +144,16 @@ export class LocalAdapter {
   static nuevoId() {
     return crypto.randomUUID();
   }
+
+  /* =============================================================
+     Realtime — no implementado
+     ============================================================= */
+
+  /**
+   * Suscribe a cambios en un store (no implementado para IndexedDB).
+   * @throws {Error} Siempre.
+   */
+  suscribir() {
+    throw new Error('LocalAdapter.suscribir no implementado. Usar setInterval para LocalAdapter.');
+  }
 }

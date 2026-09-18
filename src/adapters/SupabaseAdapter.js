@@ -192,20 +192,49 @@ export class SupabaseAdapter {
   }
 
   /* =============================================================
-     Realtime — stub
+     Realtime — suscripciones a cambios en tablas
      ============================================================= */
 
   /**
    * Suscribe a cambios en una tabla (Realtime).
-   * NO implementado en H7.2.
    *
    * @param {string} tabla - Nombre de la tabla.
-   * @param {object} filtros - Filtros de suscripción.
-   * @param {function} callback - Callback cuando hay cambios.
+   * @param {object} [filtros={}] - Filtros de suscripción.
+   * @param {string} [filtros.filter] - Filtro Postgres (ej: 'partida_id=eq.uuid').
+   * @param {string} [filtros.event='*'] - Tipo de evento (INSERT, UPDATE, DELETE, *).
+   * @param {function} callback - Callback cuando hay cambios. Recibe { eventType, new, old }.
    * @returns {function} Función para cancelar la suscripción.
    */
-  suscribir(tabla, filtros, callback) {
-    throw new Error('SupabaseAdapter.suscribir no implementado todavía (H7.9)');
+  suscribir(tabla, filtros = {}, callback) {
+    this._verificarAbierto();
+    if (!tabla || typeof tabla !== 'string') {
+      throw new ValidacionError('nombre de tabla requerido');
+    }
+    if (typeof callback !== 'function') {
+      throw new ValidacionError('callback debe ser una función');
+    }
+
+    const { filter, event = '*' } = filtros;
+    const canalName = `cumpeo:${tabla}:${filter || 'all'}:${Date.now()}`;
+
+    return new Promise((resolve, reject) => {
+      const canal = this.client
+        .channel(canalName)
+        .on('postgres_changes', {
+          event,
+          schema: 'public',
+          table: tabla,
+          ...(filter ? { filter } : {})
+        }, (payload) => callback(payload));
+
+      canal.subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          resolve(() => { this.client.removeChannel(canal); });
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          reject(new Error(`Suscripción falló: ${status}`));
+        }
+      });
+    });
   }
 
   /* =============================================================
