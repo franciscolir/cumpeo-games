@@ -5,9 +5,10 @@
 
 import { STORES } from './schema.js';
 
-export function aplicarMigraciones(db, oldVersion /*, newVersion, transaction */) {
+export function aplicarMigraciones(db, oldVersion, upgradeTx) {
   if (oldVersion < 1) migracionV1(db);
   if (oldVersion < 2) migracionV2(db);
+  if (oldVersion < 3) migracionV3(db, upgradeTx);
 }
 
 function migracionV1(db) {
@@ -42,5 +43,51 @@ function migracionV2(db) {
 
   for (const idx of definicion.indexes) {
     store.createIndex(idx.name, idx.keyPath, { unique: idx.unique });
+  }
+}
+
+/* =============================================================
+   V3 — Mensajes públicos, fotos públicas, archivos públicos.
+   Extiende el modelo para contenido generado por el móvil.
+   - Crea 3 stores nuevos con sus índices.
+   - Agrega session_token a participante_partidas existentes.
+   La migración es idempotente.
+   ============================================================= */
+
+const STORES_NUEVOS_V3 = ['mensajes_publicos', 'fotos_publicas', 'archivos_publicos'];
+
+function migracionV3(db, upgradeTx) {
+  // 1. Crear stores nuevos desde definiciones del schema
+  for (const nombre of STORES_NUEVOS_V3) {
+    if (db.objectStoreNames.contains(nombre)) continue;
+
+    const definicion = STORES.find((s) => s.nombre === nombre);
+    const store = db.createObjectStore(definicion.nombre, {
+      keyPath: definicion.keyPath,
+      autoIncrement: false
+    });
+
+    for (const idx of definicion.indexes) {
+      store.createIndex(idx.name, idx.keyPath, { unique: idx.unique });
+    }
+  }
+
+  // 2. Asignar session_token a participante_partidas existentes
+  //    Usamos openCursor para mantener la transacción activa durante
+  //    el recorrido. getAll() + onsuccess es frágil en onupgradeneeded.
+  if (db.objectStoreNames.contains('participante_partidas') && upgradeTx) {
+    const store = upgradeTx.objectStore('participante_partidas');
+    const cursorReq = store.openCursor();
+
+    cursorReq.onsuccess = (event) => {
+      const cursor = event.target.result;
+      if (!cursor) return;
+      const registro = cursor.value;
+      if (!registro.session_token) {
+        registro.session_token = crypto.randomUUID();
+        cursor.update(registro);
+      }
+      cursor.continue();
+    };
   }
 }

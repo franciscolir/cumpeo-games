@@ -33,9 +33,9 @@ describe('LocalAdapter', () => {
       expect(adapter.db.name).toBe(DB_NAME);
     });
 
-    it('crea los 17 object stores', () => {
+    it('crea los 20 object stores', () => {
       const nombres = Array.from(adapter.db.objectStoreNames);
-      expect(nombres).toHaveLength(17);
+      expect(nombres).toHaveLength(20);
       for (const nombre of nombresDeStores()) {
         expect(nombres).toContain(nombre);
       }
@@ -45,7 +45,7 @@ describe('LocalAdapter', () => {
       await adapter.cerrar();
       const adapter2 = new LocalAdapter();
       await adapter2.abrir();
-      expect(adapter2.db.objectStoreNames.length).toBe(17);
+      expect(adapter2.db.objectStoreNames.length).toBe(20);
       await adapter2.cerrar();
     });
   });
@@ -82,7 +82,7 @@ describe('LocalAdapter', () => {
         }
       }
 
-      expect(total).toBe(49);
+      expect(total).toBe(56);
       expect(unicos).toBe(8);
     });
 

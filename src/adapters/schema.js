@@ -1,12 +1,12 @@
 /* =============================================================
    Esquema de IndexedDB  CUMPEO
-   1 base, 17 object stores, 49 índices secundarios, 8 únicos.
+   1 base, 20 object stores, 56 índices secundarios, 8 únicos.
    Nota: IndexedDB no admite boolean como clave de índice.
    Los campos "activo" se filtran en memoria desde los repositorios.
    ============================================================= */
 
 export const DB_NAME = 'cumpeo';
-export const DB_VERSION = 2;
+export const DB_VERSION = 3;
 
 export const STORES = [
   {
@@ -157,6 +157,31 @@ export const STORES = [
       { name: 'evento_tecnico_created_at', keyPath: 'created_at', unique: false },
       { name: 'evento_tecnico_partida_id_created_at', keyPath: ['partida_id', 'created_at'], unique: false },
       { name: 'evento_tecnico_juego_ejecutado_id', keyPath: 'juego_ejecutado_id', unique: false }
+    ]
+  },
+  {
+    nombre: 'mensajes_publicos',
+    keyPath: 'id',
+    indexes: [
+      { name: 'mensaje_publico_partida_id', keyPath: 'partida_id', unique: false },
+      { name: 'mensaje_publico_participante_id', keyPath: 'participante_id', unique: false },
+      { name: 'mensaje_publico_estado', keyPath: 'estado', unique: false }
+    ]
+  },
+  {
+    nombre: 'fotos_publicas',
+    keyPath: 'id',
+    indexes: [
+      { name: 'foto_publica_partida_id', keyPath: 'partida_id', unique: false },
+      { name: 'foto_publica_participante_id', keyPath: 'participante_id', unique: false },
+      { name: 'foto_publica_estado', keyPath: 'estado', unique: false }
+    ]
+  },
+  {
+    nombre: 'archivos_publicos',
+    keyPath: 'id',
+    indexes: [
+      { name: 'archivo_publico_created_at', keyPath: 'created_at', unique: false }
     ]
   }
 ];

@@ -32,7 +32,7 @@ export class LocalAdapter {
 
       request.onupgradeneeded = (event) => {
         try {
-          aplicarMigraciones(event.target.result, event.oldVersion);
+          aplicarMigraciones(event.target.result, event.oldVersion, event.target.transaction);
         } catch (err) {
           request.transaction.abort();
           reject(new IndexedDBError('Error durante la migración', err));
