@@ -13,3 +13,5 @@ Thumbs.db
 .env.local
 .env.*.local
 tmp/
+*.bak
+*.tmp
