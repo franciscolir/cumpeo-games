@@ -11,6 +11,7 @@ import {
   GameDefinitionRegistry
 } from '../services/index.js';
 
+import { GameUIRegistry, registrarGameUIs } from '../ui/games/index.js';
 import { SessionContext } from './session-context.js';
 import { registrarTodos } from '../games/registro.js';
 import { seedJuegos } from './seed.js';
@@ -40,14 +41,18 @@ export async function bootstrap(adapter, { usuarioId = null } = {}) {
     registry: new GameDefinitionRegistry()
   };
 
+  const uiRegistry = new GameUIRegistry();
+
   registrarTodos(services.registry);
+  registrarGameUIs(uiRegistry);
   await seedJuegos(services, services.registry);
 
   const app = {
     adapter,
     session,
     services,
-    registry: services.registry
+    registry: services.registry,
+    uiRegistry
   };
 
   if (typeof window !== 'undefined') {
