@@ -137,29 +137,29 @@ test('tomar control en la consola', async ({ page }) => {
   await page.goto('/');
   const circuitoId = await setupCircuitoYPartida(page);
   const partidaId = await crearPartidaDirectamente(page, circuitoId);
-  await page.goto(`/#/partidas-viejo/${partidaId}`);
+  await page.goto(`/#/partidas/${partidaId}`);
   await waitForCumpeo(page);
 
-  const btnTomar = page.locator('button[data-accion="tomar-control"]');
+  const btnTomar = page.locator('#btn-tomar-control');
   await expect(btnTomar).toBeVisible({ timeout: 10000 });
   await btnTomar.click();
-  await expect(page.getByText('Tenés el control')).toBeVisible({ timeout: 10000 });
+  await expect(page.locator('#btn-comenzar')).toBeVisible({ timeout: 10000 });
 });
 
 test('comenzar partida', async ({ page }) => {
   await page.goto('/');
   const circuitoId = await setupCircuitoYPartida(page);
   const partidaId = await crearPartidaDirectamente(page, circuitoId);
-  await page.goto(`/#/partidas-viejo/${partidaId}`);
+  await page.goto(`/#/partidas/${partidaId}`);
   await waitForCumpeo(page);
 
-  const btnTomar = page.locator('button[data-accion="tomar-control"]');
+  const btnTomar = page.locator('#btn-tomar-control');
   await expect(btnTomar).toBeVisible({ timeout: 10000 });
   await btnTomar.click();
-  await expect(page.getByText('Tenés el control')).toBeVisible({ timeout: 10000 });
+  await expect(page.locator('#btn-comenzar')).toBeVisible({ timeout: 10000 });
 
   page.on('dialog', (dialog) => dialog.accept());
-  const btnComenzar = page.locator('button[data-accion="comenzar"]');
+  const btnComenzar = page.locator('#btn-comenzar');
   await expect(btnComenzar).toBeVisible({ timeout: 5000 });
   await btnComenzar.click();
   await expect(page.getByText('EN_CURSO')).toBeVisible({ timeout: 10000 });
@@ -169,22 +169,22 @@ test('descartar partida', async ({ page }) => {
   await page.goto('/');
   const circuitoId = await setupCircuitoYPartida(page);
   const partidaId = await crearPartidaDirectamente(page, circuitoId);
-  await page.goto(`/#/partidas-viejo/${partidaId}`);
+  await page.goto(`/#/partidas/${partidaId}`);
   await waitForCumpeo(page);
 
-  const btnTomar = page.locator('button[data-accion="tomar-control"]');
+  const btnTomar = page.locator('#btn-tomar-control');
   await expect(btnTomar).toBeVisible({ timeout: 10000 });
   await btnTomar.click();
-  await expect(page.getByText('Tenés el control')).toBeVisible({ timeout: 10000 });
+  await expect(page.locator('#btn-comenzar')).toBeVisible({ timeout: 10000 });
 
   page.on('dialog', (dialog) => dialog.accept());
-  const btnComenzar = page.locator('button[data-accion="comenzar"]');
+  const btnComenzar = page.locator('#btn-comenzar');
   await expect(btnComenzar).toBeVisible({ timeout: 5000 });
   await btnComenzar.click();
   await expect(page.getByText('EN_CURSO')).toBeVisible({ timeout: 10000 });
 
-  const btnDescartar = page.locator('button[data-accion="descartar"]');
+  const btnDescartar = page.locator('#btn-descartar');
   await expect(btnDescartar).toBeVisible({ timeout: 5000 });
   await btnDescartar.click();
-  await expect(page.getByText(/No hay partidas activas|Partidas/)).toBeVisible({ timeout: 10000 });
+  await page.waitForURL(/#\/partidas\/?$/, { timeout: 10000 });
 });

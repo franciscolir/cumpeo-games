@@ -78,7 +78,7 @@ test('consola tiene link a pantalla pública', async ({ page }) => {
   await page.goto('/');
   const { partidaId, codigo } = await setupPartidaCompleta(page);
 
-  await page.goto(`/#/partidas-viejo/${partidaId}`);
+  await page.goto(`/#/partidas/${partidaId}`);
   await waitForCumpeo(page);
   const linkPublica = page.locator(`a[href*="/publica/"]`);
   await expect(linkPublica).toBeVisible({ timeout: 10000 });
