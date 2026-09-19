@@ -19,6 +19,7 @@ import { renderNuevaPartida } from './ui/partidas/nueva.js';
 import { renderConsolaPartida } from './ui/partidas/consola.js';
 import { renderShellPartida } from './ui/partidas/shell-partida.js';
 import { renderPantallaPublica } from './ui/publica/pantalla.js';
+import { renderShellPublica } from './ui/publica/shell-publica.js';
 
 /* =============================================================
    Tema
@@ -45,6 +46,7 @@ router.registrar('#/partidas/nueva', renderNuevaPartida);
 router.registrar('#/partidas/:id', renderShellPartida);
 router.registrar('#/partidas-viejo/:id', renderConsolaPartida);
 router.registrar('#/publica/:codigo', renderPantallaPublica);
+router.registrar('#/publica-nueva/:codigo', renderShellPublica);
 router.setNotFound((c) => {
   c.innerHTML = `<main class="min-h-screen p-6"><h1 class="font-display-hero text-4xl">404</h1><p class="mt-4">Ruta no encontrada</p></main>`;
 });
