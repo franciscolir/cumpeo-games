@@ -3,6 +3,8 @@
    Se llama una vez desde bootstrap().
    ============================================================= */
 
+import { TriviaGameUI } from './trivia/TriviaGameUI.js';
+
 /**
  * Registra todos los GameUIs disponibles en el registry.
  * @param {GameUIRegistry} uiRegistry
@@ -10,7 +12,7 @@
  */
 export function registrarGameUIs(uiRegistry) {
   const gameUIs = [
-    // Agregar aquí los GameUIs (paso 2.6: TriviaGameUI)
+    TriviaGameUI
   ];
 
   for (const ui of gameUIs) {

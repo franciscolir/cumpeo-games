@@ -113,3 +113,20 @@ test('Botón Pausar visible cuando juego EN_CURSO y tengo control', async ({ pag
   const btnPausar = page.locator('#btn-pausar');
   await expect(btnPausar).toBeVisible({ timeout: 15000 });
 });
+
+test('shell del conductor renderiza TriviaGameUI', async ({ page }) => {
+  await page.goto('/');
+  const { id } = await setupCircuitoYPartida(page);
+  await page.goto(`/#/partidas/${id}`);
+  await waitForCumpeo(page);
+
+  const tieneTrivia = await page.evaluate(() => {
+    return window.cumpeo.uiRegistry.existe('TRIVIA');
+  });
+  expect(tieneTrivia).toBe(true);
+
+  const gameUICount = await page.evaluate(() => {
+    return window.cumpeo.uiRegistry.cantidad();
+  });
+  expect(gameUICount).toBeGreaterThanOrEqual(1);
+});
