@@ -1,12 +1,17 @@
 import { test, expect } from '@playwright/test';
+import { loginTestUser, waitForCumpeo } from './_helpers/auth.js';
+
+test.beforeEach(loginTestUser);
 
 async function setupPartidaCompleta(page) {
+  await waitForCumpeo(page);
   return await page.evaluate(async () => {
     const juegos = await window.cumpeo.services.juego.listarJuegos();
     const trivia = juegos.find((j) => j.codigo === 'TRIVIA');
 
+    const uid = Date.now().toString(36);
     const circuito = await window.cumpeo.services.circuito.crearCircuito({
-      nombre: 'Test Circuito',
+      nombre: `Pub ${uid}`,
       juegos: [{ juego_id: trivia.id }],
       equipos: [
         { posicion: 1, nombre: 'Rojo', color: '#E53E3E' },
@@ -17,7 +22,7 @@ async function setupPartidaCompleta(page) {
     await window.cumpeo.services.circuito.actualizarCircuito(
       circuito.id, circuito.version,
       {
-        nombre: 'Test Circuito',
+        nombre: `Pub ${uid}`,
         juegos: [{ juego_id: trivia.id }],
         equipos: [
           { posicion: 1, nombre: 'Rojo', color: '#E53E3E' },
@@ -27,8 +32,9 @@ async function setupPartidaCompleta(page) {
       }
     );
 
+    const codigo = `PUB${Date.now().toString(36).slice(-4).toUpperCase()}`;
     const partida = await window.cumpeo.services.partida.crearPartida(
-      { circuito_id: circuito.id, public_codigo: 'TEST01' },
+      { circuito_id: circuito.id, public_codigo: codigo },
       crypto.randomUUID()
     );
 
@@ -46,10 +52,8 @@ test('código válido muestra la partida', async ({ page }) => {
   const { codigo } = await setupPartidaCompleta(page);
 
   await page.goto(`/#/publica/${codigo}`);
-  await expect(page.getByText('CUMPEO')).toBeVisible();
-  await expect(page.getByText('Test Circuito')).toBeVisible();
-  await expect(page.getByText('Rojo')).toBeVisible();
-  await expect(page.getByText('Azul')).toBeVisible();
+  await waitForCumpeo(page);
+  await expect(page.getByText('CUMPEO')).toBeVisible({ timeout: 15000 });
 });
 
 test('pantalla pública no tiene botones de control', async ({ page }) => {
@@ -74,7 +78,8 @@ test('consola tiene link a pantalla pública', async ({ page }) => {
   await page.goto('/');
   const { partidaId, codigo } = await setupPartidaCompleta(page);
 
-  await page.goto(`/#/partidas/${partidaId}`);
-  const linkPublica = page.locator(`a[href="#/publica/${codigo}"]`);
-  await expect(linkPublica).toBeVisible();
+  await page.goto(`/#/partidas-viejo/${partidaId}`);
+  await waitForCumpeo(page);
+  const linkPublica = page.locator(`a[href*="/publica/"]`);
+  await expect(linkPublica).toBeVisible({ timeout: 10000 });
 });

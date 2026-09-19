@@ -1,5 +1,5 @@
 /* =============================================================
-   Auth — wrappers sobre Supabase Auth (Magic Link).
+   Auth — wrappers sobre Supabase Auth (Magic Link y Password).
    ============================================================= */
 
 import { getSupabaseClient } from '../adapters/supabase/client.js';
@@ -38,6 +38,21 @@ export async function loginConMagicLink(email) {
     return { ok: false, error: error.message };
   }
   return { ok: true };
+}
+
+/**
+ * Inicia sesión con email y password.
+ * @param {string} email - Email del usuario.
+ * @param {string} password - Contraseña del usuario.
+ * @returns {Promise<{ok: boolean, session?: object, error?: string}>}
+ */
+export async function loginConPassword(email, password) {
+  const client = getSupabaseClient();
+  const { data, error } = await client.auth.signInWithPassword({ email, password });
+  if (error) {
+    return { ok: false, error: error.message };
+  }
+  return { ok: true, session: data.session };
 }
 
 /**

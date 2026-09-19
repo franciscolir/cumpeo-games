@@ -1,4 +1,7 @@
 import { test, expect } from '@playwright/test';
+import { loginTestUser, waitForCumpeo } from './_helpers/auth.js';
+
+test.beforeEach(loginTestUser);
 
 test('la app arranca y muestra el dashboard', async ({ page }) => {
   await page.goto('/');
@@ -34,6 +37,7 @@ test('el botón de tema cambia el tema', async ({ page }) => {
 
 test('los servicios quedan expuestos en window.cumpeo', async ({ page }) => {
   await page.goto('/');
+  await waitForCumpeo(page);
   const cumpeo = await page.evaluate(() => ({
     hasAdapter: !!window.cumpeo?.adapter,
     hasSession: !!window.cumpeo?.session,
@@ -50,6 +54,7 @@ test('los servicios quedan expuestos en window.cumpeo', async ({ page }) => {
 
 test('los juegos están seedeados en la DB', async ({ page }) => {
   await page.goto('/');
+  await waitForCumpeo(page);
   const juegos = await page.evaluate(async () => {
     return await window.cumpeo.services.juego.listarJuegos();
   });
