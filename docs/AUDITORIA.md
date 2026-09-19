@@ -45,7 +45,7 @@ _(ninguna)_
 | 2026-09-18 | 1 | 1.5 | ✅ APROBADO | ParticipanteRepository con session_token. Índice único en IndexedDB v4. 14 tests. | 2aee4f6 |
 | 4 | `validarNoVacio` lanza `Error` genérico en vez de `ValidacionError` | Paso 1.5 (detectado) | Baja |
 | 2026-09-18 | 1 | 1.6 | ✅ APROBADO | SupabaseStorageAdapter con signed URLs. 6 unit + 6 integration tests. | 7c3288f |
-| 5 | `crearStorageAdapter` no se invoca en bootstrap ni en repos. StorageAdapter desconectado. | Paso 1.6 (detectado) | Alta |
+| 5 | ~~`crearStorageAdapter` no se invoca en bootstrap ni en repos.~~ **RESUELTA en paso 2.4b.1 (547f005)** | Paso 1.6 (detectado) | Resuelta |
 | 6 | Tests de control en `partidas.spec.js` son laxos (`if (await btn.isVisible())`) | Paso 2.3a | Media |
 | 7 | Tests de control apuntan a `#/partidas-viejo/` (consola vieja) en vez del shell nuevo | Paso 2.3a | Media |
 | 8 | `indexeddb-smoke.spec.js` cambió de propósito (17 stores → 0 stores) | Paso 2.3a | Baja |
@@ -75,3 +75,5 @@ _(ninguna)_
 | 2026-09-19 | Paso 2.4 (Portar consola.js) cancelado. Bloque 2 pasa de 8 a 7 pasos. | La lógica ya fue portada en paso 2.3 (ShellPartida). |
 
 | 2026-09-19 | 2 | 2.4a | ✅ APROBADO | ShellPublica base. 4 tests. Flaky general en e2e detectado. | c75fcf5 |
+
+| 2026-09-19 | 2 | 2.4b.1 | ✅ APROBADO | Storage + foto + mensaje en bootstrap. Bug de crearStorageAdapter corregido. | 547f005 |
