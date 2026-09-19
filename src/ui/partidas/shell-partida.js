@@ -186,15 +186,15 @@ function _renderTopBar(partida, tieneControl, app, partidaId) {
   const colorClase = estadoColor[partida.estado] || 'text-on-surface-variant';
 
   const btnPausar = tieneControl && partida.estado === 'EN_CURSO'
-    ? Boton({ texto: 'Pausar', variante: 'ghost', clase: 'data-accion-pausar' })
+    ? Boton({ texto: 'Pausar', variante: 'ghost', id: 'btn-pausar' })
     : '';
 
   const btnReanudar = tieneControl && partida.estado === 'PAUSADO'
-    ? Boton({ texto: 'Reanudar', variante: 'ghost', clase: 'data-accion-reanudar' })
+    ? Boton({ texto: 'Reanudar', variante: 'ghost', id: 'btn-reanudar' })
     : '';
 
   const btnFin = tieneControl && (partida.estado === 'EN_CURSO' || partida.estado === 'PAUSADO')
-    ? Boton({ texto: 'Fin', variante: 'danger', clase: 'data-accion-finalizar' })
+    ? Boton({ texto: 'Fin', variante: 'danger', id: 'btn-fin' })
     : '';
 
   const btnPublica = partida.public_codigo
@@ -226,8 +226,8 @@ function _renderTopBar(partida, tieneControl, app, partidaId) {
    ============================================================= */
 
 function _renderHeroScoreboard(partida, juegoActivo, equipos) {
-  const equipo1 = equipos[0] || { nombre: '—', puntaje: 0, color: '#3182CE' };
-  const equipo2 = equipos[1] || { nombre: '—', puntaje: 0, color: '#E53E3E' };
+  const equipo1 = equipos[0] || { nombre: '—', puntaje: 0 };
+  const equipo2 = equipos[1] || { nombre: '—', puntaje: 0 };
 
   const juegoNombre = juegoActivo
     ? (juegoActivo.juego_nombre || juegoActivo.juego_codigo || 'Juego')
@@ -245,14 +245,14 @@ function _renderHeroScoreboard(partida, juegoActivo, equipos) {
         ${ronda ? `<p class="font-body-sm text-on-surface-variant">${ronda}</p>` : ''}
         ${juegoEstado ? `<p class="font-label-sm text-on-surface-variant uppercase">${juegoEstado}</p>` : ''}
       </div>
-      <div class="col-span-3 flex flex-col items-center justify-center border-2 border-on-surface rounded-xl p-2" style="background: ${equipo1.color}15">
+      <div class="col-span-3 flex flex-col items-center justify-center border-2 border-[#00D2FF] rounded-xl p-2 bg-[#00D2FF]/15">
         <p class="font-body-md uppercase">${equipo1.nombre}</p>
         <p class="font-display-hero text-3xl">${fmtPuntos(equipo1.puntaje || 0)}</p>
       </div>
       <div class="col-span-1 flex items-center justify-center">
         <span class="font-display-hero text-2xl text-on-surface-variant">VS</span>
       </div>
-      <div class="col-span-3 flex flex-col items-center justify-center border-2 border-on-surface rounded-xl p-2" style="background: ${equipo2.color}15">
+      <div class="col-span-3 flex flex-col items-center justify-center border-2 border-[#FF3344] rounded-xl p-2 bg-[#FF3344]/15">
         <p class="font-body-md uppercase">${equipo2.nombre}</p>
         <p class="font-display-hero text-3xl">${fmtPuntos(equipo2.puntaje || 0)}</p>
       </div>
@@ -279,7 +279,7 @@ function _renderPlaceholder(mensaje) {
 function _bindAcciones(container, app, partidaId, juegoActivo) {
   const sessionId = app.session.sessionId;
 
-  const btnPausar = container.querySelector('[data-accion-pausar]');
+  const btnPausar = container.querySelector('#btn-pausar');
   if (btnPausar) {
     btnPausar.addEventListener('click', async () => {
       try {
@@ -289,7 +289,7 @@ function _bindAcciones(container, app, partidaId, juegoActivo) {
     });
   }
 
-  const btnReanudar = container.querySelector('[data-accion-reanudar]');
+  const btnReanudar = container.querySelector('#btn-reanudar');
   if (btnReanudar) {
     btnReanudar.addEventListener('click', async () => {
       try {
@@ -299,7 +299,7 @@ function _bindAcciones(container, app, partidaId, juegoActivo) {
     });
   }
 
-  const btnFin = container.querySelector('[data-accion-finalizar]');
+  const btnFin = container.querySelector('#btn-fin');
   if (btnFin) {
     btnFin.addEventListener('click', async () => {
       if (!window.confirm('¿Finalizar el circuito completo?')) return;

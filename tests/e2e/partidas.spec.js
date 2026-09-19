@@ -36,6 +36,17 @@ async function setupCircuitoYPartida(page) {
   });
 }
 
+async function crearPartidaDirectamente(page, circuitoId) {
+  return await page.evaluate(async (cid) => {
+    const codigo = `PT${Date.now().toString(36).slice(-4).toUpperCase()}`;
+    const partida = await window.cumpeo.services.partida.crearPartida(
+      { circuito_id: cid, public_codigo: codigo },
+      crypto.randomUUID()
+    );
+    return partida.id;
+  }, circuitoId);
+}
+
 test('navegar de dashboard a lista de partidas', async ({ page }) => {
   await page.goto('/');
   await page.click('a[href="#/partidas"]');
@@ -124,76 +135,56 @@ test('ir a la consola desde la lista', async ({ page }) => {
 
 test('tomar control en la consola', async ({ page }) => {
   await page.goto('/');
-  const partidaId = await setupCircuitoYPartida(page);
-  await page.goto('/#/partidas/nueva');
-  await waitForCumpeo(page);
-  await page.click('button[type="submit"]');
-  await page.waitForURL(/#\/partidas\/[^/]+$/);
-  const newId = page.url().split('/').pop();
-  await page.goto(`/#/partidas-viejo/${newId}`);
+  const circuitoId = await setupCircuitoYPartida(page);
+  const partidaId = await crearPartidaDirectamente(page, circuitoId);
+  await page.goto(`/#/partidas-viejo/${partidaId}`);
   await waitForCumpeo(page);
 
   const btnTomar = page.locator('button[data-accion="tomar-control"]');
-  if (await btnTomar.isVisible({ timeout: 5000 }).catch(() => false)) {
-    await btnTomar.click();
-    await expect(page.getByText('Tenés el control')).toBeVisible({ timeout: 10000 });
-  }
+  await expect(btnTomar).toBeVisible({ timeout: 10000 });
+  await btnTomar.click();
+  await expect(page.getByText('Tenés el control')).toBeVisible({ timeout: 10000 });
 });
 
 test('comenzar partida', async ({ page }) => {
   await page.goto('/');
-  await setupCircuitoYPartida(page);
-  await page.goto('/#/partidas/nueva');
-  await waitForCumpeo(page);
-  await page.click('button[type="submit"]');
-  await page.waitForURL(/#\/partidas\/[^/]+$/);
-  const newId = page.url().split('/').pop();
-  await page.goto(`/#/partidas-viejo/${newId}`);
+  const circuitoId = await setupCircuitoYPartida(page);
+  const partidaId = await crearPartidaDirectamente(page, circuitoId);
+  await page.goto(`/#/partidas-viejo/${partidaId}`);
   await waitForCumpeo(page);
 
   const btnTomar = page.locator('button[data-accion="tomar-control"]');
-  if (await btnTomar.isVisible({ timeout: 5000 }).catch(() => false)) {
-    await btnTomar.click();
-    await expect(page.getByText('Tenés el control')).toBeVisible({ timeout: 10000 });
-  }
+  await expect(btnTomar).toBeVisible({ timeout: 10000 });
+  await btnTomar.click();
+  await expect(page.getByText('Tenés el control')).toBeVisible({ timeout: 10000 });
 
   page.on('dialog', (dialog) => dialog.accept());
   const btnComenzar = page.locator('button[data-accion="comenzar"]');
-  if (await btnComenzar.isVisible({ timeout: 5000 }).catch(() => false)) {
-    await btnComenzar.click();
-    await expect(page.getByText('EN_CURSO')).toBeVisible({ timeout: 10000 });
-  }
+  await expect(btnComenzar).toBeVisible({ timeout: 5000 });
+  await btnComenzar.click();
+  await expect(page.getByText('EN_CURSO')).toBeVisible({ timeout: 10000 });
 });
 
 test('descartar partida', async ({ page }) => {
   await page.goto('/');
-  await setupCircuitoYPartida(page);
-  await page.goto('/#/partidas/nueva');
-  await waitForCumpeo(page);
-  await page.click('button[type="submit"]');
-  await page.waitForURL(/#\/partidas\/[^/]+$/);
-  const newId = page.url().split('/').pop();
-  await page.goto(`/#/partidas-viejo/${newId}`);
+  const circuitoId = await setupCircuitoYPartida(page);
+  const partidaId = await crearPartidaDirectamente(page, circuitoId);
+  await page.goto(`/#/partidas-viejo/${partidaId}`);
   await waitForCumpeo(page);
 
   const btnTomar = page.locator('button[data-accion="tomar-control"]');
-  if (await btnTomar.isVisible({ timeout: 5000 }).catch(() => false)) {
-    await btnTomar.click();
-    await expect(page.getByText('Tenés el control')).toBeVisible({ timeout: 10000 });
-  }
+  await expect(btnTomar).toBeVisible({ timeout: 10000 });
+  await btnTomar.click();
+  await expect(page.getByText('Tenés el control')).toBeVisible({ timeout: 10000 });
 
   page.on('dialog', (dialog) => dialog.accept());
   const btnComenzar = page.locator('button[data-accion="comenzar"]');
-  if (await btnComenzar.isVisible({ timeout: 5000 }).catch(() => false)) {
-    await btnComenzar.click();
-    await expect(page.getByText('EN_CURSO')).toBeVisible({ timeout: 10000 });
-  }
+  await expect(btnComenzar).toBeVisible({ timeout: 5000 });
+  await btnComenzar.click();
+  await expect(page.getByText('EN_CURSO')).toBeVisible({ timeout: 10000 });
 
   const btnDescartar = page.locator('button[data-accion="descartar"]');
-  if (await btnDescartar.isVisible({ timeout: 5000 }).catch(() => false)) {
-    await btnDescartar.click();
-    const anyVisible = await page.getByText(/No hay partidas activas/).isVisible().catch(() => false)
-      || await page.locator('ul li').count() > 0;
-    expect(anyVisible).toBe(true);
-  }
+  await expect(btnDescartar).toBeVisible({ timeout: 5000 });
+  await btnDescartar.click();
+  await expect(page.getByText(/No hay partidas activas|Partidas/)).toBeVisible({ timeout: 10000 });
 });

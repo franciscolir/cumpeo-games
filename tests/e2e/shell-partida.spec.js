@@ -77,3 +77,39 @@ test('botón "Ver pública" tiene target="_blank"', async ({ page }) => {
   await expect(btn).toBeVisible({ timeout: 15000 });
   await expect(btn).toHaveAttribute('target', '_blank');
 });
+
+test('Equipo 1 usa color comicBlue', async ({ page }) => {
+  await page.goto('/');
+  const { id } = await setupCircuitoYPartida(page);
+  await page.goto(`/#/partidas/${id}`);
+  await waitForCumpeo(page);
+  const team1Box = page.locator('.border-\\[\\#00D2FF\\]').first();
+  await expect(team1Box).toBeVisible({ timeout: 15000 });
+});
+
+test('Equipo 2 usa color comicRed', async ({ page }) => {
+  await page.goto('/');
+  const { id } = await setupCircuitoYPartida(page);
+  await page.goto(`/#/partidas/${id}`);
+  await waitForCumpeo(page);
+  const team2Box = page.locator('.border-\\[\\#FF3344\\]').first();
+  await expect(team2Box).toBeVisible({ timeout: 15000 });
+});
+
+test('Botón Pausar visible cuando juego EN_CURSO y tengo control', async ({ page }) => {
+  await page.goto('/');
+  const { id } = await setupCircuitoYPartida(page);
+  await page.goto(`/#/partidas/${id}`);
+  await waitForCumpeo(page);
+
+  await page.evaluate(async (pid) => {
+    await window.cumpeo.services.partida.tomarControl(pid, window.cumpeo.session.sessionId);
+    await window.cumpeo.services.partida.comenzarPartida(pid, window.cumpeo.session.sessionId, crypto.randomUUID());
+  }, id);
+
+  await page.goto('/');
+  await page.goto(`/#/partidas/${id}`);
+  await waitForCumpeo(page);
+  const btnPausar = page.locator('#btn-pausar');
+  await expect(btnPausar).toBeVisible({ timeout: 15000 });
+});
