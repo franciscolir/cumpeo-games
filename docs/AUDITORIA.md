@@ -61,3 +61,5 @@ _(ninguna)_
 | 2026-09-18 | 2 | 2.2 | ✅ APROBADO | GameUIRegistry con contrato validado. 17 tests. | 42d622c |
 
 | 2026-09-18 | 2 | 2.3 + 2.3a | ✅ APROBADO | ShellPartida + login e2e. 39 e2e passing. Deuda técnica en tests laxos. | 73f0cbf |
+
+| 2026-09-18 | 2 | 2.3b | ✅ APROBADO | obtenerContextoEspera enriquecido con juego_codigo. 2 tests. | 927ceac |

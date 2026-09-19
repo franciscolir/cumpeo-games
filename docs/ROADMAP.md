@@ -2,7 +2,7 @@
 
 **Versión:** 1.0
 **Última actualización:** 2026-09-18
-**Estado global:** Bloque 1 cerrado · Bloque 2 en progreso (4/8)
+**Estado global:** Bloque 1 cerrado · Bloque 2 en progreso (5/8)
 **Rama:** feature/vertical-slice
 
 ---
@@ -100,8 +100,8 @@
 
 ---
 
-### Bloque 2 — Shell de partida (Conductor + Pública) 🔄 EN PROGRESO (4/8)
-| 2 | Shell de partida (Conductor + Pública) | EN PROGRESO | 4/8 | — | — |
+### Bloque 2 — Shell de partida (Conductor + Pública) 🔄 EN PROGRESO (5/8)
+| 2 | Shell de partida (Conductor + Pública) | EN PROGRESO | 5/8 | — | — |
 **Objetivo:** Crear el shell común de partida que permite enchufar cualquier juego sin rehacer UI.
 
 #### Pasos (preliminares)
@@ -112,7 +112,7 @@
 | 2.2 | Contrato GameUI | ✅ | 42d622c | bloque-2-paso-2.md |
 | 2.3 | ShellPartida (Conductor) | ✅ | 73f0cbf | bloque-2-paso-3.md |
 | 2.3a | Login programático e2e | ✅ | 73f0cbf | bloque-2-paso-3.md |
-| 2.3b | Extender obtenerContextoEspera con juego_codigo | ⬜ | — | — |
+| 2.3b | Extender obtenerContextoEspera con juego_codigo | ✅ | 927ceac | bloque-2-paso-3b.md |
 | 2.3c | Corregir shell (data-accion, colores) | ⬜ | — | — |
 | 2.4 | Portar lógica de consola.js | ⬜ | — | — |
 | 2.5 | ShellPublica (Pública) | ⬜ | — | — |
@@ -121,7 +121,7 @@
 
 
 
-**Paso 2.3b en preparación (extender obtenerContextoEspera).**
+**Paso 2.3c en preparación (corregir shell).**
 ---
 
 ### Bloque 3 — Móvil + moderación ⬜ PENDIENTE
