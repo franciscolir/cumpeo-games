@@ -115,7 +115,7 @@
 | 2.3c | Corregir shell (data-accion, colores) | ✅ | 13a01aa | bloque-2-paso-3c.md |
 | 2.4a | Shell pública base | ✅ | c75fcf5 | bloque-2-paso-4a.md |
 | 2.4b.1 | Conectar Storage + repos al bootstrap | ✅ | 547f005 | bloque-2-paso-4b1.md |
-| 2.4b | Galería de fotos + QR | ⬜ PENDIENTE | — | — |
+| 2.4b.2 | Galería de fotos + QR en shell | ⬜ PENDIENTE | — | — |
 | 2.4c | Marquee + próximo desafío | ⬜ PENDIENTE | — | — |
 | 2.5 | Migrar Trivia al shell | ⬜ PENDIENTE | — | — |
 | 2.6 | Eliminar consola.js viejo | ⬜ PENDIENTE | — | — |
