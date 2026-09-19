@@ -27,3 +27,14 @@ ON mensajes_publicos FOR ALL
 TO authenticated
 USING (true)
 WITH CHECK (true);
+
+-- =============================================================
+-- GRANTs (necesarios además de RLS).
+-- Las tablas nuevas no los recibieron automáticamente.
+-- =============================================================
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE fotos_publicas TO authenticated;
+GRANT SELECT ON TABLE fotos_publicas TO anon;
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE mensajes_publicos TO authenticated;
+GRANT SELECT ON TABLE mensajes_publicos TO anon;
