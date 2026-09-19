@@ -53,6 +53,7 @@ _(ninguna)_
 | 10 | Credenciales hardcodeadas en `tests/e2e/_helpers/auth.js` | Paso 2.3a | Baja |
 | 11 | `playwright.config.js` sin config para CI | Paso 2.3a | Baja |
 | 12 | Test `lista de sets sin filtro muestra mensaje` es flaky en corrida completa | Paso 2.3c (detectado) | Media |
+| 13 | Flaky general en e2e ("Failed to fetch" en varios tests) | Paso 2.4a (detectado) | Media |
 ## Cierre de bloque
 
 | Fecha | Bloque | Estado | Notas |
@@ -72,3 +73,5 @@ _(ninguna)_
 | Fecha | Cambio | Razón |
 |-------|--------|-------|
 | 2026-09-19 | Paso 2.4 (Portar consola.js) cancelado. Bloque 2 pasa de 8 a 7 pasos. | La lógica ya fue portada en paso 2.3 (ShellPartida). |
+
+| 2026-09-19 | 2 | 2.4a | ✅ APROBADO | ShellPublica base. 4 tests. Flaky general en e2e detectado. | c75fcf5 |

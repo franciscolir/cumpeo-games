@@ -2,7 +2,7 @@
 
 **Versión:** 1.0
 **Última actualización:** 2026-09-18
-**Estado global:** Bloque 1 cerrado · Bloque 2 en progreso (6/7)
+**Estado global:** Bloque 1 cerrado · Bloque 2 en progreso (7/10)
 **Rama:** feature/vertical-slice
 
 ---
@@ -100,8 +100,8 @@
 
 ---
 
-### Bloque 2 — Shell de partida (Conductor + Pública) 🔄 EN PROGRESO (6/7)
-| 2 | Shell de partida (Conductor + Pública) | EN PROGRESO | 6/7 | — | — |
+### Bloque 2 — Shell de partida (Conductor + Pública) 🔄 EN PROGRESO (7/10)
+| 2 | Shell de partida (Conductor + Pública) | EN PROGRESO | 7/10 | — | — |
 **Objetivo:** Crear el shell común de partida que permite enchufar cualquier juego sin rehacer UI.
 
 #### Pasos (preliminares)
@@ -113,13 +113,15 @@
 | 2.3a | Login programático e2e | ✅ | 73f0cbf | bloque-2-paso-3.md |
 | 2.3b | Extender obtenerContextoEspera con juego_codigo | ✅ | 927ceac | bloque-2-paso-3b.md |
 | 2.3c | Corregir shell (data-accion, colores) | ✅ | 13a01aa | bloque-2-paso-3c.md |
-| 2.4 | ShellPublica (Pública) | ⬜ PENDIENTE | — | — |
+| 2.4a | Shell pública base | ✅ | c75fcf5 | bloque-2-paso-4a.md |
+| 2.4b | Galería de fotos + QR | ⬜ PENDIENTE | — | — |
+| 2.4c | Marquee + próximo desafío | ⬜ PENDIENTE | — | — |
 | 2.5 | Migrar Trivia al shell | ⬜ PENDIENTE | — | — |
 | 2.6 | Eliminar consola.js viejo | ⬜ PENDIENTE | — | — |
 
 
 
-**Paso 2.4 en preparación (ShellPublica).**
+**Paso 2.4b en preparación (galería + QR).**
 
 **Nota:** El paso "2.4 Portar lógica de consola.js" fue cancelado porque la
 lógica ya fue portada durante el paso 2.3 (ShellPartida). Los pasos 2.5, 2.6
