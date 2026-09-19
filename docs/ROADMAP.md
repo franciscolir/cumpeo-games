@@ -2,7 +2,7 @@
 
 **Versión:** 1.0
 **Última actualización:** 2026-09-18
-**Estado global:** Bloques 0, 1, 2 cerrados · Bloque 3 en progreso (1/7)
+**Estado global:** Bloques 0, 1, 2 cerrados · Bloque 3 en progreso (2/6)
 **Rama:** feature/vertical-slice
 
 ---
@@ -136,13 +136,15 @@ y 2.7 originales fueron renumerados a 2.4, 2.5 y 2.6 respectivamente.
 | # | Paso | Estado | Commit | Prompt archivado |
 |---|------|--------|--------|------------------|
 | 3.1 | Ruta #/movil/:codigo + pantalla base | ✅ | c981d3e | — |
-| 3.2 | Identificación + session_token | ⬜ PENDIENTE | — | — |
-| 3.3 | Pantalla principal del móvil | ⬜ PENDIENTE | — | — |
-| 3.4 | Envío de mensajes | ⬜ PENDIENTE | — | — |
-| 3.5 | Envío de fotos | ⬜ PENDIENTE | — | — |
-| 3.6 | Cola de moderación | ⬜ PENDIENTE | — | — |
-| 3.7 | Muro de mensajes/fotos en pública | ⬜ PENDIENTE | — | — |
-
+| 3.2 | Identificación + session_token | ✅ | 63c7f7e | — |
+| 3.3 | Envío de mensajes | ⬜ PENDIENTE | — | — |
+| 3.4 | Envío de fotos | ⬜ PENDIENTE | — | — |
+| 3.5 | Cola de moderación | ⬜ PENDIENTE | — | — |
+| 3.6 | Muro de mensajes/fotos en pública | ⬜ PENDIENTE | — | — |
+**Paso 3.3 en preparación (envío de mensajes).**
+**Nota:** El paso "3.3 Pantalla principal del móvil" fue fusionado
+con "3.4 Envío de mensajes" porque la pantalla ya existía (pasos 3.1 + 3.2).
+El Bloque 3 pasa de 7 a 6 pasos.
 ---
 
 ### Bloque 4 — "¿Qué piensa el público?" ⬜ PENDIENTE

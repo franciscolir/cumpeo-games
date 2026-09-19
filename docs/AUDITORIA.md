@@ -101,3 +101,11 @@ _(ninguna)_
 | 2026-09-19 | 2 | ✅ CERRADO | 13/13 pasos. 540 unit + 53 e2e. Commits: 5e32d5b, 5cad6c0, ac3cff8. |
 
 | 2026-09-19 | 3 | 3.1 | ✅ APROBADO | Ruta #/movil/:codigo + pantalla base. 4 e2e tests. | c981d3e |
+
+| 2026-09-19 | 3 | 3.2 | ✅ APROBADO | Identificación + session_token en móvil. 8 e2e tests. | 63c7f7e |
+
+## Reorganización del Bloque 3
+
+| Fecha | Cambio | Razón |
+|-------|--------|-------|
+| 2026-09-19 | Paso 3.3 (Pantalla principal) fusionado con 3.4 (Envío de mensajes). Bloque 3 pasa de 7 a 6 pasos. | La pantalla principal ya existía (pasos 3.1 + 3.2). |
