@@ -16,6 +16,7 @@ import { ahora, nuevoId, validarNoVacio } from './utils.js';
 import { TIPO_ACCION } from '../services/acciones.js';
 
 const STORE_PARTIDAS = 'partidas';
+const STORE_JUEGOS = 'juegos';
 const STORE_JUEGOS_EJECUTADOS = 'juego_ejecutados';
 const STORE_EQUIPOS_PARTIDA = 'equipo_partidas';
 const STORE_PARTICIPANTES = 'participante_partidas';
@@ -130,11 +131,17 @@ export class PartidaRepository extends BaseRepository {
         eq: { partida_id: partidaId }
       });
 
+      const juegosCatalogo = await this.adapter.query(STORE_JUEGOS);
+      const juegoCodigoMap = new Map(juegosCatalogo.map(j => [j.id, j.codigo]));
+
       return {
         partida,
         equipos: equipos.sort((a, b) => a.posicion - b.posicion),
         participantes,
-        juegos: juegos.sort((a, b) => a.orden - b.orden)
+        juegos: juegos.sort((a, b) => a.orden - b.orden).map(j => ({
+          ...j,
+          juego_codigo: juegoCodigoMap.get(j.juego_id) ?? null
+        }))
       };
     }
 
@@ -143,7 +150,8 @@ export class PartidaRepository extends BaseRepository {
         STORE_PARTIDAS,
         STORE_EQUIPOS_PARTIDA,
         STORE_PARTICIPANTES,
-        STORE_JUEGOS_EJECUTADOS
+        STORE_JUEGOS_EJECUTADOS,
+        STORE_JUEGOS
       ],
       'readonly',
       (tx, resolver) => {
@@ -175,8 +183,23 @@ export class PartidaRepository extends BaseRepository {
                 .getAll(partidaId);
 
               reqJuegos.onsuccess = () => {
-                const juegos = reqJuegos.result.sort((a, b) => a.orden - b.orden);
-                resolver({ partida, equipos, participantes, juegos });
+                const juegosRaw = reqJuegos.result.sort((a, b) => a.orden - b.orden);
+
+                const juegosCatalogoStore = tx.objectStore(STORE_JUEGOS);
+                const reqCatalogo = juegosCatalogoStore.getAll();
+
+                reqCatalogo.onsuccess = () => {
+                  const juegoCodigoMap = new Map(
+                    reqCatalogo.result.map(j => [j.id, j.codigo])
+                  );
+                  const juegos = juegosRaw.map(j => ({
+                    ...j,
+                    juego_codigo: juegoCodigoMap.get(j.juego_id) ?? null
+                  }));
+                  resolver({ partida, equipos, participantes, juegos });
+                };
+
+                reqCatalogo.onerror = () => tx.abort();
               };
 
               reqJuegos.onerror = () => tx.abort();

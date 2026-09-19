@@ -43,7 +43,7 @@ describe('PartidaRepository', () => {
   async function crearCircuitoListoConJuegos(circuitoId = 'c1', nJuegos = 2) {
     const ts = new Date().toISOString();
     await adapter.tx(
-      ['circuitos', 'circuito_juegos', 'equipo_circuitos'],
+      ['circuitos', 'circuito_juegos', 'equipo_circuitos', 'juegos'],
       'readwrite',
       (tx) => {
         tx.objectStore('circuitos').add({
@@ -59,10 +59,21 @@ describe('PartidaRepository', () => {
           tx.objectStore('circuito_juegos').add({
             id: `cj-${circuitoId}-${i + 1}`,
             circuito_id: circuitoId,
-            juego_id: `j${i + 1}`,
+            juego_id: `${circuitoId}-j${i + 1}`,
             orden: i + 1,
             configuracion: { rondas: 3 },
             snapshot_id: null,
+            created_at: ts,
+            updated_at: ts
+          });
+          tx.objectStore('juegos').add({
+            id: `${circuitoId}-j${i + 1}`,
+            codigo: `${circuitoId}_JUEGO_${i + 1}`,
+            nombre: `Juego ${i + 1}`,
+            descripcion: null,
+            requiere_set: false,
+            orden_catalogo: i + 1,
+            activo: true,
             created_at: ts,
             updated_at: ts
           });
@@ -358,6 +369,70 @@ describe('PartidaRepository', () => {
       expect(ctx.partida.id).toBe(partida.id);
       expect(ctx.equipos).toHaveLength(2);
       expect(ctx.juegos).toHaveLength(3);
+    });
+
+    it('obtenerContextoEspera enriquece juegos con juego_codigo del catálogo', async () => {
+      const { partida } = await escenarioPartidaEnCurso();
+      const ctx = await repo.obtenerContextoEspera(partida.id);
+      for (let i = 0; i < ctx.juegos.length; i++) {
+        expect(ctx.juegos[i].juego_codigo).toBe(`c1_JUEGO_${i + 1}`);
+      }
+    });
+
+    it('obtenerContextoEspera devuelve juego_codigo null si juego no existe en catálogo', async () => {
+      const ts = new Date().toISOString();
+      await adapter.tx(
+        ['circuitos', 'circuito_juegos', 'equipo_circuitos'],
+        'readwrite',
+        (tx) => {
+          tx.objectStore('circuitos').add({
+            id: 'cNoCatalogo',
+            nombre: 'Sin Catálogo',
+            estado: 'LISTO',
+            es_plantilla: false,
+            version: 1,
+            created_at: ts,
+            updated_at: ts
+          });
+          tx.objectStore('circuito_juegos').add({
+            id: 'cj-nocat-1',
+            circuito_id: 'cNoCatalogo',
+            juego_id: 'j-inexistente',
+            orden: 1,
+            configuracion: {},
+            snapshot_id: null,
+            created_at: ts,
+            updated_at: ts
+          });
+          tx.objectStore('equipo_circuitos').add({
+            id: 'ec-nocat-1',
+            circuito_id: 'cNoCatalogo',
+            equipo_guardado_id: null,
+            posicion: 1,
+            nombre: 'Equipo A',
+            color: '#000',
+            created_at: ts,
+            updated_at: ts
+          });
+          tx.objectStore('equipo_circuitos').add({
+            id: 'ec-nocat-2',
+            circuito_id: 'cNoCatalogo',
+            equipo_guardado_id: null,
+            posicion: 2,
+            nombre: 'Equipo B',
+            color: '#FFF',
+            created_at: ts,
+            updated_at: ts
+          });
+        }
+      );
+      const p = await repo.crearPartida({ circuito_id: 'cNoCatalogo', public_codigo: 'NC1', actionId: nuevoActionId() });
+      await tomarControl(p.id);
+      await repo.comenzarPartida(p.id, SESION, nuevoActionId());
+
+      const ctx = await repo.obtenerContextoEspera(p.id);
+      expect(ctx.juegos[0].juego_id).toBe('j-inexistente');
+      expect(ctx.juegos[0].juego_codigo).toBeNull();
     });
   });
 
