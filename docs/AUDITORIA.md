@@ -113,3 +113,5 @@ _(ninguna)_
 | 2026-09-19 | 3 | 3.3 | ✅ APROBADO | Envío de mensajes desde móvil. 11 e2e tests. | 8e7e614 |
 
 | 2026-09-19 | 3 | 3.4 | ✅ APROBADO | Envío de fotos desde móvil. 14 e2e tests. | 3b3c84a |
+
+| 2026-09-19 | 3 | 3.5 | ✅ APROBADO | Cola de moderación en shell del conductor. 14 e2e tests. | fc44d02 |

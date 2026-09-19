@@ -2,7 +2,7 @@
 
 **Versión:** 1.0
 **Última actualización:** 2026-09-18
-**Estado global:** Bloques 0, 1, 2 cerrados · Bloque 3 en progreso (4/6)
+**Estado global:** Bloques 0, 1, 2 cerrados · Bloque 3 en progreso (5/6)
 **Rama:** feature/vertical-slice
 
 ---
@@ -127,7 +127,7 @@ lógica ya fue portada durante el paso 2.3 (ShellPartida). Los pasos 2.5, 2.6
 y 2.7 originales fueron renumerados a 2.4, 2.5 y 2.6 respectivamente.
 ---
 
-### Bloque 3 — Móvil + moderación 🔄 EN PROGRESO (4/6)
+### Bloque 3 — Móvil + moderación 🔄 EN PROGRESO (5/6)
 
 **Objetivo:** Implementar la interfaz móvil con identificación por nombre, envío de mensajes y fotos, y cola de moderación en el conductor.
 
@@ -139,7 +139,7 @@ y 2.7 originales fueron renumerados a 2.4, 2.5 y 2.6 respectivamente.
 | 3.2 | Identificación + session_token | ✅ | 63c7f7e | — |
 | 3.3 | Envío de mensajes | ✅ | 8e7e614 | — |
 | 3.4 | Envío de fotos | ✅ | 3b3c84a | — |
-| 3.5 | Cola de moderación | ⬜ PENDIENTE | — | — |
+| 3.5 | Cola de moderación | ✅ | fc44d02 | — |
 | 3.6 | Muro de mensajes/fotos en pública | ⬜ PENDIENTE | — | — |
 **Paso 3.3 en preparación (envío de mensajes).**
 **Nota:** El paso "3.3 Pantalla principal del móvil" fue fusionado
