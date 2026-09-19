@@ -2,7 +2,7 @@
 
 **Versión:** 1.0
 **Última actualización:** 2026-09-18
-**Estado global:** Bloque 1 cerrado · Bloque 2 en progreso (11/12)
+**Estado global:** Bloques 0, 1, 2 cerrados · Bloque 3 en preparación
 **Rama:** feature/vertical-slice
 
 ---
@@ -100,8 +100,8 @@
 
 ---
 
-### Bloque 2 — Shell de partida (Conductor + Pública) 🔄 EN PROGRESO (11/12)
-| 2 | Shell de partida (Conductor + Pública) | EN PROGRESO | 11/12 | — | — |
+### Bloque 2 — Shell de partida (Conductor + Pública) ✅ CERRADO (13/13)
+| 2 | Shell de partida (Conductor + Pública) | ✅ CERRADO | 13/13 | 5e32d5b | 2026-09-19 |
 **Objetivo:** Crear el shell común de partida que permite enchufar cualquier juego sin rehacer UI.
 
 #### Pasos (preliminares)
@@ -121,7 +121,7 @@
 | 2.6 | Eliminar consola.js viejo | ⬜ PENDIENTE | — | — |
 
 
-**Paso 2.6 en preparación (eliminar consola.js viejo).**
+**Bloque 2 cerrado. Bloque 3 en preparación (Móvil + moderación).**
 **Nota:** El paso "2.4 Portar lógica de consola.js" fue cancelado porque la
 lógica ya fue portada durante el paso 2.3 (ShellPartida). Los pasos 2.5, 2.6
 y 2.7 originales fueron renumerados a 2.4, 2.5 y 2.6 respectivamente.
@@ -204,6 +204,7 @@ Cada juego se cierra con su propio bloque interno (GameDefinition + UI Conductor
 | 1.1 | 2026-09-18 | Bloque 1 cerrado. 6 pasos, 517 unit / 105 integration tests. |
 | 1.2 | 2026-09-18 | Bloque 2 iniciado. AC-VISUAL definidos. 7 pasos. |
 | 1.4 | 2026-09-19 | Paso 2.4 cancelado. Bloque 2 renumerado: 7 pasos. |
+| 2.0 | 2026-09-19 | Bloque 2 cerrado. 13/13 pasos. 540 unit + 53 e2e. |
 ---
 
 ## 5. Convenciones

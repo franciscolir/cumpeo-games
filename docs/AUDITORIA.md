@@ -59,6 +59,7 @@ _(ninguna)_
 | 17 | Test e2e de TriviaGameUI solo verifica registro, no renderización completa. | Paso 2.5 | Baja |
 | 18 | Condición del `if` en `TriviaGameUI.renderizarAreaJuego` difícil de leer. | Paso 2.5 | Baja |
 | 19 | `Boton` recibe `clase` y `id` redundantes en TriviaGameUI. | Paso 2.5 | Baja |
+| 20 | Tests de circuitos fallan intermitentemente por timeout en #form-circuito | Paso 2.6c | Media |
 ## Cierre de bloque
 
 | Fecha | Bloque | Estado | Notas |
@@ -88,3 +89,13 @@ _(ninguna)_
 | 2026-09-19 | 2 | 2.4c | ✅ APROBADO | Card próximo desafío + marquee footer. 9/9 e2e shell público. | 92f54b6 |
 
 | 2026-09-19 | 2 | 2.5 | ✅ APROBADO | TriviaGameUI registrado. Primer GameUI concreto. 8/8 e2e shell conductor. | 772316f |
+
+| 2026-09-19 | 2 | 2.6a | ✅ APROBADO | Botones faltantes del shell (tomar control, comenzar, descartar). | ac3cff8 |
+| 2026-09-19 | 2 | 2.6b | ✅ APROBADO | Tests migrados de #/partidas-viejo/ a #/partidas/. | 5cad6c0 |
+| 2026-09-19 | 2 | 2.6c | ✅ APROBADO | consola.js eliminado. Bloque 2 cerrado. | 5e32d5b |
+
+## Cierre de bloque
+
+| Fecha | Bloque | Estado | Notas |
+|-------|--------|--------|-------|
+| 2026-09-19 | 2 | ✅ CERRADO | 13/13 pasos. 540 unit + 53 e2e. Commits: 5e32d5b, 5cad6c0, ac3cff8. |
