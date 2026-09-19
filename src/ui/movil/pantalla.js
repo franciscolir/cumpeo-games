@@ -282,11 +282,12 @@ function _renderPantallaPrincipal(container, app, partida, juegoActivo, equipos,
         ${_renderJuegoActual(partida, juegoActivo)}
         ${_renderMarcador(equipos)}
         ${_renderFormularioMensaje()}
-        ${_renderPlaceholderFotos()}
+        ${_renderFormularioFoto()}
       </div>
     </div>
   `;
   _bindFormularioMensaje(container, app, partida, participante);
+  _bindFormularioFoto(container, app, partida, participante);
 }
 
 function _renderSaludo(participante) {
@@ -478,15 +479,124 @@ function _bindFormularioMensaje(container, app, partida, participante) {
 }
 
 /* =============================================================
-   Placeholder para fotos (paso 3.4)
+   Formulario de fotos
    ============================================================= */
 
-function _renderPlaceholderFotos() {
+function _renderFormularioFoto() {
   return `
-    <section class="flex-1 flex items-center justify-center p-6 bg-surface">
-      <div class="w-full max-w-md text-center">
-        <p class="font-body-md text-on-surface-variant italic">Pronto podrás enviar fotos</p>
+    <section class="px-6 py-4 bg-surface border-b-2.5 border-on-surface">
+      <div class="max-w-md mx-auto">
+        <h3 class="font-headline-md uppercase text-on-surface-variant mb-3">📷 Enviá una foto</h3>
+        <input
+          type="file"
+          id="movil-foto-input"
+          accept="image/*"
+          class="hidden"
+        />
+        <button id="movil-foto-elegir" class="font-label-md uppercase border-2.5 border-on-surface rounded-lg px-6 py-3 bg-surface-container-lowest text-on-surface shadow-comic-sm hover:shadow-comic-md transition w-full mb-3">
+          Elegir foto
+        </button>
+        <div id="movil-foto-preview-container" class="hidden mb-3">
+          <img id="movil-foto-preview" class="w-full max-h-48 object-contain rounded-lg border-2.5 border-on-surface" alt="Preview" />
+        </div>
+        <p id="movil-foto-error" class="font-label-md text-error mb-2 hidden"></p>
+        <p id="movil-foto-confirmacion" class="font-label-md text-tertiary mb-2 hidden">Foto enviada. Esperando aprobación.</p>
+        <button id="movil-foto-enviar" disabled class="font-label-md uppercase border-2.5 border-on-surface rounded-lg px-6 py-3 bg-primary text-on-primary shadow-comic-sm hover:shadow-comic-md transition w-full disabled:opacity-50 disabled:cursor-not-allowed">
+          Enviar
+        </button>
       </div>
     </section>
   `;
+}
+
+function _bindFormularioFoto(container, app, partida, participante) {
+  const fileInput = container.querySelector('#movil-foto-input');
+  const btnElegir = container.querySelector('#movil-foto-elegir');
+  const previewContainer = container.querySelector('#movil-foto-preview-container');
+  const previewImg = container.querySelector('#movil-foto-preview');
+  const btnEnviar = container.querySelector('#movil-foto-enviar');
+  const errorEl = container.querySelector('#movil-foto-error');
+  const confirmEl = container.querySelector('#movil-foto-confirmacion');
+  if (!fileInput || !btnElegir || !btnEnviar) return;
+
+  const MAX_SIZE = 5 * 1024 * 1024;
+  let archivoSeleccionado = null;
+
+  btnElegir.addEventListener('click', () => {
+    fileInput.click();
+  });
+
+  fileInput.addEventListener('change', () => {
+    errorEl?.classList.add('hidden');
+    confirmEl?.classList.add('hidden');
+
+    const file = fileInput.files?.[0];
+    if (!file) {
+      archivoSeleccionado = null;
+      previewContainer?.classList.add('hidden');
+      btnEnviar.disabled = true;
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      errorEl.textContent = 'Solo se permiten imágenes';
+      errorEl.classList.remove('hidden');
+      fileInput.value = '';
+      archivoSeleccionado = null;
+      previewContainer?.classList.add('hidden');
+      btnEnviar.disabled = true;
+      return;
+    }
+
+    if (file.size > MAX_SIZE) {
+      errorEl.textContent = 'La foto es muy grande (máx 5 MB)';
+      errorEl.classList.remove('hidden');
+      fileInput.value = '';
+      archivoSeleccionado = null;
+      previewContainer?.classList.add('hidden');
+      btnEnviar.disabled = true;
+      return;
+    }
+
+    archivoSeleccionado = file;
+    const url = URL.createObjectURL(file);
+    if (previewImg) previewImg.src = url;
+    previewContainer?.classList.remove('hidden');
+    btnEnviar.disabled = false;
+  });
+
+  btnEnviar.addEventListener('click', async () => {
+    if (!archivoSeleccionado) return;
+
+    errorEl?.classList.add('hidden');
+    confirmEl?.classList.add('hidden');
+    btnEnviar.disabled = true;
+    btnEnviar.textContent = 'Enviando...';
+
+    try {
+      await app.services.foto.crearFoto({
+        partidaId: partida.id,
+        participanteId: participante.id,
+        blob: archivoSeleccionado,
+        mimeType: archivoSeleccionado.type
+      });
+
+      fileInput.value = '';
+      archivoSeleccionado = null;
+      previewContainer?.classList.add('hidden');
+      if (previewImg) previewImg.src = '';
+      confirmEl?.classList.remove('hidden');
+      btnEnviar.textContent = 'Enviar';
+
+      setTimeout(() => {
+        confirmEl?.classList.add('hidden');
+        btnEnviar.disabled = true;
+      }, 2000);
+    } catch (err) {
+      btnEnviar.disabled = false;
+      btnEnviar.textContent = 'Enviar';
+      errorEl.textContent = err.message || 'Error al enviar la foto';
+      errorEl.classList.remove('hidden');
+    }
+  });
 }

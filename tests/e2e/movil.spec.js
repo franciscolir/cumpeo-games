@@ -146,9 +146,59 @@ test('móvil muestra confirmación tras enviar', async ({ page }) => {
   await expect(page.getByText('Mensaje enviado. Esperando aprobación.')).toBeVisible({ timeout: 10000 });
 });
 
-test('móvil muestra placeholder de fotos', async ({ page }) => {
+test('móvil muestra formulario de foto', async ({ page }) => {
   await page.goto('/');
   const { codigo } = await setupPartidaCompleta(page);
   await identificarEnMovil(page, codigo, 'TestUser');
-  await expect(page.getByText('Pronto podrás enviar fotos')).toBeVisible({ timeout: 15000 });
+  await expect(page.getByText('Enviá una foto')).toBeVisible({ timeout: 15000 });
+  await expect(page.locator('#movil-foto-input')).toBeAttached();
+  await expect(page.locator('#movil-foto-elegir')).toBeVisible();
+  await expect(page.locator('#movil-foto-enviar')).toBeVisible();
+  await expect(page.locator('#movil-foto-enviar')).toBeDisabled();
+});
+
+test('móvil envía una foto', async ({ page }) => {
+  await page.goto('/');
+  const { codigo } = await setupPartidaCompleta(page);
+  await identificarEnMovil(page, codigo, 'Fotografo');
+  await expect(page.locator('#movil-foto-elegir')).toBeVisible({ timeout: 15000 });
+  const buffer = Buffer.from('fake-image-bytes');
+  await page.locator('#movil-foto-input').setInputFiles({
+    name: 'test.jpg',
+    mimeType: 'image/jpeg',
+    buffer
+  });
+  await expect(page.locator('#movil-foto-enviar')).toBeEnabled();
+  await page.locator('#movil-foto-enviar').click();
+  await expect(page.locator('#movil-foto-enviar')).toBeDisabled();
+});
+
+test('móvil muestra confirmación tras enviar foto', async ({ page }) => {
+  await page.goto('/');
+  const { codigo } = await setupPartidaCompleta(page);
+  await identificarEnMovil(page, codigo, 'FotoConfirmador');
+  await expect(page.locator('#movil-foto-elegir')).toBeVisible({ timeout: 15000 });
+  const buffer = Buffer.from('fake-image-bytes');
+  await page.locator('#movil-foto-input').setInputFiles({
+    name: 'test.jpg',
+    mimeType: 'image/jpeg',
+    buffer
+  });
+  await page.locator('#movil-foto-enviar').click();
+  await expect(page.getByText('Foto enviada. Esperando aprobación.')).toBeVisible({ timeout: 10000 });
+});
+
+test('móvil muestra preview al elegir foto', async ({ page }) => {
+  await page.goto('/');
+  const { codigo } = await setupPartidaCompleta(page);
+  await identificarEnMovil(page, codigo, 'PreviewUser');
+  await expect(page.locator('#movil-foto-elegir')).toBeVisible({ timeout: 15000 });
+  const buffer = Buffer.from('fake-image-bytes');
+  await page.locator('#movil-foto-input').setInputFiles({
+    name: 'test.jpg',
+    mimeType: 'image/jpeg',
+    buffer
+  });
+  await expect(page.locator('#movil-foto-preview-container')).toBeVisible();
+  await expect(page.locator('#movil-foto-preview')).toBeVisible();
 });
