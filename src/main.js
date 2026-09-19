@@ -16,7 +16,6 @@ import { renderListaSets } from './ui/sets/lista.js';
 import { renderFormularioSet } from './ui/sets/formulario.js';
 import { renderListaPartidas } from './ui/partidas/lista.js';
 import { renderNuevaPartida } from './ui/partidas/nueva.js';
-import { renderConsolaPartida } from './ui/partidas/consola.js';
 import { renderShellPartida } from './ui/partidas/shell-partida.js';
 import { renderPantallaPublica } from './ui/publica/pantalla.js';
 import { renderShellPublica } from './ui/publica/shell-publica.js';
@@ -44,7 +43,6 @@ router.registrar('#/sets/:id', (c, a, p) => renderFormularioSet(c, a, p));
 router.registrar('#/partidas', renderListaPartidas);
 router.registrar('#/partidas/nueva', renderNuevaPartida);
 router.registrar('#/partidas/:id', renderShellPartida);
-router.registrar('#/partidas-viejo/:id', renderConsolaPartida);
 router.registrar('#/publica/:codigo', renderPantallaPublica);
 router.registrar('#/publica-nueva/:codigo', renderShellPublica);
 router.setNotFound((c) => {
