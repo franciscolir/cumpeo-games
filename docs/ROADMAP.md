@@ -2,7 +2,7 @@
 
 **Versión:** 1.0
 **Última actualización:** 2026-09-18
-**Estado global:** Bloque 1 cerrado · Bloque 2 en progreso (5/8)
+**Estado global:** Bloque 1 cerrado · Bloque 2 en progreso (6/8)
 **Rama:** feature/vertical-slice
 
 ---
@@ -100,8 +100,8 @@
 
 ---
 
-### Bloque 2 — Shell de partida (Conductor + Pública) 🔄 EN PROGRESO (5/8)
-| 2 | Shell de partida (Conductor + Pública) | EN PROGRESO | 5/8 | — | — |
+### Bloque 2 — Shell de partida (Conductor + Pública) 🔄 EN PROGRESO (6/8)
+| 2 | Shell de partida (Conductor + Pública) | EN PROGRESO | 6/8 | — | — |
 **Objetivo:** Crear el shell común de partida que permite enchufar cualquier juego sin rehacer UI.
 
 #### Pasos (preliminares)
@@ -113,7 +113,7 @@
 | 2.3 | ShellPartida (Conductor) | ✅ | 73f0cbf | bloque-2-paso-3.md |
 | 2.3a | Login programático e2e | ✅ | 73f0cbf | bloque-2-paso-3.md |
 | 2.3b | Extender obtenerContextoEspera con juego_codigo | ✅ | 927ceac | bloque-2-paso-3b.md |
-| 2.3c | Corregir shell (data-accion, colores) | ⬜ | — | — |
+| 2.3c | Corregir shell (data-accion, colores) | ✅ | 13a01aa | bloque-2-paso-3c.md |
 | 2.4 | Portar lógica de consola.js | ⬜ | — | — |
 | 2.5 | ShellPublica (Pública) | ⬜ | — | — |
 | 2.6 | Migrar Trivia al shell | ⬜ | — | — |
@@ -121,7 +121,7 @@
 
 
 
-**Paso 2.3c en preparación (corregir shell).**
+**Paso 2.4 en preparación (revisar si aplica portar consola.js).**
 ---
 
 ### Bloque 3 — Móvil + moderación ⬜ PENDIENTE

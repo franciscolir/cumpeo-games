@@ -52,6 +52,7 @@ _(ninguna)_
 | 9 | Shell tiene 3 bugs conocidos (data-accion, colores, juego_codigo) | Paso 2.3 | Alta |
 | 10 | Credenciales hardcodeadas en `tests/e2e/_helpers/auth.js` | Paso 2.3a | Baja |
 | 11 | `playwright.config.js` sin config para CI | Paso 2.3a | Baja |
+| 12 | Test `lista de sets sin filtro muestra mensaje` es flaky en corrida completa | Paso 2.3c (detectado) | Media |
 ## Cierre de bloque
 
 | Fecha | Bloque | Estado | Notas |
@@ -63,3 +64,5 @@ _(ninguna)_
 | 2026-09-18 | 2 | 2.3 + 2.3a | ✅ APROBADO | ShellPartida + login e2e. 39 e2e passing. Deuda técnica en tests laxos. | 73f0cbf |
 
 | 2026-09-18 | 2 | 2.3b | ✅ APROBADO | obtenerContextoEspera enriquecido con juego_codigo. 2 tests. | 927ceac |
+
+| 2026-09-19 | 2 | 2.3c | ✅ APROBADO | Shell corregido (botones, colores) + tests endurecidos. Flaky en sets.spec.js. | 13a01aa |
