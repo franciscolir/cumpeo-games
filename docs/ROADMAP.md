@@ -35,8 +35,8 @@
 |---|--------|--------|:-----:|---------------|-------|
 | 0 | Cierre documental | ✅ CERRADO | 6/6 | — | 2026-09-18 |
 | 1 | Modelo de datos extendido | ✅ CERRADO | 6/6 | 7c3288f | 2026-09-18 |
-| 2 | Shell de partida (Conductor + Pública) | ⬜ PENDIENTE | 0/5 | — | — |
-| 3 | Móvil + moderación | ⬜ PENDIENTE | 0/7 | — | — |
+| 2 | Shell de partida (Conductor + Pública) | ✅ CERRADO | 13/13 | — | — |
+| 3 | Móvil + moderación | 🔄 EN PROGRESO | 2/6 | — | — |
 | 4 | "¿Qué piensa el público?" | ⬜ PENDIENTE | 0/7 | — | — |
 | 5 | 8 juegos restantes | ⬜ PENDIENTE | 0/8 | — | — |
 | 6 | Migración e2e a Supabase (opcional) | ⬜ PENDIENTE | 0/? | — | — |
