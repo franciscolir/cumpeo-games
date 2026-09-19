@@ -12,6 +12,7 @@
 let cleanupSuscripciones = null;
 let intervalId = null;
 let intervalGaleriaId = null;
+let mensajesActuales = '';
 
 /**
  * Renderiza el shell público completo.
@@ -23,6 +24,7 @@ export async function renderShellPublica(container, app, params) {
   _limpiarSuscripciones();
   if (intervalId) { clearInterval(intervalId); intervalId = null; }
   if (intervalGaleriaId) { clearInterval(intervalGaleriaId); intervalGaleriaId = null; }
+  mensajesActuales = '';
 
   await _renderContenido(container, app, params.codigo);
 
@@ -119,12 +121,13 @@ async function _renderContenido(container, app, codigo) {
           ${_renderQR(partida)}
         </div>
       </div>
-      ${_renderMarquee(partida)}
+      ${_renderMuroMensajes()}
     </div>
   `;
 
   _iniciarRotacionGaleria(container, partida.id, app);
   _generarQR(partida);
+  await _cargarMuroMensajes(container, app, partida.id);
 }
 
 /* =============================================================
@@ -456,27 +459,51 @@ function _generarQR(partida) {
 }
 
 /* =============================================================
-   Marquee footer
+   Muro de Mensajes
    ============================================================= */
 
-function _renderMarquee(partida) {
-  const mensajes = [
-    '★ ESCANEÁ EL QR PARA UNIRTE',
-    `★ CÓDIGO DE SALA: ${partida.public_codigo}`,
-    '★ ENVIÁ TUS FOTOS AL PÚBLICO',
-    '★ ¡QUE GANE EL MEJOR EQUIPO!'
-  ];
-
-  const duplicados = [...mensajes, ...mensajes];
-
+function _renderMuroMensajes() {
   return `
-    <footer class="w-full bg-black text-comicYellow border-t-4 border-black pt-3 pb-3 overflow-hidden z-20 shrink-0 select-none" data-role="marquee-footer">
-      <div class="marquee-track font-display-hero text-xl tracking-wider uppercase items-center gap-6">
-        ${duplicados.map((msg, i) => {
-          const colorClass = i % 2 === 0 ? 'text-comicRed' : 'text-comicGreen';
-          return `<span class="flex items-center gap-3 shrink-0"><span class="${colorClass}" aria-hidden="true">★</span> ${msg.replace(/^★ /, '')}</span>`;
-        }).join('')}
+    <footer id="muro-mensajes" class="w-full bg-black text-comicYellow border-t-4 border-black pt-3 pb-3 overflow-hidden z-20 shrink-0 select-none">
+      <div class="marquee-track font-body-md text-lg tracking-wider items-center gap-6">
+        <span class="flex items-center gap-3 shrink-0">
+          <span class="text-comicRed" aria-hidden="true">★</span>
+          ¡Mandá tu mensaje desde el móvil!
+        </span>
       </div>
     </footer>
   `;
+}
+
+function _truncarTexto(texto, maxPalabras = 5) {
+  const palabras = texto.trim().split(/\s+/);
+  if (palabras.length <= maxPalabras) return texto;
+  return palabras.slice(0, maxPalabras).join(' ') + '...';
+}
+
+async function _cargarMuroMensajes(container, app, partidaId) {
+  const mensajes = await app.services.mensaje.listarAprobadosDePartida(partidaId);
+  const ultimos = mensajes
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    .slice(0, 10);
+
+  const firma = ultimos.map(m => m.id).join('|');
+  if (firma === mensajesActuales) return;
+  mensajesActuales = firma;
+
+  const track = container.querySelector('#muro-mensajes .marquee-track');
+  if (!track) return;
+
+  let textos = ultimos.map(m => _truncarTexto(m.texto));
+  if (textos.length === 0) {
+    textos = ['¡Mandá tu mensaje desde el móvil!'];
+  }
+  const duplicados = [...textos, ...textos];
+
+  track.innerHTML = duplicados.map(t => `
+    <span class="flex items-center gap-3 shrink-0">
+      <span class="text-comicRed" aria-hidden="true">★</span>
+      ${t}
+    </span>
+  `).join('');
 }

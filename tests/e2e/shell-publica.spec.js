@@ -155,16 +155,84 @@ test('card próximo desafío visible con texto esperando o juego', async ({ page
   expect(texto).toMatch(/ESPERANDO|JUEGO|ÚLTIMO/);
 });
 
-test('marquee footer visible con al menos 1 mensaje', async ({ page }) => {
+test('muro de mensajes visible en footer', async ({ page }) => {
   await page.goto('/');
   const { codigo } = await setupPartidaCompleta(page);
   await page.goto(`/#/publica-nueva/${codigo}`);
   await waitForCumpeo(page);
-  const footer = page.locator('[data-role="marquee-footer"]');
-  await expect(footer).toBeVisible({ timeout: 15000 });
-  const track = page.locator('.marquee-track');
+  const muro = page.locator('#muro-mensajes');
+  await expect(muro).toBeVisible({ timeout: 15000 });
+  const track = page.locator('#muro-mensajes .marquee-track');
   await expect(track).toBeVisible();
   const spans = track.locator('> span');
   const count = await spans.count();
   expect(count).toBeGreaterThanOrEqual(1);
+});
+
+test('muro muestra placeholder si no hay mensajes', async ({ page }) => {
+  await page.goto('/');
+  const { codigo } = await setupPartidaCompleta(page);
+  await page.goto(`/#/publica-nueva/${codigo}`);
+  await waitForCumpeo(page);
+  await expect(page.getByText('¡Mandá tu mensaje desde el móvil!')).toBeVisible({ timeout: 15000 });
+});
+
+test('muro muestra mensaje aprobado', async ({ page }) => {
+  await page.goto('/');
+  const { codigo, partidaId, equipoPartidaId } = await setupPartidaCompleta(page);
+
+  await page.evaluate(async ({ partidaId, equipoPartidaId }) => {
+    const participante = await window.cumpeo.services.participante.crearParticipanteConToken({
+      partidaId,
+      equipoPartidaId,
+      nombre: 'Fan Mensaje',
+      sessionToken: crypto.randomUUID()
+    });
+
+    const msg = await window.cumpeo.services.mensaje.crearMensaje({
+      partidaId,
+      participanteId: participante.id,
+      texto: '¡Hola a todos!'
+    });
+
+    await window.cumpeo.services.mensaje.aprobarMensaje(msg.id, window.cumpeo.session.sessionId);
+  }, { partidaId, equipoPartidaId });
+
+  await page.goto(`/#/publica-nueva/${codigo}`);
+  await waitForCumpeo(page);
+  await expect(page.locator('#muro-mensajes')).toBeVisible({ timeout: 15000 });
+  await expect(page.getByText('¡Hola a todos!').first()).toBeVisible();
+});
+
+test('muro trunca mensajes largos', async ({ page }) => {
+  await page.goto('/');
+  const { codigo, partidaId, equipoPartidaId } = await setupPartidaCompleta(page);
+
+  await page.evaluate(async ({ partidaId, equipoPartidaId }) => {
+    const participante = await window.cumpeo.services.participante.crearParticipanteConToken({
+      partidaId,
+      equipoPartidaId,
+      nombre: 'Fan Largo',
+      sessionToken: crypto.randomUUID()
+    });
+
+    const msg = await window.cumpeo.services.mensaje.crearMensaje({
+      partidaId,
+      participanteId: participante.id,
+      texto: 'Este es un mensaje muy largo que tiene que ser truncado por el muro'
+    });
+
+    await window.cumpeo.services.mensaje.aprobarMensaje(msg.id, window.cumpeo.session.sessionId);
+  }, { partidaId, equipoPartidaId });
+
+  await page.goto(`/#/publica-nueva/${codigo}`);
+  await waitForCumpeo(page);
+  await expect(page.locator('#muro-mensajes')).toBeVisible({ timeout: 15000 });
+  const track = page.locator('#muro-mensajes .marquee-track');
+  await expect(track).toBeVisible();
+  const spans = track.locator('> span');
+  const count = await spans.count();
+  expect(count).toBeGreaterThanOrEqual(2);
+  const firstText = await spans.first().textContent();
+  expect(firstText).toContain('...');
 });
