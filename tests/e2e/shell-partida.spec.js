@@ -130,3 +130,38 @@ test('shell del conductor renderiza TriviaGameUI', async ({ page }) => {
   });
   expect(gameUICount).toBeGreaterThanOrEqual(1);
 });
+
+test('botón Tomar control visible si no tengo control', async ({ page }) => {
+  await page.goto('/');
+  const { id } = await setupCircuitoYPartida(page);
+  await page.goto(`/#/partidas/${id}`);
+  await waitForCumpeo(page);
+  const btnTomarControl = page.locator('#btn-tomar-control');
+  await expect(btnTomarControl).toBeVisible({ timeout: 15000 });
+});
+
+test('botón Comenzar visible si tengo control y estado CONFIGURANDO', async ({ page }) => {
+  await page.goto('/');
+  const { id } = await setupCircuitoYPartida(page);
+  await page.evaluate(async (pid) => {
+    await window.cumpeo.services.partida.tomarControl(pid, window.cumpeo.session.sessionId);
+  }, id);
+  await page.goto(`/#/partidas/${id}`);
+  await waitForCumpeo(page);
+  const btnComenzar = page.locator('#btn-comenzar');
+  await expect(btnComenzar).toBeVisible({ timeout: 15000 });
+});
+
+test('botón Descartar visible si tengo control y estado EN_CURSO', async ({ page }) => {
+  await page.goto('/');
+  const { id } = await setupCircuitoYPartida(page);
+  await page.evaluate(async (pid) => {
+    await window.cumpeo.services.partida.tomarControl(pid, window.cumpeo.session.sessionId);
+    await window.cumpeo.services.partida.comenzarPartida(pid, window.cumpeo.session.sessionId, crypto.randomUUID());
+  }, id);
+  await page.goto('/');
+  await page.goto(`/#/partidas/${id}`);
+  await waitForCumpeo(page);
+  const btnDescartar = page.locator('#btn-descartar');
+  await expect(btnDescartar).toBeVisible({ timeout: 15000 });
+});

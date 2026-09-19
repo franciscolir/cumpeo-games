@@ -185,12 +185,24 @@ function _renderTopBar(partida, tieneControl, app, partidaId) {
   };
   const colorClase = estadoColor[partida.estado] || 'text-on-surface-variant';
 
+  const btnTomarControl = !tieneControl && partida.estado === 'CONFIGURANDO'
+    ? Boton({ texto: 'Tomar control', variante: 'primary', id: 'btn-tomar-control' })
+    : '';
+
+  const btnComenzar = tieneControl && partida.estado === 'CONFIGURANDO'
+    ? Boton({ texto: 'Comenzar', variante: 'secondary', id: 'btn-comenzar' })
+    : '';
+
   const btnPausar = tieneControl && partida.estado === 'EN_CURSO'
     ? Boton({ texto: 'Pausar', variante: 'ghost', id: 'btn-pausar' })
     : '';
 
   const btnReanudar = tieneControl && partida.estado === 'PAUSADO'
     ? Boton({ texto: 'Reanudar', variante: 'ghost', id: 'btn-reanudar' })
+    : '';
+
+  const btnDescartar = tieneControl && partida.estado === 'EN_CURSO'
+    ? Boton({ texto: 'Descartar', variante: 'danger', id: 'btn-descartar' })
     : '';
 
   const btnFin = tieneControl && (partida.estado === 'EN_CURSO' || partida.estado === 'PAUSADO')
@@ -212,8 +224,11 @@ function _renderTopBar(partida, tieneControl, app, partidaId) {
         ${partida.public_codigo ? `<span class="font-display-hero text-xl text-primary">${partida.public_codigo}</span>` : ''}
       </div>
       <div class="flex items-center gap-2 flex-wrap">
+        ${btnTomarControl}
+        ${btnComenzar}
         ${btnPausar}
         ${btnReanudar}
+        ${btnDescartar}
         ${btnFin}
         ${btnPublica}
       </div>
@@ -279,6 +294,27 @@ function _renderPlaceholder(mensaje) {
 function _bindAcciones(container, app, partidaId, juegoActivo) {
   const sessionId = app.session.sessionId;
 
+  const btnTomarControl = container.querySelector('#btn-tomar-control');
+  if (btnTomarControl) {
+    btnTomarControl.addEventListener('click', async () => {
+      try {
+        await app.services.partida.tomarControl(partidaId, sessionId);
+        await _renderContenido(container, app, partidaId);
+      } catch (err) { window.alert(`Error: ${err.message}`); }
+    });
+  }
+
+  const btnComenzar = container.querySelector('#btn-comenzar');
+  if (btnComenzar) {
+    btnComenzar.addEventListener('click', async () => {
+      if (!window.confirm('¿Comenzar la partida?')) return;
+      try {
+        await app.services.partida.comenzarPartida(partidaId, sessionId, nuevoActionId());
+        await _renderContenido(container, app, partidaId);
+      } catch (err) { window.alert(`Error: ${err.message}`); }
+    });
+  }
+
   const btnPausar = container.querySelector('#btn-pausar');
   if (btnPausar) {
     btnPausar.addEventListener('click', async () => {
@@ -305,6 +341,17 @@ function _bindAcciones(container, app, partidaId, juegoActivo) {
       if (!window.confirm('¿Finalizar el circuito completo?')) return;
       try {
         await app.services.partida.finalizarCircuito(partidaId, sessionId, nuevoActionId());
+        window.location.hash = '#/partidas';
+      } catch (err) { window.alert(`Error: ${err.message}`); }
+    });
+  }
+
+  const btnDescartar = container.querySelector('#btn-descartar');
+  if (btnDescartar) {
+    btnDescartar.addEventListener('click', async () => {
+      if (!window.confirm('¿Descartar esta partida? Esta acción no se puede deshacer.')) return;
+      try {
+        await app.services.partida.descartarPartida(partidaId, sessionId, nuevoActionId());
         window.location.hash = '#/partidas';
       } catch (err) { window.alert(`Error: ${err.message}`); }
     });
