@@ -18,6 +18,7 @@ import { seedJuegos } from './seed.js';
 import { crearStorageAdapter } from '../adapters/storage/index.js';
 import { FotoPublicaRepository } from '../repositories/FotoPublicaRepository.js';
 import { MensajePublicoRepository } from '../repositories/MensajePublicoRepository.js';
+import { ParticipanteRepository } from '../repositories/ParticipanteRepository.js';
 
 /**
  * Inicializa la aplicación: servicios, session, registro de juegos.
@@ -47,6 +48,7 @@ export async function bootstrap(adapter, { usuarioId = null } = {}) {
   const storage = crearStorageAdapter(adapter);
   services.foto = new FotoPublicaRepository(adapter, storage);
   services.mensaje = new MensajePublicoRepository(adapter);
+  services.participante = new ParticipanteRepository(adapter);
 
   const uiRegistry = new GameUIRegistry();
 

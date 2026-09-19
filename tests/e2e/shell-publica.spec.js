@@ -38,7 +38,10 @@ async function setupPartidaCompleta(page) {
       crypto.randomUUID()
     );
 
-    return { codigo: partida.public_codigo, partidaId: partida.id };
+    const ctx = await window.cumpeo.services.partida.obtenerContextoEspera(partida.id);
+    const equipoPartidaId = ctx.equipos[0]?.id || null;
+
+    return { codigo: partida.public_codigo, partidaId: partida.id, equipoPartidaId };
   });
 }
 
@@ -78,4 +81,63 @@ test('no muestra botones de control', async ({ page }) => {
   await waitForCumpeo(page);
   const botonesControl = page.locator('button[data-accion]');
   await expect(botonesControl).toHaveCount(0);
+});
+
+test('galería muestra ESPERANDO FOTOS cuando no hay fotos', async ({ page }) => {
+  await page.goto('/');
+  const { codigo } = await setupPartidaCompleta(page);
+  await page.goto(`/#/publica-nueva/${codigo}`);
+  await waitForCumpeo(page);
+  const placeholder = page.locator('[data-role="galeria-placeholder"]');
+  await expect(placeholder).toBeVisible({ timeout: 15000 });
+  await expect(placeholder.getByText('ESPERANDO FOTOS...')).toBeVisible();
+});
+
+test('QR visible en pantalla', async ({ page }) => {
+  await page.goto('/');
+  const { codigo } = await setupPartidaCompleta(page);
+  await page.goto(`/#/publica-nueva/${codigo}`);
+  await waitForCumpeo(page);
+  const qrSection = page.locator('[data-role="qr-section"]');
+  await expect(qrSection).toBeVisible({ timeout: 15000 });
+  const qrCode = page.locator('[data-role="qr-code"]');
+  await expect(qrCode).toBeVisible();
+});
+
+test('galería muestra foto cuando hay una aprobada', async ({ page }) => {
+  await page.goto('/');
+  const { codigo, partidaId, equipoPartidaId } = await setupPartidaCompleta(page);
+
+  await page.evaluate(async ({ partidaId, equipoPartidaId }) => {
+    const participante = await window.cumpeo.services.participante.crearParticipanteConToken({
+      partidaId,
+      equipoPartidaId,
+      nombre: 'Test User',
+      sessionToken: crypto.randomUUID()
+    });
+
+    const canvas = document.createElement('canvas');
+    canvas.width = 100;
+    canvas.height = 100;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#FF0000';
+    ctx.fillRect(0, 0, 100, 100);
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+
+    const foto = await window.cumpeo.services.foto.crearFoto({
+      partidaId,
+      participanteId: participante.id,
+      blob,
+      mimeType: 'image/png'
+    });
+
+    await window.cumpeo.services.foto.aprobarFoto(foto.id, window.cumpeo.session.sessionId);
+  }, { partidaId, equipoPartidaId });
+
+  await page.goto(`/#/publica-nueva/${codigo}`);
+  await waitForCumpeo(page);
+
+  const img = page.locator('[data-role="galeria-img"]');
+  await expect(img).toBeVisible({ timeout: 15000 });
+  await expect(img).toHaveAttribute('src', /blob:|data:|supabase/);
 });

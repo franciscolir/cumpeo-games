@@ -42,7 +42,7 @@ describe('bootstrap', () => {
     expect(result.storage).toBeDefined();
   });
 
-  it('services tiene los 8 servicios', async () => {
+  it('services tiene los 9 servicios', async () => {
     const { services } = await bootstrap(adapter);
     expect(services.control).toBeDefined();
     expect(services.partida).toBeDefined();
@@ -52,6 +52,7 @@ describe('bootstrap', () => {
     expect(services.registry).toBeDefined();
     expect(services.foto).toBeDefined();
     expect(services.mensaje).toBeDefined();
+    expect(services.participante).toBeDefined();
   });
 
   it('registry tiene TRIVIA registrado', async () => {
