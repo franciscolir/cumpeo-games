@@ -2,7 +2,7 @@
 
 **Versión:** 1.0
 **Última actualización:** 2026-09-18
-**Estado global:** Bloques 0, 1, 2 cerrados · Bloque 3 en progreso (2/6)
+**Estado global:** Bloques 0, 1, 2 cerrados · Bloque 3 en progreso (3/6)
 **Rama:** feature/vertical-slice
 
 ---
@@ -137,7 +137,7 @@ y 2.7 originales fueron renumerados a 2.4, 2.5 y 2.6 respectivamente.
 |---|------|--------|--------|------------------|
 | 3.1 | Ruta #/movil/:codigo + pantalla base | ✅ | c981d3e | — |
 | 3.2 | Identificación + session_token | ✅ | 63c7f7e | — |
-| 3.3 | Envío de mensajes | ⬜ PENDIENTE | — | — |
+| 3.3 | Envío de mensajes | ✅ | 8e7e614 | — |
 | 3.4 | Envío de fotos | ⬜ PENDIENTE | — | — |
 | 3.5 | Cola de moderación | ⬜ PENDIENTE | — | — |
 | 3.6 | Muro de mensajes/fotos en pública | ⬜ PENDIENTE | — | — |
