@@ -15,6 +15,9 @@ import { GameUIRegistry, registrarGameUIs } from '../ui/games/index.js';
 import { SessionContext } from './session-context.js';
 import { registrarTodos } from '../games/registro.js';
 import { seedJuegos } from './seed.js';
+import { crearStorageAdapter } from '../adapters/storage/index.js';
+import { FotoPublicaRepository } from '../repositories/FotoPublicaRepository.js';
+import { MensajePublicoRepository } from '../repositories/MensajePublicoRepository.js';
 
 /**
  * Inicializa la aplicación: servicios, session, registro de juegos.
@@ -22,7 +25,7 @@ import { seedJuegos } from './seed.js';
  * @param {LocalAdapter|SupabaseAdapter} adapter - Adapter ya abierto.
  * @param {object} [opciones={}]
  * @param {string|null} [opciones.usuarioId=null] - ID del usuario autenticado.
- * @returns {Promise<object>} Objeto app con adapter, session, services, registry.
+ * @returns {Promise<object>} Objeto app con adapter, session, services, registry, storage.
  * @throws {Error} si el adapter no está abierto o algún service falla.
  */
 export async function bootstrap(adapter, { usuarioId = null } = {}) {
@@ -41,6 +44,10 @@ export async function bootstrap(adapter, { usuarioId = null } = {}) {
     registry: new GameDefinitionRegistry()
   };
 
+  const storage = crearStorageAdapter(adapter);
+  services.foto = new FotoPublicaRepository(adapter, storage);
+  services.mensaje = new MensajePublicoRepository(adapter);
+
   const uiRegistry = new GameUIRegistry();
 
   registrarTodos(services.registry);
@@ -52,7 +59,8 @@ export async function bootstrap(adapter, { usuarioId = null } = {}) {
     session,
     services,
     registry: services.registry,
-    uiRegistry
+    uiRegistry,
+    storage
   };
 
   if (typeof window !== 'undefined') {

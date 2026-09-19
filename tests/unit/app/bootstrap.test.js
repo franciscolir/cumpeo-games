@@ -2,9 +2,12 @@ import 'fake-indexeddb/auto';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 
 import { LocalAdapter } from '../../../src/adapters/LocalAdapter.js';
+import { LocalStorageAdapter } from '../../../src/adapters/storage/LocalStorageAdapter.js';
 import { bootstrap } from '../../../src/app/bootstrap.js';
 import { registrarTodos } from '../../../src/games/registro.js';
 import { GameDefinitionRegistry } from '../../../src/services/GameDefinitionRegistry.js';
+import { FotoPublicaRepository } from '../../../src/repositories/FotoPublicaRepository.js';
+import { MensajePublicoRepository } from '../../../src/repositories/MensajePublicoRepository.js';
 import { DB_NAME } from '../../../src/adapters/schema.js';
 
 function borrarBase() {
@@ -30,15 +33,16 @@ describe('bootstrap', () => {
     await borrarBase();
   });
 
-  it('retorna un objeto con { adapter, session, services, registry }', async () => {
+  it('retorna un objeto con { adapter, session, services, registry, storage }', async () => {
     const result = await bootstrap(adapter);
     expect(result.adapter).toBe(adapter);
     expect(result.session).toBeDefined();
     expect(result.services).toBeDefined();
     expect(result.registry).toBeDefined();
+    expect(result.storage).toBeDefined();
   });
 
-  it('services tiene los 6 servicios', async () => {
+  it('services tiene los 8 servicios', async () => {
     const { services } = await bootstrap(adapter);
     expect(services.control).toBeDefined();
     expect(services.partida).toBeDefined();
@@ -46,6 +50,8 @@ describe('bootstrap', () => {
     expect(services.set).toBeDefined();
     expect(services.juego).toBeDefined();
     expect(services.registry).toBeDefined();
+    expect(services.foto).toBeDefined();
+    expect(services.mensaje).toBeDefined();
   });
 
   it('registry tiene TRIVIA registrado', async () => {
@@ -81,6 +87,26 @@ describe('bootstrap', () => {
     const result = await bootstrap(adapter);
     expect(result.adapter).toBe(adapter);
     expect(result.services.control).toBeDefined();
+  });
+
+  it('storage es un LocalStorageAdapter cuando usa LocalAdapter', async () => {
+    const result = await bootstrap(adapter);
+    expect(result.storage).toBeInstanceOf(LocalStorageAdapter);
+  });
+
+  it('services.foto es una instancia de FotoPublicaRepository', async () => {
+    const result = await bootstrap(adapter);
+    expect(result.services.foto).toBeInstanceOf(FotoPublicaRepository);
+  });
+
+  it('services.mensaje es una instancia de MensajePublicoRepository', async () => {
+    const result = await bootstrap(adapter);
+    expect(result.services.mensaje).toBeInstanceOf(MensajePublicoRepository);
+  });
+
+  it('services.foto usa el mismo storage que app.storage', async () => {
+    const result = await bootstrap(adapter);
+    expect(result.services.foto.storage).toBe(result.storage);
   });
 });
 

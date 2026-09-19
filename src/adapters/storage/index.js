@@ -2,9 +2,11 @@
    Storage — exports y factory.
    ============================================================= */
 
-export { StorageAdapter } from './StorageAdapter.js';
-export { LocalStorageAdapter } from './LocalStorageAdapter.js';
-export { SupabaseStorageAdapter } from './SupabaseStorageAdapter.js';
+import { StorageAdapter } from './StorageAdapter.js';
+import { LocalStorageAdapter } from './LocalStorageAdapter.js';
+import { SupabaseStorageAdapter } from './SupabaseStorageAdapter.js';
+
+export { StorageAdapter, LocalStorageAdapter, SupabaseStorageAdapter };
 
 /**
  * Devuelve una instancia de StorageAdapter según el adapter principal.
