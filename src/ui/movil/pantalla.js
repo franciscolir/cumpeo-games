@@ -178,7 +178,7 @@ async function _identificarParticipante(container, app, partida) {
         const contexto = await app.services.partida.obtenerContextoEspera(partida.id);
         const { equipos, juegos } = contexto;
         const juegoActivo = juegos.find((j) => j.estado === 'EN_CURSO' || j.estado === 'PAUSADO');
-        _renderPantallaPrincipal(container, partida, juegoActivo, equipos, participante);
+        _renderPantallaPrincipal(container, app, partida, juegoActivo, equipos, participante);
         return;
       }
     } catch (_) {}
@@ -260,7 +260,7 @@ async function _enviarFormulario(container, app, partida, contexto) {
     const participante = await app.services.participante.obtenerPorSessionToken(sessionToken);
     const { equipos, juegos } = contexto;
     const juegoActivo = juegos.find((j) => j.estado === 'EN_CURSO' || j.estado === 'PAUSADO');
-    _renderPantallaPrincipal(container, partida, juegoActivo, equipos, participante);
+    _renderPantallaPrincipal(container, app, partida, juegoActivo, equipos, participante);
   } catch (err) {
     btnContinuar.disabled = false;
     btnContinuar.textContent = 'Continuar';
@@ -273,7 +273,7 @@ async function _enviarFormulario(container, app, partida, contexto) {
    Pantalla principal (post-identificación)
    ============================================================= */
 
-function _renderPantallaPrincipal(container, partida, juegoActivo, equipos, participante) {
+function _renderPantallaPrincipal(container, app, partida, juegoActivo, equipos, participante) {
   container.innerHTML = `
     <div class="min-h-screen flex flex-col bg-background">
       ${_renderHeader(partida)}
@@ -281,10 +281,12 @@ function _renderPantallaPrincipal(container, partida, juegoActivo, equipos, part
         ${_renderSaludo(participante)}
         ${_renderJuegoActual(partida, juegoActivo)}
         ${_renderMarcador(equipos)}
-        ${_renderPlaceholder()}
+        ${_renderFormularioMensaje()}
+        ${_renderPlaceholderFotos()}
       </div>
     </div>
   `;
+  _bindFormularioMensaje(container, app, partida, participante);
 }
 
 function _renderSaludo(participante) {
@@ -398,14 +400,92 @@ function _renderMarcador(equipos) {
 }
 
 /* =============================================================
-   Placeholder para acciones futuras
+   Formulario de mensajes
    ============================================================= */
 
-function _renderPlaceholder() {
+function _renderFormularioMensaje() {
+  return `
+    <section class="px-6 py-4 bg-surface border-b-2.5 border-on-surface">
+      <div class="max-w-md mx-auto">
+        <h3 class="font-headline-md uppercase text-on-surface-variant mb-3">💬 Enviá un mensaje</h3>
+        <textarea
+          id="movil-mensaje"
+          placeholder="Escribí tu mensaje..."
+          maxlength="200"
+          rows="3"
+          class="w-full border-2.5 border-on-surface rounded-lg px-4 py-3 font-body-md text-on-surface bg-surface-container-lowest resize-none mb-3"
+        ></textarea>
+        <p id="movil-mensaje-error" class="font-label-md text-error mb-2 hidden">Escribí un mensaje</p>
+        <p id="movil-mensaje-confirmacion" class="font-label-md text-tertiary mb-2 hidden">Mensaje enviado. Esperando aprobación.</p>
+        <button id="movil-enviar-mensaje" class="font-label-md uppercase border-2.5 border-on-surface rounded-lg px-6 py-3 bg-primary text-on-primary shadow-comic-sm hover:shadow-comic-md transition w-full">
+          Enviar
+        </button>
+      </div>
+    </section>
+  `;
+}
+
+function _bindFormularioMensaje(container, app, partida, participante) {
+  const textarea = container.querySelector('#movil-mensaje');
+  const btnEnviar = container.querySelector('#movil-enviar-mensaje');
+  const errorEl = container.querySelector('#movil-mensaje-error');
+  const confirmEl = container.querySelector('#movil-mensaje-confirmacion');
+  if (!textarea || !btnEnviar) return;
+
+  const enviar = async () => {
+    const texto = (textarea.value || '').trim();
+    if (!texto) {
+      errorEl?.classList.remove('hidden');
+      textarea?.focus();
+      return;
+    }
+    errorEl?.classList.add('hidden');
+    confirmEl?.classList.add('hidden');
+
+    btnEnviar.disabled = true;
+    btnEnviar.textContent = 'Enviando...';
+
+    try {
+      await app.services.mensaje.crearMensaje({
+        partidaId: partida.id,
+        participanteId: participante.id,
+        texto
+      });
+
+      textarea.value = '';
+      confirmEl?.classList.remove('hidden');
+      btnEnviar.textContent = 'Enviar';
+
+      setTimeout(() => {
+        confirmEl?.classList.add('hidden');
+        btnEnviar.disabled = false;
+      }, 2000);
+    } catch (err) {
+      btnEnviar.disabled = false;
+      btnEnviar.textContent = 'Enviar';
+      errorEl.textContent = err.message || 'Error al enviar';
+      errorEl.classList.remove('hidden');
+    }
+  };
+
+  btnEnviar.addEventListener('click', enviar);
+  textarea.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      enviar();
+    }
+  });
+}
+
+/* =============================================================
+   Placeholder para fotos (paso 3.4)
+   ============================================================= */
+
+function _renderPlaceholderFotos() {
   return `
     <section class="flex-1 flex items-center justify-center p-6 bg-surface">
       <div class="w-full max-w-md text-center">
-        <p class="font-body-md text-on-surface-variant italic">Pronto podrás enviar mensajes y fotos</p>
+        <p class="font-body-md text-on-surface-variant italic">Pronto podrás enviar fotos</p>
       </div>
     </section>
   `;

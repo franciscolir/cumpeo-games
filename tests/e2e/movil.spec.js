@@ -73,7 +73,6 @@ test('móvil con código inválido muestra "no encontrada"', async ({ page }) =>
   await page.goto('/');
   await waitForCumpeo(page);
   await page.goto('/#/movil/INVALIDOCODIGO');
-  await waitForCumpeo(page);
   await expect(page.getByText('Partida no encontrada')).toBeVisible({ timeout: 15000 });
 });
 
@@ -118,9 +117,38 @@ test('móvil muestra saludo con nombre del participante', async ({ page }) => {
   await expect(page.getByText('Hola, Juan')).toBeVisible({ timeout: 15000 });
 });
 
-test('móvil muestra placeholder de acciones futuras', async ({ page }) => {
+test('móvil muestra formulario de mensaje', async ({ page }) => {
   await page.goto('/');
   const { codigo } = await setupPartidaCompleta(page);
   await identificarEnMovil(page, codigo, 'TestUser');
-  await expect(page.getByText('Pronto podrás enviar mensajes y fotos')).toBeVisible({ timeout: 15000 });
+  await expect(page.getByText('Enviá un mensaje')).toBeVisible({ timeout: 15000 });
+  await expect(page.locator('#movil-mensaje')).toBeVisible();
+  await expect(page.locator('#movil-enviar-mensaje')).toBeVisible();
+});
+
+test('móvil envía un mensaje', async ({ page }) => {
+  await page.goto('/');
+  const { codigo } = await setupPartidaCompleta(page);
+  await identificarEnMovil(page, codigo, 'Mensajeador');
+  await expect(page.locator('#movil-mensaje')).toBeVisible({ timeout: 15000 });
+  await page.locator('#movil-mensaje').fill('Hola equipo!');
+  await page.locator('#movil-enviar-mensaje').click();
+  await expect(page.locator('#movil-mensaje')).toHaveValue('');
+});
+
+test('móvil muestra confirmación tras enviar', async ({ page }) => {
+  await page.goto('/');
+  const { codigo } = await setupPartidaCompleta(page);
+  await identificarEnMovil(page, codigo, 'Confirmador');
+  await expect(page.locator('#movil-mensaje')).toBeVisible({ timeout: 15000 });
+  await page.locator('#movil-mensaje').fill('Mensaje de prueba');
+  await page.locator('#movil-enviar-mensaje').click();
+  await expect(page.getByText('Mensaje enviado. Esperando aprobación.')).toBeVisible({ timeout: 10000 });
+});
+
+test('móvil muestra placeholder de fotos', async ({ page }) => {
+  await page.goto('/');
+  const { codigo } = await setupPartidaCompleta(page);
+  await identificarEnMovil(page, codigo, 'TestUser');
+  await expect(page.getByText('Pronto podrás enviar fotos')).toBeVisible({ timeout: 15000 });
 });
