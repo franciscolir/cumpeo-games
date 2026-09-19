@@ -99,3 +99,5 @@ _(ninguna)_
 | Fecha | Bloque | Estado | Notas |
 |-------|--------|--------|-------|
 | 2026-09-19 | 2 | ✅ CERRADO | 13/13 pasos. 540 unit + 53 e2e. Commits: 5e32d5b, 5cad6c0, ac3cff8. |
+
+| 2026-09-19 | 3 | 3.1 | ✅ APROBADO | Ruta #/movil/:codigo + pantalla base. 4 e2e tests. | c981d3e |

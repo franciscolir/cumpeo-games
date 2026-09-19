@@ -2,7 +2,7 @@
 
 **Versión:** 1.0
 **Última actualización:** 2026-09-18
-**Estado global:** Bloques 0, 1, 2 cerrados · Bloque 3 en preparación
+**Estado global:** Bloques 0, 1, 2 cerrados · Bloque 3 en progreso (1/7)
 **Rama:** feature/vertical-slice
 
 ---
@@ -127,21 +127,21 @@ lógica ya fue portada durante el paso 2.3 (ShellPartida). Los pasos 2.5, 2.6
 y 2.7 originales fueron renumerados a 2.4, 2.5 y 2.6 respectivamente.
 ---
 
-### Bloque 3 — Móvil + moderación ⬜ PENDIENTE
+### Bloque 3 — Móvil + moderación 🔄 EN PROGRESO (1/7)
 
 **Objetivo:** Implementar la interfaz móvil con identificación por nombre, envío de mensajes y fotos, y cola de moderación en el conductor.
 
 #### Pasos (preliminares)
 
-| # | Paso | Estado |
-|---|------|--------|
-| 3.1 | Ruta `#/movil/:public_codigo` | ⬜ |
-| 3.2 | Identificación por nombre + `session_token` | ⬜ |
-| 3.3 | Pantalla principal: juego actual + marcador | ⬜ |
-| 3.4 | Envío de mensajes → PENDIENTE | ⬜ |
-| 3.5 | Envío de fotos → PENDIENTE | ⬜ |
-| 3.6 | Conductor: cola de moderación | ⬜ |
-| 3.7 | Pública: muro de mensajes + fotos APROBADOS | ⬜ |
+| # | Paso | Estado | Commit | Prompt archivado |
+|---|------|--------|--------|------------------|
+| 3.1 | Ruta #/movil/:codigo + pantalla base | ✅ | c981d3e | — |
+| 3.2 | Identificación + session_token | ⬜ PENDIENTE | — | — |
+| 3.3 | Pantalla principal del móvil | ⬜ PENDIENTE | — | — |
+| 3.4 | Envío de mensajes | ⬜ PENDIENTE | — | — |
+| 3.5 | Envío de fotos | ⬜ PENDIENTE | — | — |
+| 3.6 | Cola de moderación | ⬜ PENDIENTE | — | — |
+| 3.7 | Muro de mensajes/fotos en pública | ⬜ PENDIENTE | — | — |
 
 ---
 
