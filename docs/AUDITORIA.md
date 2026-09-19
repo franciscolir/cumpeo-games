@@ -56,6 +56,9 @@ _(ninguna)_
 | 13 | Flaky general en e2e ("Failed to fetch" en varios tests) | Paso 2.4a (detectado) | Media |
 | 14 | ~~Migración 0010 no se aplicó a Supabase Cloud.~~ **RESUELTA en paso 2.4b.2** | Paso 2.4b.2 | Resuelta |
 | 16 | Faltaban GRANTs en fotos_publicas y mensajes_publicos. **RESUELTA en paso 2.4b.2 (3f6d575)** | Paso 2.4b.2 | Resuelta |
+| 17 | Test e2e de TriviaGameUI solo verifica registro, no renderización completa. | Paso 2.5 | Baja |
+| 18 | Condición del `if` en `TriviaGameUI.renderizarAreaJuego` difícil de leer. | Paso 2.5 | Baja |
+| 19 | `Boton` recibe `clase` y `id` redundantes en TriviaGameUI. | Paso 2.5 | Baja |
 ## Cierre de bloque
 
 | Fecha | Bloque | Estado | Notas |
@@ -83,3 +86,5 @@ _(ninguna)_
 | 2026-09-19 | 2 | 2.4b.2 | ✅ APROBADO | Galería + QR. Bloqueo de migración 0010 y RLS resuelto. | bc7f9e0, 3f6d575, 8d28be9 |
 
 | 2026-09-19 | 2 | 2.4c | ✅ APROBADO | Card próximo desafío + marquee footer. 9/9 e2e shell público. | 92f54b6 |
+
+| 2026-09-19 | 2 | 2.5 | ✅ APROBADO | TriviaGameUI registrado. Primer GameUI concreto. 8/8 e2e shell conductor. | 772316f |
