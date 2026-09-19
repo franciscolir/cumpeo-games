@@ -127,7 +127,7 @@ lógica ya fue portada durante el paso 2.3 (ShellPartida). Los pasos 2.5, 2.6
 y 2.7 originales fueron renumerados a 2.4, 2.5 y 2.6 respectivamente.
 ---
 
-### Bloque 3 — Móvil + moderación 🔄 EN PROGRESO (1/7)
+### Bloque 3 — Móvil + moderación 🔄 EN PROGRESO (2/6)
 
 **Objetivo:** Implementar la interfaz móvil con identificación por nombre, envío de mensajes y fotos, y cola de moderación en el conductor.
 
