@@ -2,7 +2,7 @@
 
 **Versión:** 1.0
 **Última actualización:** 2026-09-18
-**Estado global:** Bloque 1 cerrado · Bloque 2 en progreso (9/11)
+**Estado global:** Bloque 1 cerrado · Bloque 2 en progreso (10/11)
 **Rama:** feature/vertical-slice
 
 ---
@@ -100,8 +100,8 @@
 
 ---
 
-### Bloque 2 — Shell de partida (Conductor + Pública) 🔄 EN PROGRESO (9/11)
-| 2 | Shell de partida (Conductor + Pública) | EN PROGRESO | 9/11 | — | — |
+### Bloque 2 — Shell de partida (Conductor + Pública) 🔄 EN PROGRESO (10/11)
+| 2 | Shell de partida (Conductor + Pública) | EN PROGRESO | 10/11 | — | — |
 **Objetivo:** Crear el shell común de partida que permite enchufar cualquier juego sin rehacer UI.
 
 #### Pasos (preliminares)
@@ -116,13 +116,12 @@
 | 2.4a | Shell pública base | ✅ | c75fcf5 | bloque-2-paso-4a.md |
 | 2.4b.1 | Conectar Storage + repos al bootstrap | ✅ | 547f005 | bloque-2-paso-4b1.md |
 | 2.4b.2 | Galería de fotos + QR en shell | ✅ | bc7f9e0 | bloque-2-paso-4b2.md |
-| 2.4c | Marquee + próximo desafío | ⬜ PENDIENTE | — | — |
+| 2.4c | Marquee + próximo desafío | ✅ | 92f54b6 | bloque-2-paso-4c.md |
 | 2.5 | Migrar Trivia al shell | ⬜ PENDIENTE | — | — |
 | 2.6 | Eliminar consola.js viejo | ⬜ PENDIENTE | — | — |
 
 
-
-**Paso 2.4c en preparación (marquee + próximo desafío).**
+**Paso 2.5 en preparación (migrar Trivia al shell).**
 **Nota:** El paso "2.4 Portar lógica de consola.js" fue cancelado porque la
 lógica ya fue portada durante el paso 2.3 (ShellPartida). Los pasos 2.5, 2.6
 y 2.7 originales fueron renumerados a 2.4, 2.5 y 2.6 respectivamente.

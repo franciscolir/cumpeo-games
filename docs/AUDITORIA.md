@@ -81,3 +81,5 @@ _(ninguna)_
 | 2026-09-19 | 2 | 2.4b.1 | ✅ APROBADO | Storage + foto + mensaje en bootstrap. Bug de crearStorageAdapter corregido. | 547f005 |
 
 | 2026-09-19 | 2 | 2.4b.2 | ✅ APROBADO | Galería + QR. Bloqueo de migración 0010 y RLS resuelto. | bc7f9e0, 3f6d575, 8d28be9 |
+
+| 2026-09-19 | 2 | 2.4c | ✅ APROBADO | Card próximo desafío + marquee footer. 9/9 e2e shell público. | 92f54b6 |
