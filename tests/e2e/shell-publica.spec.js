@@ -141,3 +141,30 @@ test('galería muestra foto cuando hay una aprobada', async ({ page }) => {
   await expect(img).toBeVisible({ timeout: 15000 });
   await expect(img).toHaveAttribute('src', /blob:|data:|supabase/);
 });
+
+test('card próximo desafío visible con texto esperando o juego', async ({ page }) => {
+  await page.goto('/');
+  const { codigo } = await setupPartidaCompleta(page);
+  await page.goto(`/#/publica-nueva/${codigo}`);
+  await waitForCumpeo(page);
+  const card = page.locator('[data-role="next-challenge-card"]');
+  await expect(card).toBeVisible({ timeout: 15000 });
+  const titulo = page.locator('[data-role="next-challenge-title"]');
+  await expect(titulo).toBeVisible();
+  const texto = await titulo.textContent();
+  expect(texto).toMatch(/ESPERANDO|JUEGO|ÚLTIMO/);
+});
+
+test('marquee footer visible con al menos 1 mensaje', async ({ page }) => {
+  await page.goto('/');
+  const { codigo } = await setupPartidaCompleta(page);
+  await page.goto(`/#/publica-nueva/${codigo}`);
+  await waitForCumpeo(page);
+  const footer = page.locator('[data-role="marquee-footer"]');
+  await expect(footer).toBeVisible({ timeout: 15000 });
+  const track = page.locator('.marquee-track');
+  await expect(track).toBeVisible();
+  const spans = track.locator('> span');
+  const count = await spans.count();
+  expect(count).toBeGreaterThanOrEqual(1);
+});

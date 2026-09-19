@@ -115,9 +115,11 @@ async function _renderContenido(container, app, codigo) {
         </div>
         <div class="lg:col-span-5 flex flex-col">
           ${_renderMarcador(equipos)}
+          ${_renderProximoDesafio(juegos)}
           ${_renderQR(partida)}
         </div>
       </div>
+      ${_renderMarquee(partida)}
     </div>
   `;
 
@@ -347,6 +349,81 @@ function _renderMarcador(equipos) {
 }
 
 /* =============================================================
+   Próximo desafío
+   ============================================================= */
+
+function _derivarProximoDesafio(juegos) {
+  const activo = juegos.find((j) => j.estado === 'EN_CURSO' || j.estado === 'PAUSADO');
+  const pendientes = juegos.filter((j) => j.estado === 'PENDIENTE');
+  const total = juegos.length;
+
+  if (!activo && pendientes.length === 0) {
+    return {
+      ronda: 'ESPERANDO',
+      titulo: 'ESPERANDO INICIO DE JUEGO',
+      descripcion: 'El anfitrión cargará el primer desafío en breve.'
+    };
+  }
+
+  if (activo) {
+    const idxActivo = juegos.indexOf(activo);
+    const siguiente = pendientes[0];
+    if (siguiente) {
+      const idxSiguiente = juegos.indexOf(siguiente);
+      return {
+        ronda: `JUEGO ${idxSiguiente + 1} / ${total}`,
+        titulo: siguiente.juego_nombre || siguiente.juego_codigo || 'PRÓXIMO DESAFÍO',
+        descripcion: 'Prepárate para el siguiente desafío del circuito.'
+      };
+    }
+    return {
+      ronda: `ÚLTIMO · ${idxActivo + 1} / ${total}`,
+      titulo: 'ÚLTIMO DESAFÍO',
+      descripcion: 'Este es el último juego del circuito.'
+    };
+  }
+
+  const siguiente = pendientes[0];
+  if (siguiente) {
+    const idx = juegos.indexOf(siguiente);
+    return {
+      ronda: `JUEGO ${idx + 1} / ${total}`,
+      titulo: siguiente.juego_nombre || siguiente.juego_codigo || 'PRÓXIMO DESAFÍO',
+      descripcion: 'Prepárate para el siguiente desafío del circuito.'
+    };
+  }
+
+  return {
+    ronda: 'ESPERANDO',
+    titulo: 'ESPERANDO INICIO DE JUEGO',
+    descripcion: 'El anfitrión cargará el primer desafío en breve.'
+  };
+}
+
+function _renderProximoDesafio(juegos) {
+  const { ronda, titulo, descripcion } = _derivarProximoDesafio(juegos);
+
+  return `
+    <section class="bg-comicYellow border-b-2.5 border-on-surface lg:border-b-0 px-6 py-4 shrink-0" data-role="next-challenge-card">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-1.5">
+        <span class="bg-black text-white font-display-hero text-sm px-2.5 py-0.5 uppercase tracking-wide">
+          PRÓXIMO DESAFÍO
+        </span>
+        <span class="font-display-hero text-xs uppercase text-on-surface bg-white px-2 py-0.5 border-2 border-on-surface" data-role="next-round">
+          ${ronda}
+        </span>
+      </div>
+      <h4 class="font-display-hero text-xl text-on-surface uppercase leading-tight" data-role="next-challenge-title">
+        ${titulo}
+      </h4>
+      <p class="font-body-md text-on-surface/80 mt-1 text-sm" data-role="next-challenge-desc">
+        ${descripcion}
+      </p>
+    </section>
+  `;
+}
+
+/* =============================================================
    QR
    ============================================================= */
 
@@ -376,4 +453,30 @@ function _generarQR(partida) {
   } catch (_) {
     qrContainer.innerHTML = '<p class="font-label-sm text-on-surface-variant text-center">Error al generar QR</p>';
   }
+}
+
+/* =============================================================
+   Marquee footer
+   ============================================================= */
+
+function _renderMarquee(partida) {
+  const mensajes = [
+    '★ ESCANEÁ EL QR PARA UNIRTE',
+    `★ CÓDIGO DE SALA: ${partida.public_codigo}`,
+    '★ ENVIÁ TUS FOTOS AL PÚBLICO',
+    '★ ¡QUE GANE EL MEJOR EQUIPO!'
+  ];
+
+  const duplicados = [...mensajes, ...mensajes];
+
+  return `
+    <footer class="w-full bg-black text-comicYellow border-t-4 border-black pt-3 pb-3 overflow-hidden z-20 shrink-0 select-none" data-role="marquee-footer">
+      <div class="marquee-track font-display-hero text-xl tracking-wider uppercase items-center gap-6">
+        ${duplicados.map((msg, i) => {
+          const colorClass = i % 2 === 0 ? 'text-comicRed' : 'text-comicGreen';
+          return `<span class="flex items-center gap-3 shrink-0"><span class="${colorClass}" aria-hidden="true">★</span> ${msg.replace(/^★ /, '')}</span>`;
+        }).join('')}
+      </div>
+    </footer>
+  `;
 }

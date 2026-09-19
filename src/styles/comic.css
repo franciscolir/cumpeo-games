@@ -69,10 +69,31 @@ h1,
   background-position: 0 0, 12px 12px;
 }
 
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.marquee-track {
+  display: inline-flex;
+  white-space: nowrap;
+  animation: marquee 30s linear infinite;
+}
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
+  }
+  .marquee-track {
+    display: flex !important;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    white-space: normal !important;
+    transform: none !important;
   }
 }
