@@ -2,7 +2,7 @@
 
 **Versión:** 1.0
 **Última actualización:** 2026-09-18
-**Estado global:** Bloque 1 cerrado · Bloque 2 en progreso (6/8)
+**Estado global:** Bloque 1 cerrado · Bloque 2 en progreso (6/7)
 **Rama:** feature/vertical-slice
 
 ---
@@ -100,12 +100,11 @@
 
 ---
 
-### Bloque 2 — Shell de partida (Conductor + Pública) 🔄 EN PROGRESO (6/8)
-| 2 | Shell de partida (Conductor + Pública) | EN PROGRESO | 6/8 | — | — |
+### Bloque 2 — Shell de partida (Conductor + Pública) 🔄 EN PROGRESO (6/7)
+| 2 | Shell de partida (Conductor + Pública) | EN PROGRESO | 6/7 | — | — |
 **Objetivo:** Crear el shell común de partida que permite enchufar cualquier juego sin rehacer UI.
 
 #### Pasos (preliminares)
-
 | # | Paso | Estado | Commit | Prompt archivado |
 |---|------|--------|--------|------------------|
 | 2.1 | Criterios de aceptación visuales (AC-VISUAL) | ✅ | 5c8dff0 | — |
@@ -114,14 +113,17 @@
 | 2.3a | Login programático e2e | ✅ | 73f0cbf | bloque-2-paso-3.md |
 | 2.3b | Extender obtenerContextoEspera con juego_codigo | ✅ | 927ceac | bloque-2-paso-3b.md |
 | 2.3c | Corregir shell (data-accion, colores) | ✅ | 13a01aa | bloque-2-paso-3c.md |
-| 2.4 | Portar lógica de consola.js | ⬜ | — | — |
-| 2.5 | ShellPublica (Pública) | ⬜ | — | — |
-| 2.6 | Migrar Trivia al shell | ⬜ | — | — |
-| 2.7 | Eliminar consola.js viejo | ⬜ | — | — |
+| 2.4 | ShellPublica (Pública) | ⬜ PENDIENTE | — | — |
+| 2.5 | Migrar Trivia al shell | ⬜ PENDIENTE | — | — |
+| 2.6 | Eliminar consola.js viejo | ⬜ PENDIENTE | — | — |
 
 
 
-**Paso 2.4 en preparación (revisar si aplica portar consola.js).**
+**Paso 2.4 en preparación (ShellPublica).**
+
+**Nota:** El paso "2.4 Portar lógica de consola.js" fue cancelado porque la
+lógica ya fue portada durante el paso 2.3 (ShellPartida). Los pasos 2.5, 2.6
+y 2.7 originales fueron renumerados a 2.4, 2.5 y 2.6 respectivamente.
 ---
 
 ### Bloque 3 — Móvil + moderación ⬜ PENDIENTE
@@ -200,6 +202,7 @@ Cada juego se cierra con su propio bloque interno (GameDefinition + UI Conductor
 | 1.0 | 2026-09-18 | Creación del roadmap. Bloque 0 cerrado. Bloque 1 en preparación. |
 | 1.1 | 2026-09-18 | Bloque 1 cerrado. 6 pasos, 517 unit / 105 integration tests. |
 | 1.2 | 2026-09-18 | Bloque 2 iniciado. AC-VISUAL definidos. 7 pasos. |
+| 1.4 | 2026-09-19 | Paso 2.4 cancelado. Bloque 2 renumerado: 7 pasos. |
 ---
 
 ## 5. Convenciones
