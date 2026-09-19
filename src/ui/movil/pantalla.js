@@ -4,6 +4,9 @@
    Muestra: header, juego actual, marcador, placeholder para
    acciones futuras (mensajes, fotos).
 
+   Incluye flujo de identificación con session_token
+   persistido en localStorage.
+
    Ruta: #/movil/:codigo
 
    Usa Realtime (Supabase) o setInterval (LocalAdapter) según
@@ -12,6 +15,8 @@
 
 let cleanupSuscripciones = null;
 let intervalId = null;
+
+const ESTADOS_TERMINADOS = ['FINALIZADA', 'DESCARTADA', 'EXPIRADA'];
 
 /**
  * Renderiza la pantalla móvil.
@@ -76,6 +81,34 @@ function _limpiarSuscripciones() {
 }
 
 /* =============================================================
+   localStorage helpers
+   ============================================================= */
+
+function _claveToken(codigo) {
+  return `cumpeo:session_token:${codigo}`;
+}
+
+function _leerToken(codigo) {
+  try {
+    return localStorage.getItem(_claveToken(codigo));
+  } catch (_) {
+    return null;
+  }
+}
+
+function _guardarToken(codigo, token) {
+  try {
+    localStorage.setItem(_claveToken(codigo), token);
+  } catch (_) {}
+}
+
+function _limpiarToken(codigo) {
+  try {
+    localStorage.removeItem(_claveToken(codigo));
+  } catch (_) {}
+}
+
+/* =============================================================
    Render principal
    ============================================================= */
 
@@ -98,20 +131,168 @@ async function _renderContenido(container, app, codigo) {
     return;
   }
 
+  if (ESTADOS_TERMINADOS.includes(partida.estado)) {
+    container.innerHTML = `
+      <div class="min-h-screen flex flex-col bg-background">
+        ${_renderHeader(partida)}
+        <div class="flex-1 flex flex-col items-center justify-center p-6">
+          <div class="max-w-md w-full bg-surface-container-lowest border-2.5 border-on-surface rounded-2xl p-8 shadow-comic-lg text-center">
+            <h1 class="font-display-hero text-3xl text-on-surface-variant uppercase">Partida finalizada</h1>
+            <p class="font-body-md text-on-surface-variant mt-4 mb-6">Esta partida ya terminó.</p>
+            <button id="movil-reidentificar" class="font-label-md uppercase border-2.5 border-on-surface rounded-lg px-4 py-2 bg-primary text-on-primary shadow-comic-sm hover:shadow-comic-md transition">
+              Volver a identificarme
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+    const btnReidentificar = container.querySelector('#movil-reidentificar');
+    if (btnReidentificar) {
+      btnReidentificar.addEventListener('click', () => {
+        _limpiarToken(codigo);
+        _renderContenido(container, app, codigo);
+      });
+    }
+    _limpiarSuscripciones();
+    if (intervalId) { clearInterval(intervalId); intervalId = null; }
+    return;
+  }
+
+  if (container.querySelector('#movil-nombre')) return;
+
+  await _identificarParticipante(container, app, partida);
+}
+
+/* =============================================================
+   Flujo de identificación
+   ============================================================= */
+
+async function _identificarParticipante(container, app, partida) {
+  const codigo = partida.public_codigo;
+  const token = _leerToken(codigo);
+
+  if (token) {
+    try {
+      const participante = await app.services.participante.obtenerPorSessionToken(token);
+      if (participante) {
+        const contexto = await app.services.partida.obtenerContextoEspera(partida.id);
+        const { equipos, juegos } = contexto;
+        const juegoActivo = juegos.find((j) => j.estado === 'EN_CURSO' || j.estado === 'PAUSADO');
+        _renderPantallaPrincipal(container, partida, juegoActivo, equipos, participante);
+        return;
+      }
+    } catch (_) {}
+    _limpiarToken(codigo);
+  }
+
   const contexto = await app.services.partida.obtenerContextoEspera(partida.id);
-  const { equipos, juegos } = contexto;
+  _renderFormulario(container, app, partida, contexto);
+}
 
-  const juegoActivo = juegos.find((j) => j.estado === 'EN_CURSO' || j.estado === 'PAUSADO');
+/* =============================================================
+   Formulario de identificación
+   ============================================================= */
 
+function _renderFormulario(container, app, partida, contexto) {
+  container.innerHTML = `
+    <div class="min-h-screen flex flex-col bg-background">
+      ${_renderHeader(partida)}
+      <div class="flex-1 flex flex-col items-center justify-center p-6">
+        <div class="max-w-md w-full bg-surface-container-lowest border-2.5 border-on-surface rounded-2xl p-8 shadow-comic-lg text-center">
+          <h2 class="font-headline-md uppercase text-on-surface mb-6">¿Cómo te llamás?</h2>
+          <input
+            id="movil-nombre"
+            type="text"
+            placeholder="Tu nombre"
+            maxlength="50"
+            class="w-full border-2.5 border-on-surface rounded-lg px-4 py-3 font-body-md text-on-surface bg-surface mb-4"
+          />
+          <p id="movil-error" class="font-label-md text-error mb-2 hidden">Ingresá un nombre</p>
+          <button id="movil-continuar" class="font-label-md uppercase border-2.5 border-on-surface rounded-lg px-6 py-3 bg-primary text-on-primary shadow-comic-sm hover:shadow-comic-md transition w-full">
+            Continuar
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const input = container.querySelector('#movil-nombre');
+  const btnContinuar = container.querySelector('#movil-continuar');
+  const errorEl = container.querySelector('#movil-error');
+
+  const submit = () => _enviarFormulario(container, app, partida, contexto);
+
+  btnContinuar.addEventListener('click', submit);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') submit();
+  });
+}
+
+async function _enviarFormulario(container, app, partida, contexto) {
+  const input = container.querySelector('#movil-nombre');
+  const errorEl = container.querySelector('#movil-error');
+  const btnContinuar = container.querySelector('#movil-continuar');
+
+  const nombre = (input?.value || '').trim();
+  if (!nombre) {
+    errorEl?.classList.remove('hidden');
+    input?.focus();
+    return;
+  }
+  errorEl?.classList.add('hidden');
+
+  btnContinuar.disabled = true;
+  btnContinuar.textContent = 'Uniéndote...';
+
+  try {
+    const sessionToken = crypto.randomUUID();
+    const equipoAzar = contexto.equipos[Math.floor(Math.random() * contexto.equipos.length)];
+
+    await app.services.participante.crearParticipanteConToken({
+      partidaId: partida.id,
+      equipoPartidaId: equipoAzar.id,
+      nombre,
+      sessionToken
+    });
+
+    _guardarToken(partida.public_codigo, sessionToken);
+
+    const participante = await app.services.participante.obtenerPorSessionToken(sessionToken);
+    const { equipos, juegos } = contexto;
+    const juegoActivo = juegos.find((j) => j.estado === 'EN_CURSO' || j.estado === 'PAUSADO');
+    _renderPantallaPrincipal(container, partida, juegoActivo, equipos, participante);
+  } catch (err) {
+    btnContinuar.disabled = false;
+    btnContinuar.textContent = 'Continuar';
+    errorEl.textContent = err.message || 'Error al unirse';
+    errorEl.classList.remove('hidden');
+  }
+}
+
+/* =============================================================
+   Pantalla principal (post-identificación)
+   ============================================================= */
+
+function _renderPantallaPrincipal(container, partida, juegoActivo, equipos, participante) {
   container.innerHTML = `
     <div class="min-h-screen flex flex-col bg-background">
       ${_renderHeader(partida)}
       <div class="flex-1 flex flex-col">
+        ${_renderSaludo(participante)}
         ${_renderJuegoActual(partida, juegoActivo)}
         ${_renderMarcador(equipos)}
         ${_renderPlaceholder()}
       </div>
     </div>
+  `;
+}
+
+function _renderSaludo(participante) {
+  const nombre = participante?.nombre || 'Participante';
+  return `
+    <section class="bg-surface px-6 py-3 border-b-2.5 border-on-surface">
+      <p class="font-headline-md text-on-surface">Hola, ${nombre}</p>
+    </section>
   `;
 }
 
@@ -224,7 +405,7 @@ function _renderPlaceholder() {
   return `
     <section class="flex-1 flex items-center justify-center p-6 bg-surface">
       <div class="w-full max-w-md text-center">
-        <p class="font-body-md text-on-surface-variant italic">Acciones disponibles pronto</p>
+        <p class="font-body-md text-on-surface-variant italic">Pronto podrás enviar mensajes y fotos</p>
       </div>
     </section>
   `;
