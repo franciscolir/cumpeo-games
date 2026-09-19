@@ -165,3 +165,44 @@ test('botón Descartar visible si tengo control y estado EN_CURSO', async ({ pag
   const btnDescartar = page.locator('#btn-descartar');
   await expect(btnDescartar).toBeVisible({ timeout: 15000 });
 });
+
+test('cola de moderación visible si tengo control', async ({ page }) => {
+  await page.goto('/');
+  const { id } = await setupCircuitoYPartida(page);
+  await page.evaluate(async (pid) => {
+    await window.cumpeo.services.partida.tomarControl(pid, window.cumpeo.session.sessionId);
+    await window.cumpeo.services.partida.comenzarPartida(pid, window.cumpeo.session.sessionId, crypto.randomUUID());
+  }, id);
+  await page.goto('/');
+  await page.goto(`/#/partidas/${id}`);
+  await waitForCumpeo(page);
+  const cola = page.locator('#cola-moderacion');
+  await expect(cola).toBeVisible({ timeout: 15000 });
+  await expect(page.getByText('Moderación')).toBeVisible();
+  await expect(page.locator('#lista-mensajes-pendientes')).toBeVisible();
+  await expect(page.locator('#lista-fotos-pendientes')).toBeVisible();
+});
+
+test('cola de moderación NO visible si no tengo control', async ({ page }) => {
+  await page.goto('/');
+  const { id } = await setupCircuitoYPartida(page);
+  await page.goto(`/#/partidas/${id}`);
+  await waitForCumpeo(page);
+  const cola = page.locator('#cola-moderacion');
+  await expect(cola).toHaveCount(0);
+});
+
+test('cola muestra Sin pendientes si no hay nada', async ({ page }) => {
+  await page.goto('/');
+  const { id } = await setupCircuitoYPartida(page);
+  await page.evaluate(async (pid) => {
+    await window.cumpeo.services.partida.tomarControl(pid, window.cumpeo.session.sessionId);
+    await window.cumpeo.services.partida.comenzarPartida(pid, window.cumpeo.session.sessionId, crypto.randomUUID());
+  }, id);
+  await page.goto('/');
+  await page.goto(`/#/partidas/${id}`);
+  await waitForCumpeo(page);
+  await expect(page.locator('#cola-moderacion')).toBeVisible({ timeout: 15000 });
+  await expect(page.getByText('Sin mensajes pendientes')).toBeVisible();
+  await expect(page.getByText('Sin fotos pendientes')).toBeVisible();
+});

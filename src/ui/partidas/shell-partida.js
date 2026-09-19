@@ -149,10 +149,16 @@ async function _renderContenido(container, app, partidaId) {
       <div id="shell-panel-conductor" class="min-h-[200px] border-t-2.5 border-on-surface bg-surface-container-lowest p-4">
         ${gameUI ? '' : _renderPlaceholder('Este juego aún no tiene panel conductor')}
       </div>
+      ${puedeControlar ? _renderColaModeracion() : ''}
     </div>
   `;
 
   bindHeaderListeners(container);
+
+  if (puedeControlar) {
+    _bindModeracion(container, app, partidaId);
+    await _cargarModeracion(container, app, partidaId);
+  }
 
   if (gameUI) {
     const gameContainer = container.querySelector('#shell-game-container');
@@ -285,6 +291,119 @@ function _renderPlaceholder(mensaje) {
       <p class="font-body-md text-on-surface-variant italic text-center">${mensaje}</p>
     </div>
   `;
+}
+
+/* =============================================================
+   Cola de Moderación
+   ============================================================= */
+
+function _renderColaModeracion() {
+  return `
+    <section id="cola-moderacion" class="border-t-2.5 border-on-surface bg-surface p-4">
+      <h3 class="font-headline-md uppercase text-on-surface mb-4">Moderación</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <h4 class="font-label-md uppercase text-on-surface-variant mb-2">Mensajes pendientes</h4>
+          <ul id="lista-mensajes-pendientes" class="space-y-2">
+            <li class="font-body-sm text-on-surface-variant italic">Cargando...</li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-label-md uppercase text-on-surface-variant mb-2">Fotos pendientes</h4>
+          <ul id="lista-fotos-pendientes" class="space-y-2">
+            <li class="font-body-sm text-on-surface-variant italic">Cargando...</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+async function _cargarModeracion(container, app, partidaId) {
+  const sessionId = app.session.sessionId;
+  const mensajesEl = container.querySelector('#lista-mensajes-pendientes');
+  const fotosEl = container.querySelector('#lista-fotos-pendientes');
+  if (!mensajesEl || !fotosEl) return;
+
+  try {
+    const [mensajes, fotos] = await Promise.all([
+      app.services.mensaje.listarPendientesDePartida(partidaId),
+      app.services.foto.listarPendientesDePartida(partidaId)
+    ]);
+
+    if (mensajes.length === 0) {
+      mensajesEl.innerHTML = '<li class="font-body-sm text-on-surface-variant italic">Sin mensajes pendientes</li>';
+    } else {
+      mensajesEl.innerHTML = mensajes.map((m) => `
+        <li class="border-2 border-on-surface rounded-lg p-3 flex justify-between items-start">
+          <div class="min-w-0 flex-1 mr-2">
+            <p class="font-body-sm text-on-surface-variant">${m.participante_nombre || 'Anónimo'}</p>
+            <p class="font-body-md text-on-surface break-words">${m.texto}</p>
+          </div>
+          <div class="flex gap-2 shrink-0">
+            <button data-accion="aprobar-mensaje" data-id="${m.id}" class="font-label-md uppercase border-2 border-tertiary rounded-lg px-3 py-1 bg-tertiary/15 text-tertiary hover:bg-tertiary/30 transition">✓</button>
+            <button data-accion="rechazar-mensaje" data-id="${m.id}" class="font-label-md uppercase border-2 border-error rounded-lg px-3 py-1 bg-error/15 text-error hover:bg-error/30 transition">✗</button>
+          </div>
+        </li>
+      `).join('');
+    }
+
+    if (fotos.length === 0) {
+      fotosEl.innerHTML = '<li class="font-body-sm text-on-surface-variant italic">Sin fotos pendientes</li>';
+    } else {
+      const fotosConUrl = await Promise.all(fotos.map(async (f) => {
+        let url = '';
+        try { url = await app.services.foto.obtenerUrlPublica(f.id); } catch (_) {}
+        return { ...f, url };
+      }));
+      fotosEl.innerHTML = fotosConUrl.map((f) => `
+        <li class="border-2 border-on-surface rounded-lg p-3">
+          ${f.url ? `<img src="${f.url}" class="w-full h-24 object-cover rounded mb-2" alt="Foto pendiente" />` : '<p class="font-body-sm text-on-surface-variant italic mb-2">Vista previa no disponible</p>'}
+          <div class="flex gap-2">
+            <button data-accion="aprobar-foto" data-id="${f.id}" class="font-label-md uppercase border-2 border-tertiary rounded-lg px-3 py-1 bg-tertiary/15 text-tertiary hover:bg-tertiary/30 transition">✓</button>
+            <button data-accion="rechazar-foto" data-id="${f.id}" class="font-label-md uppercase border-2 border-error rounded-lg px-3 py-1 bg-error/15 text-error hover:bg-error/30 transition">✗</button>
+          </div>
+        </li>
+      `).join('');
+    }
+  } catch (err) {
+    console.error('[Moderación] Error cargando:', err);
+    mensajesEl.innerHTML = '<li class="font-body-sm text-error">Error al cargar</li>';
+    fotosEl.innerHTML = '<li class="font-body-sm text-error">Error al cargar</li>';
+  }
+}
+
+function _bindModeracion(container, app, partidaId) {
+  const sessionId = app.session.sessionId;
+
+  container.addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-accion]');
+    if (!btn) return;
+
+    const accion = btn.dataset.accion;
+    const id = btn.dataset.id;
+    if (!id) return;
+
+    btn.disabled = true;
+
+    try {
+      if (accion === 'aprobar-mensaje') {
+        await app.services.mensaje.aprobarMensaje(id, sessionId);
+      } else if (accion === 'rechazar-mensaje') {
+        await app.services.mensaje.rechazarMensaje(id, sessionId);
+      } else if (accion === 'aprobar-foto') {
+        await app.services.foto.aprobarFoto(id, sessionId);
+      } else if (accion === 'rechazar-foto') {
+        await app.services.foto.rechazarFoto(id, sessionId);
+      } else {
+        return;
+      }
+      await _cargarModeracion(container, app, partidaId);
+    } catch (err) {
+      console.error(`[Moderación] Error en ${accion}:`, err);
+      btn.disabled = false;
+    }
+  });
 }
 
 /* =============================================================
