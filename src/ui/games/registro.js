@@ -4,6 +4,7 @@
    ============================================================= */
 
 import { TriviaGameUI } from './trivia/TriviaGameUI.js';
+import { QuePiensaElPublicoGameUI } from './que-piensa-el-publico/QuePiensaElPublicoGameUI.js';
 
 /**
  * Registra todos los GameUIs disponibles en el registry.
@@ -12,7 +13,8 @@ import { TriviaGameUI } from './trivia/TriviaGameUI.js';
  */
 export function registrarGameUIs(uiRegistry) {
   const gameUIs = [
-    TriviaGameUI
+    TriviaGameUI,
+    QuePiensaElPublicoGameUI
   ];
 
   for (const ui of gameUIs) {

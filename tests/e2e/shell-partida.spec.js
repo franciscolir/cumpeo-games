@@ -273,3 +273,30 @@ test('onAccion sin control no ejecuta acción', async ({ page }) => {
 
   await expect(page.locator('#btn-tomar-control')).toBeVisible();
 });
+
+test('uiRegistry tiene QuePiensaElPublicoGameUI registrado', async ({ page }) => {
+  await page.goto('/');
+  const { id } = await setupCircuitoYPartida(page);
+  await page.goto(`/#/partidas/${id}`);
+  await waitForCumpeo(page);
+
+  const tieneQPEP = await page.evaluate(() => {
+    return window.cumpeo.uiRegistry.existe('QUE_PIENSA_EL_PUBLICO');
+  });
+  expect(tieneQPEP).toBe(true);
+
+  const gameUICount = await page.evaluate(() => {
+    return window.cumpeo.uiRegistry.cantidad();
+  });
+  expect(gameUICount).toBe(2);
+
+  const qpepUI = await page.evaluate(() => {
+    const ui = window.cumpeo.uiRegistry.obtener('QUE_PIENSA_EL_PUBLICO');
+    return {
+      tieneRenderizarArea: typeof ui.renderizarAreaJuego === 'function',
+      tieneRenderizarPanel: typeof ui.renderizarPanelConductor === 'function'
+    };
+  });
+  expect(qpepUI.tieneRenderizarArea).toBe(true);
+  expect(qpepUI.tieneRenderizarPanel).toBe(true);
+});
