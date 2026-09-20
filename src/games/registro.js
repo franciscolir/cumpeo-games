@@ -4,6 +4,7 @@
    ============================================================= */
 
 import { TriviaGameDefinition } from './trivia/TriviaGameDefinition.js';
+import { QuePiensaElPublicoGameDefinition } from './que-piensa-el-publico/QuePiensaElPublicoGameDefinition.js';
 
 /**
  * Registra todos los juegos disponibles en el registry.
@@ -12,8 +13,8 @@ import { TriviaGameDefinition } from './trivia/TriviaGameDefinition.js';
  */
 export function registrarTodos(registry) {
   const definiciones = [
-    TriviaGameDefinition
-    // Agregar aquí los próximos juegos (H5.2)
+    TriviaGameDefinition,
+    QuePiensaElPublicoGameDefinition
   ];
 
   for (const def of definiciones) {

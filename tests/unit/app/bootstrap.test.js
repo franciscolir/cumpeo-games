@@ -115,6 +115,6 @@ describe('registrarTodos', () => {
   it('devuelve ["TRIVIA"]', () => {
     const registry = new GameDefinitionRegistry();
     const codigos = registrarTodos(registry);
-    expect(codigos).toEqual(['TRIVIA']);
+    expect(codigos).toEqual(['TRIVIA', 'QUE_PIENSA_EL_PUBLICO']);
   });
 });

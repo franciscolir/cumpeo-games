@@ -28,11 +28,12 @@ describe('seedJuegos', () => {
     await borrarBase();
   });
 
-  it('registry con 1 def crea 1 Juego', async () => {
+  it('registry con 2 defs crea 2 Juegos', async () => {
     const { services } = await bootstrap(adapter);
     const juegos = await services.juego.listarJuegos();
-    expect(juegos.length).toBe(1);
-    expect(juegos[0].codigo).toBe('TRIVIA');
+    expect(juegos.length).toBe(2);
+    const codigos = juegos.map((j) => j.codigo).sort();
+    expect(codigos).toEqual(['QUE_PIENSA_EL_PUBLICO', 'TRIVIA']);
   });
 
   it('el Juego creado tiene codigo y nombre correctos', async () => {

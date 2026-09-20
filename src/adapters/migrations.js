@@ -10,6 +10,7 @@ export function aplicarMigraciones(db, oldVersion, upgradeTx) {
   if (oldVersion < 2) migracionV2(db);
   if (oldVersion < 3) migracionV3(db, upgradeTx);
   if (oldVersion < 4) migracionV4(db, upgradeTx);
+  if (oldVersion < 5) migracionV5(db);
 }
 
 function migracionV1(db) {
@@ -106,4 +107,26 @@ function migracionV4(db, upgradeTx) {
   if (store.indexNames.contains('participante_partida_session_token')) return;
 
   store.createIndex('participante_partida_session_token', 'session_token', { unique: true });
+}
+
+/* =============================================================
+   V5 — Store respuestas_encuesta.
+   INV-189: opcion ∈ { A, B }.
+   INV-190: UNIQUE (juego_ejecutado_id, participante_id, pregunta_index).
+   ============================================================= */
+
+const STORE_NUEVO_V5 = 'respuestas_encuesta';
+
+function migracionV5(db) {
+  if (db.objectStoreNames.contains(STORE_NUEVO_V5)) return;
+
+  const definicion = STORES.find((s) => s.nombre === STORE_NUEVO_V5);
+  const store = db.createObjectStore(definicion.nombre, {
+    keyPath: definicion.keyPath,
+    autoIncrement: false
+  });
+
+  for (const idx of definicion.indexes) {
+    store.createIndex(idx.name, idx.keyPath, { unique: idx.unique });
+  }
 }
