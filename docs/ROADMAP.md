@@ -2,7 +2,7 @@
 
 **Versión:** 1.0
 **Última actualización:** 2026-09-18
-**Estado global:** Bloques 0, 1, 2 cerrados · Bloque 3 en progreso (5/6)
+**Estado global:** Bloques 0, 1, 2, 3 cerrados · Bloque 4 en preparación
 **Rama:** feature/vertical-slice
 
 ---
@@ -36,8 +36,8 @@
 | 0 | Cierre documental | ✅ CERRADO | 6/6 | — | 2026-09-18 |
 | 1 | Modelo de datos extendido | ✅ CERRADO | 6/6 | 7c3288f | 2026-09-18 |
 | 2 | Shell de partida (Conductor + Pública) | ✅ CERRADO | 13/13 | 5e32d5b | 2026-09-19 |
-| 3 | Móvil + moderación | 🔄 EN PROGRESO | 2/6 | — | — |
-| 4 | "¿Qué piensa el público?" | ⬜ PENDIENTE | 0/7 | — | — |
+| 3 | Móvil + moderación | ✅ CERRADO | 6/6 | 9ca4e7a | 2026-09-19 |
+| 4 | "¿Qué piensa el público?" | 🔄 EN PREPARACIÓN | 0/7 | — | — |
 | 5 | 8 juegos restantes | ⬜ PENDIENTE | 0/8 | — | — |
 | 6 | Migración e2e a Supabase (opcional) | ⬜ PENDIENTE | 0/? | — | — |
 
@@ -127,7 +127,7 @@ lógica ya fue portada durante el paso 2.3 (ShellPartida). Los pasos 2.5, 2.6
 y 2.7 originales fueron renumerados a 2.4, 2.5 y 2.6 respectivamente.
 ---
 
-### Bloque 3 — Móvil + moderación 🔄 EN PROGRESO (5/6)
+### Bloque 3 — Móvil + moderación ✅ CERRADO (6/6)
 
 **Objetivo:** Implementar la interfaz móvil con identificación por nombre, envío de mensajes y fotos, y cola de moderación en el conductor.
 
@@ -140,14 +140,14 @@ y 2.7 originales fueron renumerados a 2.4, 2.5 y 2.6 respectivamente.
 | 3.3 | Envío de mensajes | ✅ | 8e7e614 | — |
 | 3.4 | Envío de fotos | ✅ | 3b3c84a | — |
 | 3.5 | Cola de moderación | ✅ | fc44d02 | — |
-| 3.6 | Muro de mensajes/fotos en pública | ⬜ PENDIENTE | — | — |
-**Paso 3.3 en preparación (envío de mensajes).**
+| 3.6 | Móvil + moderación | ✅ | 9ca4e7a | 2026-09-19 |
+**Bloque 3 cerrado. Bloque 4 en preparación ("¿Qué piensa el público?").**
 **Nota:** El paso "3.3 Pantalla principal del móvil" fue fusionado
 con "3.4 Envío de mensajes" porque la pantalla ya existía (pasos 3.1 + 3.2).
 El Bloque 3 pasa de 7 a 6 pasos.
 ---
 
-### Bloque 4 — "¿Qué piensa el público?" ⬜ PENDIENTE
+### Bloque 4 — "¿Qué piensa el público?" 🔄 EN PREPARACIÓN
 
 **Objetivo:** Primer juego completo. Cierra el MVP.
 
@@ -207,6 +207,7 @@ Cada juego se cierra con su propio bloque interno (GameDefinition + UI Conductor
 | 1.2 | 2026-09-18 | Bloque 2 iniciado. AC-VISUAL definidos. 7 pasos. |
 | 1.4 | 2026-09-19 | Paso 2.4 cancelado. Bloque 2 renumerado: 7 pasos. |
 | 2.0 | 2026-09-19 | Bloque 2 cerrado. 13/13 pasos. 540 unit + 53 e2e. |
+| 3.0 | 2026-09-19 | Bloque 3 cerrado. 6/6 pasos. 540 unit + 40 e2e. |
 ---
 
 ## 5. Convenciones

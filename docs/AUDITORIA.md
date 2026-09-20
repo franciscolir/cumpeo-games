@@ -60,6 +60,13 @@ _(ninguna)_
 | 18 | Condición del `if` en `TriviaGameUI.renderizarAreaJuego` difícil de leer. | Paso 2.5 | Baja |
 | 19 | `Boton` recibe `clase` y `id` redundantes en TriviaGameUI. | Paso 2.5 | Baja |
 | 20 | Tests de circuitos fallan intermitentemente por timeout en #form-circuito | Paso 2.6c | Media |
+| 21 | Políticas RLS aplicadas manualmente sin documentación completa | Bloque 3 | Media |
+| 22 | Políticas de Storage aplicadas manualmente sin documentación | Bloque 3 | Media |
+| 23 | `URL.revokeObjectURL` no se llama al limpiar preview | Paso 3.4 | Baja |
+| 24 | Tests e2e suben archivos basura a Supabase Storage | Paso 3.4 | Baja |
+| 25 | `MensajePublico` no resuelve `participante_nombre` | Paso 3.5 | Media |
+| 26 | Variable `sessionId` sin usar en `_cargarModeracion` | Paso 3.5 | Baja |
+| 27 | Repositorio Git se corrompió por `git add` con paths mal formados | Bloque 3 | Media |
 ## Cierre de bloque
 
 | Fecha | Bloque | Estado | Notas |
@@ -115,3 +122,11 @@ _(ninguna)_
 | 2026-09-19 | 3 | 3.4 | ✅ APROBADO | Envío de fotos desde móvil. 14 e2e tests. | 3b3c84a |
 
 | 2026-09-19 | 3 | 3.5 | ✅ APROBADO | Cola de moderación en shell del conductor. 14 e2e tests. | fc44d02 |
+
+| 2026-09-19 | 3 | 3.6 | ✅ APROBADO | Muro de mensajes dinámico en pública. 12 e2e tests. | 9ca4e7a |
+
+## Cierre de bloque
+
+| Fecha | Bloque | Estado | Notas |
+|-------|--------|--------|-------|
+| 2026-09-19 | 3 | ✅ CERRADO | 6/6 pasos. 540 unit + 40 e2e. Commits: 9ca4e7a, fc44d02, 3b3c84a, 8e7e614, 63c7f7e, c981d3e. |
