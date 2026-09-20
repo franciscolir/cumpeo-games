@@ -300,3 +300,120 @@ test('uiRegistry tiene QuePiensaElPublicoGameUI registrado', async ({ page }) =>
   expect(qpepUI.tieneRenderizarArea).toBe(true);
   expect(qpepUI.tieneRenderizarPanel).toBe(true);
 });
+
+async function setupCircuitoQPEP(page) {
+  await waitForCumpeo(page);
+  return await page.evaluate(async () => {
+    const juegos = await window.cumpeo.services.juego.listarJuegos();
+    const qpep = juegos.find((j) => j.codigo === 'QUE_PIENSA_EL_PUBLICO');
+
+    const uid = Date.now().toString(36);
+    const set = await window.cumpeo.services.set.crearSet({
+      juego_id: qpep.id,
+      nombre: `QPEP Set ${uid}`
+    });
+
+    await window.cumpeo.services.set.agregarItem(set.id, {
+      pregunta: '¿Pizza o empanadas?',
+      opcion_a: 'Pizza',
+      opcion_b: 'Empanadas'
+    });
+
+    await window.cumpeo.services.set.agregarItem(set.id, {
+      pregunta: '¿PlayStation o Xbox?',
+      opcion_a: 'PlayStation',
+      opcion_b: 'Xbox'
+    });
+
+    const circuito = await window.cumpeo.services.circuito.crearCircuito({
+      nombre: `QPEP Circuit ${uid}`,
+      juegos: [{ juego_id: qpep.id }],
+      equipos: [
+        { posicion: 1, nombre: 'Rojo', color: '#E53E3E' },
+        { posicion: 2, nombre: 'Azul', color: '#3182CE' }
+      ]
+    });
+
+    await window.cumpeo.services.circuito.actualizarCircuito(
+      circuito.id, circuito.version,
+      {
+        nombre: `QPEP Circuit ${uid}`,
+        juegos: [{ juego_id: qpep.id }],
+        equipos: [
+          { posicion: 1, nombre: 'Rojo', color: '#E53E3E' },
+          { posicion: 2, nombre: 'Azul', color: '#3182CE' }
+        ],
+        estado: 'LISTO'
+      }
+    );
+
+    const codigo = `QP${Date.now().toString(36).slice(-4).toUpperCase()}`;
+    const partida = await window.cumpeo.services.partida.crearPartida(
+      { circuito_id: circuito.id, public_codigo: codigo },
+      crypto.randomUUID()
+    );
+
+    return { id: partida.id, codigo: partida.public_codigo };
+  });
+}
+
+test('flujo QPEP: iniciar juego → iniciar encuesta → cerrar encuesta', async ({ page }) => {
+  await page.goto('/');
+  const { id } = await setupCircuitoQPEP(page);
+
+  await page.evaluate(async (pid) => {
+    await window.cumpeo.services.partida.tomarControl(pid, window.cumpeo.session.sessionId);
+    await window.cumpeo.services.partida.comenzarPartida(pid, window.cumpeo.session.sessionId, crypto.randomUUID());
+
+    const ctx = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
+    const cj = ctx.juegos[0];
+    await window.cumpeo.services.partida.iniciarJuego(
+      pid, cj.id, window.cumpeo.session.sessionId, crypto.randomUUID()
+    );
+  }, id);
+
+  await page.goto('/');
+  await page.goto(`/#/partidas/${id}`);
+  await waitForCumpeo(page);
+
+  await expect(page.locator('#btn-pausar')).toBeVisible({ timeout: 15000 });
+
+  const btnIniciarJuego = page.locator('#btn-qpep-iniciar-juego');
+  await expect(btnIniciarJuego).toBeVisible({ timeout: 10000 });
+  await btnIniciarJuego.click();
+
+  await page.waitForTimeout(500);
+
+  let faseActual = await page.evaluate(async (pid) => {
+    const ctx = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
+    return ctx.juegos[0]?.estado_juego?.fase;
+  }, id);
+  expect(faseActual).toBe('SELECCIONANDO_PREGUNTA');
+
+  await expect(page.locator('#btn-qpep-iniciar')).toBeVisible({ timeout: 10000 });
+  await page.locator('#btn-qpep-iniciar').click();
+
+  await page.waitForTimeout(500);
+
+  faseActual = await page.evaluate(async (pid) => {
+    const ctx = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
+    return ctx.juegos[0]?.estado_juego?.fase;
+  }, id);
+  expect(faseActual).toBe('ENCUESTA_ACTIVA');
+
+  await expect(page.locator('#btn-qpep-cerrar')).toBeVisible({ timeout: 10000 });
+  await page.locator('#btn-qpep-cerrar').click();
+
+  await page.waitForTimeout(500);
+
+  const estadoFinal = await page.evaluate(async (pid) => {
+    const ctx = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
+    const je = ctx.juegos[0];
+    return {
+      fase: je?.estado_juego?.fase,
+      resultado: je?.estado_juego?.resultado_publico
+    };
+  }, id);
+  expect(estadoFinal.fase).toBe('ENCUESTA_CERRADA');
+  expect(estadoFinal.resultado).toBe('EMPATE');
+});

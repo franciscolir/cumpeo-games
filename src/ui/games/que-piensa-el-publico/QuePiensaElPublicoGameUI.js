@@ -4,10 +4,34 @@
 
    Renderiza:
    - Área de juego: pregunta + opciones A/B + fase + conteo en vivo
-   - Panel conductor: botones según fase
+   - Panel conductor: botones según fase con listeners
    ============================================================= */
 
 import { Boton } from '../../components/boton.js';
+
+function _calcularResultadoPublico(estadoJuego) {
+  const { a, b } = estadoJuego.respuestas_publico || { a: 0, b: 0 };
+  if (a > b) return 'A';
+  if (b > a) return 'B';
+  return 'EMPATE';
+}
+
+function _estadoInicial() {
+  return {
+    ronda_actual: 1,
+    pregunta_actual_index: 0,
+    fase: 'SELECCIONANDO_PREGUNTA',
+    respuestas_publico: { a: 0, b: 0 },
+    total_respuestas: 0,
+    pronostico_equipo_1: null,
+    pronostico_equipo_2: null,
+    pronosticador_equipo_1: null,
+    pronosticador_equipo_2: null,
+    resultado_publico: null,
+    puntos_equipo_1: 0,
+    puntos_equipo_2: 0
+  };
+}
 
 export const QuePiensaElPublicoGameUI = {
   codigo: 'QUE_PIENSA_EL_PUBLICO',
@@ -193,11 +217,50 @@ export const QuePiensaElPublicoGameUI = {
         break;
     }
 
+    const iniciarJuegoHTML = !fase
+      ? `<div class="flex flex-wrap gap-2">
+          ${Boton({ texto: 'Iniciar juego', variante: 'primary', id: 'btn-qpep-iniciar-juego' })}
+        </div>`
+      : '';
+
     container.innerHTML = `
       <div class="flex flex-col gap-4">
         <p class="font-label-md uppercase text-on-surface-variant">Panel Que Piensa el Publico — ${fase ? fase.replace(/_/g, ' ') : 'Sin fase'}</p>
+        ${iniciarJuegoHTML}
         ${botonesHTML}
       </div>
     `;
+
+    if (!fase) {
+      container.querySelector('#btn-qpep-iniciar-juego')?.addEventListener('click', () => {
+        callbacks.onAccion('cambiar-estado-juego', { estadoJuego: _estadoInicial() });
+      });
+    }
+
+    if (fase === 'SELECCIONANDO_PREGUNTA') {
+      container.querySelector('#btn-qpep-iniciar')?.addEventListener('click', () => {
+        callbacks.onAccion('cambiar-estado-juego', {
+          estadoJuego: {
+            ...estadoJuego,
+            fase: 'ENCUESTA_ACTIVA',
+            respuestas_publico: { a: 0, b: 0 },
+            total_respuestas: 0
+          }
+        });
+      });
+    }
+
+    if (fase === 'ENCUESTA_ACTIVA') {
+      container.querySelector('#btn-qpep-cerrar')?.addEventListener('click', () => {
+        const resultado = _calcularResultadoPublico(estadoJuego);
+        callbacks.onAccion('cambiar-estado-juego', {
+          estadoJuego: {
+            ...estadoJuego,
+            fase: 'ENCUESTA_CERRADA',
+            resultado_publico: resultado
+          }
+        });
+      });
+    }
   }
 };
