@@ -159,8 +159,43 @@ async function _renderContenido(container, app, codigo) {
   }
 
   if (container.querySelector('#movil-nombre')) return;
+  if (container.querySelector('#movil-voto-a') || container.querySelector('#movil-enviar-mensaje')) return;
 
   await _identificarParticipante(container, app, partida);
+}
+
+/* =============================================================
+   Carga de items QPEP desde el set activo
+   ============================================================= */
+
+async function _cargarItemsQPEP(app, juegoActivo) {
+  if (!juegoActivo) return null;
+  if (juegoActivo.juego_codigo !== 'QUE_PIENSA_EL_PUBLICO') return null;
+  try {
+    let setId = null;
+
+    if (juegoActivo.snapshot_id) {
+      const snapshots = await app.adapter.query('set_snapshots', {
+        eq: { id: juegoActivo.snapshot_id }
+      });
+      const snapshot = Array.isArray(snapshots) ? snapshots[0] : snapshots;
+      if (snapshot?.source_set_id) {
+        setId = snapshot.source_set_id;
+      }
+    }
+
+    if (!setId) {
+      const sets = await app.services.set.listarSetsActivosPorJuego(juegoActivo.juego_id);
+      if (!sets.length) return null;
+      sets.sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
+      setId = sets[0].id;
+    }
+
+    const items = await app.services.set.listarItemsDeSet(setId);
+    return items.sort((a, b) => a.orden - b.orden).map((it) => it.contenido || it);
+  } catch (_) {
+    return null;
+  }
 }
 
 /* =============================================================
@@ -178,7 +213,8 @@ async function _identificarParticipante(container, app, partida) {
         const contexto = await app.services.partida.obtenerContextoEspera(partida.id);
         const { equipos, juegos } = contexto;
         const juegoActivo = juegos.find((j) => j.estado === 'EN_CURSO' || j.estado === 'PAUSADO');
-        _renderPantallaPrincipal(container, app, partida, juegoActivo, equipos, participante);
+        const itemsQPEP = await _cargarItemsQPEP(app, juegoActivo);
+        _renderPantallaPrincipal(container, app, partida, juegoActivo, equipos, participante, itemsQPEP);
         return;
       }
     } catch (_) {}
@@ -260,7 +296,8 @@ async function _enviarFormulario(container, app, partida, contexto) {
     const participante = await app.services.participante.obtenerPorSessionToken(sessionToken);
     const { equipos, juegos } = contexto;
     const juegoActivo = juegos.find((j) => j.estado === 'EN_CURSO' || j.estado === 'PAUSADO');
-    _renderPantallaPrincipal(container, app, partida, juegoActivo, equipos, participante);
+    const itemsQPEP = await _cargarItemsQPEP(app, juegoActivo);
+    _renderPantallaPrincipal(container, app, partida, juegoActivo, equipos, participante, itemsQPEP);
   } catch (err) {
     btnContinuar.disabled = false;
     btnContinuar.textContent = 'Continuar';
@@ -273,7 +310,23 @@ async function _enviarFormulario(container, app, partida, contexto) {
    Pantalla principal (post-identificación)
    ============================================================= */
 
-function _renderPantallaPrincipal(container, app, partida, juegoActivo, equipos, participante) {
+function _renderPantallaPrincipal(container, app, partida, juegoActivo, equipos, participante, itemsQPEP) {
+  const esQPEP = juegoActivo?.juego_codigo === 'QUE_PIENSA_EL_PUBLICO';
+  const fase = juegoActivo?.estado_juego?.fase;
+  const encuestaActiva = esQPEP && fase === 'ENCUESTA_ACTIVA';
+
+  let contenidoEncuesta = '';
+  let bindEncuesta = false;
+
+  if (encuestaActiva && itemsQPEP?.length) {
+    const preguntaIdx = juegoActivo.estado_juego.pregunta_actual_index || 0;
+    const pregunta = itemsQPEP[preguntaIdx] || null;
+    if (pregunta) {
+      contenidoEncuesta = _renderEncuestaActiva(pregunta);
+      bindEncuesta = true;
+    }
+  }
+
   container.innerHTML = `
     <div class="min-h-screen flex flex-col bg-background">
       ${_renderHeader(partida)}
@@ -281,13 +334,18 @@ function _renderPantallaPrincipal(container, app, partida, juegoActivo, equipos,
         ${_renderSaludo(participante)}
         ${_renderJuegoActual(partida, juegoActivo)}
         ${_renderMarcador(equipos)}
-        ${_renderFormularioMensaje()}
-        ${_renderFormularioFoto()}
+        ${bindEncuesta ? contenidoEncuesta : _renderFormularioMensaje() + _renderFormularioFoto()}
       </div>
     </div>
   `;
-  _bindFormularioMensaje(container, app, partida, participante);
-  _bindFormularioFoto(container, app, partida, participante);
+
+  if (bindEncuesta) {
+    const preguntaIdx = juegoActivo.estado_juego.pregunta_actual_index || 0;
+    _bindEncuestaActiva(container, app, partida, juegoActivo, participante, preguntaIdx);
+  } else {
+    _bindFormularioMensaje(container, app, partida, participante);
+    _bindFormularioFoto(container, app, partida, participante);
+  }
 }
 
 function _renderSaludo(participante) {
@@ -398,6 +456,102 @@ function _renderMarcador(equipos) {
       </div>
     </section>
   `;
+}
+
+/* =============================================================
+   Encuesta QPEP activa
+   ============================================================= */
+
+function _renderEncuestaActiva(pregunta) {
+  return `
+    <section class="px-6 py-4 bg-comicYellow border-b-2.5 border-on-surface">
+      <div class="max-w-md mx-auto">
+        <h3 class="font-headline-md uppercase text-on-surface mb-3">📢 Encuesta activa</h3>
+        <p class="font-display-hero text-2xl text-on-surface mb-4">${pregunta.pregunta}</p>
+        <div class="grid grid-cols-2 gap-3">
+          <button id="movil-voto-a" class="font-label-md uppercase border-2.5 border-on-surface rounded-lg px-4 py-3 bg-surface-container-lowest text-on-surface shadow-comic-sm hover:shadow-comic-md transition">
+            A: ${pregunta.opcion_a}
+          </button>
+          <button id="movil-voto-b" class="font-label-md uppercase border-2.5 border-on-surface rounded-lg px-4 py-3 bg-surface-container-lowest text-on-surface shadow-comic-sm hover:shadow-comic-md transition">
+            B: ${pregunta.opcion_b}
+          </button>
+        </div>
+        <p id="movil-voto-error" class="font-label-md text-error mt-2 hidden"></p>
+        <p id="movil-voto-confirmacion" class="font-label-md text-tertiary mt-2 hidden">Respuesta enviada. Esperando...</p>
+        <p id="movil-voto-yarespondio" class="font-label-md text-tertiary mt-2 hidden">✓ Ya respondiste esta encuesta.</p>
+      </div>
+    </section>
+  `;
+}
+
+async function _bindEncuestaActiva(container, app, partida, juegoActivo, participante, preguntaIdx) {
+  const btnA = container.querySelector('#movil-voto-a');
+  const btnB = container.querySelector('#movil-voto-b');
+
+  if (!btnA || !btnB) return;
+
+  try {
+    const yaRespondio = await app.services.respuestaEncuesta.existeRespuestaDeParticipante(
+      juegoActivo.id, participante.id, preguntaIdx
+    );
+    if (yaRespondio) {
+      btnA.disabled = true;
+      btnB.disabled = true;
+      btnA.classList.add('opacity-50', 'cursor-not-allowed');
+      btnB.classList.add('opacity-50', 'cursor-not-allowed');
+      container.querySelector('#movil-voto-yarespondio')?.classList.remove('hidden');
+      return;
+    }
+  } catch (_) {}
+
+  const enviar = async (opcion) => {
+    const curA = container.querySelector('#movil-voto-a');
+    const curB = container.querySelector('#movil-voto-b');
+
+    if (curA) {
+      curA.disabled = true;
+      curA.classList.add('opacity-50', 'cursor-not-allowed');
+    }
+    if (curB) {
+      curB.disabled = true;
+      curB.classList.add('opacity-50', 'cursor-not-allowed');
+    }
+    container.querySelector('#movil-voto-error')?.classList.add('hidden');
+
+    try {
+      await app.services.respuestaEncuesta.crearRespuesta({
+        partidaId: partida.id,
+        juegoEjecutadoId: juegoActivo.id,
+        participanteId: participante.id,
+        preguntaIndex: preguntaIdx,
+        opcion
+      });
+      container.querySelector('#movil-voto-confirmacion')?.classList.remove('hidden');
+    } catch (err) {
+      if (err.name === 'YaExisteError') {
+        container.querySelector('#movil-voto-yarespondio')?.classList.remove('hidden');
+      } else {
+        const a = container.querySelector('#movil-voto-a');
+        const b = container.querySelector('#movil-voto-b');
+        if (a) {
+          a.disabled = false;
+          a.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+        if (b) {
+          b.disabled = false;
+          b.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+        const errEl = container.querySelector('#movil-voto-error');
+        if (errEl) {
+          errEl.textContent = err.message || 'Error al enviar';
+          errEl.classList.remove('hidden');
+        }
+      }
+    }
+  };
+
+  btnA.addEventListener('click', () => enviar('A'));
+  btnB.addEventListener('click', () => enviar('B'));
 }
 
 /* =============================================================

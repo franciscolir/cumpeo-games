@@ -19,6 +19,7 @@ import { crearStorageAdapter } from '../adapters/storage/index.js';
 import { FotoPublicaRepository } from '../repositories/FotoPublicaRepository.js';
 import { MensajePublicoRepository } from '../repositories/MensajePublicoRepository.js';
 import { ParticipanteRepository } from '../repositories/ParticipanteRepository.js';
+import { RespuestaEncuestaRepository } from '../repositories/RespuestaEncuestaRepository.js';
 
 /**
  * Inicializa la aplicación: servicios, session, registro de juegos.
@@ -49,6 +50,7 @@ export async function bootstrap(adapter, { usuarioId = null } = {}) {
   services.foto = new FotoPublicaRepository(adapter, storage);
   services.mensaje = new MensajePublicoRepository(adapter);
   services.participante = new ParticipanteRepository(adapter);
+  services.respuestaEncuesta = new RespuestaEncuestaRepository(adapter);
 
   const uiRegistry = new GameUIRegistry();
 

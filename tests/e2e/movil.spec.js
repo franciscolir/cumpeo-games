@@ -202,3 +202,137 @@ test('móvil muestra preview al elegir foto', async ({ page }) => {
   await expect(page.locator('#movil-foto-preview-container')).toBeVisible();
   await expect(page.locator('#movil-foto-preview')).toBeVisible();
 });
+
+async function setupPartidaQPEP(page) {
+  await waitForCumpeo(page);
+  return await page.evaluate(async () => {
+    const juegos = await window.cumpeo.services.juego.listarJuegos();
+    const qpep = juegos.find((j) => j.codigo === 'QUE_PIENSA_EL_PUBLICO');
+
+    const uid = Date.now().toString(36);
+    const set = await window.cumpeo.services.set.crearSet({
+      juego_id: qpep.id,
+      nombre: `QPEP Movil ${uid}`
+    });
+
+    await window.cumpeo.services.set.agregarItem(set.id, {
+      pregunta: '¿Pizza o empanadas?',
+      opcion_a: 'Pizza',
+      opcion_b: 'Empanadas'
+    });
+
+    const circuito = await window.cumpeo.services.circuito.crearCircuito({
+      nombre: `QPEP Movil Circuit ${uid}`,
+      juegos: [{ juego_id: qpep.id }],
+      equipos: [
+        { posicion: 1, nombre: 'Rojo', color: '#E53E3E' },
+        { posicion: 2, nombre: 'Azul', color: '#3182CE' }
+      ]
+    });
+
+    await window.cumpeo.services.circuito.actualizarCircuito(
+      circuito.id, circuito.version,
+      {
+        nombre: `QPEP Movil Circuit ${uid}`,
+        juegos: [{ juego_id: qpep.id }],
+        equipos: [
+          { posicion: 1, nombre: 'Rojo', color: '#E53E3E' },
+          { posicion: 2, nombre: 'Azul', color: '#3182CE' }
+        ],
+        estado: 'LISTO'
+      }
+    );
+
+    const codigo = `QM${Date.now().toString(36).slice(-4).toUpperCase()}`;
+    const partida = await window.cumpeo.services.partida.crearPartida(
+      { circuito_id: circuito.id, public_codigo: codigo },
+      crypto.randomUUID()
+    );
+
+    return { id: partida.id, codigo: partida.public_codigo };
+  });
+}
+
+async function activarEncuestaQPEP(page, id) {
+  await page.evaluate(async (pid) => {
+    await window.cumpeo.services.partida.tomarControl(pid, window.cumpeo.session.sessionId);
+    await window.cumpeo.services.partida.comenzarPartida(pid, window.cumpeo.session.sessionId, crypto.randomUUID());
+
+    const ctx = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
+    const cj = ctx.juegos[0];
+    await window.cumpeo.services.partida.iniciarJuego(
+      pid, cj.id, window.cumpeo.session.sessionId, crypto.randomUUID()
+    );
+  }, id);
+
+  await page.goto('/');
+  await page.goto(`/#/partidas/${id}`);
+  await waitForCumpeo(page);
+
+  await expect(page.locator('#btn-pausar')).toBeVisible({ timeout: 15000 });
+
+  await page.locator('#btn-qpep-iniciar-juego').click();
+  await page.waitForTimeout(500);
+
+  await page.locator('#btn-qpep-iniciar').click();
+  await page.waitForTimeout(500);
+}
+
+test('móvil muestra encuesta activa QPEP', async ({ page }) => {
+  await page.goto('/');
+  const { id, codigo } = await setupPartidaQPEP(page);
+  await activarEncuestaQPEP(page, id);
+
+  await page.goto('/');
+  await page.goto(`/#/movil/${codigo}`);
+  await waitForCumpeo(page);
+  await page.locator('#movil-nombre').fill('Encuestado');
+  await page.locator('#movil-continuar').click();
+
+  await expect(page.getByText('Encuesta activa')).toBeVisible({ timeout: 15000 });
+  await expect(page.locator('#movil-voto-a')).toBeVisible();
+  await expect(page.locator('#movil-voto-b')).toBeVisible();
+});
+
+test('móvil responde encuesta (A o B)', async ({ page }) => {
+  await page.goto('/');
+  const { id, codigo } = await setupPartidaQPEP(page);
+  await activarEncuestaQPEP(page, id);
+
+  await page.goto('/');
+  await page.goto(`/#/movil/${codigo}`);
+  await waitForCumpeo(page);
+  await page.locator('#movil-nombre').fill('Votante');
+  await page.locator('#movil-continuar').click();
+
+  await expect(page.locator('#movil-voto-a')).toBeVisible({ timeout: 15000 });
+  await page.locator('#movil-voto-a').click();
+
+  await expect(page.getByText('Respuesta enviada. Esperando...')).toBeVisible({ timeout: 10000 });
+  await expect(page.locator('#movil-voto-a')).toBeDisabled();
+  await expect(page.locator('#movil-voto-b')).toBeDisabled();
+});
+
+test('móvil no permite doble respuesta', async ({ page }) => {
+  await page.goto('/');
+  const { id, codigo } = await setupPartidaQPEP(page);
+  await activarEncuestaQPEP(page, id);
+
+  await page.goto('/');
+  await page.goto(`/#/movil/${codigo}`);
+  await waitForCumpeo(page);
+  await page.locator('#movil-nombre').fill('DobleVoto');
+  await page.locator('#movil-continuar').click();
+
+  await expect(page.locator('#movil-voto-b')).toBeVisible({ timeout: 15000 });
+  await page.locator('#movil-voto-b').click();
+  await expect(page.getByText('Respuesta enviada. Esperando...')).toBeVisible({ timeout: 10000 });
+
+  await page.goto('/');
+  await page.goto(`/#/movil/${codigo}`);
+  await waitForCumpeo(page);
+
+  await expect(page.getByText('Ya respondiste esta encuesta.')).toBeVisible({ timeout: 15000 });
+  await expect(page.locator('#movil-voto-a')).toBeDisabled();
+  await expect(page.locator('#movil-voto-b')).toBeDisabled();
+});
