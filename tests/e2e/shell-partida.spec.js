@@ -417,3 +417,96 @@ test('flujo QPEP: iniciar juego → iniciar encuesta → cerrar encuesta', async
   expect(estadoFinal.fase).toBe('ENCUESTA_CERRADA');
   expect(estadoFinal.resultado).toBe('EMPATE');
 });
+
+async function setupCircuitoQPEPTimer(page, tiempoSeg) {
+  await waitForCumpeo(page);
+  return await page.evaluate(async (tiempoSeg) => {
+    const juegos = await window.cumpeo.services.juego.listarJuegos();
+    const qpep = juegos.find((j) => j.codigo === 'QUE_PIENSA_EL_PUBLICO');
+
+    const uid = Date.now().toString(36);
+    const set = await window.cumpeo.services.set.crearSet({
+      juego_id: qpep.id,
+      nombre: `QPEP Timer ${uid}`
+    });
+
+    await window.cumpeo.services.set.agregarItem(set.id, {
+      pregunta: '¿Rapido o lento?',
+      opcion_a: 'Rapido',
+      opcion_b: 'Lento',
+      tiempo_seg: tiempoSeg
+    });
+
+    const circuito = await window.cumpeo.services.circuito.crearCircuito({
+      nombre: `QPEP Timer Circuit ${uid}`,
+      juegos: [{ juego_id: qpep.id, configuracion: { tiempo_por_pregunta_seg: tiempoSeg } }],
+      equipos: [
+        { posicion: 1, nombre: 'Rojo', color: '#E53E3E' },
+        { posicion: 2, nombre: 'Azul', color: '#3182CE' }
+      ]
+    });
+
+    await window.cumpeo.services.circuito.actualizarCircuito(
+      circuito.id, circuito.version,
+      {
+        nombre: `QPEP Timer Circuit ${uid}`,
+        juegos: [{ juego_id: qpep.id, configuracion: { tiempo_por_pregunta_seg: tiempoSeg } }],
+        equipos: [
+          { posicion: 1, nombre: 'Rojo', color: '#E53E3E' },
+          { posicion: 2, nombre: 'Azul', color: '#3182CE' }
+        ],
+        estado: 'LISTO'
+      }
+    );
+
+    const codigo = `QT${Date.now().toString(36).slice(-4).toUpperCase()}`;
+    const partida = await window.cumpeo.services.partida.crearPartida(
+      { circuito_id: circuito.id, public_codigo: codigo },
+      crypto.randomUUID()
+    );
+
+    return { id: partida.id, codigo: partida.public_codigo };
+  }, tiempoSeg);
+}
+
+test('timer de encuesta se inicia y auto-cierra', async ({ page }) => {
+  await page.goto('/');
+  const { id } = await setupCircuitoQPEPTimer(page, 2);
+
+  await page.evaluate(async (pid) => {
+    await window.cumpeo.services.partida.tomarControl(pid, window.cumpeo.session.sessionId);
+    await window.cumpeo.services.partida.comenzarPartida(pid, window.cumpeo.session.sessionId, crypto.randomUUID());
+
+    const ctx = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
+    const cj = ctx.juegos[0];
+    await window.cumpeo.services.partida.iniciarJuego(
+      pid, cj.id, window.cumpeo.session.sessionId, crypto.randomUUID()
+    );
+  }, id);
+
+  await page.goto('/');
+  await page.goto(`/#/partidas/${id}`);
+  await waitForCumpeo(page);
+
+  await expect(page.locator('#btn-pausar')).toBeVisible({ timeout: 15000 });
+
+  await page.locator('#btn-qpep-iniciar-juego').click();
+  await page.waitForTimeout(500);
+
+  await page.locator('#btn-qpep-iniciar').click();
+  await page.waitForTimeout(1000);
+
+  const timerLocator = page.locator('#qpep-timer');
+  await expect(timerLocator).toBeVisible({ timeout: 5000 });
+
+  const textoInicial = await timerLocator.textContent();
+  expect(textoInicial).toMatch(/^\d+s$/);
+
+  await page.waitForTimeout(3000);
+
+  const faseFinal = await page.evaluate(async (pid) => {
+    const ctx = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
+    return ctx.juegos[0]?.estado_juego?.fase;
+  }, id);
+  expect(faseFinal).toBe('ENCUESTA_CERRADA');
+});

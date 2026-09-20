@@ -3,11 +3,41 @@
    "Que piensa el publico?".
 
    Renderiza:
-   - Área de juego: pregunta + opciones A/B + fase + conteo en vivo
+   - Área de juego: pregunta + opciones A/B + fase + conteo en vivo + timer
    - Panel conductor: botones según fase con listeners
    ============================================================= */
 
 import { Boton } from '../../components/boton.js';
+
+let _timerAutoCierre = null;
+let _timerContador = null;
+let _timerKey = null;
+let _timerRestante = 0;
+let _latestCallbacks = null;
+let _latestEstadoJuego = null;
+
+function _cancelarTimer() {
+  if (_timerAutoCierre !== null) {
+    clearTimeout(_timerAutoCierre);
+    _timerAutoCierre = null;
+  }
+  if (_timerContador !== null) {
+    clearInterval(_timerContador);
+    _timerContador = null;
+  }
+  _timerKey = null;
+  _timerRestante = 0;
+}
+
+function _obtenerTiempoSeg(estadoJuego, contexto) {
+  const snapshot = contexto.juegoEjecutado?.snapshot;
+  const items = snapshot?.items || [];
+  const idx = estadoJuego.pregunta_actual_index || 0;
+  const item = items[idx];
+  if (item?.tiempo_seg) return item.tiempo_seg;
+  const config = contexto.juegoEjecutado?.configuracion_congelada;
+  return config?.tiempo_por_pregunta_seg || 30;
+}
 
 function _calcularResultadoPublico(estadoJuego) {
   const { a, b } = estadoJuego.respuestas_publico || { a: 0, b: 0 };
@@ -33,6 +63,51 @@ function _estadoInicial() {
   };
 }
 
+function _onTimerCierre() {
+  _cancelarTimer();
+  if (!_latestCallbacks || !_latestEstadoJuego) return;
+  const resultado = _calcularResultadoPublico(_latestEstadoJuego);
+  _latestCallbacks.onAccion('cambiar-estado-juego', {
+    estadoJuego: {
+      ..._latestEstadoJuego,
+      fase: 'ENCUESTA_CERRADA',
+      resultado_publico: resultado
+    }
+  });
+}
+
+function _iniciarTimer(estadoJuego, contexto, callbacks, container) {
+  _latestCallbacks = callbacks;
+  _latestEstadoJuego = estadoJuego;
+
+  const juegoId = contexto.juegoEjecutado?.id || '';
+  const preguntaIdx = estadoJuego.pregunta_actual_index || 0;
+  const key = `${juegoId}:${preguntaIdx}`;
+
+  if (_timerKey === key) return;
+  _cancelarTimer();
+  _timerKey = key;
+
+  const segundos = _obtenerTiempoSeg(estadoJuego, contexto);
+  _timerRestante = segundos;
+
+  const timerEl = container.querySelector('#qpep-timer');
+  if (timerEl) {
+    timerEl.textContent = `${_timerRestante}s`;
+  }
+
+  _timerContador = setInterval(() => {
+    _timerRestante--;
+    const el = container.querySelector('#qpep-timer');
+    if (el) {
+      el.textContent = `${_timerRestante}s`;
+    }
+    if (_timerRestante <= 0) {
+      _onTimerCierre();
+    }
+  }, 1000);
+}
+
 export const QuePiensaElPublicoGameUI = {
   codigo: 'QUE_PIENSA_EL_PUBLICO',
 
@@ -41,13 +116,15 @@ export const QuePiensaElPublicoGameUI = {
    * @param {object} estadoJuego
    * @param {HTMLElement} container
    * @param {object} contexto - { partida, juegoEjecutado, equipos, puedeControlar, acVisible }
+   * @param {object} [callbacks] - { onAccion(tipo, payload) }
    */
-  renderizarAreaJuego(estadoJuego, container, contexto) {
+  renderizarAreaJuego(estadoJuego, container, contexto, callbacks) {
     const snapshot = contexto.juegoEjecutado?.snapshot;
     const items = snapshot?.items || [];
     const fase = estadoJuego?.fase || '';
 
     if (!fase) {
+      _cancelarTimer();
       container.innerHTML = `
         <div class="flex items-center justify-center h-full min-h-[30vh]">
           <div class="bg-surface-container-lowest border-2.5 border-on-surface rounded-2xl p-8 shadow-comic-lg text-center max-w-md">
@@ -58,6 +135,11 @@ export const QuePiensaElPublicoGameUI = {
       `;
       return;
     }
+
+    if (callbacks) {
+      _latestCallbacks = callbacks;
+    }
+    _latestEstadoJuego = estadoJuego;
 
     const idx = estadoJuego.pregunta_actual_index || 0;
     const pregunta = items[idx] || null;
@@ -95,6 +177,18 @@ export const QuePiensaElPublicoGameUI = {
         </div>
       `
       : `<p class="font-body-md text-on-surface-variant">Sin pregunta disponible</p>`;
+
+    let timerHTML = '';
+    if (fase === 'ENCUESTA_ACTIVA') {
+      const segundos = _obtenerTiempoSeg(estadoJuego, contexto);
+      const restanteMostrar = _timerKey ? _timerRestante : segundos;
+      timerHTML = `
+        <div class="bg-comicYellow border-2.5 border-on-surface rounded-xl p-4 shadow-comic-sm text-center">
+          <p class="font-label-md uppercase">Tiempo restante</p>
+          <p id="qpep-timer" class="font-display-hero text-4xl text-primary">${restanteMostrar}s</p>
+        </div>
+      `;
+    }
 
     let conteoHTML = '';
     if (mostrarConteo) {
@@ -143,6 +237,7 @@ export const QuePiensaElPublicoGameUI = {
           </div>
           ${preguntaHTML}
         </div>
+        ${timerHTML}
         ${conteoHTML}
         ${resultadoHTML}
         ${pronosticosHTML}
@@ -153,6 +248,12 @@ export const QuePiensaElPublicoGameUI = {
         </div>
       </div>
     `;
+
+    if (fase === 'ENCUESTA_ACTIVA' && callbacks) {
+      _iniciarTimer(estadoJuego, contexto, callbacks, container);
+    } else if (fase !== 'ENCUESTA_ACTIVA') {
+      _cancelarTimer();
+    }
   },
 
   /**
@@ -164,8 +265,6 @@ export const QuePiensaElPublicoGameUI = {
    */
   renderizarPanelConductor(estadoJuego, container, contexto, callbacks) {
     const fase = estadoJuego?.fase || '';
-    const equipo1 = contexto.equipos?.[0] || { nombre: 'Eq1' };
-    const equipo2 = contexto.equipos?.[1] || { nombre: 'Eq2' };
 
     let botonesHTML = '';
 
@@ -252,6 +351,7 @@ export const QuePiensaElPublicoGameUI = {
 
     if (fase === 'ENCUESTA_ACTIVA') {
       container.querySelector('#btn-qpep-cerrar')?.addEventListener('click', () => {
+        _cancelarTimer();
         const resultado = _calcularResultadoPublico(estadoJuego);
         callbacks.onAccion('cambiar-estado-juego', {
           estadoJuego: {
@@ -262,5 +362,10 @@ export const QuePiensaElPublicoGameUI = {
         });
       });
     }
+  },
+
+  /** Cancela timers pendientes (cleanup externo). */
+  cleanup() {
+    _cancelarTimer();
   }
 };

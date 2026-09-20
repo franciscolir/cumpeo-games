@@ -209,7 +209,7 @@ async function _renderContenido(container, app, partidaId) {
   if (gameUI) {
     const gameContainer = container.querySelector('#shell-game-container');
     if (gameUI.renderizarAreaJuego) {
-      const cleanupArea = gameUI.renderizarAreaJuego(estadoJuego, gameContainer, contextoGameUI);
+      const cleanupArea = gameUI.renderizarAreaJuego(estadoJuego, gameContainer, contextoGameUI, callbacks);
       if (typeof cleanupArea === 'function') cleanupsGameUI.push(cleanupArea);
     }
 
