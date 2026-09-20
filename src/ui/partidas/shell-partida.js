@@ -130,14 +130,60 @@ async function _renderContenido(container, app, partidaId) {
     juegoEjecutado: juegoActivo,
     equipos,
     puedeControlar,
-    acVisible: false
+    acVisible: false,
+    stateVersion: juegoActivo ? juegoActivo.state_version : null
   };
 
   const callbacks = {
-    onAccion: (tipo, payload) => {
-      console.log(`[ShellPartida] onAccion: ${tipo}`, payload);
+    onAccion: async (tipo, payload = {}) => {
+      if (!puedeControlar || !juegoActivo) {
+        console.warn(`[ShellPartida] Ignorando acción ${tipo}: sin control o sin juego activo`);
+        return;
+      }
+
+      try {
+        if (tipo === 'cambiar-estado-juego') {
+          if (!payload.estadoJuego || typeof payload.estadoJuego !== 'object') {
+            console.warn(`[ShellPartida] cambiar-estado-juego requiere estadoJuego`);
+            return;
+          }
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId,
+            juegoActivo.id,
+            payload.estadoJuego,
+            juegoActivo.state_version,
+            sessionId,
+            nuevoActionId()
+          );
+        } else if (tipo === 'finalizar-juego') {
+          if (!payload.resultado || !payload.finishReason) {
+            console.warn(`[ShellPartida] finalizar-juego requiere resultado y finishReason`);
+            return;
+          }
+          await app.services.partida.finalizarJuego(
+            partidaId,
+            juegoActivo.id,
+            payload.resultado,
+            payload.finishReason,
+            sessionId,
+            nuevoActionId()
+          );
+        } else {
+          console.warn(`[ShellPartida] Acción desconocida: ${tipo}`);
+          return;
+        }
+
+        await _renderContenido(container, app, partidaId);
+      } catch (err) {
+        console.error(`[ShellPartida] Error en acción ${tipo}:`, err);
+        window.alert(`Error: ${err.message}`);
+      }
     }
   };
+
+  if (typeof window !== 'undefined') {
+    window.__shellPartidaCallbacks = callbacks;
+  }
 
   container.innerHTML = `
     <div class="min-h-screen flex flex-col">

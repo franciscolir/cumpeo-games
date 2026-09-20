@@ -206,3 +206,70 @@ test('cola muestra Sin pendientes si no hay nada', async ({ page }) => {
   await expect(page.getByText('Sin mensajes pendientes')).toBeVisible();
   await expect(page.getByText('Sin fotos pendientes')).toBeVisible();
 });
+
+test('cambiar-estado-juego actualiza el estado del juego', async ({ page }) => {
+  await page.goto('/');
+  const { id } = await setupCircuitoYPartida(page);
+
+  await page.evaluate(async (pid) => {
+    await window.cumpeo.services.partida.tomarControl(pid, window.cumpeo.session.sessionId);
+    await window.cumpeo.services.partida.comenzarPartida(pid, window.cumpeo.session.sessionId, crypto.randomUUID());
+
+    const ctx = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
+    const cj = ctx.juegos[0];
+    await window.cumpeo.services.partida.iniciarJuego(
+      pid, cj.id, window.cumpeo.session.sessionId, crypto.randomUUID()
+    );
+  }, id);
+
+  const stateVersionAntes = await page.evaluate(async (pid) => {
+    const ctx = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
+    return ctx.juegos[0].state_version;
+  }, id);
+
+  await page.goto('/');
+  await page.goto(`/#/partidas/${id}`);
+  await waitForCumpeo(page);
+
+  await expect(page.locator('#btn-pausar')).toBeVisible({ timeout: 15000 });
+
+  await page.evaluate(async () => {
+    await window.__shellPartidaCallbacks.onAccion('cambiar-estado-juego', {
+      estadoJuego: { foo: 'bar', ronda: 1 }
+    });
+  });
+
+  await page.waitForTimeout(1000);
+
+  const resultado = await page.evaluate(async (pid) => {
+    const ctx = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
+    const j = ctx.juegos[0];
+    return { state_version: j.state_version, estado_juego: j.estado_juego, estado: j.estado };
+  }, id);
+
+  expect(resultado.state_version).toBeGreaterThan(stateVersionAntes);
+  expect(resultado.estado_juego.foo).toBe('bar');
+  expect(resultado.estado_juego.ronda).toBe(1);
+  expect(resultado.estado).toBe('EN_CURSO');
+});
+
+test('onAccion sin control no ejecuta acción', async ({ page }) => {
+  await page.goto('/');
+  const { id } = await setupCircuitoYPartida(page);
+
+  await page.goto('/');
+  await page.goto(`/#/partidas/${id}`);
+  await waitForCumpeo(page);
+
+  await expect(page.locator('#btn-tomar-control')).toBeVisible({ timeout: 15000 });
+
+  await page.evaluate(async () => {
+    await window.__shellPartidaCallbacks.onAccion('cambiar-estado-juego', {
+      estadoJuego: { shouldNot: 'persist' }
+    });
+  });
+
+  await page.waitForTimeout(500);
+
+  await expect(page.locator('#btn-tomar-control')).toBeVisible();
+});
