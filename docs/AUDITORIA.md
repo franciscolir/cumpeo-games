@@ -134,3 +134,5 @@ _(ninguna)_
 | 2026-09-19 | 4 | 4.1 | ✅ APROBADO | Modelo de datos + GameDefinition de "¿Qué piensa el público?". 50 tests nuevos. | f1948e0 |
 
 | 2026-09-19 | 4 | 4.2 | ✅ APROBADO | Editor de items para QPEP. 5 e2e tests. | 5e83f59 |
+
+| 2026-09-19 | 4 | 4.3a | ✅ APROBADO | onAccion conectado a servicios. 2 e2e tests. | f4a3b5a |
