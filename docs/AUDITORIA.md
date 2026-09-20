@@ -142,3 +142,5 @@ _(ninguna)_
 | 2026-09-19 | 4 | 4.3b | ✅ APROBADO | QuePiensaElPublicoGameUI display. 1 e2e test. | 0b07d42 |
 
 | 2026-09-20 | 4 | 4.3c | ✅ APROBADO | Flujo de fases del conductor QPEP. 1 e2e test. | 25b5560 |
+
+| 2026-09-20 | 4 | 4.3d | ✅ APROBADO | Timer de encuesta con auto-cierre. 1 e2e test. | b1306d5 |
