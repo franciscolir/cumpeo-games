@@ -2,9 +2,11 @@
 
 **Fecha de cierre:** 2026-09-21
 **Resultado:** ✅ APROBADO
-**Commit principal:** efc9b9a
-**Commit de corrección:** (pendiente, cierra Canción Incompleta)
-**Commit de deuda #56:** (pendiente)
+**Commits:**
+- `efc9b9a` — cierre documental de CI/Pic/HE + reordenamiento.
+- `d12b5d0` — corrección: cierre de Canción Incompleta (ancla mal usada en el script principal).
+- `959b4ea` — deuda #56 (ancla incorrecta en script).
+- `5170199` — actualización del acta con los hashes.
 
 ---
 
