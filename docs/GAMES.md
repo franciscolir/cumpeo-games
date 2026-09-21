@@ -242,23 +242,22 @@ contenido incompleto.
 Resolver correctamente el contenido faltante o identificar la canción,
 según la modalidad que se cierre.
 
-## Mecánica pendiente
+## Mecánica cerrada
 
-Falta definir:
+| Aspecto | Definición |
+|---|---|
+| Set | No existe set de canciones en la app |
+| Selección | El conductor elige a discreción |
+| Reproductor | Externo (fuera de la app) |
+| Pausa | El conductor decide cuándo pausar |
+| Verificación | Se reanuda la canción → se comprueba el acierto |
+| Letra en pantalla | No |
+| Puntos por acierto | Configurable |
+| Penalización por error | Configurable |
+| Si falla | Pasa el turno. El equipo no gana puntos |
+| Rebote | No existe |
+| Ronda | 2 canciones (1 por equipo) |
 
--   presentación;
--   parte incompleta;
--   reproducción de audio;
--   duración del audio;
--   palabra/frase/título a completar;
--   participante que responde;
--   tiempo;
--   puntuación;
--   rondas;
--   errores;
--   robo;
--   finalización;
--   estructura del Set.
 
 ------------------------------------------------------------------------
 
