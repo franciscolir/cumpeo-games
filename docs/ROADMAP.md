@@ -2,7 +2,7 @@
 
 **Versión:** 1.0
 **Última actualización:** 2026-09-18
-**Estado global:** Bloques 0, 1, 2, 3, 4 cerrados · Bloque 5 en progreso (0/8) · ★ MVP alcanzado ★
+**Estado global:** Bloques 0, 1, 2, 3, 4 cerrados · Bloque 5 en progreso (2/11) · ★ MVP alcanzado ★
 **Rama:** feature/vertical-slice
 
 ---
@@ -170,7 +170,7 @@ El Bloque 3 pasa de 7 a 6 pasos.
 **Bloque 4 cerrado. ★ MVP alcanzado ★. Bloque 5 en preparación.**
 ---
 
-### Bloque 5 — 8 juegos restantes 🔄 EN PROGRESO (0/8)
+### Bloque 5 — 8 juegos restantes 🔄 EN PROGRESO (2/11)
 
 **Objetivo:** Implementar los 8 juegos restantes en orden del GAMES.md.
 
