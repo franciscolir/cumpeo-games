@@ -174,6 +174,10 @@ _(ninguna)_
 | 2026-09-21 | 5 | 5.1b | ✅ APROBADO | Editor de items de Trivia. 5 e2e nuevos + 1 actualizado. 609 unit. | a2cafb5 |
 | 2026-09-21 | 5 | 5.1c | ✅ APROBADO | Cierre documental: mecánicas CI/Pic/HE + reordenamiento del Bloque 5. | (pendiente) |
 | 2026-09-21 | 5 | 5.1d | ✅ APROBADO | Cierre documental: mecánica de Rosco. Desglose 5.2a-d. | (pendiente) |
+| 2026-09-21 | 5 | 5.2a | ✅ APROBADO | Rosco: GameDefinition + validación de set + reducers puros. Cierra deuda #57. | 79c4493 |
+| 2026-09-21 | 5 | 5.2b | ✅ APROBADO | Rosco: UI del conductor. Decisión: el conductor no ve la respuesta, solo la definición. | 7ec5603 |
+| 2026-09-21 | 5 | 5.2c | ✅ APROBADO | Rosco: UI pública. Definición en el centro del rosco. Revelado de respuesta post-validación. | a90e23b |
+| 2026-09-21 | 5 | 5.2d | ✅ APROBADO | Rosco: e2e (18 tests, 4 specs). Incluye bug fix de producción: RoscoGameDefinition no estaba registrado en src/games/registro.js. | 94a89d1 |
 
 ## Deuda técnica nueva
 
@@ -186,5 +190,7 @@ _(ninguna)_
 | 54 | `docs/roadmap/pasos/bloque-5.0.md` y `bloque-5.1a.md` no fueron archivados. | Paso 5.1c (detectado) | Baja |
 | 55 | Sección "2. Bloques" del ROADMAP y matriz de estado de GAMES.md podrían divergir a futuro. Conviene automatizar chequeo. | Paso 5.1c (detectado) | Baja |
 | 56 | El script `update-5.1c.js` usó anclas de la sección equivocada de GAMES.md (Memoricé en lugar de Canción Incompleta). Cerrado en commit posterior. Conviene evitar anclas por texto literal en docs con secciones similares; preferir anclas por sección. | Paso 5.1c (detectado) | Baja |
-| 57 | La validación de Rosco requiere N items por letra para N rondas. Si el set no cumple, el conductor no puede iniciar el juego. UX a definir. | Paso 5.1d (detectado) | Media |
+| 57 | La validación de Rosco requiere N items por letra para N rondas. Si el set no cumple, el conductor no puede iniciar el juego. UX a definir. | Paso 5.1d (detectado) / 5.2a (cerrada) | Cerrada |
 | 58 | El rosco tiene 27 letras (A-Z + Ñ). La UI debe manejar el layout circular o rectangular con esa cantidad. Verificar legibilidad en pantalla pública. | Paso 5.1d (detectado) | Baja |
+| 59 | El shell de partida (src/ui/partidas/shell-partida.js) usa callbacks con closures que quedan stale al iterar acciones rápido. Los e2e de Rosco lo evitan usando page.evaluate en lugar de clicks. Revisar el patrón de callbacks del shell para que reflejen estado actual sin workarounds en tests. | Paso 5.2d (detectado) | Media |
+| 60 | El registro de juegos requiere tocar tests/unit/app/bootstrap.test.js y tests/unit/app/seed.test.js cada vez que se agrega un juego nuevo. Acoplamiento entre registro y tests de bootstrap/seed. Revisar para que la lista de juegos registrados se derive dinámicamente. | Paso 5.2d (detectado) | Baja |

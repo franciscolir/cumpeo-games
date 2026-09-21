@@ -2,7 +2,7 @@
 
 **Versión:** 1.0
 **Última actualización:** 2026-09-18
-**Estado global:** Bloques 0, 1, 2, 3, 4 cerrados · Bloque 5 en progreso (5/16) · ★ MVP alcanzado ★
+**Estado global:** Bloques 0, 1, 2, 3, 4 cerrados · Bloque 5 en progreso (9/16) · ★ MVP alcanzado ★
 **Rama:** feature/vertical-slice
 
 ---
@@ -38,7 +38,7 @@
 | 2 | Shell de partida (Conductor + Pública) | ✅ CERRADO | 13/13 | 5e32d5b | 2026-09-19 |
 | 3 | Móvil + moderación | ✅ CERRADO | 6/6 | 9ca4e7a | 2026-09-19 |
 | 4 | "¿Qué piensa el público?" | ✅ CERRADO | 13/13 | 2e19767 | 2026-09-21 |
-| 5 | Juegos restantes | 🔄 EN PROGRESO | 5/16 | — | — |
+| 5 | Juegos restantes | 🔄 EN PROGRESO | 9/16 | — | — |
 | 6 | Migración e2e a Supabase (opcional) | ⬜ PENDIENTE | 0/? | — | — |
 
 **★ MVP se alcanza al cerrar el Bloque 4 ★**
@@ -170,7 +170,7 @@ El Bloque 3 pasa de 7 a 6 pasos.
 **Bloque 4 cerrado. ★ MVP alcanzado ★. Bloque 5 en progreso.**
 ---
 
-### Bloque 5 — Juegos restantes 🔄 EN PROGRESO (5/16)
+### Bloque 5 — Juegos restantes 🔄 EN PROGRESO (9/16)
 
 **Objetivo:** Implementar los juegos restantes en orden de madurez de mecánica.
 
@@ -183,10 +183,10 @@ El Bloque 3 pasa de 7 a 6 pasos.
 | 5.1b | Editor de items de Trivia en formulario de sets | ✅ APROBADO | a2cafb5 |
 | 5.1c | Cierre documental: mecánicas CI/Pic/HE + reordenamiento | ✅ APROBADO | efc9b9a |
 | 5.1d | Cierre documental: mecánica de Rosco | ✅ APROBADO | (pendiente) |
-| 5.2a | Rosco — GameDefinition + validación | ⬜ | — |
-| 5.2b | Rosco — UI Conductor | ⬜ | — |
-| 5.2c | Rosco — UI Pública | ⬜ | — |
-| 5.2d | Rosco — Tests e2e | ⬜ | — |
+| 5.2a | Rosco — GameDefinition + validación | ✅ APROBADO | 79c4493 |
+| 5.2b | Rosco — UI Conductor | ✅ APROBADO | 7ec5603 |
+| 5.2c | Rosco — UI Pública | ✅ APROBADO | a90e23b |
+| 5.2d | Rosco — Tests e2e | ✅ APROBADO | 94a89d1 |
 | 5.3 | Canción Incompleta end-to-end | ⬜ | — |
 | 5.4 | Pictionary end-to-end | ⬜ | — |
 | 5.5 | Historia Enredada end-to-end | ⬜ | — |
@@ -223,6 +223,7 @@ El Bloque 3 pasa de 7 a 6 pasos.
 | 5.1 | 2026-09-21 | Paso 5.1b aprobado (editor de items de Trivia). |
 | 5.2 | 2026-09-21 | Reordenamiento del Bloque 5 por madurez de mecánica. CI/Pic/HE cerradas. Conteo 4/10. |
 | 5.3 | 2026-09-21 | Mecánica de Rosco cerrada. Desglose 5.2a-d. Conteo 5/16. |
+| 5.4 | 2026-09-21 | Bloque Rosco completo (5.2a–d). GameDefinition, UI conductor, UI pública y e2e. Bug de registro corregido en 5.2d. Conteo 9/16. |
 ---
 
 ## 5. Convenciones
