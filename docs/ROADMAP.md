@@ -19,15 +19,15 @@
 
 ## 1. Estado global
 
+| Métrica | Valor |
 |---------|-------|
 | Bloques totales | 7 (0 al 6) |
-| Bloques cerrados | 1 (Bloque 0) |
-| Bloques en progreso | 0 |
-| Bloques pendientes | 6 |
-| MVP alcanzado | No |
-| Fecha estimada MVP | Por definir |
+| Bloques cerrados | 5 (Bloques 0, 1, 2, 3, 4) |
+| Bloques en progreso | 1 (Bloque 5) |
+| Bloques pendientes | 1 (Bloque 6) |
+| MVP alcanzado | Sí (al cerrar Bloque 4, 2026-09-21) |
+| Fecha estimada MVP | Alcanzado |
 
----
 
 ## 2. Bloques
 
