@@ -2,7 +2,7 @@
 
 **Versión:** 1.0
 **Última actualización:** 2026-09-18
-**Estado global:** Bloques 0, 1, 2, 3 cerrados · Bloque 4 en progreso (10/12)
+**Estado global:** Bloques 0, 1, 2, 3 cerrados · Bloque 4 en progreso (11/12)
 **Rama:** feature/vertical-slice
 
 ---
@@ -37,7 +37,7 @@
 | 1 | Modelo de datos extendido | ✅ CERRADO | 6/6 | 7c3288f | 2026-09-18 |
 | 2 | Shell de partida (Conductor + Pública) | ✅ CERRADO | 13/13 | 5e32d5b | 2026-09-19 |
 | 3 | Móvil + moderación | ✅ CERRADO | 6/6 | 9ca4e7a | 2026-09-19 |
-| 4 | "¿Qué piensa el público?" | 🔄 EN PROGRESO | 10/12 | — | — |
+| 4 | "¿Qué piensa el público?" | 🔄 EN PROGRESO | 11/12 | — | — |
 | 5 | 8 juegos restantes | ⬜ PENDIENTE | 0/8 | — | — |
 | 6 | Migración e2e a Supabase (opcional) | ⬜ PENDIENTE | 0/? | — | — |
 
@@ -141,13 +141,13 @@ y 2.7 originales fueron renumerados a 2.4, 2.5 y 2.6 respectivamente.
 | 3.4 | Envío de fotos | ✅ | 3b3c84a | — |
 | 3.5 | Cola de moderación | ✅ | fc44d02 | — |
 | 3.6 | Móvil + moderación | ✅ | 9ca4e7a | 2026-09-19 |
-**Bloque 3 cerrado. Bloque 4 en progreso (10/12) ("¿Qué piensa el público?").**
+**Bloque 3 cerrado. Bloque 4 en progreso (11/12) ("¿Qué piensa el público?").**
 **Nota:** El paso "3.3 Pantalla principal del móvil" fue fusionado
 con "3.4 Envío de mensajes" porque la pantalla ya existía (pasos 3.1 + 3.2).
 El Bloque 3 pasa de 7 a 6 pasos.
 ---
 
-### Bloque 4 — "¿Qué piensa el público?" 🔄 EN PROGRESO (10/12)
+### Bloque 4 — "¿Qué piensa el público?" 🔄 EN PROGRESO (11/12)
 
 **Objetivo:** Primer juego completo. Cierra el MVP.
 

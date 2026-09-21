@@ -152,3 +152,5 @@ _(ninguna)_
 | 2026-09-20 | 4 | 4.6 | ✅ APROBADO | Revelar + puntuar + siguiente ronda. 3 e2e tests. | c31a1d6 |
 
 | 2026-09-21 | 4 | 4.6-fix | ✅ APROBADO | Conductor carga items del set activo. Deuda #41 resuelta. | aacf950 |
+
+| 2026-09-21 | 4 | 4.7 | ✅ APROBADO | Pública muestra QPEP por fase + galería oculta. 3 e2e tests. | f3e5abd |
