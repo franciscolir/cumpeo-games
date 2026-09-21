@@ -8,29 +8,14 @@
    ============================================================= */
 
 import { Boton } from '../../components/boton.js';
+import { crearTimer } from '../_shared/index.js';
 
-let _timerAutoCierre = null;
-let _timerContador = null;
-let _timerKey = null;
-let _timerRestante = 0;
+let _timer = null;
 let _latestCallbacks = null;
 let _latestEstadoJuego = null;
 
 function _getItems(contexto) {
   return contexto.itemsQPEP || contexto.juegoEjecutado?.snapshot?.items || [];
-}
-
-function _cancelarTimer() {
-  if (_timerAutoCierre !== null) {
-    clearTimeout(_timerAutoCierre);
-    _timerAutoCierre = null;
-  }
-  if (_timerContador !== null) {
-    clearInterval(_timerContador);
-    _timerContador = null;
-  }
-  _timerKey = null;
-  _timerRestante = 0;
 }
 
 function _obtenerTiempoSeg(estadoJuego, contexto) {
@@ -60,7 +45,6 @@ function _estadoInicial() {
 }
 
 function _onTimerCierre() {
-  _cancelarTimer();
   if (!_latestCallbacks || !_latestEstadoJuego) return;
   _latestCallbacks.onAccion('cerrar-encuesta', {
     preguntaIndex: _latestEstadoJuego.pregunta_actual_index ?? 0
@@ -74,29 +58,22 @@ function _iniciarTimer(estadoJuego, contexto, callbacks, container) {
   const juegoId = contexto.juegoEjecutado?.id || '';
   const preguntaIdx = estadoJuego.pregunta_actual_index || 0;
   const key = `${juegoId}:${preguntaIdx}`;
-
-  if (_timerKey === key) return;
-  _cancelarTimer();
-  _timerKey = key;
-
   const segundos = _obtenerTiempoSeg(estadoJuego, contexto);
-  _timerRestante = segundos;
 
-  const timerEl = container.querySelector('#qpep-timer');
-  if (timerEl) {
-    timerEl.textContent = `${_timerRestante}s`;
+  if (!_timer) {
+    _timer = crearTimer({
+      duracionSeg: segundos,
+      onTick: (restante) => {
+        const el = container.querySelector('#qpep-timer');
+        if (el) el.textContent = `${restante}s`;
+      },
+      onCierre: () => {
+        _onTimerCierre();
+      }
+    });
   }
 
-  _timerContador = setInterval(() => {
-    _timerRestante--;
-    const el = container.querySelector('#qpep-timer');
-    if (el) {
-      el.textContent = `${_timerRestante}s`;
-    }
-    if (_timerRestante <= 0) {
-      _onTimerCierre();
-    }
-  }, 1000);
+  _timer.iniciarSiCambio(key);
 }
 
 function _calcularPuntos(estadoJuego, contexto) {
@@ -148,7 +125,7 @@ export const QuePiensaElPublicoGameUI = {
     const fase = estadoJuego?.fase || '';
 
     if (!fase) {
-      _cancelarTimer();
+      _timer?.cancelar();
       container.innerHTML = `
         <div class="flex items-center justify-center h-full min-h-[30vh]">
           <div class="bg-surface-container-lowest border-2.5 border-on-surface rounded-2xl p-8 shadow-comic-lg text-center max-w-md">
@@ -205,7 +182,7 @@ export const QuePiensaElPublicoGameUI = {
     let timerHTML = '';
     if (fase === 'ENCUESTA_ACTIVA') {
       const segundos = _obtenerTiempoSeg(estadoJuego, contexto);
-      const restanteMostrar = _timerKey ? _timerRestante : segundos;
+      const restanteMostrar = _timer?.estaActivo() ? _timer.restanteActual() : segundos;
       timerHTML = `
         <div class="bg-comicYellow border-2.5 border-on-surface rounded-xl p-4 shadow-comic-sm text-center">
           <p class="font-label-md uppercase">Tiempo restante</p>
@@ -276,7 +253,7 @@ export const QuePiensaElPublicoGameUI = {
     if (fase === 'ENCUESTA_ACTIVA' && callbacks) {
       _iniciarTimer(estadoJuego, contexto, callbacks, container);
     } else if (fase !== 'ENCUESTA_ACTIVA') {
-      _cancelarTimer();
+      _timer?.cancelar();
     }
   },
 
@@ -422,7 +399,7 @@ export const QuePiensaElPublicoGameUI = {
 
     if (fase === 'ENCUESTA_ACTIVA') {
       container.querySelector('#btn-qpep-cerrar')?.addEventListener('click', () => {
-        _cancelarTimer();
+        _timer?.cancelar();
         callbacks.onAccion('cerrar-encuesta', {
           preguntaIndex: estadoJuego.pregunta_actual_index ?? 0
         });
@@ -490,6 +467,6 @@ export const QuePiensaElPublicoGameUI = {
 
   /** Cancela timers pendientes (cleanup externo). */
   cleanup() {
-    _cancelarTimer();
+    _timer?.cancelar();
   }
 };

@@ -1,15 +1,14 @@
 /* =============================================================
-   cargarItemsQPEP — helper compartido (móvil + conductor).
+   cargarItemsDeJuego — helper compartido (móvil + conductor + pública).
 
-   Lee los items del set activo para un juego QPEP:
+   Lee los items del set activo para un juego:
    1. Si tiene snapshot_id → lee set_snapshots → source_set_id.
    2. Fallback: busca sets activos del juego, toma el más reciente.
    3. Lee items del set, ordena por orden, devuelve contenidos.
    ============================================================= */
 
-export async function cargarItemsQPEP(app, juegoActivo) {
+export async function cargarItemsDeJuego(app, juegoActivo) {
   if (!juegoActivo) return null;
-  if (juegoActivo.juego_codigo !== 'QUE_PIENSA_EL_PUBLICO') return null;
   try {
     let setId = null;
 

@@ -13,7 +13,7 @@
     el adapter activo.
     ============================================================= */
 
-import { cargarItemsQPEP } from '../games/_shared/cargarItemsQPEP.js';
+import { cargarItemsDeJuego } from '../games/_shared/index.js';
 
 let cleanupSuscripciones = null;
 let intervalId = null;
@@ -187,7 +187,7 @@ async function _identificarParticipante(container, app, partida) {
         const contexto = await app.services.partida.obtenerContextoEspera(partida.id);
         const { equipos, juegos } = contexto;
         const juegoActivo = juegos.find((j) => j.estado === 'EN_CURSO' || j.estado === 'PAUSADO');
-        const itemsQPEP = await cargarItemsQPEP(app, juegoActivo);
+        const itemsQPEP = await cargarItemsDeJuego(app, juegoActivo);
         _renderPantallaPrincipal(container, app, partida, juegoActivo, equipos, participante, itemsQPEP);
         return;
       }
@@ -270,7 +270,7 @@ async function _enviarFormulario(container, app, partida, contexto) {
     const participante = await app.services.participante.obtenerPorSessionToken(sessionToken);
     const { equipos, juegos } = contexto;
     const juegoActivo = juegos.find((j) => j.estado === 'EN_CURSO' || j.estado === 'PAUSADO');
-    const itemsQPEP = await cargarItemsQPEP(app, juegoActivo);
+    const itemsQPEP = await cargarItemsDeJuego(app, juegoActivo);
     _renderPantallaPrincipal(container, app, partida, juegoActivo, equipos, participante, itemsQPEP);
   } catch (err) {
     btnContinuar.disabled = false;

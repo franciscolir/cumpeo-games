@@ -9,7 +9,7 @@
    Ruta: #/publica-nueva/:codigo
    ============================================================= */
 
-import { cargarItemsQPEP } from '../games/_shared/cargarItemsQPEP.js';
+import { cargarItemsDeJuego } from '../games/_shared/index.js';
 
 let cleanupSuscripciones = null;
 let intervalId = null;
@@ -109,7 +109,7 @@ async function _renderContenido(container, app, codigo) {
   const juegoActivo = juegos.find((j) => j.estado === 'EN_CURSO' || j.estado === 'PAUSADO');
 
   const esQPEP = juegoActivo?.juego_codigo === 'QUE_PIENSA_EL_PUBLICO';
-  const itemsQPEP = esQPEP ? await cargarItemsQPEP(app, juegoActivo) : null;
+  const itemsQPEP = esQPEP ? await cargarItemsDeJuego(app, juegoActivo) : null;
   const fase = juegoActivo?.estado_juego?.fase || '';
   const mostrarGaleria = !juegoActivo;
 
