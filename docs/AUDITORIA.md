@@ -184,3 +184,4 @@ _(ninguna)_
 | 53 | `_agregarOpcionTrivia` no re-selecciona radio tras eliminar la opción marcada. La validación lo cubre. | Paso 5.1b | Baja |
 | 54 | `docs/roadmap/pasos/bloque-5.0.md` y `bloque-5.1a.md` no fueron archivados. | Paso 5.1c (detectado) | Baja |
 | 55 | Sección "2. Bloques" del ROADMAP y matriz de estado de GAMES.md podrían divergir a futuro. Conviene automatizar chequeo. | Paso 5.1c (detectado) | Baja |
+| 56 | El script `update-5.1c.js` usó anclas de la sección equivocada de GAMES.md (Memoricé en lugar de Canción Incompleta). Cerrado en commit posterior. Conviene evitar anclas por texto literal en docs con secciones similares; preferir anclas por sección. | Paso 5.1c (detectado) | Baja |
