@@ -161,7 +161,13 @@ async function _renderContenido(container, app, codigo) {
   }
 
   if (container.querySelector('#movil-nombre')) return;
-  if (container.querySelector('#movil-voto-a') || container.querySelector('#movil-enviar-mensaje')) return;
+
+  const ctx = await app.services.partida.obtenerContextoEspera(partida.id);
+  const { juegos } = ctx;
+  const juegoActivo = juegos.find((j) => j.estado === 'EN_CURSO' || j.estado === 'PAUSADO');
+  const esQPEP = juegoActivo?.juego_codigo === 'QUE_PIENSA_EL_PUBLICO';
+  const fase = juegoActivo?.estado_juego?.fase;
+  if (container.querySelector('#movil-enviar-mensaje') && !(esQPEP && fase === 'ENCUESTA_ACTIVA')) return;
 
   await _identificarParticipante(container, app, partida);
 }

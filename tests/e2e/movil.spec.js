@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { loginTestUser, waitForCumpeo } from './_helpers/auth.js';
+import { identificarEnMovil, votarMovil } from './_helpers/movil.js';
 
 test.beforeEach(loginTestUser);
 
@@ -40,13 +41,6 @@ async function setupPartidaCompleta(page) {
 
     return { codigo: partida.public_codigo, partidaId: partida.id };
   });
-}
-
-async function identificarEnMovil(page, codigo, nombre) {
-  await page.goto(`/#/movil/${codigo}`);
-  await waitForCumpeo(page);
-  await page.locator('#movil-nombre').fill(nombre);
-  await page.locator('#movil-continuar').click();
 }
 
 test('móvil pide nombre la primera vez', async ({ page }) => {
@@ -284,10 +278,7 @@ test('móvil muestra encuesta activa QPEP', async ({ page }) => {
   await activarEncuestaQPEP(page, id);
 
   await page.goto('/');
-  await page.goto(`/#/movil/${codigo}`);
-  await waitForCumpeo(page);
-  await page.locator('#movil-nombre').fill('Encuestado');
-  await page.locator('#movil-continuar').click();
+  await identificarEnMovil(page, codigo, 'Encuestado');
 
   await expect(page.getByText('Encuesta activa')).toBeVisible({ timeout: 15000 });
   await expect(page.locator('#movil-voto-a')).toBeVisible();
@@ -300,15 +291,11 @@ test('móvil responde encuesta (A o B)', async ({ page }) => {
   await activarEncuestaQPEP(page, id);
 
   await page.goto('/');
-  await page.goto(`/#/movil/${codigo}`);
-  await waitForCumpeo(page);
-  await page.locator('#movil-nombre').fill('Votante');
-  await page.locator('#movil-continuar').click();
+  await identificarEnMovil(page, codigo, 'Votante');
 
   await expect(page.locator('#movil-voto-a')).toBeVisible({ timeout: 15000 });
-  await page.locator('#movil-voto-a').click();
+  await votarMovil(page, 'A');
 
-  await expect(page.getByText('Respuesta enviada. Esperando...')).toBeVisible({ timeout: 10000 });
   await expect(page.locator('#movil-voto-a')).toBeDisabled();
   await expect(page.locator('#movil-voto-b')).toBeDisabled();
 });
@@ -319,14 +306,10 @@ test('móvil no permite doble respuesta', async ({ page }) => {
   await activarEncuestaQPEP(page, id);
 
   await page.goto('/');
-  await page.goto(`/#/movil/${codigo}`);
-  await waitForCumpeo(page);
-  await page.locator('#movil-nombre').fill('DobleVoto');
-  await page.locator('#movil-continuar').click();
+  await identificarEnMovil(page, codigo, 'DobleVoto');
 
   await expect(page.locator('#movil-voto-b')).toBeVisible({ timeout: 15000 });
-  await page.locator('#movil-voto-b').click();
-  await expect(page.getByText('Respuesta enviada. Esperando...')).toBeVisible({ timeout: 10000 });
+  await votarMovil(page, 'B');
 
   await page.goto('/');
   await page.goto(`/#/movil/${codigo}`);
