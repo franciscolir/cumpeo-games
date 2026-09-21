@@ -2,7 +2,7 @@
 
 **Versión:** 1.0
 **Última actualización:** 2026-09-18
-**Estado global:** Bloques 0, 1, 2, 3 cerrados · Bloque 4 en progreso (12/13)
+**Estado global:** Bloques 0, 1, 2, 3, 4 cerrados · Bloque 5 en preparación · ★ MVP alcanzado ★
 **Rama:** feature/vertical-slice
 
 ---
@@ -147,11 +147,12 @@ con "3.4 Envío de mensajes" porque la pantalla ya existía (pasos 3.1 + 3.2).
 El Bloque 3 pasa de 7 a 6 pasos.
 ---
 
-### Bloque 4 — "¿Qué piensa el público?" 🔄 EN PROGRESO (12/13)
+### Bloque 4 — "¿Qué piensa el público?" ✅ CERRADO (13/13)
 
 **Objetivo:** Primer juego completo. Cierra el MVP.
 
 **Diseño cerrado:** Ver definición funcional en MASTER (sección pendiente de integración).
+| 4 | "¿Qué piensa el público?" | ✅ CERRADO | 13/13 | 2e19767 | 2026-09-21 |
 
 #### Pasos (preliminares)
 
@@ -166,10 +167,10 @@ El Bloque 3 pasa de 7 a 6 pasos.
 | 4.7 | Puntuación + cierre + actualización de marcador | ⬜ |
 
 **★ Al cerrar este bloque se alcanza el MVP ★**
-
+**Bloque 4 cerrado. ★ MVP alcanzado ★. Bloque 5 en preparación.**
 ---
 
-### Bloque 5 — 8 juegos restantes ⬜ PENDIENTE
+### Bloque 5 — 8 juegos restantes 🔄 EN PREPARACIÓN.
 
 **Objetivo:** Implementar los 8 juegos restantes en orden del GAMES.md.
 
@@ -208,6 +209,7 @@ Cada juego se cierra con su propio bloque interno (GameDefinition + UI Conductor
 | 1.4 | 2026-09-19 | Paso 2.4 cancelado. Bloque 2 renumerado: 7 pasos. |
 | 2.0 | 2026-09-19 | Bloque 2 cerrado. 13/13 pasos. 540 unit + 53 e2e. |
 | 3.0 | 2026-09-19 | Bloque 3 cerrado. 6/6 pasos. 540 unit + 40 e2e. |
+| 4.0 | 2026-09-21 | Bloque 4 cerrado. ★ MVP alcanzado ★. 13/13 pasos. |
 ---
 
 ## 5. Convenciones

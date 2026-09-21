@@ -159,3 +159,11 @@ _(ninguna)_
 
 | 46 | Test e2e crea respuestas con participanteId inventado (FK violada) | Paso 4.8a | Media |
 | 47 | El shell calcula resultado_publico (lógica de juego en UI) | Paso 4.8a | Baja |
+
+| 2026-09-21 | 4 | 4.8b | ✅ APROBADO | Test e2e end-to-end del flujo QPEP completo. ★ MVP alcanzado ★. | 2e19767 |
+
+## Cierre de bloque
+
+| Fecha | Bloque | Estado | Notas |
+|-------|--------|--------|-------|
+| 2026-09-21 | 4 | ✅ CERRADO | 13/13 pasos. ★ MVP alcanzado ★. 595 unit + 59 e2e. |
