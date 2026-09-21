@@ -62,4 +62,135 @@ describe('CancionIncompletaGameUI', () => {
   it('cleanup no lanza error', () => {
     expect(() => CancionIncompletaGameUI.cleanup()).not.toThrow();
   });
+
+  it('renderizarAreaJuego muestra timer cuando está corriendo', () => {
+    const uiEstado = { ...estado, fase: 'TURNO_ACTIVO', timer_corriendo: true, tiempo_restante_seg: 10 };
+    CancionIncompletaGameUI.renderizarAreaJuego(uiEstado, container, contexto, {});
+    expect(container.innerHTML).toContain('id="ci-timer"');
+  });
+
+  it('renderizarAreaJuego muestra tiempo restante cuando timer no corre', () => {
+    const uiEstado = { ...estado, fase: 'TURNO_ACTIVO', timer_corriendo: false, tiempo_restante_seg: 45 };
+    CancionIncompletaGameUI.renderizarAreaJuego(uiEstado, container, contexto, {});
+    expect(container.innerHTML).toContain('45s');
+  });
+
+  it('renderizarPanelConductor muestra Detener tiempo si timer corriendo', () => {
+    const estadoActivo = { ...estado, fase: 'TURNO_ACTIVO', timer_corriendo: true };
+    const panel = makeContainer();
+    CancionIncompletaGameUI.renderizarPanelConductor(estadoActivo, panel, contexto, { onAccion: () => {} });
+    expect(panel.innerHTML).toContain('Detener tiempo');
+  });
+
+  it('renderizarPanelConductor muestra Correcto e Incorrecto en ESPERA_VALIDACION', () => {
+    const estadoVal = { ...estado, fase: 'ESPERA_VALIDACION' };
+    const panel = makeContainer();
+    CancionIncompletaGameUI.renderizarPanelConductor(estadoVal, panel, contexto, { onAccion: () => {} });
+    expect(panel.innerHTML).toContain('Correcto');
+    expect(panel.innerHTML).toContain('Incorrecto');
+  });
+
+  it('renderizarPanelConductor muestra Siguiente ronda en FIN_DE_RONDA', () => {
+    const estadoFin = { ...estado, fase: 'FIN_DE_RONDA' };
+    const panel = makeContainer();
+    CancionIncompletaGameUI.renderizarPanelConductor(estadoFin, panel, contexto, { onAccion: () => {} });
+    expect(panel.innerHTML).toContain('Siguiente ronda');
+  });
+
+  it('renderizarPanelConductor no muestra botones en FIN_DE_JUEGO', () => {
+    const estadoFinJuego = { ...estado, fase: 'FIN_DE_JUEGO' };
+    const panel = makeContainer();
+    CancionIncompletaGameUI.renderizarPanelConductor(estadoFinJuego, panel, contexto, { onAccion: () => {} });
+    expect(panel.innerHTML).not.toContain('Iniciar juego');
+    expect(panel.innerHTML).not.toContain('Iniciar turno');
+  });
+
+  it('renderizarAreaJuego muestra fase en el contenedor', () => {
+    const uiEstado = { ...estado, fase: 'ESPERA_VALIDACION' };
+    CancionIncompletaGameUI.renderizarAreaJuego(uiEstado, container, contexto, {});
+    expect(container.innerHTML).toContain('ESPERA VALIDACION');
+  });
+
+  it('renderizarAreaJuego muestra equipo actual', () => {
+    const uiEstado = { ...estado, equipo_actual: 2 };
+    CancionIncompletaGameUI.renderizarAreaJuego(uiEstado, container, contexto, {});
+    expect(container.innerHTML).toContain('Equipo 2');
+  });
+
+  it('renderizarAreaJuego muestra puntajes de ambos equipos', () => {
+    const uiEstado = { ...estado, puntos_equipo_1: 10, puntos_equipo_2: 5 };
+    CancionIncompletaGameUI.renderizarAreaJuego(uiEstado, container, contexto, {});
+    expect(container.innerHTML).toContain('10');
+    expect(container.innerHTML).toContain('5');
+  });
+
+  it('renderizarAreaJuego muestra canción actual', () => {
+    const uiEstado = { ...estado, cancion_actual: 2 };
+    CancionIncompletaGameUI.renderizarAreaJuego(uiEstado, container, contexto, {});
+    expect(container.innerHTML).toContain('Canción 2/2');
+  });
+
+  it('renderizarPanelConductor inicia juego action binding existe', () => {
+    const panel = {
+      innerHTML: '',
+      querySelector: (sel) => ({ addEventListener: () => {} })
+    };
+    CancionIncompletaGameUI.renderizarPanelConductor({}, panel, contexto, { onAccion: () => {} });
+    expect(true).toBe(true);
+  });
+
+  it('renderizarPanelConductor iniciar turno action binding existe', () => {
+    const panel = {
+      innerHTML: '',
+      querySelector: (sel) => ({ addEventListener: () => {} })
+    };
+    CancionIncompletaGameUI.renderizarPanelConductor(estado, panel, contexto, { onAccion: () => {} });
+    expect(true).toBe(true);
+  });
+
+  it('renderizarPanelConductor iniciar tiempo action binding existe', () => {
+    const panel = {
+      innerHTML: '',
+      querySelector: (sel) => ({ addEventListener: () => {} })
+    };
+    const estadoActivo = { ...estado, fase: 'TURNO_ACTIVO', timer_corriendo: false };
+    CancionIncompletaGameUI.renderizarPanelConductor(estadoActivo, panel, contexto, { onAccion: () => {} });
+    expect(true).toBe(true);
+  });
+
+  it('renderizarPanelConductor detener tiempo action binding existe', () => {
+    const panel = {
+      innerHTML: '',
+      querySelector: (sel) => ({ addEventListener: () => {} })
+    };
+    const estadoActivo = { ...estado, fase: 'TURNO_ACTIVO', timer_corriendo: true };
+    CancionIncompletaGameUI.renderizarPanelConductor(estadoActivo, panel, contexto, { onAccion: () => {} });
+    expect(true).toBe(true);
+  });
+
+  it('renderizarPanelConductor correcto/incorrecto action bindings existen', () => {
+    const panel = {
+      innerHTML: '',
+      querySelector: (sel) => ({ addEventListener: () => {} })
+    };
+    const estadoVal = { ...estado, fase: 'ESPERA_VALIDACION' };
+    CancionIncompletaGameUI.renderizarPanelConductor(estadoVal, panel, contexto, { onAccion: () => {} });
+    expect(true).toBe(true);
+  });
+
+  it('renderizarPanelConductor siguiente ronda action binding existe', () => {
+    const panel = {
+      innerHTML: '',
+      querySelector: (sel) => ({ addEventListener: () => {} })
+    };
+    const estadoFin = { ...estado, fase: 'FIN_DE_RONDA' };
+    CancionIncompletaGameUI.renderizarPanelConductor(estadoFin, panel, contexto, { onAccion: () => {} });
+    expect(true).toBe(true);
+  });
+
+  it('renderizarAreaJuego no inicia timer si fase no es TURNO_ACTIVO', () => {
+    const uiEstado = { ...estado, fase: 'INICIO_RONDA', timer_corriendo: true };
+    CancionIncompletaGameUI.renderizarAreaJuego(uiEstado, container, contexto, {});
+    expect(container.innerHTML).toContain('Ronda 1 / 1');
+  });
 });

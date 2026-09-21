@@ -163,6 +163,9 @@ async function _renderContenido(container, app, codigo) {
   if (esRosco && juegoActivo?.estado_juego) {
     _iniciarTimerRoscoPublico(juegoActivo.estado_juego, container);
   }
+  if (esCancionIncompleta && juegoActivo?.estado_juego) {
+    _iniciarTimerCancionIncompletaPublico(juegoActivo.estado_juego, container);
+  }
 }
 
 /* =============================================================
@@ -626,6 +629,38 @@ function _limpiarTimerRoscoPublico() {
   _roscoTimerEq2?.cancelar();
   _roscoTimerEq1 = null;
   _roscoTimerEq2 = null;
+}
+
+function _iniciarTimerCancionIncompletaPublico(estadoJuego, container) {
+  _limpiarTimerCancionIncompletaPublico();
+
+  const fase = estadoJuego?.fase || '';
+  const timerCorriendo = !!estadoJuego?.timer_corriendo;
+  const tiempoRestante = estadoJuego?.tiempo_restante_seg ?? 60;
+
+  const el = container.querySelector('#ci-timer-publico');
+  if (!el) return;
+
+  if (fase !== 'TURNO_ACTIVO' || !timerCorriendo) {
+    el.textContent = `${tiempoRestante}s`;
+    return;
+  }
+
+  _ciTimer = crearTimer({
+    duracionSeg: tiempoRestante,
+    onTick: (restante) => {
+      if (el) el.textContent = `${restante}s`;
+    },
+    onCierre: () => {
+      if (el) el.textContent = '0s';
+    }
+  });
+  _ciTimer.iniciar();
+}
+
+function _limpiarTimerCancionIncompletaPublico() {
+  _ciTimer?.cancelar();
+  _ciTimer = null;
 }
 
 /* =============================================================

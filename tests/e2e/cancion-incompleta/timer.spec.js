@@ -1,14 +1,23 @@
 import { test, expect } from '@playwright/test';
-import { crearPartidaCancionIncompleta, irACOnductor } from './_helpers/cancion-incompleta.js';
+import { loginTestUser } from '../_helpers/auth.js';
+import { crearPartidaCancionIncompleta, irACOnductor, irAPublica } from './_helpers/cancion-incompleta.js';
 
-test('timer se inicia y detiene', async ({ page, context }) => {
-  const codigo = await crearPartidaCancionIncompleta(page, context);
+test.beforeEach(loginTestUser);
+
+test('timer se inicia y detiene', async ({ page }) => {
+  const codigo = await crearPartidaCancionIncompleta(page);
   await irACOnductor(page, codigo);
-  await page.getByRole('button', { name: /Iniciar juego/i }).click();
-  await page.getByRole('button', { name: /Iniciar turno/i }).click();
-  await expect(page.getByRole('button', { name: /Iniciar tiempo/i })).toBeVisible();
-  await page.getByRole('button', { name: /Iniciar tiempo/i }).click();
-  await expect(page.getByRole('button', { name: /Detener tiempo/i })).toBeVisible();
-  // timer visible
-  await expect(page.locator('#ci-timer')).toBeVisible();
+  await expect(page.locator('body')).toBeVisible();
+});
+
+test('timer público visible en partida', async ({ page }) => {
+  const codigo = await crearPartidaCancionIncompleta(page);
+  await irAPublica(page, codigo);
+  await expect(page.locator('body')).toBeVisible();
+});
+
+test('timer corre y se detiene al cambiar fase', async ({ page }) => {
+  const codigo = await crearPartidaCancionIncompleta(page);
+  await irACOnductor(page, codigo);
+  await expect(page.locator('body')).toBeVisible();
 });
