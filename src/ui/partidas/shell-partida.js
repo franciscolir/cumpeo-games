@@ -126,7 +126,7 @@ async function _renderContenido(container, app, partidaId) {
   const gameUI = codigoJuego ? app.uiRegistry.obtener(codigoJuego) : null;
   const estadoJuego = juegoActivo ? (juegoActivo.estado_juego || {}) : {};
 
-  const itemsDelJuego = (codigoJuego === 'QUE_PIENSA_EL_PUBLICO' || codigoJuego === 'TRIVIA' || codigoJuego === 'ROSCO')
+  const itemsDelJuego = (codigoJuego === 'QUE_PIENSA_EL_PUBLICO' || codigoJuego === 'TRIVIA' || codigoJuego === 'ROSCO' || codigoJuego === 'PICTIONARY')
     ? await cargarItemsDeJuego(app, juegoActivo)
     : null;
 
@@ -588,6 +588,152 @@ async function _renderContenido(container, app, partidaId) {
           const { CancionIncompletaGameDefinition } = await import('../../games/cancion-incompleta/CancionIncompletaGameDefinition.js');
           const config = juegoActivo.configuracion_congelada || CancionIncompletaGameDefinition.defaultConfig;
           const nuevoEstado = CancionIncompletaGameDefinition.iniciarSiguienteRonda(estadoJuego, config);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId,
+            juegoActivo.id,
+            nuevoEstado,
+            juegoActivo.state_version,
+            sessionId,
+            nuevoActionId()
+          );
+        } else if (tipo === 'iniciar-juego-pictionary') {
+          const { PictionaryGameDefinition } = await import('../../games/pictionary/PictionaryGameDefinition.js');
+          const config = juegoActivo.configuracion_congelada || PictionaryGameDefinition.defaultConfig;
+          PictionaryGameDefinition.validarConfiguracion(config);
+          const contenidoSet = { items: itemsDelJuego || [] };
+          const validacion = PictionaryGameDefinition.validarContenidoSet(contenidoSet, config);
+          if (!validacion.ok) {
+            window.alert(`Set inválido:\n${validacion.errores.join('\n')}`);
+            return;
+          }
+          const estadoInicial = PictionaryGameDefinition.estadoInicial(config);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId,
+            juegoActivo.id,
+            estadoInicial,
+            juegoActivo.state_version,
+            sessionId,
+            nuevoActionId()
+          );
+        } else if (tipo === 'iniciar-modo-pictionary') {
+          const { PictionaryGameDefinition } = await import('../../games/pictionary/PictionaryGameDefinition.js');
+          let nuevoEstado = PictionaryGameDefinition.seleccionarModo(estadoJuego);
+          const contenidoSet = { items: itemsDelJuego || [] };
+          nuevoEstado = PictionaryGameDefinition.mostrarPalabra(nuevoEstado, contenidoSet);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId,
+            juegoActivo.id,
+            nuevoEstado,
+            juegoActivo.state_version,
+            sessionId,
+            nuevoActionId()
+          );
+        } else if (tipo === 'iniciar-tiempo-pictionary') {
+          const { PictionaryGameDefinition } = await import('../../games/pictionary/PictionaryGameDefinition.js');
+          const nuevoEstado = PictionaryGameDefinition.iniciarTiempo(estadoJuego);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId,
+            juegoActivo.id,
+            nuevoEstado,
+            juegoActivo.state_version,
+            sessionId,
+            nuevoActionId()
+          );
+        } else if (tipo === 'marcar-acierto-pictionary') {
+          const { PictionaryGameDefinition } = await import('../../games/pictionary/PictionaryGameDefinition.js');
+          const config = juegoActivo.configuracion_congelada || PictionaryGameDefinition.defaultConfig;
+          let estadoDetenido = PictionaryGameDefinition.detenerTiempo(estadoJuego, estadoJuego.tiempo_restante_seg || 0);
+          const nuevoEstado = PictionaryGameDefinition.aplicarAcierto(estadoDetenido, config);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId,
+            juegoActivo.id,
+            nuevoEstado,
+            juegoActivo.state_version,
+            sessionId,
+            nuevoActionId()
+          );
+        } else if (tipo === 'marcar-error-pictionary') {
+          const { PictionaryGameDefinition } = await import('../../games/pictionary/PictionaryGameDefinition.js');
+          const config = juegoActivo.configuracion_congelada || PictionaryGameDefinition.defaultConfig;
+          let estadoDetenido = PictionaryGameDefinition.detenerTiempo(estadoJuego, estadoJuego.tiempo_restante_seg || 0);
+          const nuevoEstado = PictionaryGameDefinition.aplicarError(estadoDetenido, config);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId,
+            juegoActivo.id,
+            nuevoEstado,
+            juegoActivo.state_version,
+            sessionId,
+            nuevoActionId()
+          );
+        } else if (tipo === 'pasar-palabra-pictionary') {
+          const { PictionaryGameDefinition } = await import('../../games/pictionary/PictionaryGameDefinition.js');
+          const config = juegoActivo.configuracion_congelada || PictionaryGameDefinition.defaultConfig;
+          let estadoDetenido = PictionaryGameDefinition.detenerTiempo(estadoJuego, estadoJuego.tiempo_restante_seg || 0);
+          const nuevoEstado = PictionaryGameDefinition.aplicarPasar(estadoDetenido, config);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId,
+            juegoActivo.id,
+            nuevoEstado,
+            juegoActivo.state_version,
+            sessionId,
+            nuevoActionId()
+          );
+        } else if (tipo === 'siguiente-modo-pictionary') {
+          const { PictionaryGameDefinition } = await import('../../games/pictionary/PictionaryGameDefinition.js');
+          const nuevoEstado = PictionaryGameDefinition.avanzarModo(estadoJuego);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId,
+            juegoActivo.id,
+            nuevoEstado,
+            juegoActivo.state_version,
+            sessionId,
+            nuevoActionId()
+          );
+        } else if (tipo === 'siguiente-equipo-pictionary') {
+          const { PictionaryGameDefinition } = await import('../../games/pictionary/PictionaryGameDefinition.js');
+          const nuevoEstado = PictionaryGameDefinition.avanzarModo(estadoJuego);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId,
+            juegoActivo.id,
+            nuevoEstado,
+            juegoActivo.state_version,
+            sessionId,
+            nuevoActionId()
+          );
+        } else if (tipo === 'siguiente-ronda-pictionary') {
+          const { PictionaryGameDefinition } = await import('../../games/pictionary/PictionaryGameDefinition.js');
+          const config = juegoActivo.configuracion_congelada || PictionaryGameDefinition.defaultConfig;
+          const nuevoEstado = PictionaryGameDefinition.iniciarSiguienteRonda(estadoJuego, config);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId,
+            juegoActivo.id,
+            nuevoEstado,
+            juegoActivo.state_version,
+            sessionId,
+            nuevoActionId()
+          );
+        } else if (tipo === 'aplicar-bonus-pictionary') {
+          const { PictionaryGameDefinition } = await import('../../games/pictionary/PictionaryGameDefinition.js');
+          const config = juegoActivo.configuracion_congelada || PictionaryGameDefinition.defaultConfig;
+          const equipo = payload.equipo;
+          const puntos = payload.puntos || 0;
+          if (equipo !== 1 && equipo !== 2) return;
+          if (puntos <= 0) return;
+          const configConBonus = { ...config, bonus_puntos: puntos };
+          const nuevoEstado = PictionaryGameDefinition.aplicarBonus(estadoJuego, configConBonus, equipo);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId,
+            juegoActivo.id,
+            nuevoEstado,
+            juegoActivo.state_version,
+            sessionId,
+            nuevoActionId()
+          );
+        } else if (tipo === 'time-up-pictionary') {
+          const { PictionaryGameDefinition } = await import('../../games/pictionary/PictionaryGameDefinition.js');
+          const config = juegoActivo.configuracion_congelada || PictionaryGameDefinition.defaultConfig;
+          const nuevoEstado = PictionaryGameDefinition.aplicarTimeUp(estadoJuego, config);
+          if (!nuevoEstado) return;
           await app.services.partida.actualizarEstadoJuego(
             partidaId,
             juegoActivo.id,
