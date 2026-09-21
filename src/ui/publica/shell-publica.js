@@ -117,6 +117,7 @@ async function _renderContenido(container, app, codigo) {
 
   const esQPEP = juegoActivo?.juego_codigo === 'QUE_PIENSA_EL_PUBLICO';
   const esRosco = juegoActivo?.juego_codigo === 'ROSCO';
+  const esCancionIncompleta = juegoActivo?.juego_codigo === 'CANCION_INCOMPLETA';
   const itemsQPEP = esQPEP ? await cargarItemsDeJuego(app, juegoActivo) : null;
   const itemsRosco = esRosco ? await cargarItemsDeJuego(app, juegoActivo) : null;
   const fase = juegoActivo?.estado_juego?.fase || '';
@@ -127,6 +128,8 @@ async function _renderContenido(container, app, codigo) {
     escenarioHTML = _renderEscenarioRosco(juegoActivo, itemsRosco, fase, contexto);
   } else if (esQPEP) {
     escenarioHTML = _renderEscenarioQPEP(juegoActivo, itemsQPEP, fase, contexto);
+  } else if (esCancionIncompleta) {
+    escenarioHTML = _renderEscenarioCancionIncompleta(juegoActivo, fase, contexto);
   } else {
     escenarioHTML = _renderEscenario(juegoActivo);
   }
@@ -893,6 +896,93 @@ function _renderMuroMensajes() {
         </span>
       </div>
     </footer>
+  `;
+}
+
+function _renderEscenarioCancionIncompleta(juegoActivo, fase, contexto) {
+  const estadoJuego = juegoActivo?.estado_juego || {};
+  const equipo1 = contexto?.equipos?.[0] || { nombre: 'Eq1' };
+  const equipo2 = contexto?.equipos?.[1] || { nombre: 'Eq2' };
+  const equipoActual = estadoJuego.equipo_actual || 1;
+  const ronda = estadoJuego.ronda_actual || 1;
+  const totalRondas = estadoJuego.total_rondas || 1;
+  const cancion = estadoJuego.cancion_actual || 1;
+  const pts1 = estadoJuego.puntos_equipo_1 || 0;
+  const pts2 = estadoJuego.puntos_equipo_2 || 0;
+
+  const equipoActivoNombre = equipoActual === 1 ? equipo1.nombre : equipo2.nombre;
+  const equipoActivoColor = equipoActual === 1 ? 'border-[#00D2FF] bg-[#00D2FF]/15' : 'border-[#FF3344] bg-[#FF3344]/15';
+
+  let inner = '';
+
+  if (!fase || fase === 'INICIO_RONDA') {
+    inner = `
+      <p class="font-display-hero text-5xl text-primary uppercase mb-2">¡A JUGAR!</p>
+      <p class="font-headline-md uppercase text-on-surface">Canción Incompleta</p>
+      ${fase === 'INICIO_RONDA' ? '<p class="font-body-md text-on-surface-variant mt-2">Esperando inicio del turno…</p>' : ''}
+    `;
+  } else if (fase === 'FIN_DE_RONDA') {
+    inner = `
+      <p class="font-display-hero text-5xl text-primary uppercase mb-4">Fin de ronda</p>
+      <p class="font-headline-md uppercase text-on-surface mb-2">Ronda ${ronda} / ${totalRondas}</p>
+      <div class="grid grid-cols-2 gap-4 max-w-md mx-auto">
+        <div class="border-3 border-[#00D2FF] bg-[#00D2FF]/15 rounded-xl p-4 text-center">
+          <p class="font-headline-md">${equipo1.nombre}</p>
+          <p class="font-comic-score text-5xl text-on-surface mt-1">${pts1}</p>
+        </div>
+        <div class="border-3 border-[#FF3344] bg-[#FF3344]/15 rounded-xl p-4 text-center">
+          <p class="font-headline-md">${equipo2.nombre}</p>
+          <p class="font-comic-score text-5xl text-on-surface mt-1">${pts2}</p>
+        </div>
+      </div>
+    `;
+  } else if (fase === 'FIN_DE_JUEGO') {
+    const resultado = estadoJuego.resultado || {};
+    const ganador = resultado.ganador;
+    let ganadorNombre = 'Empate técnico';
+    let ganadorColor = 'text-on-surface-variant';
+    if (ganador === 1) { ganadorNombre = equipo1.nombre; ganadorColor = 'text-[#00D2FF]'; }
+    else if (ganador === 2) { ganadorNombre = equipo2.nombre; ganadorColor = 'text-[#FF3344]'; }
+
+    inner = `
+      <p class="font-display-hero text-5xl text-primary uppercase mb-4">¡Juego terminado!</p>
+      <p class="font-headline-md uppercase ${ganadorColor} mb-4">${ganadorNombre}</p>
+      <div class="grid grid-cols-2 gap-4 max-w-md mx-auto">
+        <div class="border-3 border-[#00D2FF] bg-[#00D2FF]/15 rounded-xl p-4 text-center">
+          <p class="font-headline-md">${equipo1.nombre}</p>
+          <p class="font-comic-score text-5xl text-on-surface mt-1">${pts1}</p>
+        </div>
+        <div class="border-3 border-[#FF3344] bg-[#FF3344]/15 rounded-xl p-4 text-center">
+          <p class="font-headline-md">${equipo2.nombre}</p>
+          <p class="font-comic-score text-5xl text-on-surface mt-1">${pts2}</p>
+        </div>
+      </div>
+    `;
+  } else {
+    inner = `
+      <div class="text-center">
+        <p class="font-display-hero text-5xl text-primary uppercase mb-2">Canción Incompleta</p>
+        <p class="font-headline-md uppercase text-on-surface mb-1">Ronda ${ronda} — Canción ${cancion}/2</p>
+        <p class="font-body-md text-on-surface-variant">Turno: <span class="font-label-md uppercase ${equipoActual === 1 ? 'text-[#00D2FF]' : 'text-[#FF3344]'}">${equipoActivoNombre}</span></p>
+      </div>
+      <div id="ci-timer-publico" class="font-display-hero text-4xl text-tertiary mt-4 text-center"></div>
+    `;
+  }
+
+  return `
+    <div class="flex flex-col items-center gap-6 p-6 text-center">
+      ${inner}
+      <div class="grid grid-cols-2 gap-4 w-full max-w-lg">
+        <div class="border-2.5 ${equipoActual === 1 ? equipoActivoColor : 'border-on-surface bg-surface-container-lowest'} rounded-xl p-4 shadow-comic-sm text-center">
+          <p class="font-body-md uppercase">${equipo1.nombre}</p>
+          <p class="font-display-hero text-3xl text-primary">${pts1}</p>
+        </div>
+        <div class="border-2.5 ${equipoActual === 2 ? equipoActivoColor : 'border-on-surface bg-surface-container-lowest'} rounded-xl p-4 shadow-comic-sm text-center">
+          <p class="font-body-md uppercase">${equipo2.nombre}</p>
+          <p class="font-display-hero text-3xl text-primary">${pts2}</p>
+        </div>
+      </div>
+    </div>
   `;
 }
 
