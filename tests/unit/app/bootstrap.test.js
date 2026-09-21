@@ -113,9 +113,9 @@ describe('bootstrap', () => {
 });
 
 describe('registrarTodos', () => {
-  it('devuelve ["TRIVIA"]', () => {
+  it('devuelve ["TRIVIA", "QUE_PIENSA_EL_PUBLICO", "ROSCO"]', () => {
     const registry = new GameDefinitionRegistry();
     const codigos = registrarTodos(registry);
-    expect(codigos).toEqual(['TRIVIA', 'QUE_PIENSA_EL_PUBLICO']);
+    expect(codigos).toEqual(['TRIVIA', 'QUE_PIENSA_EL_PUBLICO', 'ROSCO']);
   });
 });
