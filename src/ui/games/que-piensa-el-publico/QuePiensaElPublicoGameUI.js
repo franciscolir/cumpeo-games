@@ -15,7 +15,7 @@ let _latestCallbacks = null;
 let _latestEstadoJuego = null;
 
 function _getItems(contexto) {
-  return contexto.itemsQPEP || contexto.juegoEjecutado?.snapshot?.items || [];
+  return contexto.itemsDelJuego || contexto.juegoEjecutado?.snapshot?.items || [];
 }
 
 function _obtenerTiempoSeg(estadoJuego, contexto) {

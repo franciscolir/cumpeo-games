@@ -126,7 +126,7 @@ async function _renderContenido(container, app, partidaId) {
   const gameUI = codigoJuego ? app.uiRegistry.obtener(codigoJuego) : null;
   const estadoJuego = juegoActivo ? (juegoActivo.estado_juego || {}) : {};
 
-  const itemsQPEP = codigoJuego === 'QUE_PIENSA_EL_PUBLICO'
+  const itemsDelJuego = (codigoJuego === 'QUE_PIENSA_EL_PUBLICO' || codigoJuego === 'TRIVIA')
     ? await cargarItemsDeJuego(app, juegoActivo)
     : null;
 
@@ -137,7 +137,7 @@ async function _renderContenido(container, app, partidaId) {
     puedeControlar,
     acVisible: false,
     stateVersion: juegoActivo ? juegoActivo.state_version : null,
-    itemsQPEP
+    itemsDelJuego
   };
 
   const callbacks = {
@@ -197,6 +197,183 @@ async function _renderContenido(container, app, partidaId) {
             juegoActivo.id,
             payload.resultado,
             payload.finishReason,
+            sessionId,
+            nuevoActionId()
+          );
+        } else if (tipo === 'iniciar-juego-trivia') {
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId,
+            juegoActivo.id,
+            {
+              ronda_actual: 1,
+              pregunta_actual_index: 0,
+              fase: 'MOSTRANDO_PREGUNTA',
+              respuestas: [],
+              puntos_equipo_1: 0,
+              puntos_equipo_2: 0
+            },
+            juegoActivo.state_version,
+            sessionId,
+            nuevoActionId()
+          );
+        } else if (tipo === 'iniciar-pregunta-trivia') {
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId,
+            juegoActivo.id,
+            {
+              ...estadoJuego,
+              fase: 'SELECCIONANDO_RESPUESTA'
+            },
+            juegoActivo.state_version,
+            sessionId,
+            nuevoActionId()
+          );
+        } else if (tipo === 'marcar-correcto-trivia') {
+          const equipo = payload.equipo;
+          const config = juegoActivo.configuracion_congelada || {};
+          const puntos = config.puntos_por_acierto || 10;
+          const estadoActualizado = {
+            ...estadoJuego,
+            fase: 'MOSTRANDO_RESULTADO',
+            respuestas: [
+              ...estadoJuego.respuestas,
+              { equipo, opcion_index: null, correcta: true, puntos }
+            ]
+          };
+          if (equipo === 1) estadoActualizado.puntos_equipo_1 = (estadoJuego.puntos_equipo_1 || 0) + puntos;
+          if (equipo === 2) estadoActualizado.puntos_equipo_2 = (estadoJuego.puntos_equipo_2 || 0) + puntos;
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId,
+            juegoActivo.id,
+            estadoActualizado,
+            juegoActivo.state_version,
+            sessionId,
+            nuevoActionId()
+          );
+        } else if (tipo === 'marcar-incorrecto-trivia') {
+          const equipo = payload.equipo;
+          const config = juegoActivo.configuracion_congelada || {};
+          const estadoActualizado = {
+            ...estadoJuego,
+            fase: 'MOSTRANDO_RESULTADO',
+            respuestas: [
+              ...estadoJuego.respuestas,
+              { equipo, opcion_index: null, correcta: false, puntos: 0 }
+            ]
+          };
+          if (config.penalizacion_activa && config.penalizacion_puntos > 0) {
+            const penalizacion = config.penalizacion_puntos;
+            if (equipo === 1) estadoActualizado.puntos_equipo_1 = Math.max(0, (estadoJuego.puntos_equipo_1 || 0) - penalizacion);
+            if (equipo === 2) estadoActualizado.puntos_equipo_2 = Math.max(0, (estadoJuego.puntos_equipo_2 || 0) - penalizacion);
+          }
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId,
+            juegoActivo.id,
+            estadoActualizado,
+            juegoActivo.state_version,
+            sessionId,
+            nuevoActionId()
+          );
+        } else if (tipo === 'siguiente-pregunta-trivia') {
+          const config = juegoActivo.configuracion_congelada || {};
+          const items = itemsDelJuego || [];
+          const preguntasPorRonda = config.preguntas_por_ronda || items.length;
+          const siguienteIdx = (estadoJuego.pregunta_actual_index || 0) + 1;
+          if (siguienteIdx >= preguntasPorRonda) {
+            const totalRondas = config.rondas || 1;
+            const siguienteRonda = (estadoJuego.ronda_actual || 1) + 1;
+            if (siguienteRonda > totalRondas) {
+              await app.services.partida.actualizarEstadoJuego(
+                partidaId, juegoActivo.id,
+                { ...estadoJuego, fase: 'FIN_DE_JUEGO' },
+                juegoActivo.state_version, sessionId, nuevoActionId()
+              );
+            } else {
+              await app.services.partida.actualizarEstadoJuego(
+                partidaId, juegoActivo.id,
+                {
+                  ...estadoJuego,
+                  ronda_actual: siguienteRonda,
+                  pregunta_actual_index: 0,
+                  fase: 'FIN_DE_RONDA',
+                  respuestas: []
+                },
+                juegoActivo.state_version, sessionId, nuevoActionId()
+              );
+            }
+          } else {
+            await app.services.partida.actualizarEstadoJuego(
+              partidaId, juegoActivo.id,
+              { ...estadoJuego, pregunta_actual_index: siguienteIdx, fase: 'MOSTRANDO_PREGUNTA', respuestas: [] },
+              juegoActivo.state_version, sessionId, nuevoActionId()
+            );
+          }
+        } else if (tipo === 'siguiente-ronda-trivia') {
+          const config = juegoActivo.configuracion_congelada || {};
+          const totalRondas = config.rondas || 1;
+          const siguienteRonda = (estadoJuego.ronda_actual || 1) + 1;
+          if (siguienteRonda > totalRondas) {
+            await app.services.partida.actualizarEstadoJuego(
+              partidaId, juegoActivo.id,
+              { ...estadoJuego, fase: 'FIN_DE_JUEGO' },
+              juegoActivo.state_version, sessionId, nuevoActionId()
+            );
+          } else {
+            await app.services.partida.actualizarEstadoJuego(
+              partidaId, juegoActivo.id,
+              {
+                ...estadoJuego,
+                ronda_actual: siguienteRonda,
+                pregunta_actual_index: 0,
+                fase: 'MOSTRANDO_PREGUNTA',
+                respuestas: []
+              },
+              juegoActivo.state_version, sessionId, nuevoActionId()
+            );
+          }
+        } else if (tipo === 'saltar-pregunta-trivia') {
+          const config = juegoActivo.configuracion_congelada || {};
+          const items = itemsDelJuego || [];
+          const preguntasPorRonda = config.preguntas_por_ronda || items.length;
+          const siguienteIdx = (estadoJuego.pregunta_actual_index || 0) + 1;
+          if (siguienteIdx >= preguntasPorRonda) {
+            const totalRondas = config.rondas || 1;
+            const siguienteRonda = (estadoJuego.ronda_actual || 1) + 1;
+            if (siguienteRonda > totalRondas) {
+              await app.services.partida.actualizarEstadoJuego(
+                partidaId, juegoActivo.id,
+                { ...estadoJuego, fase: 'FIN_DE_JUEGO' },
+                juegoActivo.state_version, sessionId, nuevoActionId()
+              );
+            } else {
+              await app.services.partida.actualizarEstadoJuego(
+                partidaId, juegoActivo.id,
+                {
+                  ...estadoJuego,
+                  ronda_actual: siguienteRonda,
+                  pregunta_actual_index: 0,
+                  fase: 'FIN_DE_RONDA',
+                  respuestas: []
+                },
+                juegoActivo.state_version, sessionId, nuevoActionId()
+              );
+            }
+          } else {
+            await app.services.partida.actualizarEstadoJuego(
+              partidaId, juegoActivo.id,
+              { ...estadoJuego, pregunta_actual_index: siguienteIdx, fase: 'MOSTRANDO_PREGUNTA', respuestas: [] },
+              juegoActivo.state_version, sessionId, nuevoActionId()
+            );
+          }
+        } else if (tipo === 'time-up-trivia') {
+          const { TriviaGameDefinition } = await import('../../games/trivia/TriviaGameDefinition.js');
+          const nuevoEstado = TriviaGameDefinition.aplicarTimeUp(estadoJuego);
+          if (!nuevoEstado) return;
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId,
+            juegoActivo.id,
+            nuevoEstado,
+            juegoActivo.state_version,
             sessionId,
             nuevoActionId()
           );
