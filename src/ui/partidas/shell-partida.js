@@ -161,6 +161,32 @@ async function _renderContenido(container, app, partidaId) {
             sessionId,
             nuevoActionId()
           );
+        } else if (tipo === 'cerrar-encuesta') {
+          if (!app.services.respuestaEncuesta) {
+            console.warn(`[ShellPartida] cerrar-encuesta requiere respuestaEncuesta service`);
+            return;
+          }
+          const preguntaIdx = payload.preguntaIndex ?? (estadoJuego?.pregunta_actual_index ?? 0);
+          const conteo = await app.services.respuestaEncuesta.contarRespuestasDeJuego(
+            juegoActivo.id,
+            preguntaIdx
+          );
+          const { a, b, total } = conteo;
+          const resultado = a > b ? 'A' : b > a ? 'B' : 'EMPATE';
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId,
+            juegoActivo.id,
+            {
+              ...estadoJuego,
+              fase: 'ENCUESTA_CERRADA',
+              respuestas_publico: { a, b },
+              total_respuestas: total,
+              resultado_publico: resultado
+            },
+            juegoActivo.state_version,
+            sessionId,
+            nuevoActionId()
+          );
         } else if (tipo === 'finalizar-juego') {
           if (!payload.resultado || !payload.finishReason) {
             console.warn(`[ShellPartida] finalizar-juego requiere resultado y finishReason`);

@@ -511,6 +511,78 @@ test('timer de encuesta se inicia y auto-cierra', async ({ page }) => {
   expect(faseFinal).toBe('ENCUESTA_CERRADA');
 });
 
+test('cerrar encuesta cuenta votos reales de respuestas_encuesta', async ({ page }) => {
+  await page.goto('/');
+  const { id } = await setupCircuitoQPEP(page);
+
+  await page.evaluate(async (pid) => {
+    await window.cumpeo.services.partida.tomarControl(pid, window.cumpeo.session.sessionId);
+    await window.cumpeo.services.partida.comenzarPartida(pid, window.cumpeo.session.sessionId, crypto.randomUUID());
+
+    const ctx = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
+    const cj = ctx.juegos[0];
+    await window.cumpeo.services.partida.iniciarJuego(
+      pid, cj.id, window.cumpeo.session.sessionId, crypto.randomUUID()
+    );
+  }, id);
+
+  await page.goto('/');
+  await page.goto(`/#/partidas/${id}`);
+  await waitForCumpeo(page);
+
+  await page.locator('#btn-qpep-iniciar-juego').click();
+  await page.waitForTimeout(500);
+  await page.locator('#btn-qpep-iniciar').click();
+  await page.waitForTimeout(500);
+
+  await page.evaluate(async (pid) => {
+    const ctx = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
+    const je = ctx.juegos[0];
+    const resp = window.cumpeo.services.respuestaEncuesta;
+    const ids = [crypto.randomUUID(), crypto.randomUUID(), crypto.randomUUID()];
+    await resp.crearRespuesta({
+      partidaId: pid,
+      juegoEjecutadoId: je.id,
+      participanteId: ids[0],
+      preguntaIndex: 0,
+      opcion: 'A'
+    });
+    await resp.crearRespuesta({
+      partidaId: pid,
+      juegoEjecutadoId: je.id,
+      participanteId: ids[1],
+      preguntaIndex: 0,
+      opcion: 'A'
+    });
+    await resp.crearRespuesta({
+      partidaId: pid,
+      juegoEjecutadoId: je.id,
+      participanteId: ids[2],
+      preguntaIndex: 0,
+      opcion: 'B'
+    });
+  }, id);
+
+  await page.locator('#btn-qpep-cerrar').click();
+  await page.waitForTimeout(1000);
+
+  const estado = await page.evaluate(async (pid) => {
+    const ctx = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
+    const je = ctx.juegos[0];
+    return {
+      fase: je?.estado_juego?.fase,
+      respuestas: je?.estado_juego?.respuestas_publico,
+      total: je?.estado_juego?.total_respuestas,
+      resultado: je?.estado_juego?.resultado_publico
+    };
+  }, id);
+  expect(estado.fase).toBe('ENCUESTA_CERRADA');
+  expect(estado.respuestas.a).toBe(2);
+  expect(estado.respuestas.b).toBe(1);
+  expect(estado.total).toBe(3);
+  expect(estado.resultado).toBe('A');
+});
+
 test('conductor registra pronóstico equipo 1 y equipo 2', async ({ page }) => {
   await page.goto('/');
   const { id } = await setupCircuitoQPEP(page);

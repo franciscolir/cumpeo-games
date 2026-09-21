@@ -42,13 +42,6 @@ function _obtenerTiempoSeg(estadoJuego, contexto) {
   return config?.tiempo_por_pregunta_seg || 30;
 }
 
-function _calcularResultadoPublico(estadoJuego) {
-  const { a, b } = estadoJuego.respuestas_publico || { a: 0, b: 0 };
-  if (a > b) return 'A';
-  if (b > a) return 'B';
-  return 'EMPATE';
-}
-
 function _estadoInicial() {
   return {
     ronda_actual: 1,
@@ -69,13 +62,8 @@ function _estadoInicial() {
 function _onTimerCierre() {
   _cancelarTimer();
   if (!_latestCallbacks || !_latestEstadoJuego) return;
-  const resultado = _calcularResultadoPublico(_latestEstadoJuego);
-  _latestCallbacks.onAccion('cambiar-estado-juego', {
-    estadoJuego: {
-      ..._latestEstadoJuego,
-      fase: 'ENCUESTA_CERRADA',
-      resultado_publico: resultado
-    }
+  _latestCallbacks.onAccion('cerrar-encuesta', {
+    preguntaIndex: _latestEstadoJuego.pregunta_actual_index ?? 0
   });
 }
 
@@ -435,13 +423,8 @@ export const QuePiensaElPublicoGameUI = {
     if (fase === 'ENCUESTA_ACTIVA') {
       container.querySelector('#btn-qpep-cerrar')?.addEventListener('click', () => {
         _cancelarTimer();
-        const resultado = _calcularResultadoPublico(estadoJuego);
-        callbacks.onAccion('cambiar-estado-juego', {
-          estadoJuego: {
-            ...estadoJuego,
-            fase: 'ENCUESTA_CERRADA',
-            resultado_publico: resultado
-          }
+        callbacks.onAccion('cerrar-encuesta', {
+          preguntaIndex: estadoJuego.pregunta_actual_index ?? 0
         });
       });
     }
