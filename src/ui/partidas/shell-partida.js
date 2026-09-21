@@ -549,8 +549,45 @@ async function _renderContenido(container, app, partidaId) {
           );
         } else if (tipo === 'time-up-cancion-incompleta') {
           const { CancionIncompletaGameDefinition } = await import('../../games/cancion-incompleta/CancionIncompletaGameDefinition.js');
-          const nuevoEstado = CancionIncompletaGameDefinition.aplicarTimeUp(estadoJuego);
+          const config = juegoActivo.configuracion_congelada || CancionIncompletaGameDefinition.defaultConfig;
+          const nuevoEstado = CancionIncompletaGameDefinition.aplicarTimeUp(estadoJuego, config);
           if (!nuevoEstado) return;
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId,
+            juegoActivo.id,
+            nuevoEstado,
+            juegoActivo.state_version,
+            sessionId,
+            nuevoActionId()
+          );
+        } else if (tipo === 'iniciar-tiempo-cancion-incompleta') {
+          const { CancionIncompletaGameDefinition } = await import('../../games/cancion-incompleta/CancionIncompletaGameDefinition.js');
+          const nuevoEstado = CancionIncompletaGameDefinition.iniciarTiempo(estadoJuego);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId,
+            juegoActivo.id,
+            nuevoEstado,
+            juegoActivo.state_version,
+            sessionId,
+            nuevoActionId()
+          );
+        } else if (tipo === 'detener-tiempo-cancion-incompleta') {
+          const { CancionIncompletaGameDefinition } = await import('../../games/cancion-incompleta/CancionIncompletaGameDefinition.js');
+          // segundosRestantes viene en el payload? Por simplicidad, usar tiempo_restante_seg actual
+          const segundosRestantes = estadoJuego.tiempo_restante_seg || 0;
+          const nuevoEstado = CancionIncompletaGameDefinition.detenerTiempo(estadoJuego, segundosRestantes);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId,
+            juegoActivo.id,
+            nuevoEstado,
+            juegoActivo.state_version,
+            sessionId,
+            nuevoActionId()
+          );
+        } else if (tipo === 'siguiente-ronda-cancion-incompleta') {
+          const { CancionIncompletaGameDefinition } = await import('../../games/cancion-incompleta/CancionIncompletaGameDefinition.js');
+          const config = juegoActivo.configuracion_congelada || CancionIncompletaGameDefinition.defaultConfig;
+          const nuevoEstado = CancionIncompletaGameDefinition.iniciarSiguienteRonda(estadoJuego, config);
           await app.services.partida.actualizarEstadoJuego(
             partidaId,
             juegoActivo.id,

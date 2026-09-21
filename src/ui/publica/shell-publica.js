@@ -23,6 +23,9 @@ let _roscoTimerEq2 = null;
 let _roscoTimerRestanteEq1 = 0;
 let _roscoTimerRestanteEq2 = 0;
 
+let _ciTimer = null;
+let _ciTimerKey = null;
+
 /**
  * Renderiza el shell público completo.
  * @param {HTMLElement} container
@@ -909,6 +912,8 @@ function _renderEscenarioCancionIncompleta(juegoActivo, fase, contexto) {
   const cancion = estadoJuego.cancion_actual || 1;
   const pts1 = estadoJuego.puntos_equipo_1 || 0;
   const pts2 = estadoJuego.puntos_equipo_2 || 0;
+  const timerCorriendo = !!estadoJuego.timer_corriendo;
+  const tiempoRestante = estadoJuego.tiempo_restante_seg ?? 60;
 
   const equipoActivoNombre = equipoActual === 1 ? equipo1.nombre : equipo2.nombre;
   const equipoActivoColor = equipoActual === 1 ? 'border-[#00D2FF] bg-[#00D2FF]/15' : 'border-[#FF3344] bg-[#FF3344]/15';
@@ -965,7 +970,7 @@ function _renderEscenarioCancionIncompleta(juegoActivo, fase, contexto) {
         <p class="font-headline-md uppercase text-on-surface mb-1">Ronda ${ronda} — Canción ${cancion}/2</p>
         <p class="font-body-md text-on-surface-variant">Turno: <span class="font-label-md uppercase ${equipoActual === 1 ? 'text-[#00D2FF]' : 'text-[#FF3344]'}">${equipoActivoNombre}</span></p>
       </div>
-      <div id="ci-timer-publico" class="font-display-hero text-4xl text-tertiary mt-4 text-center"></div>
+      <div id="ci-timer-publico" class="font-display-hero text-4xl text-tertiary mt-4 text-center">${timerCorriendo ? '' : tiempoRestante + 's'}</div>
     `;
   }
 

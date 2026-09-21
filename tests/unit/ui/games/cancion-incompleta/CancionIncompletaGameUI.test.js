@@ -53,11 +53,10 @@ describe('CancionIncompletaGameUI', () => {
   });
 
   it('renderizarPanelConductor muestra botones en TURNO_ACTIVO', () => {
-    const estadoActivo = { ...estado, fase: 'TURNO_ACTIVO' };
+    const estadoActivo = { ...estado, fase: 'TURNO_ACTIVO', timer_corriendo: false };
     const panel = makeContainer();
     CancionIncompletaGameUI.renderizarPanelConductor(estadoActivo, panel, contexto, { onAccion: () => {} });
-    expect(panel.innerHTML).toContain('Correcto');
-    expect(panel.innerHTML).toContain('Incorrecto');
+    expect(panel.innerHTML).toContain('Iniciar tiempo');
   });
 
   it('cleanup no lanza error', () => {

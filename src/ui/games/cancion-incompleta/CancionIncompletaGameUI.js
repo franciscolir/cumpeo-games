@@ -31,8 +31,8 @@ function _iniciarTimer(estadoJuego, contexto, callbacks, container) {
   const juegoId = contexto.juegoEjecutado?.id || '';
   const ronda = estadoJuego.ronda_actual || 1;
   const cancion = estadoJuego.cancion_actual || 1;
-  const key = `${juegoId}:r${ronda}:c${cancion}`;
-  const segundos = _obtenerSegundosPorCancion(contexto);
+  const key = `${juegoId}:r${ronda}:c${cancion}:${estadoJuego.timer_corriendo ? 'run' : 'idle'}`;
+  const segundos = estadoJuego.tiempo_restante_seg ?? _obtenerSegundosPorCancion(contexto);
 
   _timer?.cancelar();
   _timer = crearTimer({
@@ -82,8 +82,9 @@ export const CancionIncompletaGameUI = {
     const pts2 = estadoJuego.puntos_equipo_2 || 0;
     const fase = estadoJuego.fase;
 
-    const mostrarTimer = fase === 'TURNO_ACTIVO';
+    const mostrarTimer = fase === 'TURNO_ACTIVO' && estadoJuego.timer_corriendo;
 
+    const tiempoRestante = estadoJuego.tiempo_restante_seg ?? _obtenerSegundosPorCancion(contexto);
     container.innerHTML = `
       <div class="flex flex-col h-full p-4 gap-3 overflow-y-auto">
         <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
@@ -97,7 +98,7 @@ export const CancionIncompletaGameUI = {
           <p class="font-body-md text-on-surface-variant">Reproductor externo. Equipo ${equipoActual} responde.</p>
           <div class="mt-4">
             <p class="font-label-md uppercase text-on-surface-variant">Timer</p>
-            <p id="ci-timer" class="font-display-hero text-3xl ${mostrarTimer ? 'text-tertiary' : 'text-on-surface-variant'}">${mostrarTimer ? '' : _obtenerSegundosPorCancion(contexto) + 's'}</p>
+            <p id="ci-timer" class="font-display-hero text-3xl ${mostrarTimer ? 'text-tertiary' : 'text-on-surface-variant'}">${mostrarTimer ? '' : tiempoRestante + 's'}</p>
           </div>
         </div>
 
@@ -114,7 +115,7 @@ export const CancionIncompletaGameUI = {
       </div>
     `;
 
-    if (fase === 'TURNO_ACTIVO') {
+    if (fase === 'TURNO_ACTIVO' && estadoJuego.timer_corriendo) {
       _iniciarTimer(estadoJuego, contexto, callbacks, container);
     } else {
       _cancelarTimer();
@@ -127,6 +128,7 @@ export const CancionIncompletaGameUI = {
     const equipo2 = contexto.equipos?.[1] || { nombre: 'Eq2' };
     const equipoActual = estadoJuego?.equipo_actual || 1;
     const nombreEquipoActual = equipoActual === 1 ? equipo1.nombre : equipo2.nombre;
+    const timerCorriendo = !!estadoJuego?.timer_corriendo;
 
     let controles = '';
 
@@ -139,21 +141,33 @@ export const CancionIncompletaGameUI = {
         </div>
       `;
     } else if (fase === 'TURNO_ACTIVO') {
+      if (!timerCorriendo) {
+        controles = `
+          <div class="flex flex-wrap gap-2">
+            ${Boton({ texto: 'Iniciar tiempo', variante: 'primary', id: 'btn-ci-iniciar-tiempo' })}
+          </div>
+        `;
+      } else {
+        controles = `
+          <div class="flex flex-wrap gap-2">
+            ${Boton({ texto: 'Detener tiempo', variante: 'ghost', id: 'btn-ci-detener-tiempo' })}
+          </div>
+        `;
+      }
+    } else if (fase === 'ESPERA_VALIDACION') {
       controles = `
         <div class="flex flex-wrap gap-2">
           ${Boton({ texto: 'Correcto', variante: 'primary', id: 'btn-ci-acierto' })}
           ${Boton({ texto: 'Incorrecto', variante: 'danger', id: 'btn-ci-error' })}
         </div>
-        <div class="flex flex-wrap gap-2 mt-2">
-          ${Boton({ texto: 'Pausar', variante: 'ghost', id: 'btn-ci-pausar' })}
+      `;
+    } else if (fase === 'FIN_DE_RONDA') {
+      controles = `
+        <div class="flex flex-wrap gap-2">
+          ${Boton({ texto: 'Siguiente ronda', variante: 'primary', id: 'btn-ci-siguiente-ronda' })}
         </div>
       `;
-    } else if (fase === 'ESPERA_VALIDACION' || fase === 'CAMBIO_TURNO') {
-      controles = `
-        <p class="font-headline-md uppercase text-on-surface">Validando...</p>
-        ${Boton({ texto: 'Continuar', variante: 'primary', id: 'btn-ci-continuar' })}
-      `;
-    } else if (fase === 'FIN_DE_RONDA' || fase === 'FIN_DE_JUEGO') {
+    } else if (fase === 'FIN_DE_JUEGO') {
       controles = '';
     }
 
@@ -176,6 +190,21 @@ export const CancionIncompletaGameUI = {
       });
     }
     if (fase === 'TURNO_ACTIVO') {
+      const btnIniciar = container.querySelector('#btn-ci-iniciar-tiempo');
+      if (btnIniciar) {
+        btnIniciar.addEventListener('click', () => {
+          callbacks.onAccion('iniciar-tiempo-cancion-incompleta');
+        });
+      }
+      const btnDetener = container.querySelector('#btn-ci-detener-tiempo');
+      if (btnDetener) {
+        btnDetener.addEventListener('click', () => {
+          _cancelarTimer();
+          callbacks.onAccion('detener-tiempo-cancion-incompleta');
+        });
+      }
+    }
+    if (fase === 'ESPERA_VALIDACION') {
       container.querySelector('#btn-ci-acierto')?.addEventListener('click', () => {
         _cancelarTimer();
         callbacks.onAccion('marcar-acierto-cancion-incompleta');
@@ -184,14 +213,10 @@ export const CancionIncompletaGameUI = {
         _cancelarTimer();
         callbacks.onAccion('marcar-error-cancion-incompleta');
       });
-      container.querySelector('#btn-ci-pausar')?.addEventListener('click', () => {
-        _cancelarTimer();
-        // Pausa manual: simplemente no reiniciar timer, se reanudará con iniciar turno
-      });
     }
-    if (fase === 'ESPERA_VALIDACION' || fase === 'CAMBIO_TURNO') {
-      container.querySelector('#btn-ci-continuar')?.addEventListener('click', () => {
-        callbacks.onAccion('continuar-cancion-incompleta');
+    if (fase === 'FIN_DE_RONDA') {
+      container.querySelector('#btn-ci-siguiente-ronda')?.addEventListener('click', () => {
+        callbacks.onAccion('siguiente-ronda-cancion-incompleta');
       });
     }
   },

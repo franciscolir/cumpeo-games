@@ -90,16 +90,17 @@ export const CancionIncompletaGameDefinition = {
    */
   estadoInicial(config) {
     const cfg = config || this.defaultConfig;
+    const segundos = cfg.segundos_por_cancion || 60;
     return {
       ronda_actual: 1,
       total_rondas: cfg.rondas || 1,
       fase: 'INICIO_RONDA',
       equipo_actual: 1,
-      cancion_actual: 1, // 1 o 2 por ronda
+      cancion_actual: 1,
       puntos_equipo_1: 0,
       puntos_equipo_2: 0,
-      tiempo_equipo_1: cfg.segundos_por_cancion || 60,
-      tiempo_equipo_2: cfg.segundos_por_cancion || 60,
+      timer_corriendo: false,
+      tiempo_restante_seg: segundos,
       turno_activo: false
     };
   },
@@ -113,7 +114,36 @@ export const CancionIncompletaGameDefinition = {
     return {
       ...estado,
       fase: 'TURNO_ACTIVO',
+      timer_corriendo: false,
       turno_activo: true
+    };
+  },
+
+  /**
+   * Inicia el tiempo de la canción.
+   * @param {object} estado
+   * @returns {object}
+   */
+  iniciarTiempo(estado) {
+    if (estado.fase !== 'TURNO_ACTIVO') return estado;
+    return { ...estado, timer_corriendo: true };
+  },
+
+  /**
+   * Detiene el tiempo y pasa a espera de validación.
+   * @param {object} estado
+   * @param {number} segundosRestantes
+   * @returns {object}
+   */
+  detenerTiempo(estado, segundosRestantes) {
+    if (estado.fase !== 'TURNO_ACTIVO') return estado;
+    const restante = Math.max(0, Number(segundosRestantes) || 0);
+    return {
+      ...estado,
+      fase: 'ESPERA_VALIDACION',
+      timer_corriendo: false,
+      tiempo_restante_seg: restante,
+      turno_activo: false
     };
   },
 
@@ -135,7 +165,7 @@ export const CancionIncompletaGameDefinition = {
       turno_activo: false
     };
 
-    return this.avanzarCancion(nuevoEstado);
+    return this.avanzarCancion(nuevoEstado, config);
   },
 
   /**
@@ -156,31 +186,43 @@ export const CancionIncompletaGameDefinition = {
       turno_activo: false
     };
 
-    return this.avanzarCancion(nuevoEstado);
+    return this.avanzarCancion(nuevoEstado, config);
   },
 
   /**
    * Avanza a próxima canción / equipo / ronda.
    * 2 canciones por ronda (1 por equipo).
    * @param {object} estado
+   * @param {object} config
    * @returns {object}
    */
-  avanzarCancion(estado) {
+  avanzarCancion(estado, config) {
+    const cfg = config || this.defaultConfig;
+    const segundos = cfg?.segundos_por_cancion || 60;
     let cancion = estado.cancion_actual || 1;
     let equipo = estado.equipo_actual || 1;
     let ronda = estado.ronda_actual || 1;
     const totalRondas = estado.total_rondas || 1;
 
-    // Próxima canción
     if (cancion === 1) {
       cancion = 2;
       equipo = 2;
+      return {
+        ...estado,
+        cancion_actual: cancion,
+        equipo_actual: equipo,
+        fase: 'INICIO_RONDA',
+        timer_corriendo: false,
+        tiempo_restante_seg: segundos,
+        turno_activo: false
+      };
     } else if (cancion === 2) {
-      // Fin de ronda
       if (ronda >= totalRondas) {
         return {
           ...estado,
           fase: 'FIN_DE_JUEGO',
+          timer_corriendo: false,
+          tiempo_restante_seg: segundos,
           turno_activo: false
         };
       }
@@ -192,7 +234,9 @@ export const CancionIncompletaGameDefinition = {
         ronda_actual: ronda,
         cancion_actual: cancion,
         equipo_actual: equipo,
-        fase: 'INICIO_RONDA',
+        fase: 'FIN_DE_RONDA',
+        timer_corriendo: false,
+        tiempo_restante_seg: segundos,
         turno_activo: false
       };
     }
@@ -202,6 +246,30 @@ export const CancionIncompletaGameDefinition = {
       cancion_actual: cancion,
       equipo_actual: equipo,
       fase: 'INICIO_RONDA',
+      timer_corriendo: false,
+      tiempo_restante_seg: segundos,
+      turno_activo: false
+    };
+  },
+
+  /**
+   * Inicia la siguiente ronda desde FIN_DE_RONDA.
+   * @param {object} estado
+   * @param {object} config
+   * @returns {object}
+   */
+  iniciarSiguienteRonda(estado, config) {
+    if (estado.fase !== 'FIN_DE_RONDA') return estado;
+    const cfg = config || this.defaultConfig;
+    const segundos = cfg?.segundos_por_cancion || 60;
+    return {
+      ...estado,
+      ronda_actual: (estado.ronda_actual || 1) + 1,
+      cancion_actual: 1,
+      equipo_actual: 1,
+      fase: 'INICIO_RONDA',
+      timer_corriendo: false,
+      tiempo_restante_seg: segundos,
       turno_activo: false
     };
   },
@@ -260,23 +328,43 @@ export const CancionIncompletaGameDefinition = {
     if (estado.cancion_actual !== 1 && estado.cancion_actual !== 2) {
       throw new ValidacionError('cancion_actual debe ser 1 o 2');
     }
+    if (typeof estado.timer_corriendo !== 'boolean') {
+      throw new ValidacionError('timer_corriendo debe ser booleano');
+    }
+    if (!esEnteroNoNegativo(estado.tiempo_restante_seg)) {
+      throw new ValidacionError('tiempo_restante_seg debe ser entero >= 0');
+    }
+    if (!FASES.includes(estado.fase)) {
+      throw new ValidacionError('fase inválida');
+    }
     return true;
   },
 
   /**
    * Aplica time up.
    * @param {object} estadoJuego
+   * @param {object} config
    * @returns {object|null}
    */
-  aplicarTimeUp(estadoJuego) {
+  aplicarTimeUp(estadoJuego, config) {
     if (!estadoJuego || typeof estadoJuego !== 'object') {
       throw new ValidacionError('El estado del juego debe ser un objeto');
     }
     if (estadoJuego.fase === 'FIN_DE_JUEGO' || estadoJuego.fase === 'FIN_DE_RONDA') {
       return null;
     }
-    // Time up = error sin puntos
-    const nuevo = this.aplicarError(estadoJuego, {});
-    return nuevo;
+    const cfg = config || this.defaultConfig;
+    const equipo = estadoJuego.equipo_actual;
+    const penalizacion = cfg?.penalizacion_puntos || 0;
+    const keyPuntos = `puntos_equipo_${equipo}`;
+    const nuevoEstado = {
+      ...estadoJuego,
+      [keyPuntos]: penalizacion > 0 ? Math.max(0, (estadoJuego[keyPuntos] || 0) - penalizacion) : (estadoJuego[keyPuntos] || 0),
+      timer_corriendo: false,
+      tiempo_restante_seg: 0,
+      fase: 'ESPERA_VALIDACION',
+      turno_activo: false
+    };
+    return this.avanzarCancion(nuevoEstado, cfg);
   }
 };
