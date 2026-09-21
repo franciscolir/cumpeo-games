@@ -113,9 +113,9 @@ describe('bootstrap', () => {
 });
 
 describe('registrarTodos', () => {
-  it('devuelve ["TRIVIA", "QUE_PIENSA_EL_PUBLICO", "ROSCO", "CANCION_INCOMPLETA"]', () => {
+  it('devuelve ["TRIVIA", "QUE_PIENSA_EL_PUBLICO", "ROSCO", "CANCION_INCOMPLETA", "PICTIONARY"]', () => {
     const registry = new GameDefinitionRegistry();
     const codigos = registrarTodos(registry);
-    expect(codigos).toEqual(['TRIVIA', 'QUE_PIENSA_EL_PUBLICO', 'ROSCO', 'CANCION_INCOMPLETA']);
+    expect(codigos).toEqual(['TRIVIA', 'QUE_PIENSA_EL_PUBLICO', 'ROSCO', 'CANCION_INCOMPLETA', 'PICTIONARY']);
   });
 });
