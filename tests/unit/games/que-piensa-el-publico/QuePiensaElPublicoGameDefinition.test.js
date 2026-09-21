@@ -8,6 +8,7 @@ function configuracionValida(overrides = {}) {
   return {
     tiempo_por_pregunta_seg: 30,
     puntos_por_acierto: 10,
+    rondas: 2,
     ...overrides
   };
 }
@@ -79,6 +80,30 @@ describe('QuePiensaElPublicoGameDefinition', () => {
 
     it('config null -> error', () => {
       expect(() => QuePiensaElPublicoGameDefinition.validarConfiguracion(null)).toThrow(ValidacionError);
+    });
+
+    it('rondas = 1 -> OK', () => {
+      expect(QuePiensaElPublicoGameDefinition.validarConfiguracion(configuracionValida({ rondas: 1 }))).toBe(true);
+    });
+
+    it('rondas = 0 -> error', () => {
+      const config = configuracionValida({ rondas: 0 });
+      expect(() => QuePiensaElPublicoGameDefinition.validarConfiguracion(config)).toThrow(ValidacionError);
+    });
+
+    it('rondas negativo -> error', () => {
+      const config = configuracionValida({ rondas: -1 });
+      expect(() => QuePiensaElPublicoGameDefinition.validarConfiguracion(config)).toThrow(ValidacionError);
+    });
+
+    it('rondas no entero -> error', () => {
+      const config = configuracionValida({ rondas: 1.5 });
+      expect(() => QuePiensaElPublicoGameDefinition.validarConfiguracion(config)).toThrow(ValidacionError);
+    });
+
+    it('rondas undefined -> error', () => {
+      const config = configuracionValida({ rondas: undefined });
+      expect(() => QuePiensaElPublicoGameDefinition.validarConfiguracion(config)).toThrow(ValidacionError);
     });
   });
 
@@ -171,7 +196,7 @@ describe('QuePiensaElPublicoGameDefinition', () => {
     it('todas las fases validas son aceptadas', () => {
       const fases = [
         'SELECCIONANDO_PREGUNTA', 'ENCUESTA_ACTIVA', 'ENCUESTA_CERRADA',
-        'REVELANDO', 'PUNTUANDO', 'FIN_DE_JUEGO'
+        'REVELANDO', 'FIN_DE_JUEGO'
       ];
       for (const fase of fases) {
         expect(QuePiensaElPublicoGameDefinition.validarEstadoJuego(estadoValido({ fase }))).toBe(true);

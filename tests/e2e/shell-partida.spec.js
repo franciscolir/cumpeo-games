@@ -327,7 +327,7 @@ async function setupCircuitoQPEP(page) {
 
     const circuito = await window.cumpeo.services.circuito.crearCircuito({
       nombre: `QPEP Circuit ${uid}`,
-      juegos: [{ juego_id: qpep.id }],
+      juegos: [{ juego_id: qpep.id, configuracion: { rondas: 2, tiempo_por_pregunta_seg: 30, puntos_por_acierto: 10 } }],
       equipos: [
         { posicion: 1, nombre: 'Rojo', color: '#E53E3E' },
         { posicion: 2, nombre: 'Azul', color: '#3182CE' }
@@ -338,7 +338,7 @@ async function setupCircuitoQPEP(page) {
       circuito.id, circuito.version,
       {
         nombre: `QPEP Circuit ${uid}`,
-        juegos: [{ juego_id: qpep.id }],
+        juegos: [{ juego_id: qpep.id, configuracion: { rondas: 2, tiempo_por_pregunta_seg: 30, puntos_por_acierto: 10 } }],
         equipos: [
           { posicion: 1, nombre: 'Rojo', color: '#E53E3E' },
           { posicion: 2, nombre: 'Azul', color: '#3182CE' }
@@ -439,7 +439,7 @@ async function setupCircuitoQPEPTimer(page, tiempoSeg) {
 
     const circuito = await window.cumpeo.services.circuito.crearCircuito({
       nombre: `QPEP Timer Circuit ${uid}`,
-      juegos: [{ juego_id: qpep.id, configuracion: { tiempo_por_pregunta_seg: tiempoSeg } }],
+      juegos: [{ juego_id: qpep.id, configuracion: { rondas: 2, tiempo_por_pregunta_seg: tiempoSeg, puntos_por_acierto: 10 } }],
       equipos: [
         { posicion: 1, nombre: 'Rojo', color: '#E53E3E' },
         { posicion: 2, nombre: 'Azul', color: '#3182CE' }
@@ -450,7 +450,7 @@ async function setupCircuitoQPEPTimer(page, tiempoSeg) {
       circuito.id, circuito.version,
       {
         nombre: `QPEP Timer Circuit ${uid}`,
-        juegos: [{ juego_id: qpep.id, configuracion: { tiempo_por_pregunta_seg: tiempoSeg } }],
+        juegos: [{ juego_id: qpep.id, configuracion: { rondas: 2, tiempo_por_pregunta_seg: tiempoSeg, puntos_por_acierto: 10 } }],
         equipos: [
           { posicion: 1, nombre: 'Rojo', color: '#E53E3E' },
           { posicion: 2, nombre: 'Azul', color: '#3182CE' }
@@ -609,4 +609,181 @@ test('botón Revelar se habilita cuando ambos pronósticos están registrados', 
     return ctx.juegos[0]?.estado_juego?.fase;
   }, id);
   expect(fase).toBe('REVELANDO');
+});
+
+test('conductor revela y suma puntos a los equipos que acertaron', async ({ page }) => {
+  await page.goto('/');
+  const { id } = await setupCircuitoQPEP(page);
+
+  await page.evaluate(async (pid) => {
+    await window.cumpeo.services.partida.tomarControl(pid, window.cumpeo.session.sessionId);
+    await window.cumpeo.services.partida.comenzarPartida(pid, window.cumpeo.session.sessionId, crypto.randomUUID());
+
+    const ctx = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
+    const cj = ctx.juegos[0];
+    await window.cumpeo.services.partida.iniciarJuego(
+      pid, cj.id, window.cumpeo.session.sessionId, crypto.randomUUID()
+    );
+  }, id);
+
+  await page.goto('/');
+  await page.goto(`/#/partidas/${id}`);
+  await waitForCumpeo(page);
+
+  await page.locator('#btn-qpep-iniciar-juego').click();
+  await page.waitForTimeout(500);
+  await page.locator('#btn-qpep-iniciar').click();
+  await page.waitForTimeout(500);
+  await page.locator('#btn-qpep-cerrar').click();
+  await page.waitForTimeout(500);
+
+  await page.locator('[data-team="1"][data-valor="EMPATE"]').click();
+  await expect(page.locator('[data-team="1"][data-valor="EMPATE"]')).toHaveClass(/bg-tertiary/, { timeout: 10000 });
+
+  await page.locator('[data-team="2"][data-valor="EMPATE"]').click();
+  await expect(page.locator('#btn-qpep-revelar')).toBeEnabled({ timeout: 10000 });
+
+  await page.locator('#btn-qpep-revelar').click();
+  await page.waitForTimeout(500);
+
+  const estado = await page.evaluate(async (pid) => {
+    const ctx = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
+    const je = ctx.juegos[0];
+    return {
+      fase: je?.estado_juego?.fase,
+      pts1: je?.estado_juego?.puntos_equipo_1,
+      pts2: je?.estado_juego?.puntos_equipo_2,
+      resultado: je?.estado_juego?.resultado_publico
+    };
+  }, id);
+  expect(estado.fase).toBe('REVELANDO');
+  expect(estado.resultado).toBe('EMPATE');
+  expect(estado.pts1).toBeGreaterThan(0);
+  expect(estado.pts2).toBeGreaterThan(0);
+});
+
+test('conductor avanza a la siguiente ronda', async ({ page }) => {
+  await page.goto('/');
+  const { id } = await setupCircuitoQPEP(page);
+
+  await page.evaluate(async (pid) => {
+    await window.cumpeo.services.partida.tomarControl(pid, window.cumpeo.session.sessionId);
+    await window.cumpeo.services.partida.comenzarPartida(pid, window.cumpeo.session.sessionId, crypto.randomUUID());
+
+    const ctx = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
+    const cj = ctx.juegos[0];
+    await window.cumpeo.services.partida.iniciarJuego(
+      pid, cj.id, window.cumpeo.session.sessionId, crypto.randomUUID()
+    );
+  }, id);
+
+  await page.goto('/');
+  await page.goto(`/#/partidas/${id}`);
+  await waitForCumpeo(page);
+
+  await page.locator('#btn-qpep-iniciar-juego').click();
+  await page.waitForTimeout(500);
+  await page.locator('#btn-qpep-iniciar').click();
+  await page.waitForTimeout(500);
+  await page.locator('#btn-qpep-cerrar').click();
+  await page.waitForTimeout(500);
+
+  await page.locator('[data-team="1"][data-valor="A"]').click();
+  await expect(page.locator('[data-team="1"][data-valor="A"]')).toHaveClass(/bg-tertiary/, { timeout: 10000 });
+  await page.locator('[data-team="2"][data-valor="B"]').click();
+  await expect(page.locator('#btn-qpep-revelar')).toBeEnabled({ timeout: 10000 });
+
+  await page.locator('#btn-qpep-revelar').click();
+  await page.waitForTimeout(500);
+
+  const btnSiguiente = page.locator('#btn-qpep-siguiente');
+  await expect(btnSiguiente).toBeVisible({ timeout: 10000 });
+  await expect(btnSiguiente).toHaveText('Siguiente ronda');
+  await btnSiguiente.click();
+  await page.waitForTimeout(500);
+
+  const estado = await page.evaluate(async (pid) => {
+    const ctx = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
+    const je = ctx.juegos[0];
+    return {
+      fase: je?.estado_juego?.fase,
+      idx: je?.estado_juego?.pregunta_actual_index,
+      ronda: je?.estado_juego?.ronda_actual,
+      pron1: je?.estado_juego?.pronostico_equipo_1,
+      pron2: je?.estado_juego?.pronostico_equipo_2,
+      resultado: je?.estado_juego?.resultado_publico
+    };
+  }, id);
+  expect(estado.fase).toBe('SELECCIONANDO_PREGUNTA');
+  expect(estado.idx).toBe(1);
+  expect(estado.ronda).toBe(2);
+  expect(estado.pron1).toBeNull();
+  expect(estado.pron2).toBeNull();
+  expect(estado.resultado).toBeNull();
+});
+
+test('conductor finaliza el juego después de la última ronda', async ({ page }, testInfo) => {
+  testInfo.setTimeout(60000);
+  await page.goto('/');
+  const { id } = await setupCircuitoQPEP(page);
+
+  await page.evaluate(async (pid) => {
+    await window.cumpeo.services.partida.tomarControl(pid, window.cumpeo.session.sessionId);
+    await window.cumpeo.services.partida.comenzarPartida(pid, window.cumpeo.session.sessionId, crypto.randomUUID());
+
+    const ctx = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
+    const cj = ctx.juegos[0];
+    await window.cumpeo.services.partida.iniciarJuego(
+      pid, cj.id, window.cumpeo.session.sessionId, crypto.randomUUID()
+    );
+  }, id);
+
+  await page.goto('/');
+  await page.goto(`/#/partidas/${id}`);
+  await waitForCumpeo(page);
+
+  await page.locator('#btn-qpep-iniciar-juego').click();
+  await page.waitForTimeout(500);
+
+  for (let ronda = 0; ronda < 2; ronda++) {
+    await page.locator('#btn-qpep-iniciar').click();
+    await page.waitForTimeout(500);
+    await page.locator('#btn-qpep-cerrar').click();
+    await page.waitForTimeout(500);
+
+    await page.locator('[data-team="1"][data-valor="A"]').click();
+    await expect(page.locator('[data-team="1"][data-valor="A"]')).toHaveClass(/bg-tertiary/, { timeout: 10000 });
+    await page.locator('[data-team="2"][data-valor="A"]').click();
+    await expect(page.locator('#btn-qpep-revelar')).toBeEnabled({ timeout: 10000 });
+
+    await page.locator('#btn-qpep-revelar').click();
+    await page.waitForTimeout(500);
+
+    const btnFinalizar = page.locator('#btn-qpep-siguiente');
+    await expect(btnFinalizar).toBeVisible({ timeout: 10000 });
+
+    if (ronda === 0) {
+      await expect(btnFinalizar).toHaveText('Siguiente ronda');
+    } else {
+      await expect(btnFinalizar).toHaveText('Finalizar juego');
+    }
+
+    await btnFinalizar.click();
+    await page.waitForTimeout(500);
+  }
+
+  const estado = await page.evaluate(async (pid) => {
+    const ctx = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
+    const je = ctx.juegos[0];
+    return {
+      fase: je?.estado_juego?.fase,
+      ronda: je?.estado_juego?.ronda_actual,
+      pts1: je?.estado_juego?.puntos_equipo_1,
+      pts2: je?.estado_juego?.puntos_equipo_2
+    };
+  }, id);
+  expect(estado.fase).toBe('FIN_DE_JUEGO');
+  expect(estado.ronda).toBe(2);
+  expect(estado.pts1).toBeGreaterThanOrEqual(0);
+  expect(estado.pts2).toBeGreaterThanOrEqual(0);
 });

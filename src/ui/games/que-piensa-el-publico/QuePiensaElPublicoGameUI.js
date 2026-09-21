@@ -108,6 +108,41 @@ function _iniciarTimer(estadoJuego, contexto, callbacks, container) {
   }, 1000);
 }
 
+function _calcularPuntos(estadoJuego, contexto) {
+  const resultado = estadoJuego.resultado_publico;
+  const snapshot = contexto.juegoEjecutado?.snapshot;
+  const items = snapshot?.items || [];
+  const idx = estadoJuego.pregunta_actual_index || 0;
+  const item = items[idx];
+  const config = contexto.juegoEjecutado?.configuracion_congelada;
+  const puntos = item?.puntos_acierto || config?.puntos_por_acierto || 0;
+
+  const acierto1 = estadoJuego.pronostico_equipo_1 === resultado;
+  const acierto2 = estadoJuego.pronostico_equipo_2 === resultado;
+
+  return {
+    acierto1,
+    acierto2,
+    puntos,
+    puntosGanados1: acierto1 ? puntos : 0,
+    puntosGanados2: acierto2 ? puntos : 0
+  };
+}
+
+function _renderBotonSiguiente(estadoJuego, contexto) {
+  const config = contexto.juegoEjecutado?.configuracion_congelada;
+  const items = contexto.juegoEjecutado?.snapshot?.items || [];
+  const totalItems = items.length;
+  const rondas = totalItems > 0
+    ? Math.min(config?.rondas || totalItems, totalItems)
+    : (config?.rondas || 1);
+  const siguienteIdx = (estadoJuego.pregunta_actual_index || 0) + 1;
+  const esUltima = siguienteIdx >= rondas;
+
+  const texto = esUltima ? 'Finalizar juego' : 'Siguiente ronda';
+  return `<button id="btn-qpep-siguiente" class="font-label-md uppercase border-2.5 border-on-surface rounded-lg px-4 py-2 bg-primary text-on-primary shadow-comic-sm hover:shadow-comic-md transition">${texto}</button>`;
+}
+
 export const QuePiensaElPublicoGameUI = {
   codigo: 'QUE_PIENSA_EL_PUBLICO',
 
@@ -155,7 +190,7 @@ export const QuePiensaElPublicoGameUI = {
     const mostrarConteo = fase === 'ENCUESTA_ACTIVA' || fase === 'ENCUESTA_CERRADA';
 
     const resultado = estadoJuego.resultado_publico;
-    const mostrarResultado = fase === 'ENCUESTA_CERRADA' || fase === 'REVELANDO' || fase === 'PUNTUANDO';
+    const mostrarResultado = fase === 'ENCUESTA_CERRADA' || fase === 'REVELANDO' || fase === 'FIN_DE_JUEGO';
 
     const pronostico1 = estadoJuego.pronostico_equipo_1;
     const pronostico2 = estadoJuego.pronostico_equipo_2;
@@ -215,7 +250,7 @@ export const QuePiensaElPublicoGameUI = {
     }
 
     let pronosticosHTML = '';
-    if (fase === 'ENCUESTA_CERRADA' || fase === 'REVELANDO' || fase === 'PUNTUANDO') {
+    if (fase === 'ENCUESTA_CERRADA' || fase === 'REVELANDO' || fase === 'FIN_DE_JUEGO') {
       pronosticosHTML = `
         <div class="bg-surface-container-lowest border-2.5 border-on-surface rounded-xl p-4 shadow-comic-sm">
           <p class="font-label-md uppercase text-on-surface-variant mb-2">Pronosticos</p>
@@ -232,7 +267,7 @@ export const QuePiensaElPublicoGameUI = {
         <div class="bg-surface-container-lowest border-2.5 border-on-surface rounded-2xl p-6 shadow-comic-lg">
           <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
             <span class="font-label-md uppercase text-on-surface-variant">Pregunta ${idx + 1} / ${total}</span>
-            <span class="font-label-md uppercase text-on-surface-variant">Ronda ${ronda}</span>
+            <span class="font-label-md uppercase text-on-surface-variant">Ronda ${ronda} / ${total}</span>
             <span class="inline-block bg-secondary-container text-on-secondary-container font-label-sm uppercase px-2 py-1 rounded-md">${fase.replace(/_/g, ' ')}</span>
           </div>
           ${preguntaHTML}
@@ -319,14 +354,43 @@ export const QuePiensaElPublicoGameUI = {
         break;
       }
 
-      case 'REVELANDO':
-      case 'PUNTUANDO':
+      case 'REVELANDO': {
+        const { acierto1, acierto2, puntos, puntosGanados1, puntosGanados2 } =
+          _calcularPuntos(estadoJuego, contexto);
+
         botonesHTML = `
-          <div class="flex flex-wrap gap-2">
-            ${Boton({ texto: 'Siguiente pregunta', variante: 'secondary', id: 'btn-qpep-siguiente' })}
+          <div class="flex flex-col gap-4">
+            <div class="border-2.5 border-on-surface rounded-lg p-4 bg-surface-container-lowest">
+              <p class="font-label-md uppercase text-on-surface-variant">Resultado del publico</p>
+              <p class="font-display-hero text-3xl text-primary">${estadoJuego.resultado_publico || '—'}</p>
+            </div>
+
+            <div class="border-2.5 ${acierto1 ? 'border-tertiary bg-tertiary/15' : 'border-on-surface bg-surface-container-lowest'} rounded-lg p-4">
+              <p class="font-headline-sm uppercase">${equipo1.nombre}</p>
+              <p class="font-body-md">Pronostico: <strong>${estadoJuego.pronostico_equipo_1}</strong></p>
+              <p class="font-body-md ${acierto1 ? 'text-tertiary font-bold' : 'text-on-surface-variant'}">
+                ${acierto1 ? `\u2713 ACERT\u00d3 (+${puntosGanados1})` : '\u2717 No acert\u00f3'}
+              </p>
+            </div>
+
+            <div class="border-2.5 ${acierto2 ? 'border-tertiary bg-tertiary/15' : 'border-on-surface bg-surface-container-lowest'} rounded-lg p-4">
+              <p class="font-headline-sm uppercase">${equipo2.nombre}</p>
+              <p class="font-body-md">Pronostico: <strong>${estadoJuego.pronostico_equipo_2}</strong></p>
+              <p class="font-body-md ${acierto2 ? 'text-tertiary font-bold' : 'text-on-surface-variant'}">
+                ${acierto2 ? `\u2713 ACERT\u00d3 (+${puntosGanados2})` : '\u2717 No acert\u00f3'}
+              </p>
+            </div>
+
+            <div class="flex justify-between items-center border-2.5 border-on-surface rounded-lg p-4 bg-surface-container-lowest">
+              <span class="font-headline-sm">${equipo1.nombre}: ${estadoJuego.puntos_equipo_1}</span>
+              <span class="font-headline-sm">${equipo2.nombre}: ${estadoJuego.puntos_equipo_2}</span>
+            </div>
+
+            ${_renderBotonSiguiente(estadoJuego, contexto)}
           </div>
         `;
         break;
+      }
 
       case 'FIN_DE_JUEGO':
       default:
@@ -395,9 +459,47 @@ export const QuePiensaElPublicoGameUI = {
 
       container.querySelector('#btn-qpep-revelar')?.addEventListener('click', () => {
         if (!pron1 || !pron2) return;
+        const { puntosGanados1, puntosGanados2 } = _calcularPuntos(estadoJuego, contexto);
         callbacks.onAccion('cambiar-estado-juego', {
-          estadoJuego: { ...estadoJuego, fase: 'REVELANDO' }
+          estadoJuego: {
+            ...estadoJuego,
+            fase: 'REVELANDO',
+            puntos_equipo_1: estadoJuego.puntos_equipo_1 + puntosGanados1,
+            puntos_equipo_2: estadoJuego.puntos_equipo_2 + puntosGanados2
+          }
         });
+      });
+    }
+
+    if (fase === 'REVELANDO') {
+      container.querySelector('#btn-qpep-siguiente')?.addEventListener('click', () => {
+        const config = contexto.juegoEjecutado?.configuracion_congelada;
+        const items = contexto.juegoEjecutado?.snapshot?.items || [];
+        const totalItems = items.length;
+        const rondas = totalItems > 0
+          ? Math.min(config?.rondas || totalItems, totalItems)
+          : (config?.rondas || 1);
+        const siguienteIdx = (estadoJuego.pregunta_actual_index || 0) + 1;
+
+        if (siguienteIdx >= rondas) {
+          callbacks.onAccion('cambiar-estado-juego', {
+            estadoJuego: { ...estadoJuego, fase: 'FIN_DE_JUEGO' }
+          });
+        } else {
+          callbacks.onAccion('cambiar-estado-juego', {
+            estadoJuego: {
+              ...estadoJuego,
+              pregunta_actual_index: siguienteIdx,
+              ronda_actual: siguienteIdx + 1,
+              fase: 'SELECCIONANDO_PREGUNTA',
+              respuestas_publico: { a: 0, b: 0 },
+              total_respuestas: 0,
+              resultado_publico: null,
+              pronostico_equipo_1: null,
+              pronostico_equipo_2: null
+            }
+          });
+        }
       });
     }
   },

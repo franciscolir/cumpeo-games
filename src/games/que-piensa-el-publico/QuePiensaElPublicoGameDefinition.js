@@ -16,7 +16,6 @@ const FASES = Object.freeze([
   'ENCUESTA_ACTIVA',
   'ENCUESTA_CERRADA',
   'REVELANDO',
-  'PUNTUANDO',
   'FIN_DE_JUEGO'
 ]);
 
@@ -61,6 +60,10 @@ export const QuePiensaElPublicoGameDefinition = {
 
     if (!esEnteroNoNegativo(config.puntos_por_acierto)) {
       throw new ValidacionError('puntos_por_acierto debe ser un entero >= 0');
+    }
+
+    if (!esEnteroMayorQue(config.rondas, 1)) {
+      throw new ValidacionError('rondas debe ser un entero >= 1');
     }
 
     return true;
