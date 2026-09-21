@@ -2,7 +2,7 @@
 
 **Versión:** 1.0
 **Última actualización:** 2026-09-18
-**Estado global:** Bloques 0, 1, 2, 3, 4 cerrados · Bloque 5 en progreso (11/21) · ★ MVP alcanzado ★
+**Estado global:** Bloques 0, 1, 2, 3, 4 cerrados · Bloque 5 en progreso (12/21) · ★ MVP alcanzado ★
 **Rama:** feature/vertical-slice
 
 ---
@@ -194,6 +194,7 @@ El Bloque 3 pasa de 7 a 6 pasos.
 | 5.3e | Canción Incompleta — FIN_DE_RONDA + timer toggle | ✅ APROBADO | 8f608ee |
 | 5.3f | Canción Incompleta — fix e2e + timer público + tests | ✅ APROBADO | a9d76d5 |
 | 5.4-pre | Cierre documental de mecánica de Pictionary | ✅ APROBADO | — |
+| 5.4a | Pictionary — GameDefinition + reducers + tests | ✅ APROBADO | ef53390 |
 | 5.4 | Pictionary end-to-end | ⬜ | — |
 | 5.5 | Historia Enredada end-to-end | ⬜ | — |
 | 5.6 | Trivia — cerrar mecánica + UI pública/móvil/tests | ⬜ | — |
@@ -229,7 +230,8 @@ El Bloque 3 pasa de 7 a 6 pasos.
 | 5.3 | 2026-09-21 | Mecánica de Rosco cerrada. Desglose 5.2a-d. Conteo 5/16. |
 | 5.4 | 2026-09-21 | Rosco completo (5.2a-d). Conteo 9/16. |
 | 5.5 | 2026-09-21 | Canción Incompleta completa (5.3a-f). 9 e2e reales + 23 tests UI. Conteo 10/20. |
-| 5.6 | 2026-09-21 | Cierre documental de mecánica de Pictionary. Conteo 11/21. |
+| 5.6 | 2026-09-21 | Cierre documental de mecánica de Pictionary. Conteo 11/21. |
+| 5.7 | 2026-09-21 | Pictionary GameDefinition + reducers + 74 tests unitarios. Conteo 12/21. |
 ---
 
 ## 5. Convenciones
