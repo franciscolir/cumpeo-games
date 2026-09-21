@@ -38,7 +38,7 @@
 | 2 | Shell de partida (Conductor + Pública) | ✅ CERRADO | 13/13 | 5e32d5b | 2026-09-19 |
 | 3 | Móvil + moderación | ✅ CERRADO | 6/6 | 9ca4e7a | 2026-09-19 |
 | 4 | "¿Qué piensa el público?" | ✅ CERRADO | 13/13 | 2e19767 | 2026-09-21 |
-| 5 | Juegos restantes | 🔄 EN PROGRESO | 9/16 | — | — |
+| 5 | Juegos restantes | 🔄 EN PROGRESO | 10/20 | — | — |
 | 6 | Migración e2e a Supabase (opcional) | ⬜ PENDIENTE | 0/? | — | — |
 
 **★ MVP se alcanza al cerrar el Bloque 4 ★**
@@ -170,7 +170,7 @@ El Bloque 3 pasa de 7 a 6 pasos.
 **Bloque 4 cerrado. ★ MVP alcanzado ★. Bloque 5 en progreso.**
 ---
 
-### Bloque 5 — Juegos restantes 🔄 EN PROGRESO (9/16)
+### Bloque 5 — Juegos restantes 🔄 EN PROGRESO (10/20)
 
 **Objetivo:** Implementar los juegos restantes en orden de madurez de mecánica.
 
@@ -182,12 +182,17 @@ El Bloque 3 pasa de 7 a 6 pasos.
 | 5.1a | Trivia conectada al shell del conductor | ✅ APROBADO | 58e2043 |
 | 5.1b | Editor de items de Trivia en formulario de sets | ✅ APROBADO | a2cafb5 |
 | 5.1c | Cierre documental: mecánicas CI/Pic/HE + reordenamiento | ✅ APROBADO | efc9b9a |
-| 5.1d | Cierre documental: mecánica de Rosco | ✅ APROBADO | (pendiente) |
+| 5.1d | Cierre documental: mecánica de Rosco | ✅ APROBADO | 08ca2d2 |
 | 5.2a | Rosco — GameDefinition + validación | ✅ APROBADO | 79c4493 |
 | 5.2b | Rosco — UI Conductor | ✅ APROBADO | 7ec5603 |
 | 5.2c | Rosco — UI Pública | ✅ APROBADO | a90e23b |
 | 5.2d | Rosco — Tests e2e | ✅ APROBADO | 94a89d1 |
-| 5.3 | Canción Incompleta end-to-end | ⬜ | — |
+| 5.3a | Canción Incompleta — GameDefinition + reducers | ✅ APROBADO | 1934d99 |
+| 5.3b | Canción Incompleta — UI Conductor | ✅ APROBADO | ee9a42c |
+| 5.3c | Canción Incompleta — UI Pública | ✅ APROBADO | 8323849 |
+| 5.3d | Canción Incompleta — e2e (rechazado, reemplazado) | ⚠️ REEMPLAZADO | 496cc5a |
+| 5.3e | Canción Incompleta — FIN_DE_RONDA + timer toggle | ✅ APROBADO | 8f608ee |
+| 5.3f | Canción Incompleta — fix e2e + timer público + tests | ✅ APROBADO | a9d76d5 |
 | 5.4 | Pictionary end-to-end | ⬜ | — |
 | 5.5 | Historia Enredada end-to-end | ⬜ | — |
 | 5.6 | Trivia — cerrar mecánica + UI pública/móvil/tests | ⬜ | — |
@@ -195,9 +200,7 @@ El Bloque 3 pasa de 7 a 6 pasos.
 | 5.8 | Anti-Trivia — cerrar mecánica + implementar | ⬜ | — |
 | 5.9 | Enlaces — cerrar mecánica + implementar | ⬜ | — |
 
-**Reordenamiento (5.1c):** se prioriza por madurez de mecánica. Rosco, Canción Incompleta, Pictionary e Historia Enredada tienen mecánica cerrada. Trivia, Memoricé, Anti-Trivia y Enlaces requieren decisiones de diseño antes de implementarse.
-
-**Desglose de Rosco (5.2a–d):** 4 sub-pasos atómicos para implementar Rosco: GameDefinition, UI Conductor, UI Pública y tests e2e.
+**Nota:** 5.3d entregó tests no-e2e y fue rechazado; 5.3e completó el dominio pero dejó el timer público sin implementar; 5.3f cerró todo (9 e2e reales pasando). El conteo efectivo es 10/20 aprobados.
 
 
 ### Bloque 6 — Migración e2e a Supabase (opcional) ⬜ PENDIENTE
@@ -223,6 +226,8 @@ El Bloque 3 pasa de 7 a 6 pasos.
 | 5.1 | 2026-09-21 | Paso 5.1b aprobado (editor de items de Trivia). |
 | 5.2 | 2026-09-21 | Reordenamiento del Bloque 5 por madurez de mecánica. CI/Pic/HE cerradas. Conteo 4/10. |
 | 5.3 | 2026-09-21 | Mecánica de Rosco cerrada. Desglose 5.2a-d. Conteo 5/16. |
+| 5.4 | 2026-09-21 | Rosco completo (5.2a-d). Conteo 9/16. |
+| 5.5 | 2026-09-21 | Canción Incompleta completa (5.3a-f). 9 e2e reales + 23 tests UI. Conteo 10/20. |
 | 5.4 | 2026-09-21 | Bloque Rosco completo (5.2a–d). GameDefinition, UI conductor, UI pública y e2e. Bug de registro corregido en 5.2d. Conteo 9/16. |
 ---
 

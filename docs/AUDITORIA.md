@@ -174,6 +174,16 @@ _(ninguna)_
 | 2026-09-21 | 5 | 5.1b | ✅ APROBADO | Editor de items de Trivia. 5 e2e nuevos + 1 actualizado. 609 unit. | a2cafb5 |
 | 2026-09-21 | 5 | 5.1c | ✅ APROBADO | Cierre documental: mecánicas CI/Pic/HE + reordenamiento del Bloque 5. | (pendiente) |
 | 2026-09-21 | 5 | 5.1d | ✅ APROBADO | Cierre documental: mecánica de Rosco. Desglose 5.2a-d. | (pendiente) |
+| 2026-09-21 | 5 | 5.2a | ✅ APROBADO | Rosco: GameDefinition + validación + reducers. Cierra deuda #57. | 79c4493 |
+| 2026-09-21 | 5 | 5.2b | ✅ APROBADO | Rosco: UI conductor. Conductor no ve la respuesta. | 7ec5603 |
+| 2026-09-21 | 5 | 5.2c | ✅ APROBADO | Rosco: UI pública. Definición en el centro del rosco. | a90e23b |
+| 2026-09-21 | 5 | 5.2d | ✅ APROBADO | Rosco: e2e (18 tests). Incluye fix de registro en bootstrap. | 94a89d1 |
+| 2026-09-21 | 5 | 5.3a | ✅ APROBADO | Canción Incompleta: GameDefinition + reducers. 13 tests. | 1934d99 |
+| 2026-09-21 | 5 | 5.3b | ✅ APROBADO | Canción Incompleta: UI conductor. 6 tests. | ee9a42c |
+| 2026-09-21 | 5 | 5.3c | ✅ APROBADO | Canción Incompleta: UI pública. 1 test. | 8323849 |
+| 2026-09-21 | 5 | 5.3d | ❌ RECHAZADO | Canción Incompleta: tests no eran e2e (Vitest + fake-indexeddb). Reemplazados en 5.3f. | 496cc5a |
+| 2026-09-21 | 5 | 5.3e | ✅ APROBADO | Canción Incompleta: FIN_DE_RONDA + timer toggle. Timer público quedó pendiente. | 8f608ee |
+| 2026-09-21 | 5 | 5.3f | ✅ APROBADO | Canción Incompleta: fix helper e2e + timer público + 23 tests UI + 9 e2e reales. | a9d76d5 |
 | 2026-09-21 | 5 | 5.2a | ✅ APROBADO | Rosco: GameDefinition + validación de set + reducers puros. Cierra deuda #57. | 79c4493 |
 | 2026-09-21 | 5 | 5.2b | ✅ APROBADO | Rosco: UI del conductor. Decisión: el conductor no ve la respuesta, solo la definición. | 7ec5603 |
 | 2026-09-21 | 5 | 5.2c | ✅ APROBADO | Rosco: UI pública. Definición en el centro del rosco. Revelado de respuesta post-validación. | a90e23b |
@@ -193,4 +203,4 @@ _(ninguna)_
 | 57 | La validación de Rosco requiere N items por letra para N rondas. Si el set no cumple, el conductor no puede iniciar el juego. UX a definir. | Paso 5.1d (detectado) / 5.2a (cerrada) | Cerrada |
 | 58 | El rosco tiene 27 letras (A-Z + Ñ). La UI debe manejar el layout circular o rectangular con esa cantidad. Verificar legibilidad en pantalla pública. | Paso 5.1d (detectado) | Baja |
 | 59 | El shell de partida (src/ui/partidas/shell-partida.js) usa callbacks con closures que quedan stale al iterar acciones rápido. Los e2e de Rosco lo evitan usando page.evaluate en lugar de clicks. Revisar el patrón de callbacks del shell para que reflejen estado actual sin workarounds en tests. | Paso 5.2d (detectado) | Media |
-| 60 | El registro de juegos requiere tocar tests/unit/app/bootstrap.test.js y tests/unit/app/seed.test.js cada vez que se agrega un juego nuevo. Acoplamiento entre registro y tests de bootstrap/seed. Revisar para que la lista de juegos registrados se derive dinámicamente. | Paso 5.2d (detectado) | Baja |
+| 60 | El registro de juegos requiere tocar tests/unit/app/bootstrap.test.js y tests/unit/app/seed.test.js cada vez que se agrega un juego nuevo. Acoplamiento entre registro y tests de bootstrap/seed. Revisar para que la lista de juegos registrados se derive dinámicamente. | Paso 5.2d (detectado) | Cerrada (5.3f) |
