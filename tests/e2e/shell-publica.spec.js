@@ -236,3 +236,155 @@ test('muro trunca mensajes largos', async ({ page }) => {
   const firstText = await spans.first().textContent();
   expect(firstText).toContain('...');
 });
+
+async function setupPartidaQPEP(page) {
+  await waitForCumpeo(page);
+  return await page.evaluate(async () => {
+    const juegos = await window.cumpeo.services.juego.listarJuegos();
+    const qpep = juegos.find((j) => j.codigo === 'QUE_PIENSA_EL_PUBLICO');
+
+    const uid = Date.now().toString(36);
+    const set = await window.cumpeo.services.set.crearSet({
+      juego_id: qpep.id,
+      nombre: `QPEP Set ${uid}`
+    });
+
+    await window.cumpeo.services.set.agregarItem(set.id, {
+      pregunta: '¿Pizza o empanadas?',
+      opcion_a: 'Pizza',
+      opcion_b: 'Empanadas'
+    });
+
+    await window.cumpeo.services.set.agregarItem(set.id, {
+      pregunta: '¿PlayStation o Xbox?',
+      opcion_a: 'PlayStation',
+      opcion_b: 'Xbox'
+    });
+
+    const circuito = await window.cumpeo.services.circuito.crearCircuito({
+      nombre: `QPEP Circuit ${uid}`,
+      juegos: [{ juego_id: qpep.id, configuracion: { rondas: 2, tiempo_por_pregunta_seg: 30, puntos_por_acierto: 10 } }],
+      equipos: [
+        { posicion: 1, nombre: 'Rojo', color: '#E53E3E' },
+        { posicion: 2, nombre: 'Azul', color: '#3182CE' }
+      ]
+    });
+
+    await window.cumpeo.services.circuito.actualizarCircuito(
+      circuito.id, circuito.version,
+      {
+        nombre: `QPEP Circuit ${uid}`,
+        juegos: [{ juego_id: qpep.id, configuracion: { rondas: 2, tiempo_por_pregunta_seg: 30, puntos_por_acierto: 10 } }],
+        equipos: [
+          { posicion: 1, nombre: 'Rojo', color: '#E53E3E' },
+          { posicion: 2, nombre: 'Azul', color: '#3182CE' }
+        ],
+        estado: 'LISTO'
+      }
+    );
+
+    const codigo = `QP${Date.now().toString(36).slice(-4).toUpperCase()}`;
+    const partida = await window.cumpeo.services.partida.crearPartida(
+      { circuito_id: circuito.id, public_codigo: codigo },
+      crypto.randomUUID()
+    );
+
+    return { id: partida.id, codigo: partida.public_codigo };
+  });
+}
+
+test('pública muestra pregunta en ENCUESTA_ACTIVA', async ({ page }) => {
+  await page.goto('/');
+  const { id, codigo } = await setupPartidaQPEP(page);
+
+  await page.evaluate(async (pid) => {
+    await window.cumpeo.services.partida.tomarControl(pid, window.cumpeo.session.sessionId);
+    await window.cumpeo.services.partida.comenzarPartida(pid, window.cumpeo.session.sessionId, crypto.randomUUID());
+
+    const ctx = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
+    const je = ctx.juegos[0];
+    await window.cumpeo.services.partida.iniciarJuego(
+      pid, je.id, window.cumpeo.session.sessionId, crypto.randomUUID()
+    );
+
+    const ctx2 = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
+    const je2 = ctx2.juegos[0];
+    await window.cumpeo.services.partida.actualizarEstadoJuego(
+      pid, je2.id,
+      { ...je2.estado_juego, fase: 'ENCUESTA_ACTIVA' },
+      je2.state_version,
+      window.cumpeo.session.sessionId,
+      crypto.randomUUID()
+    );
+  }, id);
+
+  await page.goto(`/#/publica-nueva/${codigo}`);
+  await waitForCumpeo(page);
+
+  await expect(page.getByText('¿Pizza o empanadas?')).toBeVisible({ timeout: 15000 });
+  await expect(page.getByText('Pizza', { exact: true })).toBeVisible();
+  await expect(page.getByText('Empanadas', { exact: true })).toBeVisible();
+});
+
+test('pública oculta galería cuando hay juego activo', async ({ page }) => {
+  await page.goto('/');
+  const { id, codigo } = await setupPartidaQPEP(page);
+
+  await page.evaluate(async (pid) => {
+    await window.cumpeo.services.partida.tomarControl(pid, window.cumpeo.session.sessionId);
+    await window.cumpeo.services.partida.comenzarPartida(pid, window.cumpeo.session.sessionId, crypto.randomUUID());
+
+    const ctx = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
+    const cj = ctx.juegos[0];
+    await window.cumpeo.services.partida.iniciarJuego(
+      pid, cj.id, window.cumpeo.session.sessionId, crypto.randomUUID()
+    );
+  }, id);
+
+  await page.goto(`/#/publica-nueva/${codigo}`);
+  await waitForCumpeo(page);
+
+  const galeria = page.locator('[data-role="galeria"]');
+  await expect(galeria).toHaveCount(0, { timeout: 10000 });
+});
+
+test('pública muestra resultado en REVELANDO', async ({ page }) => {
+  await page.goto('/');
+  const { id, codigo } = await setupPartidaQPEP(page);
+
+  await page.evaluate(async (pid) => {
+    await window.cumpeo.services.partida.tomarControl(pid, window.cumpeo.session.sessionId);
+    await window.cumpeo.services.partida.comenzarPartida(pid, window.cumpeo.session.sessionId, crypto.randomUUID());
+
+    const ctx = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
+    const cj = ctx.juegos[0];
+    await window.cumpeo.services.partida.iniciarJuego(
+      pid, cj.id, window.cumpeo.session.sessionId, crypto.randomUUID()
+    );
+
+    await window.cumpeo.services.partida.actualizarEstadoJuego(
+      pid, cj.id,
+      {
+        fase: 'REVELANDO',
+        pregunta_actual_index: 0,
+        ronda_actual: 1,
+        pronostico_equipo_1: 'A',
+        pronostico_equipo_2: 'A',
+        resultado_publico: 'A',
+        respuestas_publico: { a: 12, b: 5 },
+        total_respuestas: 17,
+        puntos_equipo_1: 10,
+        puntos_equipo_2: 0
+      },
+      cj.state_version,
+      window.cumpeo.session.sessionId,
+      crypto.randomUUID()
+    );
+  }, id);
+
+  await page.goto(`/#/publica-nueva/${codigo}`);
+  await waitForCumpeo(page);
+
+  await expect(page.getByText('Resultado del público')).toBeVisible({ timeout: 15000 });
+  await expect(page.getByText('17 respuestas')).toBeVisible();
+});

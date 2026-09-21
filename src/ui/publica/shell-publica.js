@@ -9,6 +9,8 @@
    Ruta: #/publica-nueva/:codigo
    ============================================================= */
 
+import { cargarItemsQPEP } from '../games/_shared/cargarItemsQPEP.js';
+
 let cleanupSuscripciones = null;
 let intervalId = null;
 let intervalGaleriaId = null;
@@ -106,13 +108,18 @@ async function _renderContenido(container, app, codigo) {
 
   const juegoActivo = juegos.find((j) => j.estado === 'EN_CURSO' || j.estado === 'PAUSADO');
 
+  const esQPEP = juegoActivo?.juego_codigo === 'QUE_PIENSA_EL_PUBLICO';
+  const itemsQPEP = esQPEP ? await cargarItemsQPEP(app, juegoActivo) : null;
+  const fase = juegoActivo?.estado_juego?.fase || '';
+  const mostrarGaleria = !juegoActivo;
+
   container.innerHTML = `
     <div class="min-h-screen flex flex-col bg-background">
       ${_renderHeader(partida, juegoActivo)}
       <div class="flex-1 grid grid-cols-1 lg:grid-cols-12">
         <div class="lg:col-span-7 flex flex-col border-r-0 lg:border-r-2.5 border-on-surface">
-          ${_renderEscenario(juegoActivo)}
-          ${_renderGaleria()}
+          ${esQPEP ? _renderEscenarioQPEP(juegoActivo, itemsQPEP, fase, contexto) : _renderEscenario(juegoActivo)}
+          ${mostrarGaleria ? _renderGaleria() : ''}
           ${_renderAnuncio(partida, juegoActivo)}
         </div>
         <div class="lg:col-span-5 flex flex-col">
@@ -196,6 +203,168 @@ function _renderEscenario(juegoActivo) {
     <section class="flex items-center justify-center p-6 border-b-2.5 border-on-surface bg-surface">
       <div class="w-full max-w-2xl bg-surface-container-lowest border-3 border-on-surface rounded-2xl p-8 shadow-comic-lg text-center flex flex-col items-center justify-center min-h-[25vh]">
         ${contenido}
+      </div>
+    </section>
+  `;
+}
+
+/* =============================================================
+   Escenario QPEP (por fase)
+   ============================================================= */
+
+function _renderEscenarioQPEP(juegoActivo, items, fase, contexto) {
+  const estadoJuego = juegoActivo?.estado_juego || {};
+  const idx = estadoJuego.pregunta_actual_index || 0;
+  const pregunta = items?.[idx] || null;
+  const equipo1 = contexto?.equipos?.[0] || { nombre: 'Eq1' };
+  const equipo2 = contexto?.equipos?.[1] || { nombre: 'Eq2' };
+  const pron1 = estadoJuego.pronostico_equipo_1 || '';
+  const pron2 = estadoJuego.pronostico_equipo_2 || '';
+  const resultado = estadoJuego.resultado_publico || '';
+  const totalRespuestas = estadoJuego.total_respuestas || 0;
+  const respuestas = estadoJuego.respuestas_publico || { a: 0, b: 0 };
+  const totalVotos = (respuestas.a || 0) + (respuestas.b || 0) || 1;
+  const pctA = Math.round(((respuestas.a || 0) / totalVotos) * 100);
+  const pctB = 100 - pctA;
+
+  const acierto1 = pron1 && resultado && pron1 === resultado;
+  const acierto2 = pron2 && resultado && pron2 === resultado;
+
+  let inner = '';
+
+  switch (fase) {
+    case 'SELECCIONANDO_PREGUNTA':
+      inner = `
+        <p class="font-headline-md uppercase text-on-surface-variant">Esperando inicio de encuesta</p>
+      `;
+      break;
+
+    case 'ENCUESTA_ACTIVA': {
+      if (!pregunta) {
+        inner = `<p class="font-headline-md uppercase text-on-surface-variant">Esperando pregunta…</p>`;
+        break;
+      }
+      inner = `
+        <p class="font-label-md uppercase text-on-surface-variant mb-2">📢 Encuesta activa</p>
+        <p class="font-display-hero text-4xl text-on-surface mb-6">${pregunta.pregunta}</p>
+        <div class="grid grid-cols-2 gap-4 max-w-2xl mx-auto">
+          <div class="border-3 border-on-surface rounded-xl p-4 bg-surface-container-lowest text-center">
+            <span class="font-display-hero text-2xl text-primary">A</span>
+            <p class="font-headline-md mt-2">${pregunta.opcion_a}</p>
+          </div>
+          <div class="border-3 border-on-surface rounded-xl p-4 bg-surface-container-lowest text-center">
+            <span class="font-display-hero text-2xl text-primary">B</span>
+            <p class="font-headline-md mt-2">${pregunta.opcion_b}</p>
+          </div>
+        </div>
+      `;
+      break;
+    }
+
+    case 'ENCUESTA_CERRADA': {
+      if (!pregunta) {
+        inner = `<p class="font-headline-md uppercase text-on-surface-variant">Esperando pregunta…</p>`;
+        break;
+      }
+      inner = `
+        <p class="font-label-md uppercase text-on-surface-variant mb-2">Encuesta cerrada</p>
+        <p class="font-display-hero text-4xl text-on-surface mb-6">${pregunta.pregunta}</p>
+        <div class="grid grid-cols-2 gap-4 max-w-2xl mx-auto mb-6">
+          <div class="border-3 border-on-surface rounded-xl p-4 bg-surface-container-lowest text-center">
+            <span class="font-display-hero text-2xl text-primary">A</span>
+            <p class="font-headline-md mt-2">${pregunta.opcion_a}</p>
+          </div>
+          <div class="border-3 border-on-surface rounded-xl p-4 bg-surface-container-lowest text-center">
+            <span class="font-display-hero text-2xl text-primary">B</span>
+            <p class="font-headline-md mt-2">${pregunta.opcion_b}</p>
+          </div>
+        </div>
+        <div class="border-2.5 border-on-surface rounded-lg p-4 bg-surface-container-lowest">
+          <p class="font-label-md uppercase text-on-surface-variant mb-2">Pronósticos</p>
+          <div class="flex justify-around">
+            <span class="font-headline-md">${equipo1.nombre}: <strong>${pron1 || '—'}</strong></span>
+            <span class="font-headline-md">${equipo2.nombre}: <strong>${pron2 || '—'}</strong></span>
+          </div>
+        </div>
+      `;
+      break;
+    }
+
+    case 'REVELANDO': {
+      if (!pregunta) {
+        inner = `<p class="font-headline-md uppercase text-on-surface-variant">Esperando pregunta…</p>`;
+        break;
+      }
+      inner = `
+        <p class="font-label-md uppercase text-on-surface-variant mb-2">Resultado</p>
+        <p class="font-display-hero text-4xl text-on-surface mb-4">${pregunta.pregunta}</p>
+        <div class="grid grid-cols-2 gap-4 max-w-2xl mx-auto mb-6">
+          <div class="border-3 ${resultado === 'A' ? 'border-tertiary bg-tertiary/15' : 'border-on-surface bg-surface-container-lowest'} rounded-xl p-4 text-center">
+            <span class="font-display-hero text-2xl ${resultado === 'A' ? 'text-tertiary' : 'text-primary'}">A</span>
+            <p class="font-headline-md mt-2">${pregunta.opcion_a}</p>
+            <p class="font-label-md text-on-surface-variant mt-1">${pctA}% (${respuestas.a || 0})</p>
+          </div>
+          <div class="border-3 ${resultado === 'B' ? 'border-tertiary bg-tertiary/15' : 'border-on-surface bg-surface-container-lowest'} rounded-xl p-4 text-center">
+            <span class="font-display-hero text-2xl ${resultado === 'B' ? 'text-tertiary' : 'text-primary'}">B</span>
+            <p class="font-headline-md mt-2">${pregunta.opcion_b}</p>
+            <p class="font-label-md text-on-surface-variant mt-1">${pctB}% (${respuestas.b || 0})</p>
+          </div>
+        </div>
+        <div class="border-3 border-tertiary rounded-xl p-6 bg-tertiary/15 text-center mb-4">
+          <p class="font-label-md uppercase text-on-surface-variant">Resultado del público</p>
+          <p class="font-display-hero text-4xl text-primary">${resultado}</p>
+          <p class="font-body-md text-on-surface-variant">${totalRespuestas} respuestas</p>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="border-2.5 ${acierto1 ? 'border-tertiary bg-tertiary/15' : 'border-on-surface bg-surface-container-lowest'} rounded-lg p-4 text-center">
+            <p class="font-headline-sm">${equipo1.nombre}</p>
+            <p class="font-body-md">Pronóstico: ${pron1 || '—'}</p>
+            <p class="${acierto1 ? 'text-tertiary font-bold' : 'text-on-surface-variant'}">
+              ${acierto1 ? '✓ Acertó' : '✗ No acertó'}
+            </p>
+          </div>
+          <div class="border-2.5 ${acierto2 ? 'border-tertiary bg-tertiary/15' : 'border-on-surface bg-surface-container-lowest'} rounded-lg p-4 text-center">
+            <p class="font-headline-sm">${equipo2.nombre}</p>
+            <p class="font-body-md">Pronóstico: ${pron2 || '—'}</p>
+            <p class="${acierto2 ? 'text-tertiary font-bold' : 'text-on-surface-variant'}">
+              ${acierto2 ? '✓ Acertó' : '✗ No acertó'}
+            </p>
+          </div>
+        </div>
+      `;
+      break;
+    }
+
+    case 'FIN_DE_JUEGO': {
+      const pts1 = estadoJuego.puntos_equipo_1 || 0;
+      const pts2 = estadoJuego.puntos_equipo_2 || 0;
+      inner = `
+        <p class="font-display-hero text-5xl text-primary uppercase mb-4">¡Juego terminado!</p>
+        <div class="grid grid-cols-2 gap-4 max-w-md mx-auto">
+          <div class="border-3 border-[#00D2FF] bg-[#00D2FF]/15 rounded-xl p-4 text-center">
+            <p class="font-headline-md">${equipo1.nombre}</p>
+            <p class="font-comic-score text-5xl text-on-surface mt-1">${pts1}</p>
+          </div>
+          <div class="border-3 border-[#FF3344] bg-[#FF3344]/15 rounded-xl p-4 text-center">
+            <p class="font-headline-md">${equipo2.nombre}</p>
+            <p class="font-comic-score text-5xl text-on-surface mt-1">${pts2}</p>
+          </div>
+        </div>
+      `;
+      break;
+    }
+
+    default:
+      inner = `
+        <p class="font-display-hero text-5xl text-primary uppercase mb-2">¡A JUGAR!</p>
+        <p class="font-headline-md uppercase text-on-surface">${juegoActivo?.juego_nombre || 'Juego'}</p>
+      `;
+  }
+
+  return `
+    <section class="flex items-center justify-center p-6 border-b-2.5 border-on-surface bg-surface">
+      <div class="w-full max-w-2xl bg-surface-container-lowest border-3 border-on-surface rounded-2xl p-8 shadow-comic-lg text-center flex flex-col items-center justify-center min-h-[25vh]">
+        ${inner}
       </div>
     </section>
   `;
