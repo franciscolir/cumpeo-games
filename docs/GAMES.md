@@ -414,33 +414,99 @@ El público muestra:
 
 ------------------------------------------------------------------------
 
-# 9. PICTIONARY
+# 9. PICTIONARY — Mecánica cerrada
 
 ## Concepto
 
-Juego de dibujo y adivinanza.
+Juego de adivinanza con 4 modos de representación: palabras
+prohibidas, gestos, dibujo y preguntas sí/no.
 
 ## Objetivo
 
-Representar un concepto mediante dibujo para que el equipo lo
-identifique.
+El equipo debe adivinar un concepto mientras un compañero lo
+representa según el modo activo.
 
-## Mecánica cerrada
+## Modos
 
-| Aspecto | Definición |
-|---|---|
-| Modos | 4: palabras prohibidas, gestos, dibujo, preguntas sí/no |
-| Set | Sí, por modo |
-| Selección de palabras | Aleatoria del set |
-| Adivinador | Mismo en los 4 modos. El sistema no identifica quién adivina, solo el equipo en turno |
-| Modo 1 (palabras prohibidas) | La TV muestra concepto + palabras prohibidas. El adivinador de espaldas |
-| Modo 2 (gestos) | Igual lógica, sin palabras |
-| Modo 3 (dibujo) | Pizarra física. No hay canvas en la app |
-| Modo 4 (preguntas) | Adivinador de espaldas pregunta sí/no. Compañero responde solo sí/no. Sin límite de preguntas |
-| Pasar palabra | Sí. Penalización configurable |
-| Puntos | Configurable. Bonus por cantidad configurable |
-| Ronda | 4 modos por equipo = 1 ronda |
-| Tiempo | Configurable por modo |
+| # | Modo | Descripción |
+|---|------|-------------|
+| 1 | Palabras prohibidas | La TV muestra el concepto y una lista de palabras prohibidas. El adivinador mira la pantalla. |
+| 2 | Gestos | Igual lógica que el modo 1, pero sin palabras en pantalla. El representante usa gestos. |
+| 3 | Dibujo | Pizarra física. No hay canvas en la app. El representante dibuja. |
+| 4 | Preguntas sí/no | El adivinador está de espaldas y pregunta sí/no. El compañero responde solo sí o no. Sin límite de preguntas. |
+
+## Set
+
+Obligatorio (`requiere_set: true`).
+
+Un solo set con items etiquetados por modo.
+
+### Estructura del item
+
+```json
+{
+  "modo": 1,
+  "concepto": "PERRO",
+  "prohibidas": ["mascota", "guau", "mejor amigo", "firulais"],
+  "dificultad": 1
+}
+```
+
+-   `modo`: 1 | 2 | 3 | 4.
+-   `concepto`: palabra o frase a adivinar.
+-   `prohibidas`: array de palabras no permitidas. Solo obligatorio en
+    modo 1. En modos 2, 3 y 4 puede estar vacío u omitirse.
+-   `dificultad`: 1 | 2 | 3 (opcional).
+
+### Validación del set
+
+-   Cada modo debe tener al menos N items, donde N = rondas ×
+    palabras_por_modo.
+-   Modo 1: `prohibidas` debe ser array no vacío.
+-   Modos 2, 3 y 4: `prohibidas` puede estar vacío u omitirse.
+
+## Turnos y orden de modos
+
+-   Un turno comprende los 4 modos en orden fijo: 1 → 2 → 3 → 4.
+-   Los equipos alternan turnos.
+-   Cada turno completo (4 modos) equivale a 1 ronda.
+-   Rondas por partida: configurable.
+-   El adivinador es el mismo en los 4 modos de un turno. El sistema
+    no identifica quién adivina.
+
+## Timer
+
+-   Un solo `segundos_por_modo` configurable.
+-   `palabras_por_modo`: configurable, default 1.
+
+## Validación
+
+-   El conductor marca correcto o incorrecto.
+-   Pasar palabra: configurable. El conductor decide si penaliza.
+
+## Puntuación
+
+-   `puntos_por_acierto`: configurable.
+-   `penalizacion_por_error`: configurable.
+-   `penalizacion_por_pasar`: configurable.
+-   Bonus manual: el conductor tiene un botón "Bonus" para agregar X
+    puntos a discreción.
+
+## Fases
+
+`INICIO_RONDA`, `SELECCIONANDO_MODO`, `MOSTRANDO_PALABRA`,
+`ADIVINANDO`, `ESPERA_VALIDACION`, `CAMBIO_MODO`, `FIN_DE_RONDA`,
+`FIN_DE_JUEGO`.
+
+## Público
+
+El público puede ver:
+
+-   el modo activo;
+-   el concepto (según el modo);
+-   las palabras prohibidas (modo 1);
+-   el progreso del turno;
+-   la puntuación.
 
 
 # 10. HISTORIA ENREDADA

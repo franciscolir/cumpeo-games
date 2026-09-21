@@ -184,6 +184,7 @@ _(ninguna)_
 | 2026-09-21 | 5 | 5.3d | ❌ RECHAZADO | Canción Incompleta: tests no eran e2e (Vitest + fake-indexeddb). Reemplazados en 5.3f. | 496cc5a |
 | 2026-09-21 | 5 | 5.3e | ✅ APROBADO | Canción Incompleta: FIN_DE_RONDA + timer toggle. Timer público quedó pendiente. | 8f608ee |
 | 2026-09-21 | 5 | 5.3f | ✅ APROBADO | Canción Incompleta: fix helper e2e + timer público + 23 tests UI + 9 e2e reales. | a9d76d5 |
+| 2026-09-21 | 5 | 5.4-pre | ✅ APROBADO | Cierre documental de mecánica de Pictionary. Decisiones: estructura del item del set, orden fijo de modos, bonus manual. | — |
 
 
 

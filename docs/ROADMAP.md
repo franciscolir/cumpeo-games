@@ -2,7 +2,7 @@
 
 **Versión:** 1.0
 **Última actualización:** 2026-09-18
-**Estado global:** Bloques 0, 1, 2, 3, 4 cerrados · Bloque 5 en progreso (10/20) · ★ MVP alcanzado ★
+**Estado global:** Bloques 0, 1, 2, 3, 4 cerrados · Bloque 5 en progreso (11/21) · ★ MVP alcanzado ★
 **Rama:** feature/vertical-slice
 
 ---
@@ -38,7 +38,7 @@
 | 2 | Shell de partida (Conductor + Pública) | ✅ CERRADO | 13/13 | 5e32d5b | 2026-09-19 |
 | 3 | Móvil + moderación | ✅ CERRADO | 6/6 | 9ca4e7a | 2026-09-19 |
 | 4 | "¿Qué piensa el público?" | ✅ CERRADO | 13/13 | 2e19767 | 2026-09-21 |
-| 5 | Juegos restantes | 🔄 EN PROGRESO | 10/20 | — | — |
+| 5 | Juegos restantes | 🔄 EN PROGRESO | 11/21 | — | — |
 | 6 | Migración e2e a Supabase (opcional) | ⬜ PENDIENTE | 0/? | — | — |
 
 **★ MVP se alcanza al cerrar el Bloque 4 ★**
@@ -193,6 +193,7 @@ El Bloque 3 pasa de 7 a 6 pasos.
 | 5.3d | Canción Incompleta — e2e (rechazado, reemplazado) | ⚠️ REEMPLAZADO | 496cc5a |
 | 5.3e | Canción Incompleta — FIN_DE_RONDA + timer toggle | ✅ APROBADO | 8f608ee |
 | 5.3f | Canción Incompleta — fix e2e + timer público + tests | ✅ APROBADO | a9d76d5 |
+| 5.4-pre | Cierre documental de mecánica de Pictionary | ✅ APROBADO | — |
 | 5.4 | Pictionary end-to-end | ⬜ | — |
 | 5.5 | Historia Enredada end-to-end | ⬜ | — |
 | 5.6 | Trivia — cerrar mecánica + UI pública/móvil/tests | ⬜ | — |
@@ -227,7 +228,8 @@ El Bloque 3 pasa de 7 a 6 pasos.
 | 5.2 | 2026-09-21 | Reordenamiento del Bloque 5 por madurez de mecánica. CI/Pic/HE cerradas. Conteo 4/10. |
 | 5.3 | 2026-09-21 | Mecánica de Rosco cerrada. Desglose 5.2a-d. Conteo 5/16. |
 | 5.4 | 2026-09-21 | Rosco completo (5.2a-d). Conteo 9/16. |
-| 5.5 | 2026-09-21 | Canción Incompleta completa (5.3a-f). 9 e2e reales + 23 tests UI. Conteo 10/20. |
+| 5.5 | 2026-09-21 | Canción Incompleta completa (5.3a-f). 9 e2e reales + 23 tests UI. Conteo 10/20. |
+| 5.6 | 2026-09-21 | Cierre documental de mecánica de Pictionary. Conteo 11/21. |
 ---
 
 ## 5. Convenciones
