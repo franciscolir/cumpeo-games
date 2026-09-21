@@ -146,3 +146,5 @@ _(ninguna)_
 | 2026-09-20 | 4 | 4.3d | ✅ APROBADO | Timer de encuesta con auto-cierre. 1 e2e test. | b1306d5 |
 
 | 2026-09-20 | 4 | 4.4 | ✅ APROBADO | Móvil responde A/B encuesta QPEP. 3 e2e tests. | 82079aa |
+
+| 2026-09-20 | 4 | 4.5 | ✅ APROBADO | Registro de pronósticos + botón Revelar. 2 e2e tests. | 97ece23 |
