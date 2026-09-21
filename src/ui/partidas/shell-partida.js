@@ -488,6 +488,77 @@ async function _renderContenido(container, app, partidaId) {
             sessionId,
             nuevoActionId()
           );
+        } else if (tipo === 'iniciar-juego-cancion-incompleta') {
+          const { CancionIncompletaGameDefinition } = await import('../../games/cancion-incompleta/CancionIncompletaGameDefinition.js');
+          const config = juegoActivo.configuracion_congelada || CancionIncompletaGameDefinition.defaultConfig;
+          CancionIncompletaGameDefinition.validarConfiguracion(config);
+          const estadoInicial = CancionIncompletaGameDefinition.estadoInicial(config);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId,
+            juegoActivo.id,
+            estadoInicial,
+            juegoActivo.state_version,
+            sessionId,
+            nuevoActionId()
+          );
+        } else if (tipo === 'iniciar-turno-cancion-incompleta') {
+          const { CancionIncompletaGameDefinition } = await import('../../games/cancion-incompleta/CancionIncompletaGameDefinition.js');
+          const nuevoEstado = CancionIncompletaGameDefinition.iniciarTurno(estadoJuego);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId,
+            juegoActivo.id,
+            nuevoEstado,
+            juegoActivo.state_version,
+            sessionId,
+            nuevoActionId()
+          );
+        } else if (tipo === 'marcar-acierto-cancion-incompleta') {
+          const { CancionIncompletaGameDefinition } = await import('../../games/cancion-incompleta/CancionIncompletaGameDefinition.js');
+          const config = juegoActivo.configuracion_congelada || CancionIncompletaGameDefinition.defaultConfig;
+          const nuevoEstado = CancionIncompletaGameDefinition.aplicarAcierto(estadoJuego, config);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId,
+            juegoActivo.id,
+            nuevoEstado,
+            juegoActivo.state_version,
+            sessionId,
+            nuevoActionId()
+          );
+        } else if (tipo === 'marcar-error-cancion-incompleta') {
+          const { CancionIncompletaGameDefinition } = await import('../../games/cancion-incompleta/CancionIncompletaGameDefinition.js');
+          const config = juegoActivo.configuracion_congelada || CancionIncompletaGameDefinition.defaultConfig;
+          const nuevoEstado = CancionIncompletaGameDefinition.aplicarError(estadoJuego, config);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId,
+            juegoActivo.id,
+            nuevoEstado,
+            juegoActivo.state_version,
+            sessionId,
+            nuevoActionId()
+          );
+        } else if (tipo === 'continuar-cancion-incompleta') {
+          const { CancionIncompletaGameDefinition } = await import('../../games/cancion-incompleta/CancionIncompletaGameDefinition.js');
+          const nuevoEstado = CancionIncompletaGameDefinition.avanzarCancion(estadoJuego);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId,
+            juegoActivo.id,
+            nuevoEstado,
+            juegoActivo.state_version,
+            sessionId,
+            nuevoActionId()
+          );
+        } else if (tipo === 'time-up-cancion-incompleta') {
+          const { CancionIncompletaGameDefinition } = await import('../../games/cancion-incompleta/CancionIncompletaGameDefinition.js');
+          const nuevoEstado = CancionIncompletaGameDefinition.aplicarTimeUp(estadoJuego);
+          if (!nuevoEstado) return;
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId,
+            juegoActivo.id,
+            nuevoEstado,
+            juegoActivo.state_version,
+            sessionId,
+            nuevoActionId()
+          );
         } else {
           console.warn(`[ShellPartida] Acción desconocida: ${tipo}`);
           return;
