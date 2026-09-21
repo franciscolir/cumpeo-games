@@ -178,6 +178,6 @@ _(ninguna)_
 | 48 | Shell aplica `Math.max(0, ...)` en penalización de Trivia. Debería permitir puntos negativos. | Paso 5.1a | Media |
 | 49 | `indexeddb-smoke.spec.js` flaky por orden de ejecución. | Paso 5.1a | Media |
 | 50 | `shell-publica.spec.js:REVELANDO` flaky por race condition. | Paso 5.1a | Media |
-| 51 | `ROADMAP.md` y `AUDITORIA.md` desincronizados con commits reales del Bloque 5. Historial con secciones duplicadas y deuda #15 faltante. | Paso 5.1b (detectado) | Media |
+| 51 | `ROADMAP.md` y `AUDITORIA.md` desincronizados con commits reales. `ROADMAP.md`: historial sin 5.0/5.1, sección "Estado global" con datos viejos (Bloques cerrados=1, MVP=No), fila Bloque 5 como PENDIENTE, filas colgadas en Bloque 1 (1.7) y Bloque 2 (2.6), tabla Bloque 4 sin marcar pasos. `AUDITORIA.md`: historial con secciones duplicadas (`## Cierre de bloque` x4), deuda #15 faltante, deudas 28-45 no listadas. | Paso 5.1b (detectado) | Media |
 | 52 | Las 2 opciones iniciales de Trivia se agregan en el bind, no en el render HTML. | Paso 5.1b | Baja |
 | 53 | `_agregarOpcionTrivia` no re-selecciona radio tras eliminar la opción marcada. La validación lo cubre. | Paso 5.1b | Baja |
