@@ -126,7 +126,7 @@ async function _renderContenido(container, app, partidaId) {
   const gameUI = codigoJuego ? app.uiRegistry.obtener(codigoJuego) : null;
   const estadoJuego = juegoActivo ? (juegoActivo.estado_juego || {}) : {};
 
-  const itemsDelJuego = (codigoJuego === 'QUE_PIENSA_EL_PUBLICO' || codigoJuego === 'TRIVIA')
+  const itemsDelJuego = (codigoJuego === 'QUE_PIENSA_EL_PUBLICO' || codigoJuego === 'TRIVIA' || codigoJuego === 'ROSCO')
     ? await cargarItemsDeJuego(app, juegoActivo)
     : null;
 
@@ -368,6 +368,117 @@ async function _renderContenido(container, app, partidaId) {
         } else if (tipo === 'time-up-trivia') {
           const { TriviaGameDefinition } = await import('../../games/trivia/TriviaGameDefinition.js');
           const nuevoEstado = TriviaGameDefinition.aplicarTimeUp(estadoJuego);
+          if (!nuevoEstado) return;
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId,
+            juegoActivo.id,
+            nuevoEstado,
+            juegoActivo.state_version,
+            sessionId,
+            nuevoActionId()
+          );
+        } else if (tipo === 'iniciar-juego-rosco') {
+          const { RoscoGameDefinition } = await import('../../games/rosco/RoscoGameDefinition.js');
+          const config = juegoActivo.configuracion_congelada || RoscoGameDefinition.defaultConfig;
+          const contenidoSet = { items: itemsDelJuego || [] };
+          const validacion = RoscoGameDefinition.validarContenidoSet(contenidoSet, config);
+          if (!validacion.ok) {
+            window.alert(`Set inválido:\n${validacion.errores.join('\n')}`);
+            return;
+          }
+          const estadoInicial = RoscoGameDefinition.estadoInicial(config);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId,
+            juegoActivo.id,
+            estadoInicial,
+            juegoActivo.state_version,
+            sessionId,
+            nuevoActionId()
+          );
+        } else if (tipo === 'iniciar-turno-rosco') {
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId,
+            juegoActivo.id,
+            { ...estadoJuego, fase: 'TURNO_ACTIVO', turno_activo: true },
+            juegoActivo.state_version,
+            sessionId,
+            nuevoActionId()
+          );
+        } else if (tipo === 'marcar-acierto-rosco') {
+          const { RoscoGameDefinition } = await import('../../games/rosco/RoscoGameDefinition.js');
+          const config = juegoActivo.configuracion_congelada || RoscoGameDefinition.defaultConfig;
+          const letraActual = estadoJuego.rosco?.[estadoJuego.indice_actual]?.letra;
+          if (!letraActual) return;
+          let nuevoEstado = RoscoGameDefinition.aplicarAcierto(estadoJuego, letraActual, config);
+          nuevoEstado = RoscoGameDefinition.avanzarLetra(nuevoEstado);
+          if (nuevoEstado.fase === 'FIN_DE_RONDA') {
+            await app.services.partida.actualizarEstadoJuego(
+              partidaId, juegoActivo.id, nuevoEstado,
+              juegoActivo.state_version, sessionId, nuevoActionId()
+            );
+          } else {
+            await app.services.partida.actualizarEstadoJuego(
+              partidaId, juegoActivo.id, nuevoEstado,
+              juegoActivo.state_version, sessionId, nuevoActionId()
+            );
+          }
+        } else if (tipo === 'marcar-error-rosco') {
+          const { RoscoGameDefinition } = await import('../../games/rosco/RoscoGameDefinition.js');
+          const config = juegoActivo.configuracion_congelada || RoscoGameDefinition.defaultConfig;
+          const letraActual = estadoJuego.rosco?.[estadoJuego.indice_actual]?.letra;
+          if (!letraActual) return;
+          let nuevoEstado = RoscoGameDefinition.aplicarError(estadoJuego, letraActual, config);
+          nuevoEstado = RoscoGameDefinition.cambiarTurno(nuevoEstado);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId, juegoActivo.id, nuevoEstado,
+            juegoActivo.state_version, sessionId, nuevoActionId()
+          );
+        } else if (tipo === 'pasapalabra-rosco') {
+          const { RoscoGameDefinition } = await import('../../games/rosco/RoscoGameDefinition.js');
+          const letraActual = estadoJuego.rosco?.[estadoJuego.indice_actual]?.letra;
+          if (!letraActual) return;
+          let nuevoEstado = RoscoGameDefinition.aplicarPasapalabra(estadoJuego, letraActual);
+          nuevoEstado = RoscoGameDefinition.avanzarLetra(nuevoEstado);
+          nuevoEstado = RoscoGameDefinition.cambiarTurno(nuevoEstado);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId, juegoActivo.id, nuevoEstado,
+            juegoActivo.state_version, sessionId, nuevoActionId()
+          );
+        } else if (tipo === 'saltar-letra-rosco') {
+          const { RoscoGameDefinition } = await import('../../games/rosco/RoscoGameDefinition.js');
+          const nuevoEstado = RoscoGameDefinition.avanzarLetra(estadoJuego);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId, juegoActivo.id, nuevoEstado,
+            juegoActivo.state_version, sessionId, nuevoActionId()
+          );
+        } else if (tipo === 'siguiente-equipo-rosco') {
+          const { RoscoGameDefinition } = await import('../../games/rosco/RoscoGameDefinition.js');
+          const nuevoEstado = RoscoGameDefinition.cambiarTurno(estadoJuego);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId, juegoActivo.id, nuevoEstado,
+            juegoActivo.state_version, sessionId, nuevoActionId()
+          );
+        } else if (tipo === 'siguiente-ronda-rosco') {
+          const { RoscoGameDefinition } = await import('../../games/rosco/RoscoGameDefinition.js');
+          const config = juegoActivo.configuracion_congelada || RoscoGameDefinition.defaultConfig;
+          const siguienteRonda = (estadoJuego.ronda_actual || 1) + 1;
+          if (siguienteRonda > (estadoJuego.total_rondas || 1)) {
+            await app.services.partida.actualizarEstadoJuego(
+              partidaId, juegoActivo.id,
+              { ...estadoJuego, fase: 'FIN_DE_JUEGO' },
+              juegoActivo.state_version, sessionId, nuevoActionId()
+            );
+          } else {
+            const contenidoSet = { items: itemsDelJuego || [] };
+            const nuevoEstado = RoscoGameDefinition.limpiarRoscoParaNuevaRonda(estadoJuego, contenidoSet);
+            await app.services.partida.actualizarEstadoJuego(
+              partidaId, juegoActivo.id, nuevoEstado,
+              juegoActivo.state_version, sessionId, nuevoActionId()
+            );
+          }
+        } else if (tipo === 'time-up-rosco') {
+          const { RoscoGameDefinition } = await import('../../games/rosco/RoscoGameDefinition.js');
+          const nuevoEstado = RoscoGameDefinition.aplicarTimeUp(estadoJuego);
           if (!nuevoEstado) return;
           await app.services.partida.actualizarEstadoJuego(
             partidaId,

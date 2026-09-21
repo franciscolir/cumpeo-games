@@ -5,6 +5,7 @@
 
 import { TriviaGameUI } from './trivia/TriviaGameUI.js';
 import { QuePiensaElPublicoGameUI } from './que-piensa-el-publico/QuePiensaElPublicoGameUI.js';
+import { RoscoGameUI } from './rosco/RoscoGameUI.js';
 
 /**
  * Registra todos los GameUIs disponibles en el registry.
@@ -14,7 +15,8 @@ import { QuePiensaElPublicoGameUI } from './que-piensa-el-publico/QuePiensaElPub
 export function registrarGameUIs(uiRegistry) {
   const gameUIs = [
     TriviaGameUI,
-    QuePiensaElPublicoGameUI
+    QuePiensaElPublicoGameUI,
+    RoscoGameUI
   ];
 
   for (const ui of gameUIs) {
