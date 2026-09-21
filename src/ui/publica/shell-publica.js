@@ -10,11 +10,18 @@
    ============================================================= */
 
 import { cargarItemsDeJuego } from '../games/_shared/index.js';
+import { crearTimer } from '../games/_shared/index.js';
+import { ALFABETO, ESTADO_LETRA, RoscoGameDefinition } from '../../games/rosco/RoscoGameDefinition.js';
 
 let cleanupSuscripciones = null;
 let intervalId = null;
 let intervalGaleriaId = null;
 let mensajesActuales = '';
+
+let _roscoTimerEq1 = null;
+let _roscoTimerEq2 = null;
+let _roscoTimerRestanteEq1 = 0;
+let _roscoTimerRestanteEq2 = 0;
 
 /**
  * Renderiza el shell público completo.
@@ -109,16 +116,27 @@ async function _renderContenido(container, app, codigo) {
   const juegoActivo = juegos.find((j) => j.estado === 'EN_CURSO' || j.estado === 'PAUSADO');
 
   const esQPEP = juegoActivo?.juego_codigo === 'QUE_PIENSA_EL_PUBLICO';
+  const esRosco = juegoActivo?.juego_codigo === 'ROSCO';
   const itemsQPEP = esQPEP ? await cargarItemsDeJuego(app, juegoActivo) : null;
+  const itemsRosco = esRosco ? await cargarItemsDeJuego(app, juegoActivo) : null;
   const fase = juegoActivo?.estado_juego?.fase || '';
   const mostrarGaleria = !juegoActivo;
+
+  let escenarioHTML;
+  if (esRosco) {
+    escenarioHTML = _renderEscenarioRosco(juegoActivo, itemsRosco, fase, contexto);
+  } else if (esQPEP) {
+    escenarioHTML = _renderEscenarioQPEP(juegoActivo, itemsQPEP, fase, contexto);
+  } else {
+    escenarioHTML = _renderEscenario(juegoActivo);
+  }
 
   container.innerHTML = `
     <div class="min-h-screen flex flex-col bg-background">
       ${_renderHeader(partida, juegoActivo)}
       <div class="flex-1 grid grid-cols-1 lg:grid-cols-12">
         <div class="lg:col-span-7 flex flex-col border-r-0 lg:border-r-2.5 border-on-surface">
-          ${esQPEP ? _renderEscenarioQPEP(juegoActivo, itemsQPEP, fase, contexto) : _renderEscenario(juegoActivo)}
+          ${escenarioHTML}
           ${mostrarGaleria ? _renderGaleria() : ''}
           ${_renderAnuncio(partida, juegoActivo)}
         </div>
@@ -135,6 +153,10 @@ async function _renderContenido(container, app, codigo) {
   _iniciarRotacionGaleria(container, partida.id, app);
   _generarQR(partida);
   await _cargarMuroMensajes(container, app, partida.id);
+
+  if (esRosco && juegoActivo?.estado_juego) {
+    _iniciarTimerRoscoPublico(juegoActivo.estado_juego, container);
+  }
 }
 
 /* =============================================================
@@ -368,6 +390,236 @@ function _renderEscenarioQPEP(juegoActivo, items, fase, contexto) {
       </div>
     </section>
   `;
+}
+
+/* =============================================================
+   Escenario Rosco (público)
+   ============================================================= */
+
+function _obtenerItemRosco(estadoJuego, items) {
+  if (!items || !estadoJuego?.rosco) return null;
+  const letraActual = estadoJuego.rosco[estadoJuego.indice_actual]?.letra;
+  if (!letraActual) return null;
+  const ronda = estadoJuego.ronda_actual || 1;
+  return items.find((it) => it.letra === letraActual && it.ronda === ronda)
+    || items.find((it) => it.letra === letraActual)
+    || null;
+}
+
+function _renderRoscoPublico(estadoJuego) {
+  const rosco = estadoJuego.rosco || [];
+  const indiceActual = estadoJuego.indice_actual || 0;
+
+  const colores = {
+    [ESTADO_LETRA.PENDIENTE]: 'bg-surface-container-lowest border-on-surface',
+    [ESTADO_LETRA.CORRECTA]: 'bg-tertiary/20 border-tertiary',
+    [ESTADO_LETRA.INCORRECTA]: 'bg-error/20 border-error',
+    [ESTADO_LETRA.PASADA]: 'bg-comicYellow/30 border-comicYellow'
+  };
+
+  const lettersHTML = rosco.map((item, i) => {
+    const esActual = i === indiceActual;
+    const esResuelta = item.estado === ESTADO_LETRA.CORRECTA || item.estado === ESTADO_LETRA.INCORRECTA;
+    const claseFondo = colores[item.estado] || colores[ESTADO_LETRA.PENDIENTE];
+    const claseActual = esActual ? 'ring-4 ring-primary scale-110 z-10' : '';
+    const claseResuelta = esResuelta ? 'opacity-70' : '';
+
+    let icono = '';
+    if (item.estado === ESTADO_LETRA.CORRECTA) icono = '✓';
+    else if (item.estado === ESTADO_LETRA.INCORRECTA) icono = '✗';
+    else if (item.estado === ESTADO_LETRA.PASADA) icono = '→';
+
+    return `
+      <div data-letra="${item.letra}" data-index="${i}"
+        class="relative border-2.5 ${claseFondo} ${claseActual} ${claseResuelta} rounded-lg aspect-square flex flex-col items-center justify-center shadow-comic-sm transition-all">
+        <span class="font-display-hero text-xl text-on-surface">${item.letra}</span>
+        ${icono ? `<span class="absolute -top-1 -right-1 text-sm font-bold ${item.estado === ESTADO_LETRA.CORRECTA ? 'text-tertiary' : item.estado === ESTADO_LETRA.INCORRECTA ? 'text-error' : 'text-comicYellow'}">${icono}</span>` : ''}
+      </div>
+    `;
+  });
+
+  return `
+    <div class="grid grid-cols-6 gap-2 max-w-lg mx-auto">
+      ${lettersHTML.slice(0, 6).join('')}
+    </div>
+    <div class="grid grid-cols-6 gap-2 max-w-lg mx-auto mt-2">
+      ${lettersHTML.slice(6, 12).join('')}
+      <div class="col-span-6 flex items-center justify-center min-h-[4rem]">
+        <div id="rosco-centro" class="text-center"></div>
+      </div>
+      ${lettersHTML.slice(12, 18).join('')}
+    </div>
+    <div class="grid grid-cols-6 gap-2 max-w-lg mx-auto mt-2">
+      ${lettersHTML.slice(18, 27).join('')}
+    </div>
+  `;
+}
+
+function _renderEscenarioRosco(juegoActivo, items, fase, contexto) {
+  const estadoJuego = juegoActivo?.estado_juego || {};
+  const equipo1 = contexto?.equipos?.[0] || { nombre: 'Eq1' };
+  const equipo2 = contexto?.equipos?.[1] || { nombre: 'Eq2' };
+  const equipoActual = estadoJuego.equipo_actual || 1;
+  const ronda = estadoJuego.ronda_actual || 1;
+  const totalRondas = estadoJuego.total_rondas || 1;
+  const pts1 = estadoJuego.puntos_equipo_1 || 0;
+  const pts2 = estadoJuego.puntos_equipo_2 || 0;
+
+  const itemActual = _obtenerItemRosco(estadoJuego, items);
+  const definicion = itemActual?.definicion || '';
+  const respuesta = itemActual?.respuesta || '';
+
+  const rosco = estadoJuego.rosco || [];
+  const resueltas = rosco.filter((l) => l.estado === ESTADO_LETRA.CORRECTA || l.estado === ESTADO_LETRA.INCORRECTA).length;
+  const total = rosco.length || 27;
+
+  const letraActual = rosco[estadoJuego.indice_actual]?.letra || '';
+  const esResuelta = rosco[estadoJuego.indice_actual]?.estado === ESTADO_LETRA.CORRECTA
+    || rosco[estadoJuego.indice_actual]?.estado === ESTADO_LETRA.INCORRECTA;
+  const mostrarRespuesta = esResuelta && respuesta;
+
+  let tiempo1 = estadoJuego.tiempo_equipo_1 ?? 60;
+  let tiempo2 = estadoJuego.tiempo_equipo_2 ?? 60;
+
+  if (fase === 'TURNO_ACTIVO') {
+    tiempo1 = equipoActual === 1 ? (_roscoTimerRestanteEq1 || tiempo1) : tiempo1;
+    tiempo2 = equipoActual === 2 ? (_roscoTimerRestanteEq2 || tiempo2) : tiempo2;
+  }
+
+  let inner = '';
+
+  if (!fase || fase === 'INICIO_RONDA') {
+    inner = `
+      <p class="font-display-hero text-5xl text-primary uppercase mb-2">¡A JUGAR!</p>
+      <p class="font-headline-md uppercase text-on-surface">Rosco</p>
+      ${fase === 'INICIO_RONDA' ? '<p class="font-body-md text-on-surface-variant mt-2">Esperando inicio del turno…</p>' : ''}
+    `;
+  } else if (fase === 'FIN_DE_RONDA') {
+    inner = `
+      <p class="font-display-hero text-5xl text-primary uppercase mb-4">Fin de ronda</p>
+      <p class="font-headline-md uppercase text-on-surface mb-2">Ronda ${ronda} / ${totalRondas}</p>
+      <div class="grid grid-cols-2 gap-4 max-w-md mx-auto">
+        <div class="border-3 border-[#00D2FF] bg-[#00D2FF]/15 rounded-xl p-4 text-center">
+          <p class="font-headline-md">${equipo1.nombre}</p>
+          <p class="font-comic-score text-5xl text-on-surface mt-1">${pts1}</p>
+        </div>
+        <div class="border-3 border-[#FF3344] bg-[#FF3344]/15 rounded-xl p-4 text-center">
+          <p class="font-headline-md">${equipo2.nombre}</p>
+          <p class="font-comic-score text-5xl text-on-surface mt-1">${pts2}</p>
+        </div>
+      </div>
+    `;
+  } else if (fase === 'FIN_DE_JUEGO') {
+    const resultado = RoscoGameDefinition?.calcularResultado(estadoJuego) || {};
+    const ganador = resultado.ganador;
+    let ganadorNombre = 'Empate técnico';
+    let ganadorColor = 'text-on-surface-variant';
+    if (ganador === 1) { ganadorNombre = equipo1.nombre; ganadorColor = 'text-[#00D2FF]'; }
+    else if (ganador === 2) { ganadorNombre = equipo2.nombre; ganadorColor = 'text-[#FF3344]'; }
+
+    inner = `
+      <p class="font-display-hero text-5xl text-primary uppercase mb-4">¡Juego terminado!</p>
+      <p class="font-headline-md uppercase ${ganadorColor} mb-4">${ganadorNombre}</p>
+      <div class="grid grid-cols-2 gap-4 max-w-md mx-auto">
+        <div class="border-3 border-[#00D2FF] bg-[#00D2FF]/15 rounded-xl p-4 text-center">
+          <p class="font-headline-md">${equipo1.nombre}</p>
+          <p class="font-comic-score text-5xl text-on-surface mt-1">${pts1}</p>
+          <p class="font-label-md text-on-surface-variant">${estadoJuego.letras_completadas_equipo_1 || 0} letras</p>
+        </div>
+        <div class="border-3 border-[#FF3344] bg-[#FF3344]/15 rounded-xl p-4 text-center">
+          <p class="font-headline-md">${equipo2.nombre}</p>
+          <p class="font-comic-score text-5xl text-on-surface mt-1">${pts2}</p>
+          <p class="font-label-md text-on-surface-variant">${estadoJuego.letras_completadas_equipo_2 || 0} letras</p>
+        </div>
+      </div>
+    `;
+  } else {
+    const equipoActivoNombre = equipoActual === 1 ? equipo1.nombre : equipo2.nombre;
+    const equipoActivoColor = equipoActual === 1 ? 'border-[#00D2FF] bg-[#00D2FF]/15' : 'border-[#FF3344] bg-[#FF3344]/15';
+
+    inner = `
+      <div class="bg-surface-container-lowest border-3 border-on-surface rounded-2xl p-6 shadow-comic-lg">
+        ${_renderRoscoPublico(estadoJuego)}
+      </div>
+
+      <div class="mt-4 w-full max-w-lg">
+        <div class="bg-surface-container-lowest border-2.5 border-on-surface rounded-xl p-4 shadow-comic-sm text-center">
+          <p class="font-label-md uppercase text-on-surface-variant mb-1">Letra ${letraActual}</p>
+          <p class="font-display-hero text-2xl text-on-surface">${definicion || 'Sin definición'}</p>
+          ${mostrarRespuesta ? `<p class="font-headline-md text-tertiary mt-2">${respuesta}</p>` : ''}
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 mt-4 w-full max-w-lg">
+        <div class="border-2.5 ${equipoActual === 1 ? equipoActivoColor : 'border-on-surface bg-surface-container-lowest'} rounded-xl p-3 shadow-comic-sm text-center">
+          <p class="font-body-md uppercase">${equipo1.nombre}</p>
+          <p class="font-display-hero text-3xl text-primary">${pts1}</p>
+          <p class="font-display-hero text-lg ${equipoActual === 1 ? 'text-tertiary' : 'text-on-surface-variant'}">${tiempo1}s</p>
+        </div>
+        <div class="border-2.5 ${equipoActual === 2 ? equipoActivoColor : 'border-on-surface bg-surface-container-lowest'} rounded-xl p-3 shadow-comic-sm text-center">
+          <p class="font-body-md uppercase">${equipo2.nombre}</p>
+          <p class="font-display-hero text-3xl text-primary">${pts2}</p>
+          <p class="font-display-hero text-lg ${equipoActual === 2 ? 'text-tertiary' : 'text-on-surface-variant'}">${tiempo2}s</p>
+        </div>
+      </div>
+
+      <div class="mt-3 font-label-md text-on-surface-variant">
+        Ronda ${ronda} / ${totalRondas} · ${resueltas}/${total} resueltas
+      </div>
+    `;
+  }
+
+  return `
+    <section class="flex items-center justify-center p-6 border-b-2.5 border-on-surface bg-surface">
+      <div class="w-full max-w-2xl bg-surface-container-lowest border-3 border-on-surface rounded-2xl p-8 shadow-comic-lg text-center flex flex-col items-center justify-center min-h-[25vh]">
+        ${inner}
+      </div>
+    </section>
+  `;
+}
+
+function _iniciarTimerRoscoPublico(estadoJuego, container) {
+  _limpiarTimerRoscoPublico();
+
+  const fase = estadoJuego?.fase || '';
+  const equipoActual = estadoJuego?.equipo_actual || 1;
+  const segundosEq1 = estadoJuego?.tiempo_equipo_1 ?? 60;
+  const segundosEq2 = estadoJuego?.tiempo_equipo_2 ?? 60;
+
+  if (fase !== 'TURNO_ACTIVO') return;
+
+  if (equipoActual === 1) {
+    _roscoTimerRestanteEq1 = segundosEq1;
+    _roscoTimerEq1 = crearTimer({
+      duracionSeg: segundosEq1,
+      onTick: (restante) => {
+        _roscoTimerRestanteEq1 = restante;
+        const el = container.querySelector('#rosco-pub-timer-eq1');
+        if (el) el.textContent = `${restante}s`;
+      },
+      onCierre: () => { _roscoTimerRestanteEq1 = 0; }
+    });
+    _roscoTimerEq1.iniciar();
+  } else {
+    _roscoTimerRestanteEq2 = segundosEq2;
+    _roscoTimerEq2 = crearTimer({
+      duracionSeg: segundosEq2,
+      onTick: (restante) => {
+        _roscoTimerRestanteEq2 = restante;
+        const el = container.querySelector('#rosco-pub-timer-eq2');
+        if (el) el.textContent = `${restante}s`;
+      },
+      onCierre: () => { _roscoTimerRestanteEq2 = 0; }
+    });
+    _roscoTimerEq2.iniciar();
+  }
+}
+
+function _limpiarTimerRoscoPublico() {
+  _roscoTimerEq1?.cancelar();
+  _roscoTimerEq2?.cancelar();
+  _roscoTimerEq1 = null;
+  _roscoTimerEq2 = null;
 }
 
 /* =============================================================
