@@ -170,7 +170,7 @@ El Bloque 3 pasa de 7 a 6 pasos.
 **Bloque 4 cerrado. ★ MVP alcanzado ★. Bloque 5 en progreso.**
 ---
 
-### Bloque 5 — Juegos restantes 🔄 EN PROGRESO (10/20)
+### Bloque 5 — Juegos restantes 🔄 EN PROGRESO (11/21)
 
 **Objetivo:** Implementar los juegos restantes en orden de madurez de mecánica.
 
@@ -201,7 +201,7 @@ El Bloque 3 pasa de 7 a 6 pasos.
 | 5.8 | Anti-Trivia — cerrar mecánica + implementar | ⬜ | — |
 | 5.9 | Enlaces — cerrar mecánica + implementar | ⬜ | — |
 
-**Nota:** 5.3d entregó tests no-e2e y fue rechazado; 5.3e completó el dominio pero dejó el timer público sin implementar; 5.3f cerró todo (9 e2e reales pasando). El conteo efectivo es 10/20 aprobados.
+**Nota:** 5.3d entregó tests no-e2e y fue rechazado; 5.3e completó el dominio pero dejó el timer público sin implementar; 5.3f cerró todo (9 e2e reales pasando). El conteo efectivo es 11/21 aprobados.
 
 
 ### Bloque 6 — Migración e2e a Supabase (opcional) ⬜ PENDIENTE
