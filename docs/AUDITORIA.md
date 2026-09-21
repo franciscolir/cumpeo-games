@@ -150,3 +150,5 @@ _(ninguna)_
 | 2026-09-20 | 4 | 4.5 | ✅ APROBADO | Registro de pronósticos + botón Revelar. 2 e2e tests. | 97ece23 |
 
 | 2026-09-20 | 4 | 4.6 | ✅ APROBADO | Revelar + puntuar + siguiente ronda. 3 e2e tests. | c31a1d6 |
+
+| 2026-09-21 | 4 | 4.6-fix | ✅ APROBADO | Conductor carga items del set activo. Deuda #41 resuelta. | aacf950 |
