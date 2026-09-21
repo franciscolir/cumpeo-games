@@ -173,6 +173,7 @@ _(ninguna)_
 | 2026-09-21 | 5 | 5.1a | ✅ APROBADO | Trivia conectada al shell. 8 tipos de acción. | 58e2043 |
 | 2026-09-21 | 5 | 5.1b | ✅ APROBADO | Editor de items de Trivia. 5 e2e nuevos + 1 actualizado. 609 unit. | a2cafb5 |
 | 2026-09-21 | 5 | 5.1c | ✅ APROBADO | Cierre documental: mecánicas CI/Pic/HE + reordenamiento del Bloque 5. | (pendiente) |
+| 2026-09-21 | 5 | 5.1d | ✅ APROBADO | Cierre documental: mecánica de Rosco. Desglose 5.2a-d. | (pendiente) |
 
 ## Deuda técnica nueva
 
@@ -185,3 +186,5 @@ _(ninguna)_
 | 54 | `docs/roadmap/pasos/bloque-5.0.md` y `bloque-5.1a.md` no fueron archivados. | Paso 5.1c (detectado) | Baja |
 | 55 | Sección "2. Bloques" del ROADMAP y matriz de estado de GAMES.md podrían divergir a futuro. Conviene automatizar chequeo. | Paso 5.1c (detectado) | Baja |
 | 56 | El script `update-5.1c.js` usó anclas de la sección equivocada de GAMES.md (Memoricé en lugar de Canción Incompleta). Cerrado en commit posterior. Conviene evitar anclas por texto literal en docs con secciones similares; preferir anclas por sección. | Paso 5.1c (detectado) | Baja |
+| 57 | La validación de Rosco requiere N items por letra para N rondas. Si el set no cumple, el conductor no puede iniciar el juego. UX a definir. | Paso 5.1d (detectado) | Media |
+| 58 | El rosco tiene 27 letras (A-Z + Ñ). La UI debe manejar el layout circular o rectangular con esa cantidad. Verificar legibilidad en pantalla pública. | Paso 5.1d (detectado) | Baja |

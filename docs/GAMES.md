@@ -265,77 +265,152 @@ según la modalidad que se cierre.
 
 ## Concepto
 
-Preguntas asociadas a las letras de un rosco alfabético.
+Preguntas asociadas a letras de un rosco alfabético.
 
 ## Set
 
-El Set puede utilizar:
+27 letras fijas A–Z + Ñ en orden alfabético tradicional español.
 
--   A-Z;
--   A-Z + Ñ.
+El alfabeto NO es configurable. Siempre incluye la Ñ.
 
 El mismo Set se utiliza para ambos equipos.
 
+Rondas por partida: configurable (N rondas). 1 rosco = 1 ronda.
+
+### Item del set
+
+```js
+{
+  letra: 'A',
+  definicion: 'Fruta...',
+  respuesta: 'Ananá'
+}
+```
+
+### Validación del set
+
+| Regla | Detalle |
+|-------|---------|
+| Items requeridos | Debe tener items para las 27 letras |
+| Items por letra | Cada letra debe tener al menos N items (N = rondas configuradas) |
+| Ejemplo 2 rondas | Mínimo 54 items |
+| Ejemplo 3 rondas | Mínimo 81 items |
+
 ## Turnos
 
-Cada equipo dispone de un turno completo.
+Dinámica tipo tenis.
+
+1 o 2 jugadores designados por equipo. El equipo responde mientras
+acierta. Cambio de turno al errar o al usar pasapalabra.
+
+Si un equipo nunca erra, sigue jugando; el otro solo entra con error o
+pasapalabra.
+
+Pausa entre turnos: el conductor presiona "Siguiente equipo".
+
+No existe "robo" como mecánica separada; la letra pasa al otro equipo
+como flujo de pasapalabra.
 
 ## Desarrollo
 
 Durante el turno se recorren las letras y se responden las preguntas
 asociadas.
 
-Cada letra conserva su estado.
+Cada letra conserva su estado:
+
+| Estado | Descripción |
+|--------|-------------|
+| Pendiente | No fue mostrada aún en esta ronda |
+| Correcta | Acierto del equipo |
+| Incorrecta | Error del equipo. No se reintenta |
+| Pasada | Pasapalabra; pasa al otro equipo |
 
 ## Pasapalabra
 
-Cuando se utiliza `Pasapalabra`:
+Cuando se utiliza pasapalabra:
 
 -   la letra no se considera resuelta;
--   vuelve al final de las letras pendientes;
+-   pasa al otro equipo;
+-   si ambos pasan, queda pendiente hasta la otra vuelta;
+-   vuelven al final de la lista;
+-   cuando no queden frescas, se retoman las pendientes;
 -   puede intentarse nuevamente.
 
 ## Tiempo
 
-Utiliza un temporizador total por equipo/turno.
+Timer total de ronda. Corre siempre que hay turno activo.
 
-El temporizador puede pausarse y reanudarse.
+Se pausa con "Siguiente equipo" y se reanuda al arrancar el nuevo
+turno.
+
+2 timers en pantalla (uno por equipo).
+
+Duración configurable, default 60s por equipo.
+
+Fin de tiempo: termina la ronda; pendientes = no resueltas.
 
 ## Puntuación
 
-La puntuación es configurable.
+-   Puntos por acierto: configurable.
+-   Penalización por error: configurable.
+-   Puntuación acumulativa entre rondas.
+-   Ganador: mayor puntuación total.
+-   Desempate: por letras completadas.
 
 ## Finalización
 
-El Rosco termina al cumplirse la condición de finalización, incluyendo:
+El Rosco termina al cumplirse la condición de finalización:
 
--   completar el rosco;
+-   completar el rosco (todas las letras resueltas);
 -   agotamiento del tiempo.
+
+N rondas configurables. Fin de partida tras N rondas.
+
+## Validación
+
+El conductor valida cada respuesta. Marca OK o X en la UI.
+
+La respuesta es verbal, NO se tipea.
+
+## Intervención del conductor
+
+| Permitido | Prohibido |
+|-----------|-----------|
+| Pausar/reanudar timer | Retroceder letras ya marcadas |
+| Saltar a la siguiente letra | |
 
 ## Estado específico
 
-Conceptualmente:
-
--   alfabeto;
--   letras;
--   letra actual;
--   letras pendientes;
--   letras resueltas;
--   respuesta actual;
--   estado de respuesta;
--   equipo actual;
--   puntuación de ambos equipos;
--   temporizador.
+| Campo | Descripción |
+|-------|-------------|
+| Alfabeto | A–Z + Ñ (fijo) |
+| Letras | Array de 27 letras con estado |
+| Letra actual | Letra que se está mostrando |
+| Pendientes | Letras sin resolver en esta ronda |
+| Resueltas | Letras correctas o incorrectas |
+| Respuesta actual | Texto que se está evaluando |
+| Estado de respuesta | OK, X o pendiente |
+| Equipo actual | 1 o 2 |
+| Puntuación ambos equipos | Acumulada entre rondas |
+| 2 temporizadores | Uno por equipo |
+| Ronda actual | Número de ronda en curso |
+| Total de rondas | N configuradas |
 
 ## Público
 
-El público puede ver:
+El público muestra:
 
 -   rosco completo;
 -   estado de las letras;
 -   progreso;
--   pregunta/información pública correspondiente;
--   respuesta después de la validación.
+-   definición en el CENTRO del rosco;
+-   respuesta después de la validación;
+-   2 timers.
+
+## Reinicio entre rondas
+
+-   El rosco se limpia (todas las letras vuelven a "pendiente").
+-   Se reasignan las pendientes + se barajan nuevas del set.
 
 ------------------------------------------------------------------------
 
