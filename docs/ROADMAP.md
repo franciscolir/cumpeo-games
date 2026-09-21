@@ -38,7 +38,7 @@
 | 2 | Shell de partida (Conductor + Pública) | ✅ CERRADO | 13/13 | 5e32d5b | 2026-09-19 |
 | 3 | Móvil + moderación | ✅ CERRADO | 6/6 | 9ca4e7a | 2026-09-19 |
 | 4 | "¿Qué piensa el público?" | ✅ CERRADO | 13/13 | 2e19767 | 2026-09-21 |
-| 5 | 8 juegos restantes | ⬜ PENDIENTE | 0/8 | — | — |
+| 5 | 8 juegos restantes | 🔄 EN PROGRESO | 3/11 | — | — |
 | 6 | Migración e2e a Supabase (opcional) | ⬜ PENDIENTE | 0/? | — | — |
 
 **★ MVP se alcanza al cerrar el Bloque 4 ★**
@@ -212,6 +212,8 @@ Cada juego se cierra con su propio bloque interno (GameDefinition + UI Conductor
 | 2.0 | 2026-09-19 | Bloque 2 cerrado. 13/13 pasos. 540 unit + 53 e2e. |
 | 3.0 | 2026-09-19 | Bloque 3 cerrado. 6/6 pasos. 540 unit + 40 e2e. |
 | 4.0 | 2026-09-21 | Bloque 4 cerrado. ★ MVP alcanzado ★. 13/13 pasos. |
+| 5.0 | 2026-09-21 | Bloque 5 iniciado. 5.0 y 5.1a aprobados. 609 unit + 59 e2e. |
+| 5.1 | 2026-09-21 | Paso 5.1b aprobado (editor de items de Trivia). |
 ---
 
 ## 5. Convenciones
