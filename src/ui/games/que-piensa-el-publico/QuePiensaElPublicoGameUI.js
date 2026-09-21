@@ -155,7 +155,7 @@ export const QuePiensaElPublicoGameUI = {
     const mostrarConteo = fase === 'ENCUESTA_ACTIVA' || fase === 'ENCUESTA_CERRADA';
 
     const resultado = estadoJuego.resultado_publico;
-    const mostrarResultado = fase === 'REVELANDO' || fase === 'PUNTUANDO';
+    const mostrarResultado = fase === 'ENCUESTA_CERRADA' || fase === 'REVELANDO' || fase === 'PUNTUANDO';
 
     const pronostico1 = estadoJuego.pronostico_equipo_1;
     const pronostico2 = estadoJuego.pronostico_equipo_2;
@@ -215,7 +215,7 @@ export const QuePiensaElPublicoGameUI = {
     }
 
     let pronosticosHTML = '';
-    if (pronostico1 || pronostico2) {
+    if (fase === 'ENCUESTA_CERRADA' || fase === 'REVELANDO' || fase === 'PUNTUANDO') {
       pronosticosHTML = `
         <div class="bg-surface-container-lowest border-2.5 border-on-surface rounded-xl p-4 shadow-comic-sm">
           <p class="font-label-md uppercase text-on-surface-variant mb-2">Pronosticos</p>
@@ -265,6 +265,11 @@ export const QuePiensaElPublicoGameUI = {
    */
   renderizarPanelConductor(estadoJuego, container, contexto, callbacks) {
     const fase = estadoJuego?.fase || '';
+    const equipo1 = contexto.equipos?.[0] || { nombre: 'Eq1' };
+    const equipo2 = contexto.equipos?.[1] || { nombre: 'Eq2' };
+    const pron1 = estadoJuego.pronostico_equipo_1 || '';
+    const pron2 = estadoJuego.pronostico_equipo_2 || '';
+    const puedeRevelar = pron1 && pron2;
 
     let botonesHTML = '';
 
@@ -285,21 +290,34 @@ export const QuePiensaElPublicoGameUI = {
         `;
         break;
 
-      case 'ENCUESTA_CERRADA':
-        botonesHTML = `
-          <div class="flex flex-wrap gap-2">
-            ${Boton({ texto: 'Registrar pronosticos', variante: 'primary', id: 'btn-qpep-pronosticos' })}
-          </div>
-        `;
-        break;
+      case 'ENCUESTA_CERRADA': {
+        const btnA = (team, label) => (texto, valor) =>
+          `<button data-team="${team}" data-valor="${valor}"
+            class="font-label-md uppercase border-2.5 border-on-surface rounded-lg px-3 py-1 shadow-comic-sm transition ${label === valor ? 'bg-tertiary text-on-tertiary' : 'bg-surface-container-lowest text-on-surface hover:shadow-comic-md'}"
+          >${texto}</button>`;
 
-      case 'PRONOSTICOS_REGISTRADOS':
+        const btns1A = btnA(1, pron1)('A', 'A');
+        const btns1B = btnA(1, pron1)('B', 'B');
+        const btns1E = btnA(1, pron1)('EMPATE', 'EMPATE');
+        const btns2A = btnA(2, pron2)('A', 'A');
+        const btns2B = btnA(2, pron2)('B', 'B');
+        const btns2E = btnA(2, pron2)('EMPATE', 'EMPATE');
+
         botonesHTML = `
-          <div class="flex flex-wrap gap-2">
-            ${Boton({ texto: 'Revelar resultado', variante: 'primary', id: 'btn-qpep-revelar' })}
+          <div class="flex flex-col gap-4">
+            <div class="border-2.5 border-on-surface rounded-lg p-4 bg-surface-container-lowest">
+              <p class="font-headline-md uppercase mb-3">${equipo1.nombre}</p>
+              <div class="flex gap-2">${btns1A}${btns1B}${btns1E}</div>
+            </div>
+            <div class="border-2.5 border-on-surface rounded-lg p-4 bg-surface-container-lowest">
+              <p class="font-headline-md uppercase mb-3">${equipo2.nombre}</p>
+              <div class="flex gap-2">${btns2A}${btns2B}${btns2E}</div>
+            </div>
+            ${Boton({ texto: 'Revelar resultado', variante: 'primary', id: 'btn-qpep-revelar', disabled: !puedeRevelar })}
           </div>
         `;
         break;
+      }
 
       case 'REVELANDO':
       case 'PUNTUANDO':
@@ -359,6 +377,26 @@ export const QuePiensaElPublicoGameUI = {
             fase: 'ENCUESTA_CERRADA',
             resultado_publico: resultado
           }
+        });
+      });
+    }
+
+    if (fase === 'ENCUESTA_CERRADA') {
+      container.querySelectorAll('[data-team]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const team = parseInt(btn.dataset.team, 10);
+          const valor = btn.dataset.valor;
+          const key = team === 1 ? 'pronostico_equipo_1' : 'pronostico_equipo_2';
+          callbacks.onAccion('cambiar-estado-juego', {
+            estadoJuego: { ...estadoJuego, [key]: valor }
+          });
+        });
+      });
+
+      container.querySelector('#btn-qpep-revelar')?.addEventListener('click', () => {
+        if (!pron1 || !pron2) return;
+        callbacks.onAccion('cambiar-estado-juego', {
+          estadoJuego: { ...estadoJuego, fase: 'REVELANDO' }
         });
       });
     }

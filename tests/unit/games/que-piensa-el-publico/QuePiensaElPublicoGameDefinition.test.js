@@ -171,7 +171,7 @@ describe('QuePiensaElPublicoGameDefinition', () => {
     it('todas las fases validas son aceptadas', () => {
       const fases = [
         'SELECCIONANDO_PREGUNTA', 'ENCUESTA_ACTIVA', 'ENCUESTA_CERRADA',
-        'PRONOSTICOS_REGISTRADOS', 'REVELANDO', 'PUNTUANDO', 'FIN_DE_JUEGO'
+        'REVELANDO', 'PUNTUANDO', 'FIN_DE_JUEGO'
       ];
       for (const fase of fases) {
         expect(QuePiensaElPublicoGameDefinition.validarEstadoJuego(estadoValido({ fase }))).toBe(true);

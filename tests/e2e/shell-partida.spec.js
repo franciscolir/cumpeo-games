@@ -510,3 +510,103 @@ test('timer de encuesta se inicia y auto-cierra', async ({ page }) => {
   }, id);
   expect(faseFinal).toBe('ENCUESTA_CERRADA');
 });
+
+test('conductor registra pronóstico equipo 1 y equipo 2', async ({ page }) => {
+  await page.goto('/');
+  const { id } = await setupCircuitoQPEP(page);
+
+  await page.evaluate(async (pid) => {
+    await window.cumpeo.services.partida.tomarControl(pid, window.cumpeo.session.sessionId);
+    await window.cumpeo.services.partida.comenzarPartida(pid, window.cumpeo.session.sessionId, crypto.randomUUID());
+
+    const ctx = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
+    const cj = ctx.juegos[0];
+    await window.cumpeo.services.partida.iniciarJuego(
+      pid, cj.id, window.cumpeo.session.sessionId, crypto.randomUUID()
+    );
+  }, id);
+
+  await page.goto('/');
+  await page.goto(`/#/partidas/${id}`);
+  await waitForCumpeo(page);
+
+  await page.locator('#btn-qpep-iniciar-juego').click();
+  await page.waitForTimeout(500);
+  await page.locator('#btn-qpep-iniciar').click();
+  await page.waitForTimeout(500);
+  await page.locator('#btn-qpep-cerrar').click();
+  await page.waitForTimeout(500);
+
+  const btnEq1A = page.locator('[data-team="1"][data-valor="A"]');
+  await expect(btnEq1A).toBeVisible({ timeout: 10000 });
+  await btnEq1A.click();
+  await expect(btnEq1A).toHaveClass(/bg-tertiary/, { timeout: 10000 });
+
+  let pron1 = await page.evaluate(async (pid) => {
+    const ctx = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
+    return ctx.juegos[0]?.estado_juego?.pronostico_equipo_1;
+  }, id);
+  expect(pron1).toBe('A');
+
+  const btnEq2EMPATE = page.locator('[data-team="2"][data-valor="EMPATE"]');
+  await expect(btnEq2EMPATE).toBeVisible();
+  await btnEq2EMPATE.click();
+  await expect(page.locator('[data-team="2"][data-valor="EMPATE"]')).toHaveClass(/bg-tertiary/, { timeout: 10000 });
+
+  const estado = await page.evaluate(async (pid) => {
+    const ctx = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
+    return {
+      pron1: ctx.juegos[0]?.estado_juego?.pronostico_equipo_1,
+      pron2: ctx.juegos[0]?.estado_juego?.pronostico_equipo_2
+    };
+  }, id);
+  expect(estado.pron1).toBe('A');
+  expect(estado.pron2).toBe('EMPATE');
+});
+
+test('botón Revelar se habilita cuando ambos pronósticos están registrados', async ({ page }) => {
+  await page.goto('/');
+  const { id } = await setupCircuitoQPEP(page);
+
+  await page.evaluate(async (pid) => {
+    await window.cumpeo.services.partida.tomarControl(pid, window.cumpeo.session.sessionId);
+    await window.cumpeo.services.partida.comenzarPartida(pid, window.cumpeo.session.sessionId, crypto.randomUUID());
+
+    const ctx = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
+    const cj = ctx.juegos[0];
+    await window.cumpeo.services.partida.iniciarJuego(
+      pid, cj.id, window.cumpeo.session.sessionId, crypto.randomUUID()
+    );
+  }, id);
+
+  await page.goto('/');
+  await page.goto(`/#/partidas/${id}`);
+  await waitForCumpeo(page);
+
+  await page.locator('#btn-qpep-iniciar-juego').click();
+  await page.waitForTimeout(500);
+  await page.locator('#btn-qpep-iniciar').click();
+  await page.waitForTimeout(500);
+  await page.locator('#btn-qpep-cerrar').click();
+  await page.waitForTimeout(500);
+
+  const btnRevelar = page.locator('#btn-qpep-revelar');
+  await expect(btnRevelar).toBeVisible({ timeout: 10000 });
+  await expect(btnRevelar).toBeDisabled();
+
+  await page.locator('[data-team="1"][data-valor="B"]').click();
+  await expect(page.locator('[data-team="1"][data-valor="B"]')).toHaveClass(/bg-tertiary/, { timeout: 10000 });
+  await expect(btnRevelar).toBeDisabled();
+
+  await page.locator('[data-team="2"][data-valor="A"]').click();
+  await expect(btnRevelar).toBeEnabled({ timeout: 10000 });
+
+  await btnRevelar.click();
+  await page.waitForTimeout(500);
+
+  const fase = await page.evaluate(async (pid) => {
+    const ctx = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
+    return ctx.juegos[0]?.estado_juego?.fase;
+  }, id);
+  expect(fase).toBe('REVELANDO');
+});
