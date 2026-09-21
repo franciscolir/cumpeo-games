@@ -6,6 +6,7 @@
 import { TriviaGameDefinition } from './trivia/TriviaGameDefinition.js';
 import { QuePiensaElPublicoGameDefinition } from './que-piensa-el-publico/QuePiensaElPublicoGameDefinition.js';
 import { RoscoGameDefinition } from './rosco/RoscoGameDefinition.js';
+import { CancionIncompletaGameDefinition } from './cancion-incompleta/CancionIncompletaGameDefinition.js';
 
 /**
  * Registra todos los juegos disponibles en el registry.
@@ -16,7 +17,8 @@ export function registrarTodos(registry) {
   const definiciones = [
     TriviaGameDefinition,
     QuePiensaElPublicoGameDefinition,
-    RoscoGameDefinition
+    RoscoGameDefinition,
+    CancionIncompletaGameDefinition
   ];
 
   for (const def of definiciones) {
