@@ -351,25 +351,23 @@ Juego de dibujo y adivinanza.
 Representar un concepto mediante dibujo para que el equipo lo
 identifique.
 
-## Mecánica pendiente
+## Mecánica cerrada
 
-Falta cerrar:
+| Aspecto | Definición |
+|---|---|
+| Modos | 4: palabras prohibidas, gestos, dibujo, preguntas sí/no |
+| Set | Sí, por modo |
+| Selección de palabras | Aleatoria del set |
+| Adivinador | Mismo en los 4 modos. El sistema no identifica quién adivina, solo el equipo en turno |
+| Modo 1 (palabras prohibidas) | La TV muestra concepto + palabras prohibidas. El adivinador de espaldas |
+| Modo 2 (gestos) | Igual lógica, sin palabras |
+| Modo 3 (dibujo) | Pizarra física. No hay canvas en la app |
+| Modo 4 (preguntas) | Adivinador de espaldas pregunta sí/no. Compañero responde solo sí/no. Sin límite de preguntas |
+| Pasar palabra | Sí. Penalización configurable |
+| Puntos | Configurable. Bonus por cantidad configurable |
+| Ronda | 4 modos por equipo = 1 ronda |
+| Tiempo | Configurable por modo |
 
--   quién dibuja;
--   quién adivina;
--   participación del equipo;
--   selección de palabra;
--   Set;
--   tiempo;
--   turnos;
--   puntuación;
--   pasar;
--   errores;
--   robo;
--   victoria;
--   herramientas permitidas.
-
-------------------------------------------------------------------------
 
 # 10. HISTORIA ENREDADA
 
@@ -429,19 +427,22 @@ mecanismos para disparar dichos efectos durante la narración.
 -   efectos de sonido;
 -   estado de narración.
 
-## Pendiente
+## Mecánica cerrada
 
-Todavía deben definirse:
+| Aspecto | Definición |
+|---|---|
+| Selección de historia | El equipo elige de una lista de cards (dibujo + breve descripción) |
+| Historia completa | No se muestra. Se imprime y se entrega a los jugadores en papel |
+| Proyección en pública | No |
+| Papeles de colores | El conductor los entrega al público |
+| Público escribe | En secreto, en los papeles |
+| Vacíos | El jugador lee el papel en voz alta como parte del diálogo |
+| App registra papeles | No. Todo físico |
+| Ganador | Por aplausos del público. El conductor determina. Puntos configurables |
+| Historias por equipo | 1 |
+| Rondas | Configurable |
+| Ruidos | Indicados en la historia. El jugador no decide |
 
--   tiempo;
--   puntuación;
--   rondas;
--   ganador;
--   empate;
--   estructura exacta del Set;
--   condición de finalización.
-
-------------------------------------------------------------------------
 
 # 11. ANTI-TRIVIA
 
@@ -608,14 +609,14 @@ explícitamente como **TBD** hasta ser acordada.
 
 # 16. MATRIZ DE ESTADO
 
-  Juego                     Mecánica           Set   Tiempo   Puntuación     Público
-  ------------------------- ------------------ ----- -------- -------------- ---------
-  ¿Qué piensa el público?   Parcial            TBD   TBD      TBD            Sí
-  Trivia                    Parcial            Sí    TBD      TBD            Sí
-  Memoricé                  Parcial            TBD   TBD      TBD            Sí
-  Canción Incompleta        Parcial            TBD   TBD      TBD            Sí
-  Rosco                     Cerrada            Sí    Sí       Configurable   Sí
-  Pictionary                Parcial            TBD   TBD      TBD            Sí
-  Historia Enredada         Parcial avanzada   TBD   TBD      TBD            Sí
-  Anti-Trivia               Pendiente          TBD   TBD      TBD            TBD
-  Enlaces                   Pendiente          TBD   TBD      TBD            TBD
+  Juego                     Mecánica   Set   Tiempo       Puntuación     Público
+  ------------------------- ---------- ----- ------------ -------------- ---------
+  ¿Qué piensa el público?   Cerrada    Sí    Sí           Configurable   Sí
+  Trivia                    Parcial    Sí    TBD          TBD            Sí
+  Memoricé                  Parcial    TBD   TBD          TBD            Sí
+  Canción Incompleta        Cerrada    No    Configurable Configurable   No
+  Rosco                     Cerrada    Sí    Sí           Configurable   Sí
+  Pictionary                Cerrada    Sí    Configurable Configurable   Sí
+  Historia Enredada         Cerrada    Sí    No aplica    Configurable   No
+  Anti-Trivia               Pendiente  TBD   TBD          TBD            TBD
+  Enlaces                   Pendiente  TBD   TBD          TBD            TBD

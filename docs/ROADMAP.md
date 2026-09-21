@@ -2,7 +2,7 @@
 
 **Versión:** 1.0
 **Última actualización:** 2026-09-18
-**Estado global:** Bloques 0, 1, 2, 3, 4 cerrados · Bloque 5 en progreso (4/11) · ★ MVP alcanzado ★
+**Estado global:** Bloques 0, 1, 2, 3, 4 cerrados · Bloque 5 en progreso (4/10) · ★ MVP alcanzado ★
 **Rama:** feature/vertical-slice
 
 ---
@@ -38,7 +38,7 @@
 | 2 | Shell de partida (Conductor + Pública) | ✅ CERRADO | 13/13 | 5e32d5b | 2026-09-19 |
 | 3 | Móvil + moderación | ✅ CERRADO | 6/6 | 9ca4e7a | 2026-09-19 |
 | 4 | "¿Qué piensa el público?" | ✅ CERRADO | 13/13 | 2e19767 | 2026-09-21 |
-| 5 | 8 juegos restantes | 🔄 EN PROGRESO | 3/11 | — | — |
+| 5 | Juegos restantes | 🔄 EN PROGRESO | 4/10 | — | — |
 | 6 | Migración e2e a Supabase (opcional) | ⬜ PENDIENTE | 0/? | — | — |
 
 **★ MVP se alcanza al cerrar el Bloque 4 ★**
@@ -167,31 +167,32 @@ El Bloque 3 pasa de 7 a 6 pasos.
 | 4.7 | Puntuación + cierre + actualización de marcador | ⬜ |
 
 **★ Al cerrar este bloque se alcanza el MVP ★**
-**Bloque 4 cerrado. ★ MVP alcanzado ★. Bloque 5 en preparación.**
+**Bloque 4 cerrado. ★ MVP alcanzado ★. Bloque 5 en progreso.**
 ---
 
-### Bloque 5 — 8 juegos restantes 🔄 EN PROGRESO (4/11)
+### Bloque 5 — Juegos restantes 🔄 EN PROGRESO (4/10)
 
-**Objetivo:** Implementar los 8 juegos restantes en orden del GAMES.md.
+**Objetivo:** Implementar los juegos restantes en orden de madurez de mecánica.
 
 #### Pasos
 
-| # | Juego | Estado | Commit |
-|---|-------|--------|--------|
+| # | Juego / Paso | Estado | Commit |
+|---|--------------|--------|--------|
 | 5.0 | Refactor: `cargarItemsDeJuego` + `crearTimer` | ✅ APROBADO | 96ba9c5 |
-| 5.1a | Trivia conectada al shell (8 tipos de acción) | ✅ APROBADO | 58e2043 |
+| 5.1a | Trivia conectada al shell del conductor | ✅ APROBADO | 58e2043 |
 | 5.1b | Editor de items de Trivia en formulario de sets | ✅ APROBADO | a2cafb5 |
-| 5.2 | Memoricé | ⬜ | — |
-| 5.3 | Canción Incompleta | ⬜ | — |
-| 5.4 | Rosco | ⬜ | — |
-| 5.5 | Pictionary | ⬜ | — |
-| 5.6 | Historia Enredada | ⬜ | — |
-| 5.7 | Anti-Trivia | ⬜ | — |
-| 5.8 | Enlaces | ⬜ | — |
+| 5.1c | Cierre documental: mecánicas CI/Pic/HE + reordenamiento | ✅ APROBADO | (pendiente) |
+| 5.2 | Rosco end-to-end | ⬜ | — |
+| 5.3 | Canción Incompleta end-to-end | ⬜ | — |
+| 5.4 | Pictionary end-to-end | ⬜ | — |
+| 5.5 | Historia Enredada end-to-end | ⬜ | — |
+| 5.6 | Trivia — cerrar mecánica + UI pública/móvil/tests | ⬜ | — |
+| 5.7 | Memoricé — cerrar mecánica + implementar | ⬜ | — |
+| 5.8 | Anti-Trivia — cerrar mecánica + implementar | ⬜ | — |
+| 5.9 | Enlaces — cerrar mecánica + implementar | ⬜ | — |
 
-Cada juego se cierra con su propio bloque interno (GameDefinition + UI Conductor + UI Pública + tests + screenshot).
+**Reordenamiento (5.1c):** se prioriza por madurez de mecánica. Rosco, Canción Incompleta, Pictionary e Historia Enredada tienen mecánica cerrada. Trivia, Memoricé, Anti-Trivia y Enlaces requieren decisiones de diseño antes de implementarse.
 
----
 
 ### Bloque 6 — Migración e2e a Supabase (opcional) ⬜ PENDIENTE
 
@@ -214,6 +215,7 @@ Cada juego se cierra con su propio bloque interno (GameDefinition + UI Conductor
 | 4.0 | 2026-09-21 | Bloque 4 cerrado. ★ MVP alcanzado ★. 13/13 pasos. |
 | 5.0 | 2026-09-21 | Bloque 5 iniciado. 5.0 y 5.1a aprobados. 609 unit + 59 e2e. |
 | 5.1 | 2026-09-21 | Paso 5.1b aprobado (editor de items de Trivia). |
+| 5.2 | 2026-09-21 | Reordenamiento del Bloque 5 por madurez de mecánica. CI/Pic/HE cerradas. Conteo 4/10. |
 ---
 
 ## 5. Convenciones
