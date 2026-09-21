@@ -113,23 +113,24 @@ test('eliminar set', async ({ page }) => {
   await expect(page.getByText(`Borr ${uid}`)).not.toBeVisible({ timeout: 10000 });
 });
 
-test('editor de items no aparece si el set no es de ¿Qué piensa el público?', async ({ page }) => {
+test('editor de items no aparece si el set no es de ¿Qué piensa el público? ni de Trivia', async ({ page }) => {
   await page.goto('/');
   await waitForCumpeo(page);
-  const triviaId = await page.evaluate(async () => {
+  const qpepId = await page.evaluate(async () => {
     const juegos = await window.cumpeo.services.juego.listarJuegos();
-    return juegos.find((j) => j.codigo === 'TRIVIA')?.id;
+    return juegos.find((j) => j.codigo === 'QUE_PIENSA_EL_PUBLICO')?.id;
   });
 
-  await crearSetViaAPI(page, { juegoId: triviaId, nombre: `NoQPEP ${Date.now().toString(36)}` });
-  await page.goto(`/#/sets?juego=${triviaId}`);
+  const uid = Date.now().toString(36);
+  await crearSetViaAPI(page, { juegoId: qpepId, nombre: `NoEditor ${uid}` });
+  await page.goto(`/#/sets?juego=${qpepId}`);
   await waitForCumpeo(page);
-  await page.locator(`li:has-text("NoQPEP") a:has-text("Editar")`).click();
+  await page.locator(`li:has-text("NoEditor ${uid}") a:has-text("Editar")`).click();
   await page.waitForURL(/#\/sets\/.+/);
   await waitForCumpeo(page);
 
-  await expect(page.locator('#editor-items-section')).toHaveCount(0);
-  await expect(page.getByText('Este juego aún no tiene editor de items.')).toBeVisible();
+  await expect(page.locator('#editor-items-section')).toBeVisible();
+  await expect(page.locator('#editor-items-trivia')).toHaveCount(0);
 });
 
 test('editor aparece en set de ¿Qué piensa el público?', async ({ page }) => {
@@ -236,4 +237,139 @@ test('eliminar pregunta', async ({ page }) => {
   page.on('dialog', (dialog) => dialog.accept());
   await page.locator('[data-accion="eliminar"]').first().click();
   await expect(page.getByText('Borrar esta')).not.toBeVisible({ timeout: 10000 });
+});
+
+test('editor de Trivia aparece en set de Trivia', async ({ page }) => {
+  await page.goto('/');
+  await waitForCumpeo(page);
+  const triviaId = await page.evaluate(async () => {
+    const juegos = await window.cumpeo.services.juego.listarJuegos();
+    return juegos.find((j) => j.codigo === 'TRIVIA')?.id;
+  });
+
+  const uid = Date.now().toString(36);
+  await crearSetViaAPI(page, { juegoId: triviaId, nombre: `TriviaSet ${uid}` });
+  await page.goto(`/#/sets?juego=${triviaId}`);
+  await waitForCumpeo(page);
+  await page.locator(`li:has-text("TriviaSet ${uid}") a:has-text("Editar")`).click();
+  await page.waitForURL(/#\/sets\/.+/);
+  await waitForCumpeo(page);
+
+  await expect(page.locator('#editor-items-trivia')).toBeVisible({ timeout: 15000 });
+  await expect(page.locator('#lista-items-preguntas-trivia')).toBeVisible();
+  await expect(page.locator('#item-pregunta-trivia')).toBeVisible();
+});
+
+test('agregar pregunta de Trivia con 2 opciones', async ({ page }) => {
+  await page.goto('/');
+  await waitForCumpeo(page);
+  const triviaId = await page.evaluate(async () => {
+    const juegos = await window.cumpeo.services.juego.listarJuegos();
+    return juegos.find((j) => j.codigo === 'TRIVIA')?.id;
+  });
+
+  const uid = Date.now().toString(36);
+  await crearSetViaAPI(page, { juegoId: triviaId, nombre: `TriviaAdd ${uid}` });
+  await page.goto(`/#/sets?juego=${triviaId}`);
+  await waitForCumpeo(page);
+  await page.locator(`li:has-text("TriviaAdd ${uid}") a:has-text("Editar")`).click();
+  await page.waitForURL(/#\/sets\/.+/);
+  await waitForCumpeo(page);
+
+  await page.fill('#item-pregunta-trivia', '¿Capital de Francia?');
+  const opciones = page.locator('#lista-opciones-trivia .opcion-texto');
+  await opciones.nth(0).fill('París');
+  await opciones.nth(1).fill('Londres');
+  await page.locator('#lista-opciones-trivia .opcion-trivia').nth(0).locator('input[type="radio"]').check();
+  await page.click('#btn-guardar-item-trivia');
+
+  await expect(page.getByText('¿Capital de Francia?')).toBeVisible({ timeout: 10000 });
+  await expect(page.getByText('París')).toBeVisible();
+  await expect(page.getByText('Londres')).toBeVisible();
+});
+
+test('agregar opción adicional a pregunta de Trivia', async ({ page }) => {
+  await page.goto('/');
+  await waitForCumpeo(page);
+  const triviaId = await page.evaluate(async () => {
+    const juegos = await window.cumpeo.services.juego.listarJuegos();
+    return juegos.find((j) => j.codigo === 'TRIVIA')?.id;
+  });
+
+  const uid = Date.now().toString(36);
+  await crearSetViaAPI(page, { juegoId: triviaId, nombre: `TriviaAddOpt ${uid}` });
+  await page.goto(`/#/sets?juego=${triviaId}`);
+  await waitForCumpeo(page);
+  await page.locator(`li:has-text("TriviaAddOpt ${uid}") a:has-text("Editar")`).click();
+  await page.waitForURL(/#\/sets\/.+/);
+  await waitForCumpeo(page);
+
+  await expect(page.locator('#lista-opciones-trivia .opcion-trivia')).toHaveCount(2);
+  await page.click('#btn-agregar-opcion-trivia');
+  await expect(page.locator('#lista-opciones-trivia .opcion-trivia')).toHaveCount(3);
+  await page.click('#btn-agregar-opcion-trivia');
+  await expect(page.locator('#lista-opciones-trivia .opcion-trivia')).toHaveCount(4);
+  await page.click('#btn-agregar-opcion-trivia');
+  await expect(page.locator('#lista-opciones-trivia .opcion-trivia')).toHaveCount(5);
+  await page.click('#btn-agregar-opcion-trivia');
+  await expect(page.locator('#lista-opciones-trivia .opcion-trivia')).toHaveCount(6);
+  await expect(page.locator('#btn-agregar-opcion-trivia')).toBeHidden();
+});
+
+test('eliminar opción de pregunta de Trivia', async ({ page }) => {
+  await page.goto('/');
+  await waitForCumpeo(page);
+  const triviaId = await page.evaluate(async () => {
+    const juegos = await window.cumpeo.services.juego.listarJuegos();
+    return juegos.find((j) => j.codigo === 'TRIVIA')?.id;
+  });
+
+  const uid = Date.now().toString(36);
+  await crearSetViaAPI(page, { juegoId: triviaId, nombre: `TriviaDelOpt ${uid}` });
+  await page.goto(`/#/sets?juego=${triviaId}`);
+  await waitForCumpeo(page);
+  await page.locator(`li:has-text("TriviaDelOpt ${uid}") a:has-text("Editar")`).click();
+  await page.waitForURL(/#\/sets\/.+/);
+  await waitForCumpeo(page);
+
+  await page.click('#btn-agregar-opcion-trivia');
+  await expect(page.locator('#lista-opciones-trivia .opcion-trivia')).toHaveCount(3);
+  await page.locator('#lista-opciones-trivia .opcion-trivia').nth(2).locator('.btn-eliminar-opcion').click();
+  await expect(page.locator('#lista-opciones-trivia .opcion-trivia')).toHaveCount(2);
+  await expect(page.locator('#lista-opciones-trivia .opcion-trivia .btn-eliminar-opcion').first()).toBeHidden();
+});
+
+test('editar pregunta de Trivia', async ({ page }) => {
+  await page.goto('/');
+  await waitForCumpeo(page);
+  const triviaId = await page.evaluate(async () => {
+    const juegos = await window.cumpeo.services.juego.listarJuegos();
+    return juegos.find((j) => j.codigo === 'TRIVIA')?.id;
+  });
+
+  const uid = Date.now().toString(36);
+  await crearSetViaAPI(page, { juegoId: triviaId, nombre: `TriviaEdit ${uid}` });
+  await page.goto(`/#/sets?juego=${triviaId}`);
+  await waitForCumpeo(page);
+  await page.locator(`li:has-text("TriviaEdit ${uid}") a:has-text("Editar")`).click();
+  await page.waitForURL(/#\/sets\/.+/);
+  await waitForCumpeo(page);
+
+  await page.fill('#item-pregunta-trivia', '¿Cuánto es 2+2?');
+  const opciones = page.locator('#lista-opciones-trivia .opcion-texto');
+  await opciones.nth(0).fill('3');
+  await opciones.nth(1).fill('4');
+  await page.locator('#lista-opciones-trivia .opcion-trivia').nth(1).locator('input[type="radio"]').check();
+  await page.click('#btn-guardar-item-trivia');
+  await expect(page.getByText('¿Cuánto es 2+2?')).toBeVisible({ timeout: 10000 });
+
+  await page.locator('[data-accion="editar"]').first().click();
+  await expect(page.locator('#form-item-titulo-trivia')).toHaveText('Editar pregunta');
+  await expect(page.locator('#btn-cancelar-edicion-trivia')).toBeVisible();
+
+  await page.fill('#item-pregunta-trivia', '¿Cuánto es 3+3?');
+  await page.click('#btn-guardar-item-trivia');
+
+  await expect(page.getByText('¿Cuánto es 3+3?')).toBeVisible({ timeout: 10000 });
+  await expect(page.getByText('¿Cuánto es 2+2?')).not.toBeVisible();
 });
