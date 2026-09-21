@@ -1,9 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { CancionIncompletaGameUI } from '../../../../src/ui/games/cancion-incompleta/CancionIncompletaGameUI.js';
+import { CancionIncompletaGameUI } from '../../../../../src/ui/games/cancion-incompleta/CancionIncompletaGameUI.js';
 
 function makeContainer() {
-  const div = document.createElement('div');
-  return div;
+  return { innerHTML: '', querySelector: () => null };
 }
 
 describe('CancionIncompletaGameUI', () => {
