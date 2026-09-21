@@ -37,7 +37,7 @@
 | 1 | Modelo de datos extendido | ✅ CERRADO | 6/6 | 7c3288f | 2026-09-18 |
 | 2 | Shell de partida (Conductor + Pública) | ✅ CERRADO | 13/13 | 5e32d5b | 2026-09-19 |
 | 3 | Móvil + moderación | ✅ CERRADO | 6/6 | 9ca4e7a | 2026-09-19 |
-| 4 | "¿Qué piensa el público?" | 🔄 EN PROGRESO | 11/12 | — | — |
+| 4 | "¿Qué piensa el público?" | ✅ CERRADO | 13/13 | 2e19767 | 2026-09-21 |
 | 5 | 8 juegos restantes | ⬜ PENDIENTE | 0/8 | — | — |
 | 6 | Migración e2e a Supabase (opcional) | ⬜ PENDIENTE | 0/? | — | — |
 
@@ -101,7 +101,7 @@
 ---
 
 ### Bloque 2 — Shell de partida (Conductor + Pública) ✅ CERRADO (13/13)
-| 2 | Shell de partida (Conductor + Pública) | ✅ CERRADO | 13/13 | 5e32d5b | 2026-09-19 |
+
 **Objetivo:** Crear el shell común de partida que permite enchufar cualquier juego sin rehacer UI.
 
 #### Pasos (preliminares)
@@ -152,7 +152,7 @@ El Bloque 3 pasa de 7 a 6 pasos.
 **Objetivo:** Primer juego completo. Cierra el MVP.
 
 **Diseño cerrado:** Ver definición funcional en MASTER (sección pendiente de integración).
-| 4 | "¿Qué piensa el público?" | ✅ CERRADO | 13/13 | 2e19767 | 2026-09-21 |
+
 
 #### Pasos (preliminares)
 
