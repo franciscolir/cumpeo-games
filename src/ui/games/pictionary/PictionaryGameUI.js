@@ -269,8 +269,19 @@ export const PictionaryGameUI = {
     const bonusHTML = `
       <div class="mt-3 pt-3 border-t-2 border-on-surface/20">
         <p class="font-label-sm text-on-surface-variant mb-1">Bonus: ${bonusPuntos} pts</p>
-        ${Boton({ texto: 'Bonus Eq1', variante: 'ghost', id: 'btn-pic-bonus-eq1' })}
-        ${Boton({ texto: 'Bonus Eq2', variante: 'ghost', id: 'btn-pic-bonus-eq2' })}
+        <div class="flex flex-wrap gap-2 items-end">
+          <div class="flex flex-col gap-1">
+            <label class="font-label-xs text-on-surface-variant">${equipo1.nombre}</label>
+            <input type="number" min="1" id="pic-bonus-input-eq1" class="w-20 border-2 border-on-surface rounded px-2 py-1 text-sm" placeholder="Pts" />
+          </div>
+          <button type="button" id="btn-pic-bonus-eq1" class="font-label-md uppercase border-2 border-on-surface rounded-lg px-3 py-1 bg-surface-container-lowest shadow-comic-sm hover:shadow-comic-md transition">Aplicar</button>
+          <div class="flex flex-col gap-1">
+            <label class="font-label-xs text-on-surface-variant">${equipo2.nombre}</label>
+            <input type="number" min="1" id="pic-bonus-input-eq2" class="w-20 border-2 border-on-surface rounded px-2 py-1 text-sm" placeholder="Pts" />
+          </div>
+          <button type="button" id="btn-pic-bonus-eq2" class="font-label-md uppercase border-2 border-on-surface rounded-lg px-3 py-1 bg-surface-container-lowest shadow-comic-sm hover:shadow-comic-md transition">Aplicar</button>
+        </div>
+        <p id="pic-bonus-error" class="font-label-xs text-error mt-1 hidden"></p>
       </div>
     `;
 
@@ -336,27 +347,27 @@ export const PictionaryGameUI = {
     }
 
     // Bonus bindings
-    container.querySelector('#btn-pic-bonus-eq1')?.addEventListener('click', () => {
-      const input = window.prompt(`¿Cuántos puntos para ${equipo1.nombre}?`);
-      if (input === null) return;
-      const puntos = parseInt(input, 10);
-      if (isNaN(puntos) || puntos <= 0) {
-        window.alert('Puntos inválidos');
-        return;
-      }
-      callbacks.onAccion('aplicar-bonus-pictionary', { equipo: 1, puntos });
-    });
+    const errorEl = container.querySelector('#pic-bonus-error');
 
-    container.querySelector('#btn-pic-bonus-eq2')?.addEventListener('click', () => {
-      const input = window.prompt(`¿Cuántos puntos para ${equipo2.nombre}?`);
-      if (input === null) return;
-      const puntos = parseInt(input, 10);
+    function _aplicarBonus(equipo) {
+      const input = container.querySelector(`#pic-bonus-input-eq${equipo}`);
+      if (!input) return;
+      const valor = input.value.trim();
+      const puntos = parseInt(valor, 10);
       if (isNaN(puntos) || puntos <= 0) {
-        window.alert('Puntos inválidos');
+        if (errorEl) {
+          errorEl.textContent = 'Ingresá un número entero mayor a 0';
+          errorEl.classList.remove('hidden');
+        }
         return;
       }
-      callbacks.onAccion('aplicar-bonus-pictionary', { equipo: 2, puntos });
-    });
+      if (errorEl) errorEl.classList.add('hidden');
+      input.value = '';
+      callbacks.onAccion('aplicar-bonus-pictionary', { equipo, puntos });
+    }
+
+    container.querySelector('#btn-pic-bonus-eq1')?.addEventListener('click', () => _aplicarBonus(1));
+    container.querySelector('#btn-pic-bonus-eq2')?.addEventListener('click', () => _aplicarBonus(2));
   },
 
   cleanup() {

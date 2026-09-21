@@ -212,6 +212,14 @@ describe('PictionaryGameUI', () => {
       expect(container.innerHTML).toContain('Bonus: 15 pts');
     });
 
+    it('muestra input numérico para bonus Eq1 y Eq2', () => {
+      const estado = { ...estadoBase(), fase: 'INICIO_RONDA' };
+      PictionaryGameUI.renderizarPanelConductor(estado, container, contextoBase(), { onAccion: vi.fn() });
+      expect(container.innerHTML).toContain('pic-bonus-input-eq1');
+      expect(container.innerHTML).toContain('pic-bonus-input-eq2');
+      expect(container.innerHTML).toContain('type="number"');
+    });
+
     it('muestra botón Bonus en ADIVINANDO', () => {
       const estado = { ...estadoBase(), fase: 'ADIVINANDO' };
       PictionaryGameUI.renderizarPanelConductor(estado, container, contextoBase(), { onAccion: vi.fn() });
@@ -224,6 +232,55 @@ describe('PictionaryGameUI', () => {
       PictionaryGameUI.renderizarPanelConductor(estado, container, contextoBase(), { onAccion: vi.fn() });
       expect(container.innerHTML).toContain('btn-pic-bonus-eq1');
       expect(container.innerHTML).toContain('btn-pic-bonus-eq2');
+    });
+
+    it('bonus con valor válido emite aplicar-bonus-pictionary', () => {
+      const callbacks = { onAccion: vi.fn() };
+      const estado = { ...estadoBase(), fase: 'INICIO_RONDA' };
+      const inputEl = { value: '20', trim: () => '20' };
+      const btnEl = { addEventListener: vi.fn((_, fn) => fn()) };
+      const errorEl = { classList: { remove: vi.fn(), add: vi.fn() }, textContent: '' };
+      container.querySelector = vi.fn((sel) => {
+        if (sel === '#pic-bonus-input-eq1') return inputEl;
+        if (sel === '#btn-pic-bonus-eq1') return btnEl;
+        if (sel === '#pic-bonus-error') return errorEl;
+        return null;
+      });
+      PictionaryGameUI.renderizarPanelConductor(estado, container, contextoBase(), callbacks);
+      expect(callbacks.onAccion).toHaveBeenCalledWith('aplicar-bonus-pictionary', { equipo: 1, puntos: 20 });
+    });
+
+    it('bonus con valor inválido muestra error inline', () => {
+      const callbacks = { onAccion: vi.fn() };
+      const estado = { ...estadoBase(), fase: 'INICIO_RONDA' };
+      const inputEl = { value: 'abc', trim: () => 'abc' };
+      const btnEl = { addEventListener: vi.fn((_, fn) => fn()) };
+      const errorEl = { classList: { remove: vi.fn(), add: vi.fn() }, textContent: '' };
+      container.querySelector = vi.fn((sel) => {
+        if (sel === '#pic-bonus-input-eq1') return inputEl;
+        if (sel === '#btn-pic-bonus-eq1') return btnEl;
+        if (sel === '#pic-bonus-error') return errorEl;
+        return null;
+      });
+      PictionaryGameUI.renderizarPanelConductor(estado, container, contextoBase(), callbacks);
+      expect(callbacks.onAccion).not.toHaveBeenCalled();
+      expect(errorEl.textContent).toContain('mayor a 0');
+    });
+
+    it('bonus input se limpia después de aplicar', () => {
+      const callbacks = { onAccion: vi.fn() };
+      const estado = { ...estadoBase(), fase: 'INICIO_RONDA' };
+      const inputEl = { value: '25', trim: () => '25' };
+      const btnEl = { addEventListener: vi.fn((_, fn) => fn()) };
+      const errorEl = { classList: { remove: vi.fn(), add: vi.fn() }, textContent: '' };
+      container.querySelector = vi.fn((sel) => {
+        if (sel === '#pic-bonus-input-eq1') return inputEl;
+        if (sel === '#btn-pic-bonus-eq1') return btnEl;
+        if (sel === '#pic-bonus-error') return errorEl;
+        return null;
+      });
+      PictionaryGameUI.renderizarPanelConductor(estado, container, contextoBase(), callbacks);
+      expect(inputEl.value).toBe('');
     });
   });
 

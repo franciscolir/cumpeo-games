@@ -12,6 +12,7 @@
 import { cargarItemsDeJuego } from '../games/_shared/index.js';
 import { crearTimer } from '../games/_shared/index.js';
 import { ALFABETO, ESTADO_LETRA, RoscoGameDefinition } from '../../games/rosco/RoscoGameDefinition.js';
+import { PictionaryGameDefinition } from '../../games/pictionary/PictionaryGameDefinition.js';
 
 let cleanupSuscripciones = null;
 let intervalId = null;
@@ -25,6 +26,9 @@ let _roscoTimerRestanteEq2 = 0;
 
 let _ciTimer = null;
 let _ciTimerKey = null;
+
+let _picTimer = null;
+let _picTimerKey = null;
 
 /**
  * Renderiza el shell público completo.
@@ -121,6 +125,7 @@ async function _renderContenido(container, app, codigo) {
   const esQPEP = juegoActivo?.juego_codigo === 'QUE_PIENSA_EL_PUBLICO';
   const esRosco = juegoActivo?.juego_codigo === 'ROSCO';
   const esCancionIncompleta = juegoActivo?.juego_codigo === 'CANCION_INCOMPLETA';
+  const esPictionary = juegoActivo?.juego_codigo === 'PICTIONARY';
   const itemsQPEP = esQPEP ? await cargarItemsDeJuego(app, juegoActivo) : null;
   const itemsRosco = esRosco ? await cargarItemsDeJuego(app, juegoActivo) : null;
   const fase = juegoActivo?.estado_juego?.fase || '';
@@ -133,6 +138,8 @@ async function _renderContenido(container, app, codigo) {
     escenarioHTML = _renderEscenarioQPEP(juegoActivo, itemsQPEP, fase, contexto);
   } else if (esCancionIncompleta) {
     escenarioHTML = _renderEscenarioCancionIncompleta(juegoActivo, fase, contexto);
+  } else if (esPictionary) {
+    escenarioHTML = _renderEscenarioPictionary(juegoActivo, fase, contexto);
   } else {
     escenarioHTML = _renderEscenario(juegoActivo);
   }
@@ -165,6 +172,9 @@ async function _renderContenido(container, app, codigo) {
   }
   if (esCancionIncompleta && juegoActivo?.estado_juego) {
     _iniciarTimerCancionIncompletaPublico(juegoActivo.estado_juego, container);
+  }
+  if (esPictionary && juegoActivo?.estado_juego) {
+    _iniciarTimerPictionaryPublico(juegoActivo.estado_juego, container);
   }
 }
 
@@ -661,6 +671,193 @@ function _iniciarTimerCancionIncompletaPublico(estadoJuego, container) {
 function _limpiarTimerCancionIncompletaPublico() {
   _ciTimer?.cancelar();
   _ciTimer = null;
+}
+
+/* =============================================================
+   Escenario Pictionary (público)
+   ============================================================= */
+
+const _NOMBRE_MODOS_PIC = {
+  1: 'Palabras prohibidas',
+  2: 'Gestos',
+  3: 'Dibujo',
+  4: 'Preguntas sí/no'
+};
+
+function _renderEscenarioPictionary(juegoActivo, fase, contexto) {
+  const estadoJuego = juegoActivo?.estado_juego || {};
+  const equipo1 = contexto?.equipos?.[0] || { nombre: 'Eq1' };
+  const equipo2 = contexto?.equipos?.[1] || { nombre: 'Eq2' };
+  const equipoActual = estadoJuego.equipo_actual || 1;
+  const ronda = estadoJuego.ronda_actual || 1;
+  const totalRondas = estadoJuego.total_rondas || 1;
+  const modo = estadoJuego.modo_actual || 1;
+  const pts1 = estadoJuego.puntos_equipo_1 || 0;
+  const pts2 = estadoJuego.puntos_equipo_2 || 0;
+
+  const concepto = estadoJuego.palabra_actual?.concepto || '';
+  const prohibidas = estadoJuego.prohibidas_actuales || [];
+  const timerCorriendo = !!estadoJuego.timer_corriendo;
+  const tiempoRestante = estadoJuego.tiempo_restante_seg ?? 60;
+
+  const equipoActivoNombre = equipoActual === 1 ? equipo1.nombre : equipo2.nombre;
+  const equipoActivoColor = equipoActual === 1 ? 'border-[#00D2FF] bg-[#00D2FF]/15' : 'border-[#FF3344] bg-[#FF3344]/15';
+
+  let indicadorModo = '';
+  if (modo === 2) {
+    indicadorModo = '<p class="font-body-md text-on-surface-variant italic mt-2">El representante usa gestos.</p>';
+  } else if (modo === 3) {
+    indicadorModo = '<p class="font-body-md text-on-surface-variant italic mt-2">Dibujando en pizarra física.</p>';
+  } else if (modo === 4) {
+    indicadorModo = '<p class="font-body-md text-on-surface-variant italic mt-2">Adivinador de espaldas. Solo sí/no.</p>';
+  }
+
+  let prohibidasHTML = '';
+  if (modo === 1 && prohibidas.length > 0) {
+    prohibidasHTML = `
+      <div class="mt-3">
+        <p class="font-label-md uppercase text-on-surface-variant mb-1">Palabras prohibidas</p>
+        <div class="flex flex-wrap gap-1 justify-center">
+          ${prohibidas.map((p) => `<span class="bg-error/20 text-error font-label-sm px-2 py-0.5 rounded">${p}</span>`).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  let inner = '';
+
+  if (!fase || fase === 'INICIO_RONDA') {
+    inner = `
+      <p class="font-display-hero text-5xl text-primary uppercase mb-2">¡A JUGAR!</p>
+      <p class="font-headline-md uppercase text-on-surface">Pictionary</p>
+      ${fase === 'INICIO_RONDA' ? '<p class="font-body-md text-on-surface-variant mt-2">Esperando inicio del modo…</p>' : ''}
+    `;
+  } else if (fase === 'MOSTRANDO_PALABRA' || fase === 'ADIVINANDO' || fase === 'ESPERA_VALIDACION') {
+    const mostrarTimer = fase === 'ADIVINANDO' && timerCorriendo;
+    const timerClase = mostrarTimer ? 'text-tertiary' : 'text-on-surface-variant';
+
+    inner = `
+      <div class="text-center">
+        <p class="font-label-md uppercase text-on-surface-variant mb-1">Modo ${modo} — ${_NOMBRE_MODOS_PIC[modo] || '?'}</p>
+        <p class="font-label-md uppercase text-on-surface-variant">Ronda ${ronda} / ${totalRondas} · ${equipoActivoNombre}</p>
+      </div>
+      <div class="bg-surface-container-lowest border-3 border-on-surface rounded-2xl p-6 shadow-comic-lg text-center mt-4">
+        ${concepto
+          ? `<p class="font-display-hero text-4xl text-on-surface uppercase mb-2">${concepto}</p>`
+          : '<p class="font-body-md text-on-surface-variant italic">Esperando palabra…</p>'
+        }
+        ${prohibidasHTML}
+        ${indicadorModo}
+        <div class="mt-4">
+          <p id="pic-pub-timer" class="font-display-hero text-3xl ${timerClase}">${mostrarTimer ? '' : tiempoRestante + 's'}</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-4 mt-4 w-full max-w-lg">
+        <div class="border-2.5 ${equipoActual === 1 ? equipoActivoColor : 'border-on-surface bg-surface-container-lowest'} rounded-xl p-3 shadow-comic-sm text-center">
+          <p class="font-body-md uppercase">${equipo1.nombre}</p>
+          <p class="font-display-hero text-3xl text-primary">${pts1}</p>
+        </div>
+        <div class="border-2.5 ${equipoActual === 2 ? equipoActivoColor : 'border-on-surface bg-surface-container-lowest'} rounded-xl p-3 shadow-comic-sm text-center">
+          <p class="font-body-md uppercase">${equipo2.nombre}</p>
+          <p class="font-display-hero text-3xl text-primary">${pts2}</p>
+        </div>
+      </div>
+    `;
+  } else if (fase === 'CAMBIO_MODO') {
+    inner = `
+      <p class="font-display-hero text-4xl text-primary uppercase mb-4">Cambio de modo</p>
+      <p class="font-headline-md uppercase text-on-surface">Siguiente: ${_NOMBRE_MODOS_PIC[modo] || modo}</p>
+      <p class="font-body-md text-on-surface-variant mt-2">Equipo: ${equipoActivoNombre}</p>
+    `;
+  } else if (fase === 'FIN_DE_RONDA') {
+    inner = `
+      <p class="font-display-hero text-5xl text-primary uppercase mb-4">Fin de ronda</p>
+      <p class="font-headline-md uppercase text-on-surface mb-2">Ronda ${ronda} / ${totalRondas}</p>
+      <div class="grid grid-cols-2 gap-4 max-w-md mx-auto">
+        <div class="border-3 border-[#00D2FF] bg-[#00D2FF]/15 rounded-xl p-4 text-center">
+          <p class="font-headline-md">${equipo1.nombre}</p>
+          <p class="font-comic-score text-5xl text-on-surface mt-1">${pts1}</p>
+        </div>
+        <div class="border-3 border-[#FF3344] bg-[#FF3344]/15 rounded-xl p-4 text-center">
+          <p class="font-headline-md">${equipo2.nombre}</p>
+          <p class="font-comic-score text-5xl text-on-surface mt-1">${pts2}</p>
+        </div>
+      </div>
+    `;
+  } else if (fase === 'FIN_DE_JUEGO') {
+    const resultado = PictionaryGameDefinition?.calcularResultado(estadoJuego) || {};
+    const ganador = resultado.ganador;
+    let ganadorNombre = 'Empate técnico';
+    let ganadorColor = 'text-on-surface-variant';
+    if (ganador === 1) { ganadorNombre = equipo1.nombre; ganadorColor = 'text-[#00D2FF]'; }
+    else if (ganador === 2) { ganadorNombre = equipo2.nombre; ganadorColor = 'text-[#FF3344]'; }
+
+    inner = `
+      <p class="font-display-hero text-5xl text-primary uppercase mb-4">¡Juego terminado!</p>
+      <p class="font-headline-md uppercase ${ganadorColor} mb-4">${ganadorNombre}</p>
+      <div class="grid grid-cols-2 gap-4 max-w-md mx-auto">
+        <div class="border-3 border-[#00D2FF] bg-[#00D2FF]/15 rounded-xl p-4 text-center">
+          <p class="font-headline-md">${equipo1.nombre}</p>
+          <p class="font-comic-score text-5xl text-on-surface mt-1">${pts1}</p>
+        </div>
+        <div class="border-3 border-[#FF3344] bg-[#FF3344]/15 rounded-xl p-4 text-center">
+          <p class="font-headline-md">${equipo2.nombre}</p>
+          <p class="font-comic-score text-5xl text-on-surface mt-1">${pts2}</p>
+        </div>
+      </div>
+    `;
+  } else {
+    inner = `
+      <p class="font-display-hero text-5xl text-primary uppercase mb-2">¡A JUGAR!</p>
+      <p class="font-headline-md uppercase text-on-surface">Pictionary</p>
+    `;
+  }
+
+  return `
+    <section class="flex items-center justify-center p-6 border-b-2.5 border-on-surface bg-surface">
+      <div class="w-full max-w-2xl bg-surface-container-lowest border-3 border-on-surface rounded-2xl p-8 shadow-comic-lg text-center flex flex-col items-center justify-center min-h-[25vh]">
+        ${inner}
+      </div>
+    </section>
+  `;
+}
+
+function _iniciarTimerPictionaryPublico(estadoJuego, container) {
+  _limpiarTimerPictionaryPublico();
+
+  const fase = estadoJuego?.fase || '';
+  const timerCorriendo = !!estadoJuego?.timer_corriendo;
+  const tiempoRestante = estadoJuego?.tiempo_restante_seg ?? 60;
+
+  const el = container.querySelector('#pic-pub-timer');
+  if (!el) return;
+
+  if (fase !== 'ADIVINANDO' || !timerCorriendo) {
+    el.textContent = `${tiempoRestante}s`;
+    return;
+  }
+
+  const juegoId = estadoJuego?.juego_id || '';
+  const ronda = estadoJuego?.ronda_actual || 1;
+  const modo = estadoJuego?.modo_actual || 1;
+  const equipo = estadoJuego?.equipo_actual || 1;
+  const key = `${juegoId}:r${ronda}:m${modo}:eq${equipo}`;
+
+  _picTimer = crearTimer({
+    duracionSeg: tiempoRestante,
+    onTick: (restante) => {
+      if (el) el.textContent = `${restante}s`;
+    },
+    onCierre: () => {
+      if (el) el.textContent = '0s';
+    }
+  });
+  _picTimer.iniciarSiCambio(key);
+}
+
+function _limpiarTimerPictionaryPublico() {
+  _picTimer?.cancelar();
+  _picTimer = null;
 }
 
 /* =============================================================
