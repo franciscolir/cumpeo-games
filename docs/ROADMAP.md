@@ -2,7 +2,7 @@
 
 **Versión:** 1.0
 **Última actualización:** 2026-09-18
-**Estado global:** Bloques 0, 1, 2, 3, 4 cerrados · Bloque 5 en progreso (2/11) · ★ MVP alcanzado ★
+**Estado global:** Bloques 0, 1, 2, 3, 4 cerrados · Bloque 5 en progreso (4/11) · ★ MVP alcanzado ★
 **Rama:** feature/vertical-slice
 
 ---
@@ -170,22 +170,24 @@ El Bloque 3 pasa de 7 a 6 pasos.
 **Bloque 4 cerrado. ★ MVP alcanzado ★. Bloque 5 en preparación.**
 ---
 
-### Bloque 5 — 8 juegos restantes 🔄 EN PROGRESO (2/11)
+### Bloque 5 — 8 juegos restantes 🔄 EN PROGRESO (4/11)
 
 **Objetivo:** Implementar los 8 juegos restantes en orden del GAMES.md.
 
-#### Pasos (preliminares)
+#### Pasos
 
-| # | Juego | Estado |
-|---|-------|--------|
-| 5.1 | Trivia | ⬜ |
-| 5.2 | Memoricé | ⬜ |
-| 5.3 | Canción Incompleta | ⬜ |
-| 5.4 | Rosco | ⬜ |
-| 5.5 | Pictionary | ⬜ |
-| 5.6 | Historia Enredada | ⬜ |
-| 5.7 | Anti-Trivia | ⬜ |
-| 5.8 | Enlaces | ⬜ |
+| # | Juego | Estado | Commit |
+|---|-------|--------|--------|
+| 5.0 | Refactor: `cargarItemsDeJuego` + `crearTimer` | ✅ APROBADO | 96ba9c5 |
+| 5.1a | Trivia conectada al shell (8 tipos de acción) | ✅ APROBADO | 58e2043 |
+| 5.1b | Editor de items de Trivia en formulario de sets | ✅ APROBADO | a2cafb5 |
+| 5.2 | Memoricé | ⬜ | — |
+| 5.3 | Canción Incompleta | ⬜ | — |
+| 5.4 | Rosco | ⬜ | — |
+| 5.5 | Pictionary | ⬜ | — |
+| 5.6 | Historia Enredada | ⬜ | — |
+| 5.7 | Anti-Trivia | ⬜ | — |
+| 5.8 | Enlaces | ⬜ | — |
 
 Cada juego se cierra con su propio bloque interno (GameDefinition + UI Conductor + UI Pública + tests + screenshot).
 

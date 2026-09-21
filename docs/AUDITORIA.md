@@ -171,9 +171,13 @@ _(ninguna)_
 | 2026-09-21 | 5 | 5.0 | ✅ APROBADO | Refactor: cargarItemsDeJuego + crearTimer. 13 tests nuevos. | (pendiente) |
 
 | 2026-09-21 | 5 | 5.1a | ✅ APROBADO | Trivia conectada al shell. 8 tipos de acción. | 58e2043 |
+| 2026-09-21 | 5 | 5.1b | ✅ APROBADO | Editor de items de Trivia. 5 e2e nuevos + 1 actualizado. 609 unit. | a2cafb5 |
 
 ## Deuda técnica nueva
 
 | 48 | Shell aplica `Math.max(0, ...)` en penalización de Trivia. Debería permitir puntos negativos. | Paso 5.1a | Media |
 | 49 | `indexeddb-smoke.spec.js` flaky por orden de ejecución. | Paso 5.1a | Media |
 | 50 | `shell-publica.spec.js:REVELANDO` flaky por race condition. | Paso 5.1a | Media |
+| 51 | `ROADMAP.md` y `AUDITORIA.md` desincronizados con commits reales del Bloque 5. Historial con secciones duplicadas y deuda #15 faltante. | Paso 5.1b (detectado) | Media |
+| 52 | Las 2 opciones iniciales de Trivia se agregan en el bind, no en el render HTML. | Paso 5.1b | Baja |
+| 53 | `_agregarOpcionTrivia` no re-selecciona radio tras eliminar la opción marcada. La validación lo cubre. | Paso 5.1b | Baja |
