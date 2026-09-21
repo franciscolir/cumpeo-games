@@ -167,3 +167,5 @@ _(ninguna)_
 | Fecha | Bloque | Estado | Notas |
 |-------|--------|--------|-------|
 | 2026-09-21 | 4 | ✅ CERRADO | 13/13 pasos. ★ MVP alcanzado ★. 595 unit + 59 e2e. |
+
+| 2026-09-21 | 5 | 5.0 | ✅ APROBADO | Refactor: cargarItemsDeJuego + crearTimer. 13 tests nuevos. | (pendiente) |
