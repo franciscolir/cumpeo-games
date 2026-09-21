@@ -184,10 +184,10 @@ _(ninguna)_
 | 2026-09-21 | 5 | 5.3d | ❌ RECHAZADO | Canción Incompleta: tests no eran e2e (Vitest + fake-indexeddb). Reemplazados en 5.3f. | 496cc5a |
 | 2026-09-21 | 5 | 5.3e | ✅ APROBADO | Canción Incompleta: FIN_DE_RONDA + timer toggle. Timer público quedó pendiente. | 8f608ee |
 | 2026-09-21 | 5 | 5.3f | ✅ APROBADO | Canción Incompleta: fix helper e2e + timer público + 23 tests UI + 9 e2e reales. | a9d76d5 |
-| 2026-09-21 | 5 | 5.2a | ✅ APROBADO | Rosco: GameDefinition + validación de set + reducers puros. Cierra deuda #57. | 79c4493 |
-| 2026-09-21 | 5 | 5.2b | ✅ APROBADO | Rosco: UI del conductor. Decisión: el conductor no ve la respuesta, solo la definición. | 7ec5603 |
-| 2026-09-21 | 5 | 5.2c | ✅ APROBADO | Rosco: UI pública. Definición en el centro del rosco. Revelado de respuesta post-validación. | a90e23b |
-| 2026-09-21 | 5 | 5.2d | ✅ APROBADO | Rosco: e2e (18 tests, 4 specs). Incluye bug fix de producción: RoscoGameDefinition no estaba registrado en src/games/registro.js. | 94a89d1 |
+
+
+
+
 
 ## Deuda técnica nueva
 
@@ -204,3 +204,5 @@ _(ninguna)_
 | 58 | El rosco tiene 27 letras (A-Z + Ñ). La UI debe manejar el layout circular o rectangular con esa cantidad. Verificar legibilidad en pantalla pública. | Paso 5.1d (detectado) | Baja |
 | 59 | El shell de partida (src/ui/partidas/shell-partida.js) usa callbacks con closures que quedan stale al iterar acciones rápido. Los e2e de Rosco lo evitan usando page.evaluate en lugar de clicks. Revisar el patrón de callbacks del shell para que reflejen estado actual sin workarounds en tests. | Paso 5.2d (detectado) | Media |
 | 60 | El registro de juegos requiere tocar tests/unit/app/bootstrap.test.js y tests/unit/app/seed.test.js cada vez que se agrega un juego nuevo. Acoplamiento entre registro y tests de bootstrap/seed. Revisar para que la lista de juegos registrados se derive dinámicamente. | Paso 5.2d (detectado) | Cerrada (5.3f) |
+| 61 | El agente reporta e2e como "creados" sin ejecutarlos (5.3d, 5.3e). Los prompts de e2e deben exigir output completo de Playwright antes de dar por cerrado un paso. | Paso 5.3f (detectado) | Alta |
+| 62 | Cada juego nuevo tiende a reinventar el helper de e2e. Extraer un helper común que parametrice crearPartida con el código del juego. | Paso 5.3f (detectado) | Media |
