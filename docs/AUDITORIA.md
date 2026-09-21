@@ -154,3 +154,8 @@ _(ninguna)_
 | 2026-09-21 | 4 | 4.6-fix | ✅ APROBADO | Conductor carga items del set activo. Deuda #41 resuelta. | aacf950 |
 
 | 2026-09-21 | 4 | 4.7 | ✅ APROBADO | Pública muestra QPEP por fase + galería oculta. 3 e2e tests. | f3e5abd |
+
+| 2026-09-21 | 4 | 4.8a | ✅ APROBADO | Conteo real de votos al cerrar encuesta. Bug resuelto. | ca6bbc0 |
+
+| 46 | Test e2e crea respuestas con participanteId inventado (FK violada) | Paso 4.8a | Media |
+| 47 | El shell calcula resultado_publico (lógica de juego en UI) | Paso 4.8a | Baja |

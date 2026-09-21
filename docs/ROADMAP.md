@@ -2,7 +2,7 @@
 
 **Versión:** 1.0
 **Última actualización:** 2026-09-18
-**Estado global:** Bloques 0, 1, 2, 3 cerrados · Bloque 4 en progreso (11/12)
+**Estado global:** Bloques 0, 1, 2, 3 cerrados · Bloque 4 en progreso (12/13)
 **Rama:** feature/vertical-slice
 
 ---
@@ -141,13 +141,13 @@ y 2.7 originales fueron renumerados a 2.4, 2.5 y 2.6 respectivamente.
 | 3.4 | Envío de fotos | ✅ | 3b3c84a | — |
 | 3.5 | Cola de moderación | ✅ | fc44d02 | — |
 | 3.6 | Móvil + moderación | ✅ | 9ca4e7a | 2026-09-19 |
-**Bloque 3 cerrado. Bloque 4 en progreso (11/12) ("¿Qué piensa el público?").**
+**Bloque 3 cerrado. Bloque 4 en progreso (12/13) ("¿Qué piensa el público?").**
 **Nota:** El paso "3.3 Pantalla principal del móvil" fue fusionado
 con "3.4 Envío de mensajes" porque la pantalla ya existía (pasos 3.1 + 3.2).
 El Bloque 3 pasa de 7 a 6 pasos.
 ---
 
-### Bloque 4 — "¿Qué piensa el público?" 🔄 EN PROGRESO (11/12)
+### Bloque 4 — "¿Qué piensa el público?" 🔄 EN PROGRESO (12/13)
 
 **Objetivo:** Primer juego completo. Cierra el MVP.
 
