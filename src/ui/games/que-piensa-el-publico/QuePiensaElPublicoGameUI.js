@@ -16,6 +16,10 @@ let _timerRestante = 0;
 let _latestCallbacks = null;
 let _latestEstadoJuego = null;
 
+function _getItems(contexto) {
+  return contexto.itemsQPEP || contexto.juegoEjecutado?.snapshot?.items || [];
+}
+
 function _cancelarTimer() {
   if (_timerAutoCierre !== null) {
     clearTimeout(_timerAutoCierre);
@@ -30,8 +34,7 @@ function _cancelarTimer() {
 }
 
 function _obtenerTiempoSeg(estadoJuego, contexto) {
-  const snapshot = contexto.juegoEjecutado?.snapshot;
-  const items = snapshot?.items || [];
+  const items = _getItems(contexto);
   const idx = estadoJuego.pregunta_actual_index || 0;
   const item = items[idx];
   if (item?.tiempo_seg) return item.tiempo_seg;
@@ -110,8 +113,7 @@ function _iniciarTimer(estadoJuego, contexto, callbacks, container) {
 
 function _calcularPuntos(estadoJuego, contexto) {
   const resultado = estadoJuego.resultado_publico;
-  const snapshot = contexto.juegoEjecutado?.snapshot;
-  const items = snapshot?.items || [];
+  const items = _getItems(contexto);
   const idx = estadoJuego.pregunta_actual_index || 0;
   const item = items[idx];
   const config = contexto.juegoEjecutado?.configuracion_congelada;
@@ -131,7 +133,7 @@ function _calcularPuntos(estadoJuego, contexto) {
 
 function _renderBotonSiguiente(estadoJuego, contexto) {
   const config = contexto.juegoEjecutado?.configuracion_congelada;
-  const items = contexto.juegoEjecutado?.snapshot?.items || [];
+  const items = _getItems(contexto);
   const totalItems = items.length;
   const rondas = totalItems > 0
     ? Math.min(config?.rondas || totalItems, totalItems)
@@ -154,8 +156,7 @@ export const QuePiensaElPublicoGameUI = {
    * @param {object} [callbacks] - { onAccion(tipo, payload) }
    */
   renderizarAreaJuego(estadoJuego, container, contexto, callbacks) {
-    const snapshot = contexto.juegoEjecutado?.snapshot;
-    const items = snapshot?.items || [];
+    const items = _getItems(contexto);
     const fase = estadoJuego?.fase || '';
 
     if (!fase) {
@@ -474,7 +475,7 @@ export const QuePiensaElPublicoGameUI = {
     if (fase === 'REVELANDO') {
       container.querySelector('#btn-qpep-siguiente')?.addEventListener('click', () => {
         const config = contexto.juegoEjecutado?.configuracion_congelada;
-        const items = contexto.juegoEjecutado?.snapshot?.items || [];
+        const items = _getItems(contexto);
         const totalItems = items.length;
         const rondas = totalItems > 0
           ? Math.min(config?.rondas || totalItems, totalItems)

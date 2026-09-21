@@ -662,6 +662,33 @@ test('conductor revela y suma puntos a los equipos que acertaron', async ({ page
   expect(estado.pts2).toBeGreaterThan(0);
 });
 
+test('conductor muestra la pregunta QPEP', async ({ page }) => {
+  await page.goto('/');
+  const { id } = await setupCircuitoQPEP(page);
+
+  await page.evaluate(async (pid) => {
+    await window.cumpeo.services.partida.tomarControl(pid, window.cumpeo.session.sessionId);
+    await window.cumpeo.services.partida.comenzarPartida(pid, window.cumpeo.session.sessionId, crypto.randomUUID());
+
+    const ctx = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
+    const cj = ctx.juegos[0];
+    await window.cumpeo.services.partida.iniciarJuego(
+      pid, cj.id, window.cumpeo.session.sessionId, crypto.randomUUID()
+    );
+  }, id);
+
+  await page.goto('/');
+  await page.goto(`/#/partidas/${id}`);
+  await waitForCumpeo(page);
+
+  await page.locator('#btn-qpep-iniciar-juego').click();
+  await page.waitForTimeout(500);
+
+  await expect(page.getByText('¿Pizza o empanadas?')).toBeVisible({ timeout: 15000 });
+  await expect(page.getByText('Pizza', { exact: true })).toBeVisible();
+  await expect(page.getByText('Empanadas', { exact: true })).toBeVisible();
+});
+
 test('conductor avanza a la siguiente ronda', async ({ page }) => {
   await page.goto('/');
   const { id } = await setupCircuitoQPEP(page);

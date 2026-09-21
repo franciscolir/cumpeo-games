@@ -9,9 +9,11 @@
 
    Ruta: #/movil/:codigo
 
-   Usa Realtime (Supabase) o setInterval (LocalAdapter) según
-   el adapter activo.
-   ============================================================= */
+    Usa Realtime (Supabase) o setInterval (LocalAdapter) según
+    el adapter activo.
+    ============================================================= */
+
+import { cargarItemsQPEP } from '../games/_shared/cargarItemsQPEP.js';
 
 let cleanupSuscripciones = null;
 let intervalId = null;
@@ -165,40 +167,6 @@ async function _renderContenido(container, app, codigo) {
 }
 
 /* =============================================================
-   Carga de items QPEP desde el set activo
-   ============================================================= */
-
-async function _cargarItemsQPEP(app, juegoActivo) {
-  if (!juegoActivo) return null;
-  if (juegoActivo.juego_codigo !== 'QUE_PIENSA_EL_PUBLICO') return null;
-  try {
-    let setId = null;
-
-    if (juegoActivo.snapshot_id) {
-      const snapshots = await app.adapter.query('set_snapshots', {
-        eq: { id: juegoActivo.snapshot_id }
-      });
-      const snapshot = Array.isArray(snapshots) ? snapshots[0] : snapshots;
-      if (snapshot?.source_set_id) {
-        setId = snapshot.source_set_id;
-      }
-    }
-
-    if (!setId) {
-      const sets = await app.services.set.listarSetsActivosPorJuego(juegoActivo.juego_id);
-      if (!sets.length) return null;
-      sets.sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
-      setId = sets[0].id;
-    }
-
-    const items = await app.services.set.listarItemsDeSet(setId);
-    return items.sort((a, b) => a.orden - b.orden).map((it) => it.contenido || it);
-  } catch (_) {
-    return null;
-  }
-}
-
-/* =============================================================
    Flujo de identificación
    ============================================================= */
 
@@ -213,7 +181,7 @@ async function _identificarParticipante(container, app, partida) {
         const contexto = await app.services.partida.obtenerContextoEspera(partida.id);
         const { equipos, juegos } = contexto;
         const juegoActivo = juegos.find((j) => j.estado === 'EN_CURSO' || j.estado === 'PAUSADO');
-        const itemsQPEP = await _cargarItemsQPEP(app, juegoActivo);
+        const itemsQPEP = await cargarItemsQPEP(app, juegoActivo);
         _renderPantallaPrincipal(container, app, partida, juegoActivo, equipos, participante, itemsQPEP);
         return;
       }
@@ -296,7 +264,7 @@ async function _enviarFormulario(container, app, partida, contexto) {
     const participante = await app.services.participante.obtenerPorSessionToken(sessionToken);
     const { equipos, juegos } = contexto;
     const juegoActivo = juegos.find((j) => j.estado === 'EN_CURSO' || j.estado === 'PAUSADO');
-    const itemsQPEP = await _cargarItemsQPEP(app, juegoActivo);
+    const itemsQPEP = await cargarItemsQPEP(app, juegoActivo);
     _renderPantallaPrincipal(container, app, partida, juegoActivo, equipos, participante, itemsQPEP);
   } catch (err) {
     btnContinuar.disabled = false;

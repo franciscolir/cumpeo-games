@@ -9,6 +9,7 @@ import { Header, bindHeaderListeners } from '../components/header.js';
 import { Boton } from '../components/boton.js';
 import { Card } from '../components/card.js';
 import { nuevoActionId, fmtPuntos } from './utils.js';
+import { cargarItemsQPEP } from '../games/_shared/cargarItemsQPEP.js';
 
 let cleanupSuscripciones = null;
 let intervalId = null;
@@ -125,13 +126,18 @@ async function _renderContenido(container, app, partidaId) {
   const gameUI = codigoJuego ? app.uiRegistry.obtener(codigoJuego) : null;
   const estadoJuego = juegoActivo ? (juegoActivo.estado_juego || {}) : {};
 
+  const itemsQPEP = codigoJuego === 'QUE_PIENSA_EL_PUBLICO'
+    ? await cargarItemsQPEP(app, juegoActivo)
+    : null;
+
   const contextoGameUI = {
     partida,
     juegoEjecutado: juegoActivo,
     equipos,
     puedeControlar,
     acVisible: false,
-    stateVersion: juegoActivo ? juegoActivo.state_version : null
+    stateVersion: juegoActivo ? juegoActivo.state_version : null,
+    itemsQPEP
   };
 
   const callbacks = {
