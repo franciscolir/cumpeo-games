@@ -200,6 +200,7 @@ _(ninguna)_
 | 2026-09-22 | 5 | 5.5b | ✅ APROBADO | Historia Enredada: UI Conductor + 30 tests. | c982efd |
 | 2026-09-22 | 5 | 5.5c | ✅ APROBADO | Historia Enredada: UI Pública + 18 tests. | 068f151 |
 | 2026-09-22 | 5 | 5.5d | ✅ APROBADO | Historia Enredada: e2e (9/10 passing, 1 skipped). Fix cargarItemsDeJuego (id) y shell-publica (itemsHistoria). | dc9d34e |
+| 2026-09-22 | 5 | 5.6-pre | ✅ APROBADO | Cierre documental de mecánica de Trivia. Decisiones: 2 equipos, 5 preguntas por turno, sets propios, timer 30s, validación por selección de opción. | — |
 | 2026-09-21 | 5 | 5.4-pre | ✅ APROBADO | Cierre documental de mecánica de Pictionary. Decisiones: estructura del item del set, orden fijo de modos, bonus manual. | — |
 | 2026-09-21 | 5 | 5.4a | ✅ APROBADO | Pictionary GameDefinition + reducers + 74 tests unitarios. Archivos: PictionaryGameDefinition.js, tests, registro.js. | ef53390 |
 
