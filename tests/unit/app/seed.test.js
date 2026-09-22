@@ -28,12 +28,12 @@ describe('seedJuegos', () => {
     await borrarBase();
   });
 
-  it('registry con 5 defs crea 5 Juegos', async () => {
+  it('registry con 6 defs crea 6 Juegos', async () => {
     const { services } = await bootstrap(adapter);
     const juegos = await services.juego.listarJuegos();
-    expect(juegos.length).toBe(5);
+    expect(juegos.length).toBe(6);
     const codigos = juegos.map((j) => j.codigo).sort();
-    expect(codigos).toEqual(['CANCION_INCOMPLETA', 'PICTIONARY', 'QUE_PIENSA_EL_PUBLICO', 'ROSCO', 'TRIVIA']);
+    expect(codigos).toEqual(['CANCION_INCOMPLETA', 'HISTORIA_ENREDADA', 'PICTIONARY', 'QUE_PIENSA_EL_PUBLICO', 'ROSCO', 'TRIVIA']);
   });
 
   it('el Juego creado tiene codigo y nombre correctos', async () => {
