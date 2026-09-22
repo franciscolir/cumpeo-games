@@ -9,6 +9,7 @@ import { RoscoGameDefinition } from './rosco/RoscoGameDefinition.js';
 import { CancionIncompletaGameDefinition } from './cancion-incompleta/CancionIncompletaGameDefinition.js';
 import { PictionaryGameDefinition } from './pictionary/PictionaryGameDefinition.js';
 import { HistoriaEnredadaGameDefinition } from './historia-enredada/HistoriaEnredadaGameDefinition.js';
+import { MemoriaGameDefinition } from './memoria/MemoriaGameDefinition.js';
 
 /**
  * Registra todos los juegos disponibles en el registry.
@@ -22,7 +23,8 @@ export function registrarTodos(registry) {
     RoscoGameDefinition,
     CancionIncompletaGameDefinition,
     PictionaryGameDefinition,
-    HistoriaEnredadaGameDefinition
+    HistoriaEnredadaGameDefinition,
+    MemoriaGameDefinition
   ];
 
   for (const def of definiciones) {
