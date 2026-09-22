@@ -125,6 +125,7 @@ async function _renderContenido(container, app, codigo) {
   const esQPEP = juegoActivo?.juego_codigo === 'QUE_PIENSA_EL_PUBLICO';
   const esRosco = juegoActivo?.juego_codigo === 'ROSCO';
   const esCancionIncompleta = juegoActivo?.juego_codigo === 'CANCION_INCOMPLETA';
+  const esHistoriaEnredada = juegoActivo?.juego_codigo === 'HISTORIA_ENREDADA';
   const esPictionary = juegoActivo?.juego_codigo === 'PICTIONARY';
   const itemsQPEP = esQPEP ? await cargarItemsDeJuego(app, juegoActivo) : null;
   const itemsRosco = esRosco ? await cargarItemsDeJuego(app, juegoActivo) : null;
@@ -140,6 +141,8 @@ async function _renderContenido(container, app, codigo) {
     escenarioHTML = _renderEscenarioCancionIncompleta(juegoActivo, fase, contexto);
   } else if (esPictionary) {
     escenarioHTML = _renderEscenarioPictionary(juegoActivo, fase, contexto);
+  } else if (esHistoriaEnredada) {
+    escenarioHTML = _renderEscenarioHistoriaEnredada(juegoActivo, fase, contexto);
   } else {
     escenarioHTML = _renderEscenario(juegoActivo);
   }
@@ -1254,4 +1257,113 @@ async function _cargarMuroMensajes(container, app, partidaId) {
       ${t}
     </span>
   `).join('');
+}
+
+/* =============================================================
+   Escenario Historia Enredada (público)
+   ============================================================= */
+
+function _renderEscenarioHistoriaEnredada(juegoActivo, fase, contexto) {
+  const estadoJuego = juegoActivo?.estado_juego || {};
+  const equipo1 = contexto?.equipos?.[0] || { nombre: 'Eq1' };
+  const equipo2 = contexto?.equipos?.[1] || { nombre: 'Eq2' };
+  const equipoActual = estadoJuego.equipo_actual || 1;
+  const ronda = estadoJuego.ronda_actual || 1;
+  const totalRondas = estadoJuego.total_rondas || 1;
+  const pts1 = estadoJuego.puntos_equipo_1 || 0;
+  const pts2 = estadoJuego.puntos_equipo_2 || 0;
+  const idHistoria = estadoJuego.historia_elegida_id;
+  const items = contexto?.itemsDelJuego || [];
+  const historia = idHistoria ? items.find((it) => it.id === idHistoria) : null;
+
+  const equipoActivoNombre = equipoActual === 1 ? equipo1.nombre : equipo2.nombre;
+  const equipoActivoColor = equipoActual === 1 ? 'border-[#00D2FF] bg-[#00D2FF]/15' : 'border-[#FF3344] bg-[#FF3344]/15';
+
+  const dibujoHTML = historia && historia.dibujo
+    ? `<img src="${historia.dibujo}" alt="${historia.titulo}" class="max-h-40 mx-auto mb-2 rounded-lg border-2 border-on-surface" />`
+    : '';
+
+  const cardHistoria = historia
+    ? `
+      <div class="bg-surface-container-lowest border-3 border-on-surface rounded-2xl p-6 shadow-comic-lg text-center max-w-2xl mx-auto">
+        <p class="font-label-md uppercase text-on-surface-variant mb-1">Historia elegida</p>
+        <p class="font-display-hero text-3xl text-on-surface uppercase mb-2">${historia.titulo}</p>
+        <p class="font-body-md text-on-surface-variant">${historia.descripcion}</p>
+        ${dibujoHTML}
+      </div>
+    `
+    : '';
+
+  let inner = '';
+
+  if (!fase || fase === 'INICIO_RONDA') {
+    inner = `
+      <p class="font-display-hero text-5xl text-primary uppercase mb-2">¡A JUGAR!</p>
+      <p class="font-headline-md uppercase text-on-surface">Historia Enredada</p>
+      ${fase === 'INICIO_RONDA' ? '<p class="font-body-md text-on-surface-variant mt-2">Esperando inicio de ronda…</p>' : ''}
+    `;
+  } else if (fase === 'SELECCIONANDO_HISTORIA') {
+    inner = `
+      <p class="font-display-hero text-4xl text-primary uppercase mb-2">Eligiendo historia</p>
+      <p class="font-headline-md uppercase text-on-surface">${equipoActivoNombre}</p>
+      <p class="font-body-md text-on-surface-variant mt-2">Seleccioná una historia de las cartas…</p>
+    `;
+  } else if (fase === 'PREPARANDO') {
+    inner = `
+      <p class="font-headline-md uppercase text-on-surface mb-2">Preparando</p>
+      ${cardHistoria}
+      <p class="font-body-md text-on-surface-variant mt-4">El conductor entrega los papeles al público.</p>
+    `;
+  } else if (fase === 'ACTUANDO') {
+    inner = `
+      <p class="font-headline-md uppercase text-on-surface mb-2">¡Actuando!</p>
+      ${cardHistoria}
+      <p class="font-body-md text-on-surface-variant mt-4">El equipo lee los papeles en voz alta.</p>
+    `;
+  } else if (fase === 'VOTANDO') {
+    inner = `
+      <p class="font-display-hero text-4xl text-primary uppercase mb-2">¡Aplaudí!</p>
+      ${cardHistoria}
+      <p class="font-body-md text-on-surface-variant mt-4">El conductor asigna los puntos según los aplausos.</p>
+    `;
+  } else if (fase === 'FIN_DE_RONDA') {
+    inner = `
+      <p class="font-display-hero text-5xl text-primary uppercase mb-4">Fin de ronda</p>
+      <p class="font-headline-md uppercase text-on-surface mb-2">Ronda ${ronda} / ${totalRondas}</p>
+    `;
+  } else if (fase === 'FIN_DE_JUEGO') {
+    const ganador = pts1 > pts2 ? 1 : pts2 > pts1 ? 2 : null;
+    let ganadorNombre = 'Empate técnico';
+    let ganadorColor = 'text-on-surface-variant';
+    if (ganador === 1) { ganadorNombre = equipo1.nombre; ganadorColor = 'text-[#00D2FF]'; }
+    else if (ganador === 2) { ganadorNombre = equipo2.nombre; ganadorColor = 'text-[#FF3344]'; }
+
+    inner = `
+      <p class="font-display-hero text-5xl text-primary uppercase mb-4">¡Juego terminado!</p>
+      <p class="font-headline-md uppercase ${ganadorColor} mb-4">${ganadorNombre}</p>
+    `;
+  } else {
+    inner = `
+      <p class="font-display-hero text-5xl text-primary uppercase mb-2">¡A JUGAR!</p>
+      <p class="font-headline-md uppercase text-on-surface">Historia Enredada</p>
+    `;
+  }
+
+  return `
+    <section class="flex items-center justify-center p-6 border-b-2.5 border-on-surface bg-surface">
+      <div class="w-full max-w-3xl bg-surface-container-lowest border-3 border-on-surface rounded-2xl p-8 shadow-comic-lg text-center flex flex-col items-center justify-center min-h-[30vh]">
+        ${inner}
+        <div class="grid grid-cols-2 gap-4 w-full max-w-lg mt-6">
+          <div class="border-2.5 ${equipoActual === 1 ? equipoActivoColor : 'border-on-surface bg-surface-container-lowest'} rounded-xl p-4 shadow-comic-sm text-center">
+            <p class="font-body-md uppercase">${equipo1.nombre}</p>
+            <p class="font-display-hero text-3xl text-primary">${pts1}</p>
+          </div>
+          <div class="border-2.5 ${equipoActual === 2 ? equipoActivoColor : 'border-on-surface bg-surface-container-lowest'} rounded-xl p-4 shadow-comic-sm text-center">
+            <p class="font-body-md uppercase">${equipo2.nombre}</p>
+            <p class="font-display-hero text-3xl text-primary">${pts2}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  `;
 }
