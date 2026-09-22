@@ -132,16 +132,20 @@ export class PartidaRepository extends BaseRepository {
       });
 
       const juegosCatalogo = await this.adapter.query(STORE_JUEGOS);
-      const juegoCodigoMap = new Map(juegosCatalogo.map(j => [j.id, j.codigo]));
+      const juegoMap = new Map(juegosCatalogo.map(j => [j.id, { codigo: j.codigo, nombre: j.nombre }]));
 
       return {
         partida,
         equipos: equipos.sort((a, b) => a.posicion - b.posicion),
         participantes,
-        juegos: juegos.sort((a, b) => a.orden - b.orden).map(j => ({
-          ...j,
-          juego_codigo: juegoCodigoMap.get(j.juego_id) ?? null
-        }))
+        juegos: juegos.sort((a, b) => a.orden - b.orden).map(j => {
+          const meta = juegoMap.get(j.juego_id);
+          return {
+            ...j,
+            juego_codigo: meta?.codigo ?? null,
+            juego_nombre: meta?.nombre ?? null
+          };
+        })
       };
     }
 
@@ -189,13 +193,17 @@ export class PartidaRepository extends BaseRepository {
                 const reqCatalogo = juegosCatalogoStore.getAll();
 
                 reqCatalogo.onsuccess = () => {
-                  const juegoCodigoMap = new Map(
-                    reqCatalogo.result.map(j => [j.id, j.codigo])
+                  const juegoMap = new Map(
+                    reqCatalogo.result.map(j => [j.id, { codigo: j.codigo, nombre: j.nombre }])
                   );
-                  const juegos = juegosRaw.map(j => ({
-                    ...j,
-                    juego_codigo: juegoCodigoMap.get(j.juego_id) ?? null
-                  }));
+                  const juegos = juegosRaw.map(j => {
+                    const meta = juegoMap.get(j.juego_id);
+                    return {
+                      ...j,
+                      juego_codigo: meta?.codigo ?? null,
+                      juego_nombre: meta?.nombre ?? null
+                    };
+                  });
                   resolver({ partida, equipos, participantes, juegos });
                 };
 
