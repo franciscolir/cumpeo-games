@@ -1,0 +1,311 @@
+# PANTALLA INICIO — VISTA DEL CONDUCTOR
+
+Trabaja sobre la **aplicación existente**. No reconstruir la pantalla desde cero. Ordenar y adaptar la implementación actual siguiendo esta estructura y manteniendo la lógica general de la aplicación.
+
+Esta es la **pantalla inicial del conductor**. Es diferente de la pantalla pública.
+
+---
+
+## 1. ESTRUCTURA GENERAL
+
+La pantalla debe funcionar como **panel principal de acceso del conductor**.
+
+La composición general es:
+
+```text
+┌─────────────────────────────────────────────────────────────┐
+│                                                             │
+│  LOGO                                  [ PÚBLICO ]   ⚙      │
+│                                                   ajustes   │
+│                                                             │
+│                                                             │
+│   ┌───────────┐ ┌───────────┐ ┌───────────┐ ┌───────────┐ │
+│   │           │ │           │ │           │ │           │ │
+│   │  JUGAR    │ │ CIRCUITO  │ │    SET    │ │   OTRO    │ │
+│   │           │ │           │ │           │ │           │ │
+│   │ abre      │ │ abre paso │ │ abre lista│ │           │ │
+│   │ biblioteca│ │ a paso de │ │ de juegos │ │           │ │
+│   │ de juegos │ │ circuito  │ │ para      │ │           │ │
+│   │           │ │           │ │ ingresar  │ │           │ │
+│   │           │ │           │ │ sets por   │ │           │ │
+│   │           │ │           │ │ formularios│ │           │ │
+│   └───────────┘ └───────────┘ └───────────┘ └───────────┘ │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+La pantalla debe ser **simple, limpia y centrada en las acciones principales**.
+
+---
+
+# 2. LOGO
+
+En la esquina superior izquierda:
+
+**LOGO**
+
+Debe utilizar el componente/identidad visual existente de Cumpeo.
+
+No convertir el logo en un control funcional salvo que actualmente exista navegación asociada.
+
+---
+
+# 3. BOTÓN PÚBLICO
+
+En la parte superior derecha:
+
+**PÚBLICO**
+
+Este botón tiene una función especial.
+
+Al presionarlo:
+
+* debe abrir la **vista pública en otra pestaña/ventana**;
+* la nueva pestaña debe mostrar la pantalla pública;
+* la vista pública queda inicialmente en **MODO ESPERA**.
+
+La pantalla pública **no debe mostrar el panel ni los controles del conductor**.
+
+### Importante
+
+La ventana/pestaña pública debe permanecer sincronizada con la partida y posteriormente cambiar de contenido según el estado del juego.
+
+El botón **PÚBLICO** pertenece exclusivamente a la vista del conductor.
+
+---
+
+# 4. AJUSTES
+
+En la esquina superior derecha, junto al botón PÚBLICO:
+
+**⚙ AJUSTES**
+
+Abre la configuración general de la aplicación.
+
+No confundir con los botones **CONFIGURACIÓN** propios de cada juego.
+
+### Ajustes generales
+
+Aquí deben permanecer las configuraciones generales ya existentes, incluyendo las relacionadas con:
+
+* aplicación;
+* apariencia;
+* comportamiento general;
+* tiempo para entrar automáticamente en modo espera;
+* otras configuraciones globales existentes.
+
+---
+
+# 5. BOTÓN JUGAR
+
+### JUGAR
+
+Subtítulo:
+
+**abre biblioteca de juegos**
+
+Al presionar:
+
+* abre la biblioteca/listado de juegos disponibles;
+* permite seleccionar un juego individual;
+* inicia el flujo de configuración correspondiente al juego seleccionado.
+
+El botón **JUGAR** representa el acceso a una partida individual.
+
+No debe confundirse con **CIRCUITO**.
+
+---
+
+# 6. BOTÓN CIRCUITO
+
+### CIRCUITO
+
+Subtítulo:
+
+**abre paso a paso de circuito**
+
+Al presionar:
+
+* abre el flujo de creación/configuración de un circuito;
+* permite seleccionar y ordenar los juegos que compondrán la partida;
+* permite configurar los elementos correspondientes del circuito antes de comenzar.
+
+El circuito corresponde a una **secuencia ordenada de juegos**.
+
+El conductor debe poder avanzar posteriormente de un juego al siguiente mediante el flujo general:
+
+**TERMINAR → confirmación → SIGUIENTE → poster del siguiente juego.**
+
+---
+
+# 7. BOTÓN SET
+
+### SET
+
+Subtítulo:
+
+**abre lista de juegos para ingresar sets por formularios**
+
+Al presionar:
+
+* abre la biblioteca/listado de juegos que poseen contenido configurable;
+* permite seleccionar un juego;
+* abre el formulario correspondiente para crear/editar sus sets.
+
+La pantalla debe respetar los formularios específicos definidos para cada juego.
+
+### Importante
+
+**SET no es un juego.**
+
+Es una sección administrativa para gestionar el contenido que posteriormente utilizan los juegos.
+
+Ejemplo conceptual:
+
+```text
+SET
+  ↓
+Seleccionar juego
+  ↓
+Formulario específico
+  ↓
+Crear / editar set
+  ↓
+Guardar
+```
+
+---
+
+# 8. BOTÓN OTRO
+
+### OTRO
+
+Mantener como acceso disponible para funcionalidades adicionales que ya existan o que posteriormente sean incorporadas.
+
+No inventar funciones nuevas para este botón.
+
+Si actualmente no posee funcionalidad implementada, conservarlo como placeholder visual sin alterar las demás áreas de la pantalla.
+
+---
+
+# 9. DIFERENCIA ENTRE CONDUCTOR Y PÚBLICO
+
+Esta pantalla corresponde exclusivamente al **CONDUCTOR**.
+
+El público **no debe ver esta pantalla como panel de control**.
+
+La vista pública tiene su propio flujo.
+
+### Desde esta pantalla:
+
+**CONDUCTOR**
+
+```text
+Inicio
+  │
+  ├── JUGAR
+  │
+  ├── CIRCUITO
+  │
+  ├── SET
+  │
+  ├── OTRO
+  │
+  ├── AJUSTES
+  │
+  └── PÚBLICO
+          │
+          └── abre otra pestaña
+                  │
+                  └── PANTALLA PÚBLICA
+                         │
+                         └── MODO ESPERA
+```
+
+---
+
+# 10. MODO ESPERA PÚBLICO
+
+Al abrir la vista pública desde **PÚBLICO**, esta debe comenzar en:
+
+**MODO ESPERA**
+
+La pantalla pública en modo espera utiliza la **misma pantalla inicial pública definida para la aplicación**.
+
+No debe mostrar:
+
+* JUGAR;
+* CIRCUITO;
+* SET;
+* OTRO;
+* AJUSTES;
+* controles de conductor.
+
+La pantalla pública debe ser esencialmente una pantalla de presentación/espera.
+
+Cuando posteriormente se inicia una partida o juego, la vista pública cambia automáticamente según el estado de la partida.
+
+---
+
+# 11. REGLA DE NAVEGACIÓN
+
+La pantalla inicial debe actuar como **punto de entrada administrativo**.
+
+No mezclar en ella las interfaces internas de los juegos.
+
+El flujo debe ser:
+
+```text
+PANTALLA INICIO CONDUCTOR
+        │
+        ├── JUGAR
+        │      └── Biblioteca de juegos
+        │
+        ├── CIRCUITO
+        │      └── Configuración paso a paso
+        │
+        ├── SET
+        │      └── Selección de juego
+        │             └── Formulario de set
+        │
+        ├── OTRO
+        │
+        ├── AJUSTES
+        │      └── Configuración general
+        │
+        └── PÚBLICO
+               └── Nueva pestaña
+                      └── Modo espera público
+```
+
+---
+
+# 12. REGLAS DE IMPLEMENTACIÓN
+
+* Mantener la pantalla dentro de la arquitectura existente.
+* Reutilizar componentes existentes.
+* Mantener navegación existente cuando sea compatible.
+* No crear una segunda lógica paralela para conductor/público.
+* El botón **PÚBLICO** debe utilizar la misma sesión/partida que controla el conductor.
+* La pestaña pública debe mantenerse sincronizada con el estado real de la partida.
+* No mostrar controles administrativos en la vista pública.
+* No duplicar configuraciones generales dentro de cada sección.
+* **JUGAR**, **CIRCUITO** y **SET** son accesos diferentes y deben mantener responsabilidades separadas.
+* Los juegos mantienen sus propios flujos y controles definidos anteriormente.
+* La pantalla inicial debe quedar preparada para que nuevos juegos o funcionalidades puedan incorporarse sin tener que rediseñar toda la estructura.
+
+### Objetivo final
+
+La pantalla debe transmitir claramente:
+
+**JUGAR = jugar un juego**
+
+**CIRCUITO = construir/jugar una secuencia de juegos**
+
+**SET = administrar el contenido de los juegos**
+
+**PÚBLICO = abrir la pantalla que verá el público**
+
+**AJUSTES = configuración general**
+
+**OTRO = funcionalidades adicionales**
