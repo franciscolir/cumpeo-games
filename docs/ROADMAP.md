@@ -2,7 +2,7 @@
 
 **Versión:** 1.0
 **Última actualización:** 2026-09-18
-**Estado global:** Bloques 0, 1, 2, 3, 4 cerrados · Bloque 5 en progreso (8/10) · ★ MVP alcanzado ★
+**Estado global:** Bloques 0, 1, 2, 3, 4 cerrados · Bloque 5 en progreso (9/10) · ★ MVP alcanzado ★
 **Rama:** feature/vertical-slice
 
 ---
@@ -170,7 +170,7 @@ El Bloque 3 pasa de 7 a 6 pasos.
 **Bloque 4 cerrado. ★ MVP alcanzado ★. Bloque 5 en progreso.**
 ---
 
-### Bloque 5 — Juegos restantes 🔄 EN PROGRESO (8/10)
+### Bloque 5 — Juegos restantes 🔄 EN PROGRESO (9/10)
 
 **Objetivo:** Implementar los 10 pasos del Bloque 5 (refactor + 9 juegos).
 
@@ -187,7 +187,7 @@ UI pública, tests e2e) y se cuenta como **1 paso**.
 | 5.3 | Canción Incompleta end-to-end | ✅ APROBADO | 1934d99, ee9a42c, 8323849, a9d76d5 |
 | 5.4 | Pictionary end-to-end | ✅ APROBADO | d076f9e, ef53390, c84613e, 0835a28, 3eb742d |
 | 5.5 | Historia Enredada end-to-end | ✅ APROBADO | 65e86e6, b7f6f25, c982efd, 068f151, dc9d34e |
-| 5.6 | Trivia — cerrar mecánica + UI pública/móvil/tests | ⏳ EN CURSO | — |
+| 5.6 | Trivia end-to-end | ✅ APROBADO | 9269eb1, 2d9190d, 8bee291, 38eca68, 0acedd5, 28e8b6f, afba7a0 |
 | 5.7 | Memoricé — cerrar mecánica + implementar | ⬜ | — |
 | 5.8 | Anti-Trivia — cerrar mecánica + implementar | ⬜ | — |
 | 5.9 | Enlaces — cerrar mecánica + implementar | ⬜ | — |
@@ -233,6 +233,7 @@ de implementarse.
 | 5.8 | 2026-09-22 | Cierre documental de mecánica de Historia Enredada. Conteo 6/10. |
 | 5.9 | 2026-09-22 | Historia Enredada completa (5.5a-d). Fix en cargarItemsDeJuego y shell-publica. 9/10 e2e. Conteo 7/10. |
 | 5.10 | 2026-09-22 | Cierre documental de mecánica de Trivia. Conteo 8/10. |
+| 5.11 | 2026-09-22 | Trivia completa (5.6a-d). Fix wrapper items en shell. 10 e2e. Conteo 9/10. |
 
 ---
 

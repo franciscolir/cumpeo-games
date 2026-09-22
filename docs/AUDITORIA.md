@@ -230,3 +230,6 @@ _(ninguna)_
 | 69 | El cambio de `cargarItemsDeJuego` (ahora devuelve `id` además del contenido) puede afectar a Trivia cuyos tests asumen items sin `id`. Verificar al cerrar 5.6. | Paso 5.5d (detectado) | Baja |
 | 70 | El test "set sin historias suficientes no permite arrancar la ronda" está `test.skip`. Para des-skipearlo, el helper necesita aceptar `itemsCount: 0`. | Paso 5.5d (detectado) | Baja |
 | 71 | El test "cards excluyen historias usadas" era flaky con `waitForTimeout`. Se estabilizó con `waitForFunction`. Patrón a aplicar en tests futuros. | Paso 5.5d (detectado) | Media |
+| 74 | El timer público de Trivia usa `window._triviaConfig` que no se setea en ningún lado. El timer siempre usa 30s por default, ignorando `tiempo_por_pregunta_seg`. | Paso 5.6d (detectado) | Baja |
+| 75 | Tests e2e de Trivia: `turnos.spec.js:7` tarda 11s, `validacion.spec.js:111` tarda 29.7s. Considerar reducir tiempos de espera. | Paso 5.6d (detectado) | Baja |
+| 76 | El agente reportó 9/10 tras 5.6d, pero el conteo real es 8/10 hasta cerrar 5.6-cierre. | Paso 5.6d (detectado) | Baja |
