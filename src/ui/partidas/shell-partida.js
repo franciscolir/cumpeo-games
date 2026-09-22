@@ -126,11 +126,11 @@ async function _renderContenido(container, app, partidaId) {
   const gameUI = codigoJuego ? app.uiRegistry.obtener(codigoJuego) : null;
   const estadoJuego = juegoActivo ? (juegoActivo.estado_juego || {}) : {};
 
-  const itemsDelJuego = (codigoJuego === 'QUE_PIENSA_EL_PUBLICO' || codigoJuego === 'TRIVIA' || codigoJuego === 'ROSCO' || codigoJuego === 'PICTIONARY' || codigoJuego === 'HISTORIA_ENREDADA')
+  const itemsDelJuego = (codigoJuego === 'QUE_PIENSA_EL_PUBLICO' || codigoJuego === 'TRIVIA' || codigoJuego === 'ROSCO' || codigoJuego === 'PICTIONARY' || codigoJuego === 'HISTORIA_ENREDADA' || codigoJuego === 'MEMORIA')
     ? await cargarItemsDeJuego(app, juegoActivo)
     : null;
 
-  const setsDisponibles = codigoJuego === 'TRIVIA'
+  const setsDisponibles = (codigoJuego === 'TRIVIA' || codigoJuego === 'MEMORIA')
     ? await app.services.set.listarSetsActivosPorJuego(juegoActivo.juego_id)
     : null;
 
@@ -327,6 +327,87 @@ async function _renderContenido(container, app, partidaId) {
         } else if (tipo === 'time-up-trivia') {
           const { TriviaGameDefinition } = await import('../../games/trivia/TriviaGameDefinition.js');
           const nuevoEstado = TriviaGameDefinition.aplicarTimeUp(estadoJuego);
+          if (!nuevoEstado) return;
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId, juegoActivo.id, nuevoEstado,
+            juegoActivo.state_version, sessionId, nuevoActionId()
+          );
+        } else if (tipo === 'iniciar-juego-memoria') {
+          const { MemoriaGameDefinition } = await import('../../games/memoria/MemoriaGameDefinition.js');
+          const config = juegoActivo.configuracion_congelada || MemoriaGameDefinition.defaultConfig;
+          MemoriaGameDefinition.validarConfiguracion(config);
+          const estadoInicial = MemoriaGameDefinition.estadoInicial(config);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId, juegoActivo.id, estadoInicial,
+            juegoActivo.state_version, sessionId, nuevoActionId()
+          );
+        } else if (tipo === 'iniciar-ronda-memoria') {
+          const nuevoEstado = { ...estadoJuego, fase: 'SELECCIONANDO_SET' };
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId, juegoActivo.id, nuevoEstado,
+            juegoActivo.state_version, sessionId, nuevoActionId()
+          );
+        } else if (tipo === 'seleccionar-set-memoria') {
+          const { MemoriaGameDefinition } = await import('../../games/memoria/MemoriaGameDefinition.js');
+          const itemsRaw = await app.services.set.listarItemsDeSet(payload.set.id);
+          const items = itemsRaw.map((it) => ({ ...it.contenido, id: it.id }));
+          const setConItems = { ...payload.set, items };
+          const config = juegoActivo.configuracion_congelada || MemoriaGameDefinition.defaultConfig;
+          const nuevoEstado = MemoriaGameDefinition.seleccionarSet(estadoJuego, setConItems, config);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId, juegoActivo.id, nuevoEstado,
+            juegoActivo.state_version, sessionId, nuevoActionId()
+          );
+        } else if (tipo === 'voltear-elemento-memoria') {
+          const ejecutarMemoria = async (juegoRef, estadoRef) => {
+            const { MemoriaGameDefinition } = await import('../../games/memoria/MemoriaGameDefinition.js');
+            const config = juegoRef.configuracion_congelada || MemoriaGameDefinition.defaultConfig;
+            const nuevoEstado = MemoriaGameDefinition.voltearElemento(estadoRef, payload.indice, config);
+            await app.services.partida.actualizarEstadoJuego(
+              partidaId, juegoRef.id, nuevoEstado,
+              juegoRef.state_version, sessionId, nuevoActionId()
+            );
+          };
+          try {
+            await ejecutarMemoria(juegoActivo, estadoJuego);
+          } catch (err) {
+            if (err?.name === 'ConflictoVersionError') {
+              const ctx = await app.services.partida.obtenerContextoEspera(partidaId);
+              const juegoFresh = ctx.juegos.find((j) => j.id === juegoActivo.id);
+              if (!juegoFresh) throw err;
+              await ejecutarMemoria(juegoFresh, juegoFresh.estado_juego || {});
+            } else {
+              throw err;
+            }
+          }
+        } else if (tipo === 'iniciar-turno-memoria') {
+          const { MemoriaGameDefinition } = await import('../../games/memoria/MemoriaGameDefinition.js');
+          const config = juegoActivo.configuracion_congelada || MemoriaGameDefinition.defaultConfig;
+          const nuevoEstado = MemoriaGameDefinition.iniciarTurno(estadoJuego, config);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId, juegoActivo.id, nuevoEstado,
+            juegoActivo.state_version, sessionId, nuevoActionId()
+          );
+        } else if (tipo === 'cambiar-turno-manual-memoria') {
+          const { MemoriaGameDefinition } = await import('../../games/memoria/MemoriaGameDefinition.js');
+          const config = juegoActivo.configuracion_congelada || MemoriaGameDefinition.defaultConfig;
+          const nuevoEstado = MemoriaGameDefinition.cambiarTurno(estadoJuego, config, payload.equipo);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId, juegoActivo.id, nuevoEstado,
+            juegoActivo.state_version, sessionId, nuevoActionId()
+          );
+        } else if (tipo === 'iniciar-siguiente-ronda-memoria') {
+          const { MemoriaGameDefinition } = await import('../../games/memoria/MemoriaGameDefinition.js');
+          const config = juegoActivo.configuracion_congelada || MemoriaGameDefinition.defaultConfig;
+          const nuevoEstado = MemoriaGameDefinition.iniciarSiguienteRonda(estadoJuego, config);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId, juegoActivo.id, nuevoEstado,
+            juegoActivo.state_version, sessionId, nuevoActionId()
+          );
+        } else if (tipo === 'time-up-memoria') {
+          const { MemoriaGameDefinition } = await import('../../games/memoria/MemoriaGameDefinition.js');
+          const config = juegoActivo.configuracion_congelada || MemoriaGameDefinition.defaultConfig;
+          const nuevoEstado = MemoriaGameDefinition.aplicarTimeUp(estadoJuego, config);
           if (!nuevoEstado) return;
           await app.services.partida.actualizarEstadoJuego(
             partidaId, juegoActivo.id, nuevoEstado,

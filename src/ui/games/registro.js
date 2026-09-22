@@ -9,6 +9,7 @@ import { RoscoGameUI } from './rosco/RoscoGameUI.js';
 import { CancionIncompletaGameUI } from './cancion-incompleta/CancionIncompletaGameUI.js';
 import { PictionaryGameUI } from './pictionary/PictionaryGameUI.js';
 import { HistoriaEnredadaGameUI } from './historia-enredada/HistoriaEnredadaGameUI.js';
+import { MemoriaGameUI } from './memoria/MemoriaGameUI.js';
 
 /**
  * Registra todos los GameUIs disponibles en el registry.
@@ -22,7 +23,8 @@ export function registrarGameUIs(uiRegistry) {
     RoscoGameUI,
     CancionIncompletaGameUI,
     PictionaryGameUI,
-    HistoriaEnredadaGameUI
+    HistoriaEnredadaGameUI,
+    MemoriaGameUI
   ];
 
   for (const ui of gameUIs) {
