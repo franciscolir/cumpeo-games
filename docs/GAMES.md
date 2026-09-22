@@ -509,65 +509,77 @@ El público puede ver:
 -   la puntuación.
 
 
-# 10. HISTORIA ENREDADA
+# 10. HISTORIA ENREDADA — Mecánica cerrada
 
 ## Concepto
 
-Juego narrativo y de interpretación por equipos.
+Juego narrativo y de interpretación por equipos. La app orquesta el flujo; el contenido real está en papel.
 
-## Selección de historia
+## Objetivo
 
-El conductor recibe una lista de historias.
+Cada equipo elige una historia, la actúa con guion físico y ruidos indicados, y gana por aplausos del público.
 
-Cada historia muestra únicamente:
+## Set (estructura del item)
 
--   título;
--   breve descripción.
+Set obligatorio (`requiere_set: true`). Cada item representa una historia.
 
-No se muestran previamente todos los detalles de la historia en la
-selección.
+Estructura sugerida:
+- `titulo`: string
+- `descripcion`: breve descripción para la card
+- `dibujo`: referencia a imagen de la card
+- `guion`: texto completo para imprimir y entregar a los jugadores
+- `ruidos`: descripción de ruidos del jugador 2 si aplica
 
-## Roles
+La historia completa no se muestra en la app. Se imprime y se entrega en papel.
 
-Participan dos papeles:
+## Selección de equipo e historia
 
-1.  personaje representado por el conductor;
-2.  personaje representado por un participante del otro equipo.
+- El conductor registra qué equipo juega el turno (Eq1 o Eq2).
+- Ese equipo elige 1 historia de las cards disponibles (dibujo + breve descripción).
+- La historia elegida queda registrada en el estado como `historia_elegida_id`.
+- Las historias ya usadas no se pueden repetir en la misma partida.
 
-## Participación del público
+## Desarrollo de la ronda
 
-El público aporta palabras para completar la historia.
+1. El equipo elige la historia.
+2. El conductor entrega los papeles de colores al público.
+3. El público escribe sus respuestas EN SECRETO en los papeles.
+4. Los jugadores leen el papel en voz alta como parte del diálogo.
+5. La app NO registra los papeles. Todo físico.
 
-La dinámica contempla exactamente:
+## Ruidos
 
-**6 espacios**.
+- Los ruidos del jugador 2 están indicados en la historia.
+- El jugador NO decide cuándo hacerlos. Siguen el guion.
 
-Las palabras aportadas se utilizan posteriormente durante la narración.
+## Puntuación
 
-## Narración
+- `puntos_por_victoria`: configurable.
+- Ganador de la ronda determinado por aplausos del público; el conductor determina y asigna puntos.
+- Empate configurable: empate técnico o desempate.
 
-El conductor desarrolla/narra la historia utilizando los elementos
-obtenidos.
+## Turnos y rondas
 
-## Sonido
+- 1 equipo por turno.
+- N rondas configurables (default 1).
+- Cada ronda: 1 equipo elige 1 historia, la actúa, se vota.
+- Al final de N rondas: ganador por puntos totales.
 
-La dinámica contempla efectos de sonido. El conductor dispone de
-mecanismos para disparar dichos efectos durante la narración.
+## Fases
 
-## Estado conceptual
+`INICIO_RONDA`, `SELECCIONANDO_HISTORIA`, `PREPARANDO`, `ACTUANDO`, `VOTANDO`, `FIN_DE_RONDA`, `FIN_DE_JUEGO`.
 
--   historia seleccionada;
--   personaje del conductor;
--   personaje del participante;
--   equipo del participante;
--   seis espacios;
--   palabras recibidas;
--   palabras asignadas;
--   fase;
--   efectos de sonido;
--   estado de narración.
+## Público
 
-## Mecánica cerrada
+- Ve: instrucciones de la fase, historia elegida (título + descripción + dibujo), equipo activo, marcador.
+- NO ve: la historia completa (se imprime por separado).
+- NO ve: los papeles (físicos).
+
+## Timer
+
+No aplica. El juego es físico.
+
+## Matriz de estado
 
 | Aspecto | Definición |
 |---|---|

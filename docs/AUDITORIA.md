@@ -193,6 +193,7 @@ _(ninguna)_
 | 2026-09-22 | 5 | 5.4d-fix-2 | ✅ APROBADO | Pictionary: assertions + timeout. | 83f9f2d |
 | 2026-09-22 | 5 | 5.4-rosco-fix-v2 | ✅ APROBADO | Retry lazy en Rosco (bug #59). Rosco 18/18. | 699204b |
 | 2026-09-22 | 5 | 5.4-e | ✅ APROBADO | Fix juego_nombre en obtenerContextoEspera (bug #67). Pictionary 11/11. | 3eb742d |
+| 2026-09-22 | 5 | 5.5-pre | ✅ APROBADO | Cierre documental de mecánica de Historia Enredada. | — |
 | 2026-09-21 | 5 | 5.4-pre | ✅ APROBADO | Cierre documental de mecánica de Pictionary. Decisiones: estructura del item del set, orden fijo de modos, bonus manual. | — |
 | 2026-09-21 | 5 | 5.4a | ✅ APROBADO | Pictionary GameDefinition + reducers + 74 tests unitarios. Archivos: PictionaryGameDefinition.js, tests, registro.js. | ef53390 |
 
