@@ -1,0 +1,901 @@
+# PROMPT MAESTRO — AUDITORÍA, ORDENAMIENTO Y COMPATIBILIZACIÓN DE FORMULARIOS DE JUEGOS
+
+## CONTEXTO
+
+La aplicación ya está construida y funcionando parcialmente.
+
+NO debes reconstruir la aplicación desde cero.
+
+Tu trabajo consiste en:
+
+1. Auditar lo que ya existe.
+2. Identificar cómo están implementados actualmente los juegos, formularios, componentes, datos y pantallas.
+3. Ordenar y normalizar la implementación existente.
+4. Compatibilizar los nuevos requerimientos con la arquitectura actual.
+5. Reutilizar componentes, funciones, estilos, modelos y lógica existentes siempre que sea posible.
+6. Modificar solamente lo necesario.
+7. Evitar duplicar funcionalidades que ya existen.
+8. Mantener la compatibilidad con el resto de la aplicación.
+9. Implementar los formularios de contenido de los juegos según las especificaciones de este documento.
+
+## REGLA PRINCIPAL
+
+Antes de modificar código:
+
+* Revisa la estructura actual del proyecto.
+* Identifica dónde están implementados:
+
+  * navegación;
+  * gestión de juegos;
+  * formularios;
+  * sets;
+  * almacenamiento de datos;
+  * validaciones;
+  * componentes reutilizables;
+  * modales;
+  * vistas de conductor;
+  * vistas públicas;
+  * Supabase/Storage si corresponde;
+  * estilos globales;
+  * estado de partida;
+  * selección de juegos y sets.
+
+No asumas que algo no existe solamente porque no está descrito aquí.
+
+Si ya existe una solución equivalente, ADÁPTALA en lugar de crear otra.
+
+---
+
+# OBJETIVO
+
+Dejar correctamente ordenada y compatible la administración de contenido de todos los juegos.
+
+Debe existir una separación clara entre:
+
+### CONFIGURACIÓN / CONTENIDO
+
+Donde el conductor o administrador crea y administra los sets y contenidos.
+
+### PARTIDA
+
+Donde se utilizan esos contenidos.
+
+### VISTA CONDUCTOR
+
+Donde el conductor controla el juego.
+
+### VISTA PÚBLICA
+
+Donde el público observa y participa cuando corresponde.
+
+Los formularios de administración NO deben mezclarse con la interfaz de ejecución de la partida.
+
+---
+
+# JUEGOS DEFINIDOS
+
+La aplicación contiene los siguientes juegos:
+
+1. Rosco
+2. Memorice
+3. Canción Incompleta
+4. Pictionary
+
+   * Palabras
+   * Gestos
+   * Preguntas
+   * Dibujo
+5. Historia Enredada
+6. Anti-Trivia
+7. Enlaces
+8. Trivia
+9. ¿Qué Dice el Público?
+
+---
+
+# 1. ROSCO
+
+## Tipo
+
+Juego con sets.
+
+## Formulario
+
+Debe existir un formulario único para crear/administrar un set de Rosco.
+
+### Datos generales
+
+* Nombre: obligatorio.
+* Descripción: obligatoria.
+* Dificultad: obligatoria.
+
+### Letras
+
+El formulario debe contener obligatoriamente las 27 letras:
+
+A, B, C, D, E, F, G, H, I, J, K, L, M, N, Ñ, O, P, Q, R, S, T, U, V, W, X, Y, Z.
+
+Cada letra debe tener:
+
+* Una definición.
+* Una respuesta.
+
+### Reglas
+
+* Deben existir las 27 letras.
+* No se puede guardar si falta una letra.
+* No se puede guardar si una letra no tiene definición.
+* No se puede guardar si una letra no tiene respuesta.
+* Cada letra corresponde a exactamente una definición y una respuesta.
+* No crear un formulario separado por letra.
+* Todo el Rosco se configura desde un único formulario.
+
+---
+
+# 2. MEMORICE
+
+## Tipo
+
+Juego con sets.
+
+## Formulario
+
+Cada set debe contener:
+
+* Nombre.
+* Cantidad de imágenes.
+
+### Cantidad
+
+La cantidad debe ser:
+
+* mínimo 6;
+* máximo 12;
+* solamente cantidades pares.
+
+Valores válidos:
+
+* 6
+* 8
+* 10
+* 12
+
+### Imágenes
+
+La cantidad seleccionada determina dinámicamente cuántos espacios de carga aparecen.
+
+Las imágenes:
+
+* se cargan desde el dispositivo;
+* muestran preview/miniatura;
+* pueden reemplazarse antes de guardar;
+* pueden eliminarse antes de guardar.
+
+No se permite guardar si faltan imágenes.
+
+### Sets predeterminados
+
+Memorice también dispone de sets predeterminados incluidos en la aplicación.
+
+Ejemplos:
+
+* Emojis.
+* Íconos simples.
+
+Estos sets:
+
+* son fijos;
+* están disponibles directamente;
+* no requieren creación;
+* no pueden editarse;
+* no pueden eliminarse.
+
+### Sets creados por el usuario
+
+Los sets creados por el usuario también quedan fijos después de guardarse.
+
+No implementar edición/eliminación posterior si actualmente no existe esa capacidad.
+
+---
+
+# 3. CANCIÓN INCOMPLETA
+
+## Tipo
+
+NO utiliza sets.
+
+## Formulario
+
+NO debe existir formulario de administración de contenido.
+
+NO crear:
+
+* sets;
+* formulario de canciones;
+* formulario de preguntas;
+* formulario de dificultad;
+* formulario de contenido.
+
+Utilizar la implementación existente del juego.
+
+No agregar una administración de contenido que no fue solicitada.
+
+---
+
+# 4. PICTIONARY
+
+Pictionary tiene CUATRO tipos independientes de sets.
+
+NO utilizar un único formulario para los cuatro modos.
+
+Debe existir un formulario independiente para cada modalidad:
+
+1. Palabras.
+2. Gestos.
+3. Preguntas.
+4. Dibujo.
+
+Los cuatro tipos de contenido son ampliables indefinidamente.
+
+No establecer un máximo artificial de elementos.
+
+---
+
+## 4.1 PICTIONARY — PALABRAS
+
+Cada elemento contiene:
+
+* Concepto.
+* Palabras prohibidas.
+* Dificultad.
+
+### Concepto
+
+Obligatorio.
+
+### Palabras prohibidas
+
+Lista dinámica.
+
+Debe permitir:
+
+* agregar palabra;
+* eliminar palabra;
+* seguir agregando palabras.
+
+No establecer un número fijo de palabras prohibidas.
+
+### Dificultad
+
+Obligatoria.
+
+### Set
+
+El set puede seguir creciendo indefinidamente.
+
+Debe existir una acción del tipo:
+
+[ + AGREGAR ELEMENTO ]
+
+---
+
+## 4.2 PICTIONARY — GESTOS
+
+Cada elemento contiene:
+
+* Concepto.
+* Dificultad.
+
+### Banco general de condiciones
+
+Además existe un banco GENERAL e INDEPENDIENTE de condiciones para Gestos.
+
+Ejemplos:
+
+* Solo manos.
+* Solo cara.
+* Una mano.
+* De espalda.
+
+Estas condiciones:
+
+* no pertenecen directamente a un concepto;
+* se administran desde un listado general;
+* son editables;
+* pueden seguir creciendo.
+
+Durante la partida, al seleccionar un concepto de Gestos, el sistema puede asignar aleatoriamente una condición del banco general.
+
+Ejemplo:
+
+Concepto:
+NADAR
+
+Condición aleatoria:
+SOLO UNA MANO
+
+IMPORTANTE:
+
+El banco de condiciones de Gestos NO debe mezclarse con el banco de condiciones de Dibujo.
+
+---
+
+## 4.3 PICTIONARY — PREGUNTAS
+
+Cada elemento contiene:
+
+* Concepto.
+* Dificultad.
+
+Ambos obligatorios.
+
+El set es ampliable indefinidamente.
+
+No agregar campos adicionales que no hayan sido definidos.
+
+---
+
+## 4.4 PICTIONARY — DIBUJO
+
+Cada elemento contiene:
+
+* Concepto.
+* Dificultad.
+
+Ambos obligatorios.
+
+### Banco general de condiciones
+
+Existe además un banco GENERAL e INDEPENDIENTE de condiciones para Dibujo.
+
+Ejemplos:
+
+* Ojos cerrados.
+* Mano contraria.
+
+Las condiciones:
+
+* se administran desde un listado general;
+* son editables;
+* pueden seguir creciendo;
+* no pertenecen directamente a un concepto.
+
+Durante la partida, al seleccionar un concepto de Dibujo, se puede asignar aleatoriamente una condición.
+
+Ejemplo:
+
+Concepto:
+CASTILLO
+
+Condición:
+OJOS CERRADOS
+
+IMPORTANTE:
+
+El banco de condiciones de Dibujo debe ser independiente del banco de Gestos.
+
+---
+
+# 5. HISTORIA ENREDADA
+
+Historia Enredada tiene DOS administradores de contenido independientes.
+
+## A. Historias
+
+## B. Colores
+
+NO mezclarlos en un único formulario.
+
+---
+
+## 5.1 HISTORIA ENREDADA — HISTORIAS
+
+Formulario independiente.
+
+Cada historia contiene:
+
+* Título.
+* Resumen.
+* Historia.
+
+### Título
+
+Obligatorio.
+
+### Resumen
+
+Obligatorio.
+
+Debe ser un texto breve que permita identificar rápidamente la historia.
+
+### Historia
+
+Obligatoria.
+
+Debe utilizar un TEXTAREA apropiado para textos largos.
+
+### Cantidad
+
+Se pueden ingresar N historias.
+
+No existe una cantidad máxima definida.
+
+Debe existir una acción para agregar nuevas historias.
+
+Ejemplo:
+
+[ + AGREGAR HISTORIA ]
+
+---
+
+## 5.2 HISTORIA ENREDADA — COLORES
+
+Existe UN SOLO formulario general para los colores.
+
+Los colores son configurables/editables.
+
+Cada color tiene asociada una pregunta/consigna.
+
+Ejemplos:
+
+AZUL
+Pregunta:
+"Nombre de alguien presente"
+
+ROJO
+Pregunta:
+"Algún sobrenombre que conozcas"
+
+VERDE
+Pregunta:
+"Un lugar"
+
+La estructura conceptual es:
+
+COLOR → PREGUNTA/CONSIGNA
+
+Las preguntas asociadas a los colores son editables.
+
+Los colores forman parte de la configuración general de Historia Enredada.
+
+Las historias utilizan esta configuración general.
+
+No duplicar las preguntas de colores dentro de cada historia.
+
+---
+
+# 6. ANTI-TRIVIA
+
+## Tipo
+
+Juego con sets.
+
+## Formulario
+
+Cada set contiene:
+
+### Datos generales
+
+* Nombre del set.
+* Descripción.
+* Dificultad general.
+
+Todos obligatorios.
+
+### Preguntas
+
+Lista ampliable indefinidamente.
+
+Cada pregunta contiene:
+
+* Pregunta.
+* Respuestas/opciones.
+* Dificultad individual.
+
+La cantidad de preguntas no tiene máximo definido.
+
+### Dificultad
+
+Existen DOS niveles:
+
+1. Dificultad general del set.
+2. Dificultad individual de cada pregunta.
+
+No eliminar ninguno de los dos.
+
+---
+
+# 7. ENLACES
+
+## Tipo
+
+Juego con sets.
+
+## Formulario
+
+Cada set contiene:
+
+* Nombre.
+* Descripción.
+* Dificultad.
+
+Todos obligatorios.
+
+### Contenido
+
+Exactamente:
+
+* 10 elementos del lado izquierdo.
+* 10 elementos del lado derecho.
+
+Debe existir una relación correcta entre cada elemento izquierdo y uno derecho.
+
+### Reglas
+
+* Exactamente 10 elementos a la izquierda.
+* Exactamente 10 elementos a la derecha.
+* Cada elemento izquierdo tiene una correspondencia correcta.
+* No guardar si faltan elementos.
+* No permitir más de 10 pares.
+* Durante la partida, los elementos de la derecha se pueden mostrar desordenados.
+* La relación correcta debe mantenerse internamente.
+
+IMPORTANTE:
+
+El formulario debe almacenar la relación correcta aunque posteriormente la interfaz pública/conductor muestre los elementos de la derecha en otro orden.
+
+---
+
+# 8. TRIVIA
+
+## Tipo
+
+Juego con sets.
+
+## Formulario
+
+Cada set contiene:
+
+### Datos generales
+
+* Nombre del set.
+* Descripción.
+* Dificultad general.
+
+Todos obligatorios.
+
+### Preguntas
+
+Lista ampliable.
+
+Cada pregunta contiene:
+
+* Pregunta.
+* Alternativa A.
+* Alternativa B.
+* Alternativa C.
+* Alternativa D.
+* Dificultad individual.
+
+### Respuesta correcta
+
+NO crear un campo adicional llamado "Respuesta correcta".
+
+Cada alternativa debe tener su propio checkbox para marcarla como correcta.
+
+Ejemplo:
+
+[ ] A — alternativa
+
+[ ] B — alternativa
+
+[ ] C — alternativa
+
+[ ] D — alternativa
+
+### Regla de validación
+
+Debe existir EXACTAMENTE UNA alternativa marcada como correcta.
+
+No permitir guardar si:
+
+* ninguna alternativa está marcada;
+* hay más de una alternativa marcada.
+
+La respuesta correcta debe quedar asociada a la alternativa seleccionada.
+
+### Dificultad
+
+Existen:
+
+* dificultad general del set;
+* dificultad individual de cada pregunta.
+
+---
+
+# 9. ¿QUÉ DICE EL PÚBLICO?
+
+## Tipo
+
+Juego con sets.
+
+## Formulario
+
+Los sets pueden crecer indefinidamente.
+
+### Datos generales
+
+Solo:
+
+* Nombre del set.
+
+NO agregar:
+
+* descripción;
+* dificultad.
+
+### Preguntas
+
+Cada pregunta contiene solamente:
+
+* Pregunta.
+* Respuesta A.
+* Respuesta B.
+
+### Reglas
+
+* No existe respuesta correcta definida.
+* No agregar checkbox de respuesta correcta.
+* Ambas alternativas son válidas.
+* Durante la partida se registra lo que responde el público.
+* No existe límite máximo de preguntas.
+
+---
+
+# NORMALIZACIÓN DE FORMULARIOS
+
+Revisa si actualmente existen diferentes estilos o estructuras para crear sets.
+
+Cuando sea posible, utiliza componentes reutilizables para:
+
+* título;
+* descripción;
+* dificultad;
+* listas dinámicas;
+* botones agregar;
+* validaciones;
+* guardar;
+* cancelar;
+* preview de imágenes;
+* mensajes de error;
+* estados de carga.
+
+Pero NO fuerces todos los formularios a tener exactamente los mismos campos.
+
+La reutilización debe estar en los COMPONENTES y comportamiento, no en inventar una estructura de datos incorrecta para cada juego.
+
+---
+
+# VALIDACIONES
+
+Todas las validaciones deben ejecutarse:
+
+1. visualmente en el formulario;
+2. antes de guardar;
+3. también en la capa de datos/lógica correspondiente cuando sea necesario.
+
+Los mensajes deben indicar claramente qué falta.
+
+Ejemplos:
+
+"Debes completar las 27 letras."
+
+"Falta la definición de la letra M."
+
+"Debes cargar 8 imágenes."
+
+"Debes marcar exactamente una respuesta correcta."
+
+"Debes completar los 10 pares."
+
+No utilizar errores genéricos cuando se pueda identificar el campo concreto.
+
+---
+
+# COMPATIBILIDAD CON LA APP EXISTENTE
+
+Antes de modificar modelos o tablas:
+
+1. Revisa los modelos existentes.
+2. Revisa las tablas existentes.
+3. Revisa relaciones.
+4. Revisa cómo se guardan actualmente los sets.
+5. Revisa cómo se recuperan durante una partida.
+6. Revisa si existen datos ya creados.
+
+NO romper datos existentes.
+
+Si el modelo actual puede soportar los nuevos formularios, reutilizarlo.
+
+Si necesita cambios:
+
+* hacer cambios mínimos;
+* mantener compatibilidad;
+* migrar datos cuando sea necesario;
+* no eliminar información existente sin una razón técnica clara.
+
+---
+
+# UI / UX
+
+Los formularios deben mantener el lenguaje visual actual de la aplicación.
+
+NO crear una interfaz completamente diferente.
+
+Debe existir consistencia en:
+
+* botones;
+* inputs;
+* selects;
+* checkboxes;
+* modales;
+* tarjetas;
+* tipografías;
+* espaciado;
+* colores;
+* mensajes;
+* estados de error;
+* estados de carga.
+
+La interfaz debe ser clara y rápida de utilizar por el conductor/administrador.
+
+---
+
+# LISTADOS DE SETS
+
+Los juegos que utilizan sets deben tener una forma clara de:
+
+* visualizar los sets disponibles;
+* seleccionar un set;
+* identificar el tipo de contenido cuando corresponda.
+
+Pictionary debe distinguir claramente:
+
+* Palabras.
+* Gestos.
+* Preguntas.
+* Dibujo.
+
+Historia Enredada debe distinguir:
+
+* Historias.
+* Configuración de colores.
+
+Memorice debe distinguir:
+
+* Sets predeterminados.
+* Sets creados por el usuario.
+
+---
+
+# NO HACER
+
+No:
+
+* reconstruir la aplicación;
+* cambiar la arquitectura completa;
+* crear formularios que no fueron solicitados;
+* agregar campos por iniciativa propia;
+* inventar mecánicas nuevas;
+* duplicar componentes existentes;
+* duplicar bancos de condiciones;
+* mezclar contenido de distintos juegos;
+* cambiar la dinámica de los juegos;
+* eliminar funcionalidades existentes sin justificación;
+* crear un formulario genérico que obligue a todos los juegos a tener la misma estructura.
+
+---
+
+# PROCESO DE IMPLEMENTACIÓN
+
+Trabaja en este orden:
+
+## PASO 1 — AUDITORÍA
+
+Analiza primero la implementación existente.
+
+Entrega internamente una identificación clara de:
+
+* dónde está cada juego;
+* dónde están sus formularios;
+* dónde se almacenan los sets;
+* qué componentes son reutilizables;
+* qué partes ya cumplen;
+* qué partes necesitan cambios;
+* qué partes faltan.
+
+## PASO 2 — MAPEO
+
+Relaciona la implementación existente con las especificaciones de este documento.
+
+Clasifica cada punto como:
+
+* YA IMPLEMENTADO.
+* REQUIERE AJUSTE.
+* FALTA IMPLEMENTAR.
+* REQUIERE COMPATIBILIZACIÓN.
+
+## PASO 3 — IMPLEMENTACIÓN
+
+Implementa los cambios de menor impacto posible.
+
+Prioridad:
+
+1. Reutilizar.
+2. Adaptar.
+3. Refactorizar cuando sea necesario.
+4. Crear componentes nuevos solo cuando no exista una solución adecuada.
+
+## PASO 4 — VALIDACIÓN
+
+Verifica cada formulario.
+
+Especialmente:
+
+* Rosco: 27 letras completas.
+* Memorice: 6/8/10/12 imágenes.
+* Pictionary: cuatro formularios independientes.
+* Gestos: banco independiente de condiciones.
+* Dibujo: banco independiente de condiciones.
+* Historia Enredada: historias + colores separados.
+* Anti-Trivia: dificultad general + individual.
+* Enlaces: exactamente 10 pares.
+* Trivia: exactamente una alternativa correcta.
+* ¿Qué Dice el Público?: sin respuesta correcta.
+
+## PASO 5 — COMPATIBILIDAD
+
+Comprueba que los sets creados:
+
+* puedan almacenarse;
+* puedan recuperarse;
+* puedan seleccionarse;
+* puedan utilizarse en la partida;
+* no rompan la ejecución actual;
+* mantengan la separación conductor/público.
+
+## PASO 6 — LIMPIEZA
+
+Si durante la auditoría encuentras:
+
+* formularios duplicados;
+* componentes duplicados;
+* lógica repetida;
+* estructuras incompatibles;
+* código muerto claramente relacionado con estos formularios;
+
+ordénalo de manera conservadora.
+
+No hagas una refactorización masiva innecesaria.
+
+---
+
+# RESULTADO ESPERADO
+
+Al terminar, la aplicación debe tener una administración de contenido coherente, donde cada juego tenga exactamente los campos y reglas definidos aquí.
+
+La implementación debe sentirse como una evolución natural de la aplicación existente, no como una aplicación nueva.
+
+IMPORTANTE:
+
+Primero comprende la aplicación existente.
+
+Después adapta.
+
+NO reconstruyas.
+NO inventes.
+NO reemplaces innecesariamente.
+
+La prioridad es:
+
+**AUDITAR → COMPATIBILIZAR → ORDENAR → IMPLEMENTAR → VALIDAR.**

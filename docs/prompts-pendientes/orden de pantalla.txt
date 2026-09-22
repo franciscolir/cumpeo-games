@@ -1,0 +1,801 @@
+
+# PROMPT — ORDENAMIENTO Y AJUSTE DE PANTALLAS DE JUEGO
+
+## Contexto
+
+La aplicación **ya está construida y funcionando**.
+
+NO debes reconstruir la interfaz desde cero.
+
+La tarea consiste en **auditar la interfaz existente, identificar sus componentes actuales, ordenarlos según la estructura definida a continuación y agregar únicamente los elementos que falten**.
+
+Debes trabajar sobre la implementación existente.
+
+### Regla principal
+
+Antes de modificar código:
+
+1. Inspecciona la estructura actual.
+2. Identifica los componentes, contenedores, botones, modales, estados y vistas existentes.
+3. Determina cuáles corresponden a:
+
+   * Vista del conductor.
+   * Vista pública.
+   * Área específica del juego.
+   * Controles generales.
+   * Extras.
+   * Estados de juego.
+4. Reutiliza componentes existentes siempre que sea posible.
+5. No dupliques componentes que ya existen.
+6. No cambies la lógica específica de los juegos salvo cuando sea necesario para implementar correctamente los estados descritos aquí.
+7. No elimines funcionalidades existentes sin una razón explícita.
+8. Si un elemento ya existe pero está en una ubicación incorrecta, **muévelo/reorganízalo**, no lo reemplaces innecesariamente.
+9. Si un elemento no existe, créalo siguiendo esta especificación.
+10. Mantén la arquitectura y convenciones actuales del proyecto.
+
+---
+
+# OBJETIVO GENERAL
+
+La interfaz de juego debe quedar organizada alrededor de **dos vistas sincronizadas**:
+
+### 1. Vista del conductor
+
+Es la interfaz de control.
+
+El conductor:
+
+* inicia;
+* pausa;
+* reanuda;
+* pone en espera;
+* finaliza;
+* avanza;
+* selecciona equipo;
+* registra respuestas;
+* marca correcto/error;
+* utiliza extras;
+* configura opciones.
+
+### 2. Vista pública
+
+Es la interfaz que observa el público.
+
+El público:
+
+* ve el juego;
+* ve marcador;
+* ve tiempo cuando corresponde;
+* ve preguntas/resultados;
+* interactúa solamente cuando la mecánica del juego lo requiere.
+
+**La vista pública NO debe tener controles administrativos del conductor.**
+
+---
+
+# 1. ESTRUCTURA GENERAL DE LA VISTA DEL CONDUCTOR
+
+La pantalla debe organizarse conceptualmente así:
+
+```text
+┌─────────────────────────────────────────────────────────────┐
+│                     BARRA SUPERIOR                          │
+│ TIME          SCORE A : SCORE B          ESTADO DEL JUEGO  │
+├───────────────────────────────────────┬─────────────────────┤
+│                                       │                     │
+│                                       │ CONTROLES CONDUCTOR  │
+│                                       │                     │
+│                                       │ START / PAUSE        │
+│                                       │ FINISH / NEXT        │
+│       ÁREA PRINCIPAL DEL JUEGO        │ MODO ESPERA         │
+│                                       │                     │
+│       contenido específico            │ EQUIPO A / B         │
+│       de cada juego                   │ RESPUESTA            │
+│                                       │ CORRECTO             │
+│                                       │ ERROR                │
+│                                       │ SIGUIENTE            │
+│                                       │ AJUSTES              │
+├───────────────────────────────────────┴─────────────────────┤
+│ AVATAR / REACCIÓN │ SOUND BAR │            EXTRAS           │
+└─────────────────────────────────────────────────────────────┘
+```
+
+Esta estructura es conceptual.
+
+**No significa que debas crear estos elementos nuevamente si ya existen.**
+
+Primero identifica equivalentes en el código actual.
+
+---
+
+# 2. BARRA SUPERIOR
+
+Debe existir una zona superior común a la pantalla de juego.
+
+## Elementos
+
+### TIME
+
+Temporizador del juego cuando corresponda.
+
+Debe respetar la configuración y mecánica específica del juego.
+
+No todos los juegos necesariamente utilizan temporizador.
+
+### SCORE A : SCORE B
+
+Marcador general de ambos equipos.
+
+Debe utilizar la fuente de estado existente de la aplicación.
+
+No crear un segundo sistema de puntuación.
+
+### ESTADO DEL JUEGO
+
+Debe existir una indicación clara del estado actual.
+
+Estados mínimos:
+
+* Modo espera.
+* Juego activo.
+* Pausado.
+* Finalizado / transición.
+
+El indicador puede utilizar texto, color, icono o combinación de estos.
+
+---
+
+# 3. ÁREA PRINCIPAL DEL JUEGO
+
+Es el área visual principal.
+
+Debe ocupar la mayor parte de la pantalla del conductor.
+
+Aquí se renderiza la interfaz específica de cada juego.
+
+Por ejemplo:
+
+* carrusel de imágenes;
+* pregunta;
+* rosco;
+* memorice;
+* pictionary;
+* canción;
+* historia;
+* etc.
+
+**No modificar la mecánica visual específica de cada juego salvo que sea necesario para adaptarla a esta estructura general.**
+
+La estructura general debe funcionar como un **shell común** alrededor de los diferentes juegos.
+
+---
+
+# 4. PANEL DE CONTROL DEL CONDUCTOR
+
+El panel derecho corresponde exclusivamente al conductor.
+
+Debe organizarse verticalmente.
+
+## 4.1 START / PAUSE
+
+Botón:
+
+**START / PAUSE**
+
+### Si el juego está detenido/en espera
+
+Debe permitir iniciar o reanudar el juego.
+
+### Si el juego está activo
+
+Debe permitir pausar.
+
+Cuando se presiona PAUSE:
+
+1. El juego queda pausado.
+2. Se muestra un **modal de pausa**.
+3. Se mantiene el estado actual del juego.
+4. Comienza a contabilizarse el tiempo de pausa.
+5. El juego no se considera finalizado.
+
+El conductor debe poder reanudar desde el modal.
+
+---
+
+# 5. MODAL DE PAUSA
+
+Debe existir un modal específico para el estado de pausa.
+
+Contenido conceptual:
+
+```text
+┌───────────────────────────────┐
+│        JUEGO EN PAUSA         │
+│                               │
+│      Tiempo en pausa:         │
+│           01:24               │
+│                               │
+│       [ REANUDAR ]             │
+│       [ MODO ESPERA ]          │
+└───────────────────────────────┘
+```
+
+El diseño puede adaptarse al sistema visual existente.
+
+No crear una segunda pantalla completamente independiente si el proyecto ya dispone de sistema de modales.
+
+**Reutilizar el sistema de modal existente.**
+
+---
+
+# 6. TIEMPO MÁXIMO DE PAUSA
+
+La pausa tiene un tiempo máximo configurable.
+
+Debe existir una configuración general:
+
+**Ajustes generales → Tiempo máximo en pausa**
+
+Valor por defecto:
+
+**2 minutos**
+
+El valor debe ser configurable.
+
+No hardcodear permanentemente `2 minutos`.
+
+---
+
+# 7. TRANSICIÓN AUTOMÁTICA PAUSA → MODO ESPERA
+
+Cuando el juego entra en pausa:
+
+```text
+JUEGO ACTIVO
+      ↓
+     PAUSE
+      ↓
+     PAUSA
+      ↓
+comienza contador de pausa
+```
+
+Si el conductor reanuda antes del límite:
+
+```text
+PAUSA
+  ↓
+START / REANUDAR
+  ↓
+JUEGO ACTIVO
+```
+
+Si se alcanza el tiempo máximo configurado:
+
+```text
+PAUSA
+  ↓
+tiempo máximo alcanzado
+  ↓
+MODO ESPERA
+```
+
+Al pasar automáticamente a modo espera:
+
+* cerrar el modal de pausa;
+* detener el contador de pausa;
+* cambiar el estado general a `modo espera`;
+* conservar el estado actual del juego;
+* NO finalizar el juego;
+* NO perder la partida;
+* NO reiniciar el juego;
+* actualizar la vista pública al estado de espera correspondiente.
+
+---
+
+# 8. BOTÓN MODO ESPERA
+
+Agregar un **tercer botón de control de estado**.
+
+Botón:
+
+**MODO ESPERA**
+
+Este botón es independiente de `START / PAUSE`.
+
+Su función es permitir que el conductor fuerce inmediatamente la transición:
+
+```text
+JUEGO ACTIVO
+      ↓
+MODO ESPERA
+```
+
+Al presionarlo:
+
+1. El juego queda suspendido.
+2. Se abandona el estado de juego activo.
+3. Se cambia inmediatamente a modo espera.
+4. Se conserva el estado actual del juego.
+5. No se finaliza la partida.
+6. No se reinicia el juego.
+7. La vista pública pasa a modo espera.
+
+Este botón permite hacer manualmente lo mismo que ocurre automáticamente al superar el tiempo máximo de pausa.
+
+---
+
+# 9. DIFERENCIAR ESTOS TRES ESTADOS
+
+Es fundamental NO mezclarlos.
+
+## JUEGO ACTIVO
+
+El juego está ejecutándose.
+
+```text
+JUEGO ACTIVO
+```
+
+## PAUSA
+
+El juego está temporalmente detenido.
+
+```text
+PAUSA
+```
+
+Existe modal de pausa y contador de tiempo de pausa.
+
+## MODO ESPERA
+
+El juego queda suspendido y la aplicación vuelve a un estado de espera.
+
+```text
+MODO ESPERA
+```
+
+No debe mostrarse como si el juego estuviera activo.
+
+## FIN DEL JUEGO
+
+Es un estado diferente.
+
+```text
+FIN
+```
+
+Finalizar el juego significa que la partida/juego terminó según su flujo.
+
+**MODO ESPERA NO significa FIN.**
+
+---
+
+# 10. FINISH / NEXT
+
+Botón:
+
+**FINISH / NEXT**
+
+Debe mantener la lógica existente del proyecto.
+
+Dependiendo del estado y del juego puede significar:
+
+* finalizar pregunta;
+* terminar turno;
+* avanzar;
+* terminar ronda;
+* terminar juego;
+* avanzar al siguiente juego del circuito.
+
+No reemplazar la lógica actual sin inspeccionarla.
+
+Si existe una confirmación para acciones destructivas, conservarla.
+
+---
+
+# 11. SELECTOR DE EQUIPO
+
+Debe existir:
+
+```text
+[A] [B]
+```
+
+Permite seleccionar el equipo sobre el cual se realizará la acción correspondiente.
+
+Debe quedar visualmente claro cuál equipo está seleccionado.
+
+No crear un selector paralelo si ya existe.
+
+Identificar el selector actual y reorganizarlo dentro del panel de conductor.
+
+---
+
+# 12. RESPUESTA
+
+Debe existir un elemento:
+
+**RESPUESTA**
+
+Su función depende del juego.
+
+Puede utilizarse para:
+
+* mostrar/gestionar respuesta;
+* registrar respuesta;
+* revelar respuesta;
+* controlar la respuesta actual.
+
+No modificar la lógica específica sin verificar cómo funciona actualmente.
+
+---
+
+# 13. RESULTADO
+
+Debe existir el conjunto:
+
+```text
+CORRECTO
+ERROR
+SIGUIENTE
+```
+
+### CORRECTO
+
+Permite al conductor registrar que la respuesta fue correcta.
+
+### ERROR
+
+Permite registrar respuesta incorrecta.
+
+### SIGUIENTE
+
+Permite avanzar en el flujo correspondiente.
+
+Estos controles deben ser fácilmente identificables y rápidos de utilizar.
+
+---
+
+# 14. AJUSTES
+
+Botón:
+
+**AJUSTES**
+
+Debe abrir la configuración correspondiente.
+
+Aquí debe estar disponible la configuración general del tiempo máximo de pausa.
+
+No crear una pantalla paralela de configuración si ya existe un sistema de ajustes.
+
+Agregar la nueva opción dentro de la estructura existente.
+
+### Nueva configuración
+
+```text
+Tiempo máximo en pausa
+[ 2 minutos ▼ ]
+```
+
+El valor debe persistir utilizando el mecanismo de configuración ya existente.
+
+---
+
+# 15. ZONA INFERIOR DEL CONDUCTOR
+
+Debe existir una zona inferior con tres áreas funcionales:
+
+```text
+┌───────────────────┬───────────────────┬───────────────────┐
+│   AVATAR REACT    │    SOUND BAR      │      EXTRAS       │
+│                   │                   │                   │
+│     pendiente     │     pendiente     │                   │
+└───────────────────┴───────────────────┴───────────────────┘
+```
+
+## Avatar React
+
+Elemento relacionado con las reacciones del avatar.
+
+Identificar el componente existente y mantenerlo.
+
+## Sound Bar
+
+Elemento relacionado con sonidos pendientes/reproducción.
+
+Identificar el componente existente y mantenerlo.
+
+## Extras
+
+Acceso a herramientas auxiliares del conductor.
+
+No confundir `Extras` con funciones propias del juego.
+
+---
+
+# 16. VISTA PÚBLICA
+
+La vista pública debe estar separada funcionalmente de la vista del conductor.
+
+Debe mostrar solamente información necesaria para seguir el juego.
+
+Estructura:
+
+```text
+┌──────────────────────────────────────────┐
+│              TIME                        │
+│          SCORE A : SCORE B               │
+├──────────────────────────────────────────┤
+│                                          │
+│                                          │
+│           ÁREA PÚBLICA DEL JUEGO         │
+│                                          │
+│       contenido específico del juego     │
+│                                          │
+│                                          │
+├──────────────────────────────────────────┤
+│       MENSAJES DESDE MÓVIL               │
+└──────────────────────────────────────────┘
+```
+
+---
+
+# 17. ELEMENTOS QUE NO DEBEN APARECER EN PÚBLICO
+
+La vista pública NO debe mostrar controles administrativos como:
+
+* START;
+* PAUSE;
+* FINISH;
+* NEXT;
+* MODO ESPERA;
+* selector A/B del conductor;
+* CORRECTO;
+* ERROR;
+* SIGUIENTE;
+* AJUSTES;
+* EXTRAS.
+
+El público puede ver el **resultado** de estas acciones, pero no ejecutarlas.
+
+---
+
+# 18. ÁREA PÚBLICA DEL JUEGO
+
+Debe mostrar la versión pública del juego actual.
+
+Puede incluir:
+
+* preguntas;
+* imágenes;
+* respuestas;
+* resultados;
+* progreso;
+* animaciones;
+* instrucciones;
+* marcador;
+* información necesaria para la participación.
+
+No asumir que la vista pública debe ser una copia exacta del área del conductor.
+
+**Debe ser una presentación específica para el público.**
+
+---
+
+# 19. MENSAJES DESDE MÓVIL
+
+Mantener la zona:
+
+**MENSAJES DESDE MÓVIL**
+
+Debe utilizarse para información proveniente de participantes móviles cuando corresponda.
+
+Identificar si este componente ya existe y mantener su funcionalidad.
+
+---
+
+# 20. COMPORTAMIENTO DE MODO ESPERA EN AMBAS VISTAS
+
+Cuando el conductor activa modo espera:
+
+### Conductor
+
+Debe mostrar claramente:
+
+```text
+MODO ESPERA
+```
+
+y los controles apropiados para retomar el juego.
+
+### Público
+
+Debe recibir el estado correspondiente.
+
+No debe seguir mostrando la interfaz como si el juego estuviera activo.
+
+Puede mostrar una pantalla de espera, información del próximo juego o el contenido que ya utilice actualmente la aplicación para este estado.
+
+**No inventar una nueva experiencia pública si ya existe una pantalla de espera implementada.**
+
+Primero identificarla y adaptarla.
+
+---
+
+# 21. ESTADOS Y TRANSICIONES
+
+La implementación debe contemplar explícitamente:
+
+```text
+MODO ESPERA
+     │
+     │ START
+     ▼
+JUEGO ACTIVO
+     │
+     │ PAUSE
+     ▼
+   PAUSA
+     │
+     ├──────── START ────────► JUEGO ACTIVO
+     │
+     ├──── MODO ESPERA ─────► MODO ESPERA
+     │
+     └── tiempo máximo ─────► MODO ESPERA
+     
+JUEGO ACTIVO
+     │
+     │ FINISH
+     ▼
+FIN / TRANSICIÓN
+```
+
+El modelo de estados existente debe reutilizarse si ya existe.
+
+**No crear un segundo sistema de estados paralelo.**
+
+---
+
+# 22. AUDITORÍA ANTES DE MODIFICAR
+
+Antes de escribir código, realiza una auditoría de la implementación actual.
+
+Identifica explícitamente:
+
+### Componentes existentes
+
+* contenedor principal del juego;
+* vista conductor;
+* vista pública;
+* barra superior;
+* marcador;
+* temporizador;
+* controles;
+* selector de equipo;
+* respuesta;
+* correcto;
+* error;
+* siguiente;
+* ajustes;
+* extras;
+* avatar;
+* sound bar;
+* mensajes móviles;
+* modales;
+* estado de pausa;
+* estado de espera;
+* estado final.
+
+### Para cada elemento determina
+
+| Elemento            | ¿Existe? | Ubicación actual | Acción               |
+| ------------------- | -------- | ---------------- | -------------------- |
+| TIME                | Sí/No    | ...              | Mantener/Mover/Crear |
+| SCORE               | Sí/No    | ...              | Mantener/Mover/Crear |
+| START/PAUSE         | Sí/No    | ...              | ...                  |
+| FINISH/NEXT         | Sí/No    | ...              | ...                  |
+| MODO ESPERA         | Sí/No    | ...              | ...                  |
+| Selector equipo     | Sí/No    | ...              | ...                  |
+| RESPUESTA           | Sí/No    | ...              | ...                  |
+| CORRECTO            | Sí/No    | ...              | ...                  |
+| ERROR               | Sí/No    | ...              | ...                  |
+| SIGUIENTE           | Sí/No    | ...              | ...                  |
+| AJUSTES             | Sí/No    | ...              | ...                  |
+| EXTRAS              | Sí/No    | ...              | ...                  |
+| Modal pausa         | Sí/No    | ...              | ...                  |
+| Tiempo máximo pausa | Sí/No    | ...              | ...                  |
+
+Esta tabla es para **identificar la implementación existente**, no para crear componentes duplicados.
+
+---
+
+# 23. REGLAS DE IMPLEMENTACIÓN
+
+## No reconstruir
+
+No reemplazar toda la pantalla simplemente porque el layout actual es diferente.
+
+## No duplicar lógica
+
+Si ya existe:
+
+* sistema de estados;
+* modal;
+* timer;
+* configuración;
+* marcador;
+* selector;
+* componente de botón;
+
+reutilizarlo.
+
+## No romper juegos existentes
+
+Los juegos actualmente implementados deben continuar funcionando.
+
+La modificación debe hacerse preferentemente en el **shell común de juego**.
+
+## No mezclar conductor y público
+
+Ambas vistas pueden compartir estado, pero no controles.
+
+## Mantener responsive
+
+La vista pública debe continuar funcionando en las dimensiones y dispositivos para los que ya está diseñada.
+
+La vista del conductor está optimizada para escritorio/pantalla de control.
+
+---
+
+# 24. CRITERIO DE TERMINADO
+
+La tarea se considera terminada cuando:
+
+* la vista del conductor tiene una estructura clara;
+* la vista pública está separada funcionalmente;
+* los elementos existentes fueron identificados y reutilizados;
+* los controles están ubicados en el panel correspondiente;
+* existe `START / PAUSE`;
+* existe `FINISH / NEXT`;
+* existe `MODO ESPERA`;
+* existe modal de pausa;
+* existe contador de tiempo de pausa;
+* el tiempo máximo de pausa es configurable;
+* el valor predeterminado es 2 minutos;
+* superar el límite cambia automáticamente a modo espera;
+* el botón `MODO ESPERA` fuerza inmediatamente ese estado;
+* modo espera no finaliza el juego;
+* pausa no finaliza el juego;
+* finalizar sigue siendo una acción distinta;
+* la vista pública refleja correctamente los estados;
+* no aparecen controles del conductor en público;
+* no se duplican componentes o sistemas existentes;
+* los juegos actuales continúan funcionando.
+
+---
+
+# IMPORTANTE PARA EL AGENTE
+
+**No empieces modificando código inmediatamente.**
+
+Primero inspecciona el proyecto y determina:
+
+1. dónde está implementada la vista del conductor;
+2. dónde está implementada la vista pública;
+3. cuál es el componente/container común de juego;
+4. cómo se representa actualmente el estado del juego;
+5. cómo funciona actualmente el botón START/PAUSE;
+6. cómo funciona actualmente FINISH/NEXT;
+7. si ya existe un estado de espera;
+8. si ya existe un modal de pausa;
+9. cómo se gestionan los timers;
+10. dónde están los ajustes generales;
+11. cómo se persisten las configuraciones;
+12. qué componentes ya corresponden a los elementos descritos.
+
+Después de esa auditoría, **realiza los cambios mínimos necesarios para llevar la implementación actual a esta estructura**.
+
+No inventes una arquitectura nueva si la existente ya resuelve el problema.
+
+El objetivo es **ordenar, ajustar y completar la interfaz existente**, no rehacer la aplicación.

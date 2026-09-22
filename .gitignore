@@ -15,3 +15,8 @@ Thumbs.db
 tmp/
 *.bak
 *.tmp
+
+# Reportes generados (temporales)
+report.txt
+query_db.mjs
+report.mjs

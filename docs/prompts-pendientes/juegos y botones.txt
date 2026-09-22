@@ -1,0 +1,924 @@
+# PROMPT MAESTRO — CONSOLIDACIÓN DE CONTROLES Y FLUJOS DE JUEGOS
+
+## OBJETIVO
+
+Trabaja sobre la aplicación **Cumpeo** existente.
+
+NO reconstruyas la aplicación desde cero.
+
+La aplicación ya posee arquitectura, componentes, pantallas, navegación, lógica de juegos, vistas de conductor y público, estilos y conexión con datos. El objetivo es **auditar, ordenar, corregir y adaptar la implementación existente** para que los controles, estados y flujos de cada juego respeten exactamente las especificaciones siguientes.
+
+Antes de modificar código:
+
+1. Audita la arquitectura existente.
+2. Identifica cómo están implementados:
+
+   * juegos;
+   * sesiones/partidas;
+   * estados de juego;
+   * controles del conductor;
+   * pantalla pública;
+   * selección de sets;
+   * configuración;
+   * puntuación;
+   * temporizadores;
+   * modales;
+   * navegación entre juegos.
+3. Reutiliza componentes, funciones y patrones existentes cuando corresponda.
+4. No dupliques componentes innecesariamente.
+5. No cambies la arquitectura general salvo que sea estrictamente necesario.
+6. No inventes nuevas mecánicas.
+7. No elimines funcionalidades existentes que no entren en conflicto con esta especificación.
+
+---
+
+# 1. CONTROLES GENERALES DE TODOS LOS JUEGOS
+
+Estos controles son independientes de los controles específicos de cada juego.
+
+## INICIAR / PAUSAR
+
+Antes de iniciar:
+
+* El juego muestra su POSTER/presentación.
+* Al presionar INICIAR:
+
+  * desaparece el poster;
+  * comienza el flujo propio del juego.
+
+Durante el juego:
+
+* el botón pasa a PAUSAR.
+
+Al presionar PAUSAR:
+
+* se congela el estado del juego;
+* se detienen los temporizadores;
+* se muestra el MODAL PAUSA.
+
+### MODAL PAUSA
+
+Debe mostrar:
+
+* imagen del árbitro;
+* leyenda "PAUSA";
+* fondo de la aplicación desenfocado.
+
+Debe permitir continuar posteriormente.
+
+### MODO ESPERA
+
+Existe un botón general independiente.
+
+Permite:
+
+* entrar manualmente en modo espera;
+* salir del modo espera cuando corresponda.
+
+Además:
+
+* si el juego permanece pausado durante el tiempo configurado en Ajustes Generales, entra automáticamente en MODO ESPERA.
+
+Ejemplo:
+
+* si está configurado en 5 minutos y permanece pausado durante 5 minutos, pasa automáticamente a MODO ESPERA.
+
+MODO ESPERA utiliza la misma pantalla que la vista pública inicial/home.
+
+---
+
+# 2. TERMINAR / SIGUIENTE
+
+El botón general funciona según el estado:
+
+### TERMINAR
+
+Al presionarlo:
+
+* NO finaliza inmediatamente;
+* muestra un modal de confirmación.
+
+### MODAL FINAL
+
+Mostrar:
+
+"¿Finalizar seguro?"
+
+Con:
+
+* OK
+* CANCELAR
+
+Fondo desenfocado.
+
+Si se confirma:
+
+* finaliza el juego;
+* registra el resultado correspondiente;
+* el botón pasa a SIGUIENTE.
+
+### SIGUIENTE
+
+Al presionarlo:
+
+* avanza al siguiente juego del circuito, si corresponde;
+* carga el poster del siguiente juego;
+* comienza el flujo inicial del siguiente juego.
+
+Estos controles son GENERALES y no deben repetirse dentro de la especificación de cada juego.
+
+---
+
+# 3. REGLA GENERAL DE CONTROLES ESPECÍFICOS
+
+Los controles específicos descritos para cada juego pertenecen al **panel/zona de juego del conductor**.
+
+No deben confundirse con:
+
+* PAUSAR;
+* TERMINAR/SIGUIENTE;
+* MODO ESPERA.
+
+Los controles específicos deben aparecer, desaparecer o cambiar de estado según la dinámica de cada juego.
+
+No convertir automáticamente todos los controles en botones permanentes.
+
+---
+
+# 4. MEMORICE
+
+## CONTROLES
+
+### 1. SELECTOR A/B
+
+* Determina qué equipo está jugando.
+* Permite cambiar manualmente el equipo activo.
+* Se actualiza automáticamente cuando cambia el turno.
+
+Cuando cambia el equipo:
+
+* mostrar modal indicando el nombre del equipo;
+* el selector A/B debe reflejar automáticamente el equipo activo.
+
+### 2. INICIAR TIEMPO / CARGAR SET
+
+Estado inicial:
+
+**INICIAR TIEMPO**
+
+Al presionar:
+
+* carga el set seleccionado;
+* genera/prepara el tablero;
+* inicia el tiempo;
+* comienza la ronda.
+
+Cuando se encuentran todas las parejas:
+
+* el botón cambia a **CARGAR SET**.
+
+Al presionar CARGAR SET:
+
+* carga un nuevo set;
+* regenera/reordena el tablero;
+* el botón vuelve a **INICIAR TIEMPO**.
+
+### 3. BONUS
+
+* Permite entregar puntaje manualmente.
+
+### 4. CONFIGURACIÓN
+
+* Abre la configuración propia de Memorice.
+
+## DINÁMICA
+
+* El tablero contiene las cartas del set.
+* Las cartas se seleccionan directamente en el tablero.
+* No crear botones adicionales para seleccionar cartas.
+* Después de seleccionar dos cartas, el sistema determina automáticamente si forman pareja.
+
+Si forman pareja:
+
+* se marcan como correctas;
+* se asigna el puntaje;
+* el mismo equipo continúa.
+
+Si NO forman pareja:
+
+* se muestra brevemente el resultado;
+* las cartas vuelven a ocultarse;
+* cambia automáticamente el turno al otro equipo.
+
+Cuando cambia el equipo:
+
+* actualizar selector A/B;
+* mostrar modal de cambio de equipo.
+
+Cuando se encuentran todas las parejas:
+
+* la ronda queda esperando la carga de un nuevo set.
+
+---
+
+# 5. CANCIÓN INCOMPLETA
+
+## CONTROLES
+
+### 1. SELECTOR A/B
+
+* Determina qué equipo está jugando.
+
+### 2. INICIAR TIEMPO
+
+* Inicia el tiempo de la ronda.
+* Reproduce la canción según la dinámica existente.
+* La canción se interrumpe en el punto configurado.
+
+### 3. CORRECTO
+
+* Registra la respuesta como correcta.
+* Asigna el puntaje correspondiente.
+
+### 4. ERROR
+
+* Registra la respuesta como incorrecta.
+* No asigna puntaje.
+
+### 5. BONUS
+
+* Permite entregar puntaje manualmente.
+
+### 6. CONFIGURACIÓN
+
+* Abre la configuración propia de Canción Incompleta.
+
+## DINÁMICA
+
+* La canción se reproduce.
+* Se interrumpe.
+* El jugador debe continuar/cantar la frase correspondiente.
+* El conductor determina mediante CORRECTO o ERROR.
+* No existe rebote automático.
+
+---
+
+# 6. ROSCO
+
+## CONTROLES
+
+### INFORMACIÓN — RESPUESTA CORRECTA
+
+NO es un botón.
+
+Debe existir información visible exclusivamente para el conductor:
+
+**RESPUESTA CORRECTA**
+
+* muestra la respuesta correspondiente a la letra actual;
+* nunca debe mostrarse al público.
+
+### 1. SELECTOR A/B
+
+* Determina qué equipo está jugando.
+* Permite cambiar manualmente el equipo activo.
+
+### 2. INICIAR TIEMPO
+
+* Inicia el Rosco.
+* Comienza por la primera letra pendiente.
+* Inicia el contador del equipo activo.
+
+### 3. CORRECTO
+
+* Marca la letra como correcta.
+* Asigna puntaje.
+* Avanza a la siguiente letra pendiente.
+
+### 4. ERROR
+
+* Marca la letra como incorrecta.
+* Registra el resultado.
+* Avanza según la dinámica del Rosco.
+
+### 5. PASAR
+
+* Deja la letra pendiente.
+* Cambia el turno al otro equipo.
+* El otro equipo puede responder posteriormente.
+
+Si ambos equipos pasan una letra:
+
+* permanece pendiente para una oportunidad posterior.
+
+### 6. BONUS
+
+* Permite entregar puntaje manualmente.
+
+### 7. CONFIGURACIÓN
+
+* Abre la configuración propia de Rosco.
+
+## TIEMPO
+
+Cada equipo posee su propio contador.
+
+* Solo corre el contador del equipo activo.
+* Al cambiar de equipo, se detiene el contador anterior.
+* Se activa el contador del nuevo equipo.
+* PAUSAR congela ambos contadores.
+* REANUDAR continúa el contador del equipo activo.
+
+Estados de letra:
+
+* pendiente;
+* actual;
+* correcta;
+* incorrecta;
+* pasada/pendiente.
+
+---
+
+# 7. PICTIONARY
+
+## IMPORTANTE
+
+Los controles de ejecución NO son permanentes.
+
+Después de presionar el INICIAR general:
+
+1. desaparece el poster;
+2. aparecen las tarjetas de configuración del turno.
+
+## CONFIGURACIÓN DEL TURNO
+
+Mostrar:
+
+### 1. SELECCIÓN DE MODO
+
+Opciones:
+
+* Palabras
+* Gestos
+* Preguntas
+* Dibujo
+
+### 2. SELECCIÓN DE SET
+
+Permite seleccionar el set correspondiente al modo elegido.
+
+### 3. RONDAS
+
+Define cantidad de rondas.
+
+Una ronda completa equivale a:
+
+* Turno equipo A
+* Turno equipo B
+
+Ejemplo:
+
+Ronda 1:
+
+* A juega;
+* B juega.
+
+Ronda 2:
+
+* A juega;
+* B juega.
+
+## INICIO DEL TURNO
+
+Una vez configurado:
+
+* desaparecen las tarjetas de configuración;
+* comienza el turno del equipo correspondiente.
+
+## CONTROLES DE EJECUCIÓN
+
+### 1. SELECTOR A/B
+
+* Determina el equipo activo.
+
+### 2. CONDICIÓN
+
+Solo aparece cuando corresponde:
+
+* Gestos;
+* Dibujo.
+
+La condición se obtiene del banco general correspondiente.
+
+### 3. INICIAR TIEMPO
+
+* Inicia el tiempo del turno.
+
+### 4. CORRECTO
+
+* Registra concepto acertado.
+* Asigna puntaje.
+* Carga el siguiente concepto.
+
+### 5. ERROR
+
+* Registra error.
+* No asigna puntaje.
+* El concepto continúa según la dinámica existente.
+
+### 6. PASAR
+
+* Descarta el concepto actual.
+* Carga un concepto nuevo.
+* Puede aplicar descuento si está configurado.
+
+### 7. BONUS
+
+* Permite puntaje manual.
+
+### 8. CONFIGURACIÓN
+
+* Abre configuración propia de Pictionary.
+
+## FIN DEL TURNO
+
+Cuando termina el tiempo:
+
+* se detiene el turno;
+* desaparecen los controles de ejecución;
+* vuelven a aparecer las tarjetas de configuración;
+* se prepara el turno del siguiente equipo.
+
+La configuración debe permitir seleccionar el modo/set correspondiente al nuevo turno.
+
+Objetivo:
+
+* obtener la mayor cantidad de conceptos durante el tiempo configurado.
+
+---
+
+# 8. HISTORIA ENREDADA
+
+## SELECCIÓN DE HISTORIA
+
+Después de iniciar:
+
+* mostrar cards de historias;
+* cada card muestra:
+
+  * título;
+  * resumen.
+
+Al seleccionar una historia:
+
+* queda visualmente seleccionada;
+* cambia el fondo a la imagen referencial de esa historia;
+* comienza el flujo de ejecución.
+
+## CONTROLES
+
+### 1. SELECTOR A/B
+
+* Determina el equipo correspondiente.
+
+### 2. REGISTRAR PUNTAJE
+
+Debe ofrecer 3 opciones configurables.
+
+Ejemplo:
+
+* 50
+* 100
+* 150
+
+El conductor selecciona el puntaje correspondiente.
+
+### 3. FINALIZAR HISTORIA
+
+* Finaliza la historia actual.
+* Devuelve a las cards de selección de historias.
+
+### 4. CONFIGURACIÓN
+
+* Abre la configuración propia de Historia Enredada.
+
+## DINÁMICA
+
+* Conductor representa un personaje.
+* Un jugador representa el segundo personaje.
+* Un jugador realiza sonidos.
+* El público proporciona información para los espacios de colores.
+* Los colores y su orden pertenecen a la configuración global de colores.
+* El resultado se determina mediante la dinámica existente, incluyendo la selección de puntaje por parte del conductor.
+
+---
+
+# 9. ANTI-TRIVIA
+
+## CONTROLES
+
+### 1. SELECTOR A/B
+
+* Determina qué equipo está jugando.
+
+### 2. INICIAR TIEMPO
+
+* Inicia el tiempo disponible para responder.
+
+### 3. CORRECTO
+
+* Registra respuesta correcta.
+* Asigna el puntaje correspondiente.
+* Avanza automáticamente a la siguiente pregunta.
+* Reinicia el temporizador con un retraso de 1 segundo.
+
+### 4. ERROR
+
+* Registra respuesta incorrecta.
+* No asigna puntaje.
+* Avanza automáticamente a la siguiente pregunta.
+* Reinicia el temporizador con un retraso de 1 segundo.
+
+### 5. BONUS
+
+* Permite entregar puntaje manual.
+
+### 6. CONFIGURACIÓN
+
+* Abre la configuración propia de Anti-Trivia.
+
+NO crear un botón SIGUIENTE específico:
+
+* CORRECTO y ERROR avanzan automáticamente.
+
+---
+
+# 10. ENLACES
+
+## FLUJO INICIAL
+
+Después del INICIAR general:
+
+* desaparece el poster;
+* se selecciona/carga el set;
+* se prepara el tablero.
+
+El tablero contiene:
+
+* 10 elementos fijos a la izquierda;
+* 10 elementos a la derecha;
+* los elementos de la derecha pueden mezclarse/reordenarse visualmente;
+* la relación correcta interna debe mantenerse.
+
+## CONTROLES
+
+### 1. SELECTOR A/B
+
+* Determina qué equipo está jugando.
+* Permite cambiar manualmente el equipo activo.
+
+### 2. INICIAR TIEMPO
+
+* Inicia el tiempo disponible para resolver los 10 enlaces.
+* El equipo puede mover/asociar los elementos durante el tiempo.
+* Al finalizar el tiempo:
+
+  * bloquea los elementos;
+  * impide nuevas modificaciones;
+  * deja el juego esperando VALIDAR.
+
+### 3. VALIDAR
+
+* Detiene el tiempo.
+* Valida las parejas armadas.
+* Compara las asociaciones realizadas con las relaciones correctas del set.
+* Determina aciertos y errores.
+* Asigna automáticamente el puntaje correspondiente según los aciertos.
+* Muestra el resultado de la validación.
+
+### 4. BONUS
+
+* Permite entregar puntaje manualmente.
+* Es independiente del resultado automático.
+
+### 5. CONFIGURACIÓN
+
+* Abre la configuración propia de Enlaces.
+
+## FLUJO
+
+SELECTOR A/B
+→ INICIAR TIEMPO
+→ resolver 10 enlaces
+→ termina tiempo
+→ bloqueo
+→ VALIDAR
+→ comprobar aciertos
+→ asignar puntaje
+→ continuar.
+
+---
+
+# 11. TRIVIA
+
+## CONTROLES
+
+### 1. SELECTOR A/B
+
+* Determina qué equipo está jugando.
+* Permite cambiar manualmente el equipo activo.
+
+### 2. INICIAR TIEMPO
+
+* Inicia el tiempo disponible para responder.
+* Muestra la pregunta y sus 4 alternativas.
+* El equipo responde desde la pantalla pública.
+* Al finalizar el tiempo:
+
+  * bloquea las respuestas;
+  * deja el juego esperando VALIDAR.
+
+### 3. VALIDAR
+
+* Analiza la alternativa marcada en la pantalla pública.
+* Determina si es correcta o incorrecta.
+* Registra el resultado.
+* Asigna el puntaje correspondiente.
+* Avanza automáticamente a la siguiente pregunta.
+
+### 4. BONUS
+
+* Permite entregar puntaje manualmente.
+
+### 5. CONFIGURACIÓN
+
+* Abre la configuración propia de Trivia.
+
+## FLUJO
+
+SELECTOR A/B
+→ INICIAR TIEMPO
+→ respuesta pública
+→ termina tiempo
+→ bloqueo
+→ VALIDAR
+→ resultado + puntaje
+→ siguiente pregunta.
+
+---
+
+# 12. ¿QUÉ DICE EL PÚBLICO?
+
+## CONTROLES
+
+### 1. INICIAR TIEMPO / LANZAR ENCUESTA
+
+Este botón cumple ambas funciones.
+
+Al presionar:
+
+* inicia el tiempo disponible;
+* envía la pregunta al público mediante sus dispositivos móviles;
+* muestra la pregunta y sus 2 alternativas en la pantalla pública;
+* los jugadores elegidos de cada equipo indican verbalmente su respuesta al conductor;
+* el conductor registra en pantalla:
+
+  * respuesta del Jugador 1;
+  * respuesta del Jugador 2;
+    para cada equipo;
+* el público selecciona una de las dos alternativas desde su dispositivo;
+* al finalizar el tiempo:
+
+  * se bloquean las respuestas;
+  * el juego queda esperando la acción del conductor.
+
+### 2. MOSTRAR RESULTADO / SIGUIENTE
+
+Este es un botón con dos estados.
+
+#### Estado: MOSTRAR RESULTADO
+
+Al presionarlo:
+
+* muestra el resultado de las respuestas del público;
+* indica cuántas personas seleccionaron cada alternativa;
+* muestra las respuestas registradas de los jugadores de cada equipo;
+* valida las respuestas seleccionadas por cada equipo en relación con el resultado del público;
+* asigna automáticamente el puntaje correspondiente según los aciertos.
+
+Una vez realizado el cálculo y asignado el puntaje:
+
+**MOSTRAR RESULTADO → SIGUIENTE**
+
+#### Estado: SIGUIENTE
+
+Al presionarlo:
+
+* avanza a la siguiente pregunta.
+
+### 3. BONUS
+
+* Permite entregar puntaje manualmente.
+* Es independiente del resultado automático.
+
+### 4. CONFIGURACIÓN
+
+* Abre la configuración propia de ¿Qué Dice el Público?.
+
+## FLUJO
+
+LANZAR ENCUESTA
+→ pregunta enviada al público
+→ público responde desde móviles
+→ jugadores responden y conductor registra
+→ termina tiempo
+→ bloqueo
+→ MOSTRAR RESULTADO
+→ mostrar resultados
+→ validar respuestas de equipos
+→ asignar puntaje
+→ botón cambia a SIGUIENTE
+→ SIGUIENTE
+→ siguiente pregunta.
+
+---
+
+# 13. REGLAS DE IMPLEMENTACIÓN
+
+## NO INVENTAR
+
+No agregar:
+
+* botones;
+* campos;
+* estados;
+* reglas de puntuación;
+* mecánicas;
+* pantallas;
+* flujos
+
+que no estén definidos en esta especificación o que no existan ya en la aplicación.
+
+## REUTILIZAR
+
+Reutilizar cuando sea posible:
+
+* selector A/B;
+* controles de tiempo;
+* botones CORRECTO/ERROR;
+* BONUS;
+* CONFIGURACIÓN;
+* modales;
+* panel de conductor;
+* componentes de puntuación;
+* componentes de selección de sets;
+* estados de juego.
+
+Pero la reutilización no debe forzar una mecánica idéntica entre juegos que funcionan de manera diferente.
+
+## CONDUCTOR VS PÚBLICO
+
+La información de control y respuesta correcta debe permanecer exclusivamente en la pantalla del conductor.
+
+Nunca mostrar al público:
+
+* respuestas correctas antes de la validación;
+* controles del conductor;
+* botones funcionales del panel de conductor;
+* información interna del juego.
+
+La pantalla pública debe mostrar únicamente la información necesaria para participar o visualizar el estado del juego.
+
+## ESTADOS
+
+Los botones deben cambiar según el estado real del juego.
+
+Ejemplos:
+
+* INICIAR TIEMPO → espera → VALIDAR.
+* MOSTRAR RESULTADO → SIGUIENTE.
+* INICIAR TIEMPO → tiempo activo → bloqueo.
+* TERMINAR → confirmación → SIGUIENTE.
+* PAUSAR → PAUSA → reanudar/modo espera.
+
+No simular estos cambios únicamente a nivel visual:
+el estado debe estar conectado a la lógica real del juego.
+
+## TEMPORIZADORES
+
+Los temporizadores deben:
+
+* detenerse realmente al pausar;
+* continuar correctamente al reanudar;
+* bloquear acciones cuando llegan a cero;
+* mantener el estado correcto del equipo;
+* evitar múltiples intervalos simultáneos;
+* evitar que una acción posterior vuelva a activar un temporizador ya finalizado.
+
+## PUNTUACIÓN
+
+Distinguir:
+
+* puntaje automático del juego;
+* BONUS manual;
+* puntaje acumulado de la partida.
+
+El puntaje del juego debe registrarse correctamente antes de avanzar cuando corresponda.
+
+## COMPATIBILIDAD
+
+Preservar:
+
+* datos existentes;
+* sets existentes;
+* configuración existente;
+* usuarios/partidas existentes;
+* estructura de Supabase;
+* Storage existente;
+* rutas y navegación existentes.
+
+Si se necesita modificar el modelo de datos:
+
+* realizar el cambio mínimo;
+* mantener compatibilidad con registros existentes;
+* no eliminar datos.
+
+---
+
+# 14. PROCESO DE TRABAJO DEL AGENTE
+
+Aplicar este orden:
+
+### FASE 1 — AUDITORÍA
+
+Identificar la implementación actual de cada juego.
+
+### FASE 2 — MAPEO
+
+Relacionar:
+
+* pantalla;
+* estado;
+* botón;
+* evento;
+* lógica;
+* puntuación;
+* temporizador;
+* vista pública;
+* vista conductor.
+
+### FASE 3 — IMPLEMENTACIÓN
+
+Modificar únicamente lo necesario para alcanzar esta especificación.
+
+### FASE 4 — VALIDACIÓN
+
+Comprobar cada flujo completo:
+
+* inicio;
+* selección;
+* temporizador;
+* pausa;
+* finalización;
+* validación;
+* puntuación;
+* siguiente;
+* modo espera.
+
+### FASE 5 — COMPATIBILIDAD
+
+Verificar que:
+
+* los juegos anteriores siguen funcionando;
+* los sets existentes siguen cargando;
+* la navegación no se rompe;
+* la vista pública no recibe controles de conductor;
+* no existen estados duplicados o inconsistentes.
+
+### FASE 6 — LIMPIEZA
+
+Eliminar solamente:
+
+* código duplicado generado por la modificación;
+* controles obsoletos;
+* estados incompatibles;
+* componentes que hayan quedado sin uso.
+
+NO realizar una refactorización masiva si no es necesaria.
+
+---
+
+# RESULTADO ESPERADO
+
+La aplicación debe conservar su arquitectura y diseño actual, pero cada juego debe tener:
+
+* controles correctos;
+* estados correctos;
+* flujo correcto;
+* temporizadores correctos;
+* validación correcta;
+* puntuación correcta;
+* separación conductor/público;
+* integración correcta con la partida/circuito.
+
+El resultado debe ser una **evolución ordenada de la aplicación existente**, no una reconstrucción.
