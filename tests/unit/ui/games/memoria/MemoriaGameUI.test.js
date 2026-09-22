@@ -225,9 +225,9 @@ describe('MemoriaGameUI', () => {
       expect(container.innerHTML).toContain('No hay sets disponibles');
     });
 
-    it('PREPARANDO_GRILLA muestra "Iniciar juego"', () => {
+    it('PREPARANDO_GRILLA muestra "Iniciar turno"', () => {
       MemoriaGameUI.renderizarPanelConductor(estadoBase({ fase: 'PREPARANDO_GRILLA' }), container, contextoBase(), { onAccion: vi.fn() });
-      expect(container.innerHTML).toContain('Iniciar juego');
+      expect(container.innerHTML).toContain('Iniciar turno');
     });
 
     it('JUGANDO muestra selector de equipo', () => {

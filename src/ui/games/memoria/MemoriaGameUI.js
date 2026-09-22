@@ -371,7 +371,7 @@ export const MemoriaGameUI = {
       case 'PREPARANDO_GRILLA':
         botonesHTML = `
           <div class="flex flex-wrap gap-2">
-            ${Boton({ texto: 'Iniciar juego', variante: 'primary', id: 'btn-memoria-iniciar-juego' })}
+            ${Boton({ texto: 'Iniciar turno', variante: 'primary', id: 'btn-memoria-confirmar-grilla' })}
           </div>
         `;
         break;
@@ -450,8 +450,8 @@ export const MemoriaGameUI = {
     }
 
     if (fase === 'PREPARANDO_GRILLA') {
-      container.querySelector('#btn-memoria-iniciar-juego')?.addEventListener('click', () => {
-        callbacks.onAccion('iniciar-juego-memoria');
+      container.querySelector('#btn-memoria-confirmar-grilla')?.addEventListener('click', () => {
+        callbacks.onAccion('confirmar-grilla-memoria');
       });
     }
 

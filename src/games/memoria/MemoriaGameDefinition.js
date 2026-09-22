@@ -244,6 +244,27 @@ export const MemoriaGameDefinition = {
       parejas_encontradas: 0,
       parejas_equipo_1: 0,
       parejas_equipo_2: 0,
+      fase: 'PREPARANDO_GRILLA',
+      timer_activo: false,
+      tiempo_restante_seg: config?.tiempo_turno_seg || 20
+    };
+  },
+
+  /**
+   * Confirma la grilla y activa el juego.
+   * @param {object} estado
+   * @param {object} config
+   * @returns {object} nuevo estado
+   */
+  confirmarGrilla(estado, config) {
+    if (!estado || typeof estado !== 'object') return estado;
+
+    if (estado.fase !== 'PREPARANDO_GRILLA') {
+      throw new ValidacionError('Solo se puede confirmar la grilla en fase PREPARANDO_GRILLA');
+    }
+
+    return {
+      ...estado,
       fase: 'JUGANDO',
       timer_activo: true,
       tiempo_restante_seg: config?.tiempo_turno_seg || 20

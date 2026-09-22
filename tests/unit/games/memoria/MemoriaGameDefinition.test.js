@@ -54,7 +54,9 @@ function estadoValido(overrides = {}) {
 function crearEstadoConGrilla(parejasPorRonda = 2) {
   let estado = def.estadoInicial(configuracionValida({ parejas_por_ronda: parejasPorRonda }));
   estado = { ...estado, fase: 'SELECCIONANDO_SET' };
-  return def.seleccionarSet(estado, setValido(parejasPorRonda), configuracionValida({ parejas_por_ronda: parejasPorRonda }), { shuffle: () => 0.5 });
+  const config = configuracionValida({ parejas_por_ronda: parejasPorRonda });
+  estado = def.seleccionarSet(estado, setValido(parejasPorRonda), config, { shuffle: () => 0.5 });
+  return def.confirmarGrilla(estado, config);
 }
 
 function crearEstadoConElementosConocidos() {
@@ -280,14 +282,14 @@ describe('MemoriaGameDefinition', () => {
      ============================================================= */
 
   describe('seleccionarSet', () => {
-    it('set válido → duplica elementos, baraja, fase JUGANDO', () => {
+    it('set válido → duplica elementos, baraja, fase PREPARANDO_GRILLA', () => {
       let estado = def.estadoInicial(configuracionValida());
       estado = { ...estado, fase: 'SELECCIONANDO_SET' };
       const rng = shuffleDeterministica();
       const nuevo = def.seleccionarSet(estado, setValido(3), configuracionValida({ parejas_por_ronda: 3 }), { shuffle: rng });
-      expect(nuevo.fase).toBe('JUGANDO');
+      expect(nuevo.fase).toBe('PREPARANDO_GRILLA');
       expect(nuevo.elementos.length).toBe(6);
-      expect(nuevo.timer_activo).toBe(true);
+      expect(nuevo.timer_activo).toBe(false);
       expect(nuevo.set_id).toBe('set1');
     });
 
@@ -335,6 +337,53 @@ describe('MemoriaGameDefinition', () => {
       const rng = shuffleDeterministica();
       const nuevo = def.seleccionarSet(estado, setValido(3), configuracionValida({ parejas_por_ronda: 3 }), { shuffle: rng });
       expect(nuevo.set_id).toBe('set1');
+    });
+  });
+
+  /* =============================================================
+     Grupo 5b — confirmarGrilla (5 tests)
+     ============================================================= */
+
+  describe('confirmarGrilla', () => {
+    it('PREPARANDO_GRILLA → JUGANDO con timer activo', () => {
+      let estado = def.estadoInicial(configuracionValida({ parejas_por_ronda: 2 }));
+      estado = { ...estado, fase: 'SELECCIONANDO_SET' };
+      const config = configuracionValida({ parejas_por_ronda: 2 });
+      estado = def.seleccionarSet(estado, setValido(2), config, { shuffle: () => 0.5 });
+      expect(estado.fase).toBe('PREPARANDO_GRILLA');
+      const nuevo = def.confirmarGrilla(estado, config);
+      expect(nuevo.fase).toBe('JUGANDO');
+      expect(nuevo.timer_activo).toBe(true);
+      expect(nuevo.tiempo_restante_seg).toBe(20);
+    });
+
+    it('tiempo_custom se aplica', () => {
+      let estado = def.estadoInicial(configuracionValida({ parejas_por_ronda: 2, tiempo_turno_seg: 30 }));
+      estado = { ...estado, fase: 'SELECCIONANDO_SET' };
+      const config = configuracionValida({ parejas_por_ronda: 2, tiempo_turno_seg: 30 });
+      estado = def.seleccionarSet(estado, setValido(2), config, { shuffle: () => 0.5 });
+      const nuevo = def.confirmarGrilla(estado, config);
+      expect(nuevo.tiempo_restante_seg).toBe(30);
+    });
+
+    it('fase incorrecta → error', () => {
+      const estado = estadoValido({ fase: 'JUGANDO' });
+      expect(() => def.confirmarGrilla(estado, configuracionValida())).toThrow(ValidacionError);
+    });
+
+    it('fase SELECCIONANDO_SET → error', () => {
+      const estado = estadoValido({ fase: 'SELECCIONANDO_SET' });
+      expect(() => def.confirmarGrilla(estado, configuracionValida())).toThrow(ValidacionError);
+    });
+
+    it('no muta estado original', () => {
+      let estado = def.estadoInicial(configuracionValida({ parejas_por_ronda: 2 }));
+      estado = { ...estado, fase: 'SELECCIONANDO_SET' };
+      const config = configuracionValida({ parejas_por_ronda: 2 });
+      estado = def.seleccionarSet(estado, setValido(2), config, { shuffle: () => 0.5 });
+      const original = JSON.parse(JSON.stringify(estado));
+      def.confirmarGrilla(estado, config);
+      expect(estado).toEqual(original);
     });
   });
 

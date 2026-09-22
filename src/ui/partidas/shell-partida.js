@@ -358,6 +358,14 @@ async function _renderContenido(container, app, partidaId) {
             partidaId, juegoActivo.id, nuevoEstado,
             juegoActivo.state_version, sessionId, nuevoActionId()
           );
+        } else if (tipo === 'confirmar-grilla-memoria') {
+          const { MemoriaGameDefinition } = await import('../../games/memoria/MemoriaGameDefinition.js');
+          const config = juegoActivo.configuracion_congelada || MemoriaGameDefinition.defaultConfig;
+          const nuevoEstado = MemoriaGameDefinition.confirmarGrilla(estadoJuego, config);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId, juegoActivo.id, nuevoEstado,
+            juegoActivo.state_version, sessionId, nuevoActionId()
+          );
         } else if (tipo === 'voltear-elemento-memoria') {
           const ejecutarMemoria = async (juegoRef, estadoRef) => {
             const { MemoriaGameDefinition } = await import('../../games/memoria/MemoriaGameDefinition.js');
