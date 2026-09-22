@@ -19,7 +19,6 @@ export const FASES = Object.freeze([
   'SELECCIONANDO_SET',
   'PREPARANDO_GRILLA',
   'JUGANDO',
-  'ESPERA_CONFIRMACION',
   'CAMBIO_TURNO',
   'FIN_DE_RONDA',
   'FIN_DE_JUEGO'
@@ -69,6 +68,7 @@ export const MemoriaGameDefinition = {
     rondas: 1,
     parejas_por_ronda: 6,
     tiempo_turno_seg: 20,
+    tiempo_modal_cambio_turno_seg: 2,
     puntos_por_pareja: 10
   }),
 
@@ -93,6 +93,10 @@ export const MemoriaGameDefinition = {
 
     if (!esEnteroMayorQue(config.tiempo_turno_seg, 1)) {
       throw new ValidacionError('tiempo_turno_seg debe ser un entero >= 1');
+    }
+
+    if (!esEnteroMayorQue(config.tiempo_modal_cambio_turno_seg, 1)) {
+      throw new ValidacionError('tiempo_modal_cambio_turno_seg debe ser un entero >= 1');
     }
 
     if (!esEnteroNoNegativo(config.puntos_por_pareja)) {
@@ -247,12 +251,14 @@ export const MemoriaGameDefinition = {
   },
 
   /**
-   * Voltea un elemento de la grilla.
+   * Voltea un elemento de la grilla. Al voltear el 2º elemento,
+   * evalúa automáticamente si forman pareja.
    * @param {object} estado
    * @param {number} indice - índice del elemento en el array elementos
+   * @param {object} [config] - configuración (necesaria para evaluar pareja)
    * @returns {object} nuevo estado
    */
-  voltearElemento(estado, indice) {
+  voltearElemento(estado, indice, config) {
     if (!estado || typeof estado !== 'object') return estado;
 
     if (estado.fase !== 'JUGANDO') {
@@ -277,55 +283,31 @@ export const MemoriaGameDefinition = {
 
     const nuevosVolteados = [...estado.elementos_volteados, indice];
 
-    if (nuevosVolteados.length === 2) {
+    // Primer volteo: solo agrega al array
+    if (nuevosVolteados.length === 1) {
       return {
         ...estado,
-        elementos_volteados: nuevosVolteados,
-        fase: 'ESPERA_CONFIRMACION',
-        timer_activo: false
+        elementos_volteados: nuevosVolteados
       };
     }
 
-    return {
-      ...estado,
-      elementos_volteados: nuevosVolteados
-    };
-  },
-
-  /**
-   * Confirma si los 2 elementos volteados forman una pareja.
-   * @param {object} estado
-   * @param {object} config
-   * @returns {object} nuevo estado
-   */
-  confirmarPareja(estado, config) {
-    if (!estado || typeof estado !== 'object') return estado;
-
-    if (estado.fase !== 'ESPERA_CONFIRMACION') {
-      throw new ValidacionError('Solo se puede confirmar pareja en fase ESPERA_CONFIRMACION');
-    }
-
-    if (estado.elementos_volteados.length !== 2) {
-      throw new ValidacionError('Se requieren exactamente 2 elementos volteados');
-    }
-
-    const [i1, i2] = estado.elementos_volteados;
+    // Segundo volteo: evaluar pareja automáticamente
+    const [i1, i2] = nuevosVolteados;
     const el1 = estado.elementos[i1];
     const el2 = estado.elementos[i2];
-
     const sonPareja = el1.id_pareja === el2.id_pareja;
     const equipo = estado.equipo_actual;
     const keyPuntos = `puntos_equipo_${equipo}`;
     const keyParejas = `parejas_equipo_${equipo}`;
+    const puntosPorPareja = config?.puntos_por_pareja || 10;
 
     if (sonPareja) {
       const nuevosDescubiertos = [...estado.elementos_descubiertos, i1, i2];
-      const totalParejas = estado.elementos.length / 2;
       const todasDescubiertas = nuevosDescubiertos.length === estado.elementos.length;
 
       return {
         ...estado,
-        [keyPuntos]: (estado[keyPuntos] || 0) + (config?.puntos_por_pareja || 10),
+        [keyPuntos]: (estado[keyPuntos] || 0) + puntosPorPareja,
         [keyParejas]: (estado[keyParejas] || 0) + 1,
         parejas_encontradas: estado.parejas_encontradas + 1,
         elementos_descubiertos: nuevosDescubiertos,
@@ -338,27 +320,28 @@ export const MemoriaGameDefinition = {
       };
     }
 
-    // No son pareja
+    // No son pareja: pasar a CAMBIO_TURNO con modal
     return {
       ...estado,
-      elementos_volteados: [],
-      equipo_actual: equipo === 1 ? 2 : 1,
-      fase: 'JUGANDO',
-      timer_activo: true,
-      tiempo_restante_seg: config?.tiempo_turno_seg || 20
+      elementos_volteados: nuevosVolteados,
+      fase: 'CAMBIO_TURNO',
+      timer_activo: false,
+      tiempo_restante_seg: estado.tiempo_restante_seg
     };
   },
 
   /**
-   * Cambia al otro equipo.
+   * Inicia el turno: transiciona de CAMBIO_TURNO a JUGANDO.
+   * Se llama después de que el modal de cambio de turno se cierra.
    * @param {object} estado
+   * @param {object} config
    * @returns {object} nuevo estado
    */
-  cambiarTurno(estado) {
+  iniciarTurno(estado, config) {
     if (!estado || typeof estado !== 'object') return estado;
 
     if (estado.fase !== 'CAMBIO_TURNO') {
-      throw new ValidacionError('Solo se puede cambiar turno desde CAMBIO_TURNO');
+      throw new ValidacionError('Solo se puede iniciar turno en fase CAMBIO_TURNO');
     }
 
     return {
@@ -366,7 +349,36 @@ export const MemoriaGameDefinition = {
       equipo_actual: estado.equipo_actual === 1 ? 2 : 1,
       elementos_volteados: [],
       fase: 'JUGANDO',
-      timer_activo: true
+      timer_activo: true,
+      tiempo_restante_seg: config?.tiempo_turno_seg || 20
+    };
+  },
+
+  /**
+   * Cambia manualmente al otro equipo desde JUGANDO o PREPARANDO_GRILLA.
+   * EquipoForzado permite saltar a un equipo específico.
+   * @param {object} estado
+   * @param {object} [config]
+   * @param {number} [equipoForzado] - 1 o 2, si se quiere forzar un equipo
+   * @returns {object} nuevo estado
+   */
+  cambiarTurno(estado, config, equipoForzado) {
+    if (!estado || typeof estado !== 'object') return estado;
+
+    if (estado.fase !== 'JUGANDO' && estado.fase !== 'PREPARANDO_GRILLA') {
+      throw new ValidacionError('Solo se puede cambiar turno desde JUGANDO o PREPARANDO_GRILLA');
+    }
+
+    const nuevoEquipo = equipoForzado
+      ? (equipoForzado === 1 || equipoForzado === 2 ? equipoForzado : estado.equipo_actual === 1 ? 2 : 1)
+      : estado.equipo_actual === 1 ? 2 : 1;
+
+    return {
+      ...estado,
+      equipo_actual: nuevoEquipo,
+      elementos_volteados: [],
+      fase: 'CAMBIO_TURNO',
+      timer_activo: false
     };
   },
 
@@ -408,7 +420,7 @@ export const MemoriaGameDefinition = {
   },
 
   /**
-   * Aplica time-up: resetea elementos volteados y cambia de turno.
+   * Aplica time-up: pasa a CAMBIO_TURNO con modal.
    * @param {object} estado
    * @param {object} config
    * @returns {object|null}
@@ -424,15 +436,11 @@ export const MemoriaGameDefinition = {
       return { ...estado };
     }
 
-    const equipo = estado.equipo_actual;
-
     return {
       ...estado,
       elementos_volteados: [],
-      equipo_actual: equipo === 1 ? 2 : 1,
-      timer_activo: true,
-      tiempo_restante_seg: config?.tiempo_turno_seg || 20,
-      fase: 'JUGANDO'
+      fase: 'CAMBIO_TURNO',
+      timer_activo: false
     };
   },
 

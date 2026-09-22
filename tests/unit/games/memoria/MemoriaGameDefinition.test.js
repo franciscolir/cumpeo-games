@@ -14,6 +14,7 @@ function configuracionValida(overrides = {}) {
     rondas: 1,
     parejas_por_ronda: 6,
     tiempo_turno_seg: 20,
+    tiempo_modal_cambio_turno_seg: 2,
     puntos_por_pareja: 10,
     ...overrides
   };
@@ -41,7 +42,6 @@ function shuffleDeterministica() {
   let callCount = 0;
   return () => {
     callCount++;
-    // Retorna valores determinísticos para barajar predeciblemente
     const valores = [0.1, 0.5, 0.3, 0.8, 0.2, 0.7, 0.4, 0.9, 0.6, 0.05, 0.35, 0.65];
     return valores[(callCount - 1) % valores.length];
   };
@@ -51,31 +51,52 @@ function estadoValido(overrides = {}) {
   return { ...def.estadoInicial(configuracionValida()), ...overrides };
 }
 
+function crearEstadoConGrilla(parejasPorRonda = 2) {
+  let estado = def.estadoInicial(configuracionValida({ parejas_por_ronda: parejasPorRonda }));
+  estado = { ...estado, fase: 'SELECCIONANDO_SET' };
+  return def.seleccionarSet(estado, setValido(parejasPorRonda), configuracionValida({ parejas_por_ronda: parejasPorRonda }), { shuffle: () => 0.5 });
+}
+
+function crearEstadoConElementosConocidos() {
+  return {
+    ...def.estadoInicial(configuracionValida({ parejas_por_ronda: 2 })),
+    elementos: [
+      { id_pareja: 'p1', contenido: 'A', imagen_url: undefined, categoria: undefined, descubierto: false },
+      { id_pareja: 'p1', contenido: 'A', imagen_url: undefined, categoria: undefined, descubierto: false },
+      { id_pareja: 'p2', contenido: 'B', imagen_url: undefined, categoria: undefined, descubierto: false },
+      { id_pareja: 'p2', contenido: 'B', imagen_url: undefined, categoria: undefined, descubierto: false }
+    ],
+    fase: 'JUGANDO',
+    set_id: 'set1',
+    timer_activo: true,
+    tiempo_restante_seg: 20
+  };
+}
+
 /* =============================================================
    Tests
    ============================================================= */
 
 describe('MemoriaGameDefinition', () => {
   /* =============================================================
-     Grupo 1 — Constantes y contrato (6 tests)
+     Grupo 1 — Constantes y contrato (8 tests)
      ============================================================= */
 
   describe('constantes y contrato', () => {
-    it('FASES correctas', () => {
+    it('FASES correctas (7 fases)', () => {
       expect(FASES).toEqual([
         'INICIO_RONDA',
         'SELECCIONANDO_SET',
         'PREPARANDO_GRILLA',
         'JUGANDO',
-        'ESPERA_CONFIRMACION',
         'CAMBIO_TURNO',
         'FIN_DE_RONDA',
         'FIN_DE_JUEGO'
       ]);
     });
 
-    it('FASES tiene 8 fases', () => {
-      expect(FASES.length).toBe(8);
+    it('FASES tiene 7 fases', () => {
+      expect(FASES.length).toBe(7);
     });
 
     it('código correcto', () => {
@@ -95,6 +116,7 @@ describe('MemoriaGameDefinition', () => {
         rondas: 1,
         parejas_por_ronda: 6,
         tiempo_turno_seg: 20,
+        tiempo_modal_cambio_turno_seg: 2,
         puntos_por_pareja: 10
       });
     });
@@ -109,7 +131,7 @@ describe('MemoriaGameDefinition', () => {
         'estadoInicial',
         'seleccionarSet',
         'voltearElemento',
-        'confirmarPareja',
+        'iniciarTurno',
         'cambiarTurno',
         'iniciarSiguienteRonda',
         'aplicarTimeUp'
@@ -118,10 +140,14 @@ describe('MemoriaGameDefinition', () => {
         expect(typeof def[m]).toBe('function');
       }
     });
+
+    it('confirmarPareja no existe', () => {
+      expect(typeof def.confirmarPareja).toBe('undefined');
+    });
   });
 
   /* =============================================================
-     Grupo 2 — validarConfiguracion (8 tests)
+     Grupo 2 — validarConfiguracion (10 tests)
      ============================================================= */
 
   describe('validarConfiguracion', () => {
@@ -153,8 +179,16 @@ describe('MemoriaGameDefinition', () => {
       expect(() => def.validarConfiguracion(configuracionValida({ tiempo_turno_seg: 0 }))).toThrow(ValidacionError);
     });
 
+    it('tiempo_modal_cambio_turno_seg = 0 → error', () => {
+      expect(() => def.validarConfiguracion(configuracionValida({ tiempo_modal_cambio_turno_seg: 0 }))).toThrow(ValidacionError);
+    });
+
     it('puntos_por_pareja negativo → error', () => {
       expect(() => def.validarConfiguracion(configuracionValida({ puntos_por_pareja: -1 }))).toThrow(ValidacionError);
+    });
+
+    it('tiempo_modal_cambio_turno_seg custom → true', () => {
+      expect(def.validarConfiguracion(configuracionValida({ tiempo_modal_cambio_turno_seg: 5 }))).toBe(true);
     });
   });
 
@@ -252,7 +286,7 @@ describe('MemoriaGameDefinition', () => {
       const rng = shuffleDeterministica();
       const nuevo = def.seleccionarSet(estado, setValido(3), configuracionValida({ parejas_por_ronda: 3 }), { shuffle: rng });
       expect(nuevo.fase).toBe('JUGANDO');
-      expect(nuevo.elementos.length).toBe(6); // 3 items x 2
+      expect(nuevo.elementos.length).toBe(6);
       expect(nuevo.timer_activo).toBe(true);
       expect(nuevo.set_id).toBe('set1');
     });
@@ -263,7 +297,6 @@ describe('MemoriaGameDefinition', () => {
       const rng = shuffleDeterministica();
       const nuevo = def.seleccionarSet(estado, setValido(3), configuracionValida({ parejas_por_ronda: 3 }), { shuffle: rng });
       const parejas = nuevo.elementos.map(e => e.id_pareja);
-      // Cada pareja debe aparecer exactamente 2 veces
       const conteo = {};
       for (const p of parejas) {
         conteo[p] = (conteo[p] || 0) + 1;
@@ -306,187 +339,208 @@ describe('MemoriaGameDefinition', () => {
   });
 
   /* =============================================================
-     Grupo 6 — voltearElemento (7 tests)
+     Grupo 6 — voltearElemento (12 tests)
      ============================================================= */
 
   describe('voltearElemento', () => {
-    function estadoConGrilla() {
-      let estado = def.estadoInicial(configuracionValida({ parejas_por_ronda: 2 }));
-      estado = { ...estado, fase: 'SELECCIONANDO_SET' };
-      return def.seleccionarSet(estado, setValido(2), configuracionValida({ parejas_por_ronda: 2 }), { shuffle: () => 0.5 });
-    }
-
-    it('voltear 1 elemento → elementos_volteados tiene 1', () => {
-      const estado = estadoConGrilla();
-      const nuevo = def.voltearElemento(estado, 0);
+    it('voltear 1 elemento → elementos_volteados tiene 1, fase JUGANDO', () => {
+      const estado = crearEstadoConGrilla();
+      const nuevo = def.voltearElemento(estado, 0, configuracionValida({ parejas_por_ronda: 2 }));
       expect(nuevo.elementos_volteados).toEqual([0]);
       expect(nuevo.fase).toBe('JUGANDO');
     });
 
-    it('voltear 2 elementos → fase ESPERA_CONFIRMACION', () => {
-      let estado = estadoConGrilla();
-      estado = def.voltearElemento(estado, 0);
-      const nuevo = def.voltearElemento(estado, 1);
-      expect(nuevo.elementos_volteados).toEqual([0, 1]);
-      expect(nuevo.fase).toBe('ESPERA_CONFIRMACION');
-      expect(nuevo.timer_activo).toBe(false);
-    });
-
-    it('fase incorrecta → error', () => {
-      const estado = def.estadoInicial(configuracionValida());
-      expect(() => def.voltearElemento(estado, 0)).toThrow(ValidacionError);
-    });
-
-    it('indice fuera de rango → error', () => {
-      const estado = estadoConGrilla();
-      expect(() => def.voltearElemento(estado, 99)).toThrow(ValidacionError);
-    });
-
-    it('elemento ya descubierto → error', () => {
-      let estado = estadoConGrilla();
-      // Descubrir elemento 0
-      estado = { ...estado, elementos_descubiertos: [0] };
-      expect(() => def.voltearElemento(estado, 0)).toThrow(ValidacionError);
-    });
-
-    it('elemento ya volteado → error', () => {
-      let estado = estadoConGrilla();
-      estado = def.voltearElemento(estado, 0);
-      expect(() => def.voltearElemento(estado, 0)).toThrow(ValidacionError);
-    });
-
-    it('ya hay 2 volteados → error', () => {
-      let estado = estadoConGrilla();
-      estado = def.voltearElemento(estado, 0);
-      estado = def.voltearElemento(estado, 1);
-      expect(() => def.voltearElemento(estado, 2)).toThrow(ValidacionError);
-    });
-  });
-
-  /* =============================================================
-     Grupo 7 — confirmarPareja (7 tests)
-     ============================================================= */
-
-  describe('confirmarPareja', () => {
-    function crearEstadoConParejas(parejas = true) {
-      let estado = def.estadoInicial(configuracionValida({ parejas_por_ronda: 2 }));
-      estado = { ...estado, fase: 'SELECCIONANDO_SET' };
-      // Crear set con 2 items
-      const items = [
-        { id: 'p1', contenido: 'A' },
-        { id: 'p2', contenido: 'B' }
-      ];
-      // Forzar elementos en orden conocido: p1-a, p1-b, p2-a, p2-b
-      estado = {
-        ...estado,
-        elementos: [
-          { id_pareja: 'p1', contenido: 'A', imagen_url: undefined, categoria: undefined, descubierto: false },
-          { id_pareja: 'p1', contenido: 'A', imagen_url: undefined, categoria: undefined, descubierto: false },
-          { id_pareja: 'p2', contenido: 'B', imagen_url: undefined, categoria: undefined, descubierto: false },
-          { id_pareja: 'p2', contenido: 'B', imagen_url: undefined, categoria: undefined, descubierto: false }
-        ],
-        fase: 'JUGANDO',
-        set_id: 'set1',
-        timer_activo: true,
-        tiempo_restante_seg: 20
-      };
-
-      // Voltear 2 elementos
-      estado = def.voltearElemento(estado, parejas ? 0 : 0);
-      estado = def.voltearElemento(estado, parejas ? 1 : 2);
-      return estado;
-    }
-
-    it('pareja correcta → suma puntos, descubre, sigue mismo equipo', () => {
-      const estado = crearEstadoConParejas(true);
-      const config = configuracionValida();
-      const nuevo = def.confirmarPareja(estado, config);
+    it('voltear 2 elementos pareja → evalúa automático, descubre, suma puntos', () => {
+      let estado = crearEstadoConElementosConocidos();
+      estado = def.voltearElemento(estado, 0, configuracionValida({ parejas_por_ronda: 2 }));
+      const nuevo = def.voltearElemento(estado, 1, configuracionValida({ parejas_por_ronda: 2 }));
       expect(nuevo.puntos_equipo_1).toBe(10);
       expect(nuevo.parejas_equipo_1).toBe(1);
       expect(nuevo.parejas_encontradas).toBe(1);
       expect(nuevo.elementos_descubiertos).toContain(0);
       expect(nuevo.elementos_descubiertos).toContain(1);
       expect(nuevo.elementos_volteados).toEqual([]);
-      expect(nuevo.equipo_actual).toBe(1);
       expect(nuevo.fase).toBe('JUGANDO');
       expect(nuevo.timer_activo).toBe(true);
     });
 
-    it('pareja incorrecta → oculta, cambia turno', () => {
-      const estado = crearEstadoConParejas(false);
-      const config = configuracionValida();
-      const nuevo = def.confirmarPareja(estado, config);
-      expect(nuevo.puntos_equipo_1).toBe(0);
-      expect(nuevo.elementos_volteados).toEqual([]);
-      expect(nuevo.equipo_actual).toBe(2);
-      expect(nuevo.fase).toBe('JUGANDO');
+    it('voltear 2 elementos NO pareja → CAMBIO_TURNO', () => {
+      let estado = crearEstadoConElementosConocidos();
+      estado = def.voltearElemento(estado, 0, configuracionValida({ parejas_por_ronda: 2 }));
+      // 0 es p1, 2 es p2 → no pareja
+      const nuevo = def.voltearElemento(estado, 2, configuracionValida({ parejas_por_ronda: 2 }));
+      expect(nuevo.fase).toBe('CAMBIO_TURNO');
+      expect(nuevo.timer_activo).toBe(false);
+      expect(nuevo.elementos_volteados).toEqual([0, 2]);
     });
 
     it('todas las parejas descubiertas → FIN_DE_RONDA', () => {
-      let estado = crearEstadoConParejas(true);
-      // Simular que solo quedaba 1 pareja por encontrar
+      let estado = crearEstadoConElementosConocidos();
       estado = {
         ...estado,
         elementos_descubiertos: [2, 3],
         parejas_encontradas: 1
       };
-      const nuevo = def.confirmarPareja(estado, configuracionValida());
+      estado = def.voltearElemento(estado, 0, configuracionValida({ parejas_por_ronda: 2 }));
+      const nuevo = def.voltearElemento(estado, 1, configuracionValida({ parejas_por_ronda: 2 }));
       expect(nuevo.fase).toBe('FIN_DE_RONDA');
       expect(nuevo.timer_activo).toBe(false);
     });
 
     it('fase incorrecta → error', () => {
       const estado = def.estadoInicial(configuracionValida());
-      expect(() => def.confirmarPareja(estado, configuracionValida())).toThrow(ValidacionError);
+      expect(() => def.voltearElemento(estado, 0, configuracionValida())).toThrow(ValidacionError);
     });
 
-    it('menos de 2 volteados → error', () => {
-      let estado = def.estadoInicial(configuracionValida({ parejas_por_ronda: 2 }));
-      estado = { ...estado, fase: 'SELECCIONANDO_SET' };
-      estado = def.seleccionarSet(estado, setValido(2), configuracionValida({ parejas_por_ronda: 2 }), { shuffle: () => 0.5 });
-      estado = def.voltearElemento(estado, 0);
-      expect(() => def.confirmarPareja(estado, configuracionValida())).toThrow(ValidacionError);
+    it('indice fuera de rango → error', () => {
+      const estado = crearEstadoConGrilla();
+      expect(() => def.voltearElemento(estado, 99, configuracionValida({ parejas_por_ronda: 2 }))).toThrow(ValidacionError);
+    });
+
+    it('elemento ya descubierto → error', () => {
+      let estado = crearEstadoConGrilla();
+      estado = { ...estado, elementos_descubiertos: [0] };
+      expect(() => def.voltearElemento(estado, 0, configuracionValida({ parejas_por_ronda: 2 }))).toThrow(ValidacionError);
+    });
+
+    it('elemento ya volteado → error', () => {
+      let estado = crearEstadoConGrilla();
+      estado = def.voltearElemento(estado, 0, configuracionValida({ parejas_por_ronda: 2 }));
+      expect(() => def.voltearElemento(estado, 0, configuracionValida({ parejas_por_ronda: 2 }))).toThrow(ValidacionError);
+    });
+
+    it('ya hay 2 volteados → error', () => {
+      let estado = crearEstadoConGrilla();
+      estado = def.voltearElemento(estado, 0, configuracionValida({ parejas_por_ronda: 2 }));
+      estado = def.voltearElemento(estado, 1, configuracionValida({ parejas_por_ronda: 2 }));
+      expect(() => def.voltearElemento(estado, 2, configuracionValida({ parejas_por_ronda: 2 }))).toThrow(ValidacionError);
+    });
+
+    it('pareja para equipo 2 → suma puntos equipo 2', () => {
+      let estado = crearEstadoConElementosConocidos();
+      estado = { ...estado, equipo_actual: 2 };
+      estado = def.voltearElemento(estado, 0, configuracionValida({ parejas_por_ronda: 2 }));
+      const nuevo = def.voltearElemento(estado, 1, configuracionValida({ parejas_por_ronda: 2 }));
+      expect(nuevo.puntos_equipo_2).toBe(10);
+      expect(nuevo.parejas_equipo_2).toBe(1);
     });
 
     it('no muta estado original', () => {
-      const estado = crearEstadoConParejas(true);
+      const estado = crearEstadoConGrilla();
       const original = JSON.parse(JSON.stringify(estado));
-      def.confirmarPareja(estado, configuracionValida());
+      def.voltearElemento(estado, 0, configuracionValida({ parejas_por_ronda: 2 }));
       expect(estado).toEqual(original);
     });
 
-    it('pareja correcta para equipo 2', () => {
-      let estado = crearEstadoConParejas(true);
-      estado = { ...estado, equipo_actual: 2 };
-      const nuevo = def.confirmarPareja(estado, configuracionValida());
-      expect(nuevo.puntos_equipo_2).toBe(10);
-      expect(nuevo.parejas_equipo_2).toBe(1);
+    it('puntos_por_pareja custom funciona', () => {
+      let estado = crearEstadoConElementosConocidos();
+      estado = def.voltearElemento(estado, 0, configuracionValida({ parejas_por_ronda: 2, puntos_por_pareja: 25 }));
+      const nuevo = def.voltearElemento(estado, 1, configuracionValida({ parejas_por_ronda: 2, puntos_por_pareja: 25 }));
+      expect(nuevo.puntos_equipo_1).toBe(25);
     });
   });
 
   /* =============================================================
-     Grupo 8 — cambiarTurno (3 tests)
+     Grupo 7 — iniciarTurno (6 tests)
      ============================================================= */
 
-  describe('cambiarTurno', () => {
-    it('alterna equipo_actual', () => {
-      let estado = estadoValido({ fase: 'CAMBIO_TURNO', equipo_actual: 1 });
-      let nuevo = def.cambiarTurno(estado);
-      expect(nuevo.equipo_actual).toBe(2);
+  describe('iniciarTurno', () => {
+    it('CAMBIO_TURNO equipo 1 → JUGANDO equipo 2, timer activo', () => {
+      const estado = estadoValido({ fase: 'CAMBIO_TURNO', equipo_actual: 1 });
+      const config = configuracionValida();
+      const nuevo = def.iniciarTurno(estado, config);
       expect(nuevo.fase).toBe('JUGANDO');
+      expect(nuevo.equipo_actual).toBe(2);
+      expect(nuevo.timer_activo).toBe(true);
+      expect(nuevo.elementos_volteados).toEqual([]);
+      expect(nuevo.tiempo_restante_seg).toBe(20);
+    });
 
-      estado = { ...nuevo, fase: 'CAMBIO_TURNO' };
-      nuevo = def.cambiarTurno(estado);
+    it('CAMBIO_TURNO equipo 2 → JUGANDO equipo 1', () => {
+      const estado = estadoValido({ fase: 'CAMBIO_TURNO', equipo_actual: 2 });
+      const nuevo = def.iniciarTurno(estado, configuracionValida());
+      expect(nuevo.fase).toBe('JUGANDO');
       expect(nuevo.equipo_actual).toBe(1);
+    });
+
+    it('tiempo_custom se aplica', () => {
+      const estado = estadoValido({ fase: 'CAMBIO_TURNO', equipo_actual: 1 });
+      const nuevo = def.iniciarTurno(estado, configuracionValida({ tiempo_turno_seg: 30 }));
+      expect(nuevo.tiempo_restante_seg).toBe(30);
     });
 
     it('fase incorrecta → error', () => {
       const estado = estadoValido({ fase: 'JUGANDO' });
+      expect(() => def.iniciarTurno(estado, configuracionValida())).toThrow(ValidacionError);
+    });
+
+    it('fase FIN_DE_RONDA → error', () => {
+      const estado = estadoValido({ fase: 'FIN_DE_RONDA' });
+      expect(() => def.iniciarTurno(estado, configuracionValida())).toThrow(ValidacionError);
+    });
+
+    it('no muta estado original', () => {
+      const estado = estadoValido({ fase: 'CAMBIO_TURNO', equipo_actual: 1 });
+      const original = JSON.parse(JSON.stringify(estado));
+      def.iniciarTurno(estado, configuracionValida());
+      expect(estado).toEqual(original);
+    });
+  });
+
+  /* =============================================================
+     Grupo 8 — cambiarTurno (8 tests)
+     ============================================================= */
+
+  describe('cambiarTurno', () => {
+    it('desde JUGANDO equipo 1 → CAMBIO_TURNO equipo 2', () => {
+      const estado = estadoValido({ fase: 'JUGANDO', equipo_actual: 1 });
+      const nuevo = def.cambiarTurno(estado);
+      expect(nuevo.fase).toBe('CAMBIO_TURNO');
+      expect(nuevo.equipo_actual).toBe(2);
+      expect(nuevo.timer_activo).toBe(false);
+    });
+
+    it('desde JUGANDO equipo 2 → CAMBIO_TURNO equipo 1', () => {
+      const estado = estadoValido({ fase: 'JUGANDO', equipo_actual: 2 });
+      const nuevo = def.cambiarTurno(estado);
+      expect(nuevo.fase).toBe('CAMBIO_TURNO');
+      expect(nuevo.equipo_actual).toBe(1);
+    });
+
+    it('desde PREPARANDO_GRILLA → CAMBIO_TURNO', () => {
+      const estado = estadoValido({ fase: 'PREPARANDO_GRILLA', equipo_actual: 1 });
+      const nuevo = def.cambiarTurno(estado);
+      expect(nuevo.fase).toBe('CAMBIO_TURNO');
+      expect(nuevo.equipo_actual).toBe(2);
+    });
+
+    it('equipoForzado 1 fuerza equipo 1', () => {
+      const estado = estadoValido({ fase: 'JUGANDO', equipo_actual: 1 });
+      const nuevo = def.cambiarTurno(estado, configuracionValida(), 1);
+      expect(nuevo.equipo_actual).toBe(1);
+      expect(nuevo.fase).toBe('CAMBIO_TURNO');
+    });
+
+    it('equipoForzado 2 fuerza equipo 2', () => {
+      const estado = estadoValido({ fase: 'JUGANDO', equipo_actual: 2 });
+      const nuevo = def.cambiarTurno(estado, configuracionValida(), 2);
+      expect(nuevo.equipo_actual).toBe(2);
+      expect(nuevo.fase).toBe('CAMBIO_TURNO');
+    });
+
+    it('equipoForzado inválido → alterna normal', () => {
+      const estado = estadoValido({ fase: 'JUGANDO', equipo_actual: 1 });
+      const nuevo = def.cambiarTurno(estado, configuracionValida(), 3);
+      expect(nuevo.equipo_actual).toBe(2);
+    });
+
+    it('fase incorrecta → error', () => {
+      const estado = estadoValido({ fase: 'CAMBIO_TURNO' });
       expect(() => def.cambiarTurno(estado)).toThrow(ValidacionError);
     });
 
     it('resetea elementos_volteados', () => {
-      const estado = estadoValido({ fase: 'CAMBIO_TURNO', elementos_volteados: [0, 1] });
+      const estado = estadoValido({ fase: 'JUGANDO', elementos_volteados: [0, 1] });
       const nuevo = def.cambiarTurno(estado);
       expect(nuevo.elementos_volteados).toEqual([]);
     });
@@ -528,23 +582,21 @@ describe('MemoriaGameDefinition', () => {
   });
 
   /* =============================================================
-     Grupo 10 — aplicarTimeUp (5 tests)
+     Grupo 10 — aplicarTimeUp (6 tests)
      ============================================================= */
 
   describe('aplicarTimeUp', () => {
-    it('JUGANDO con timer → resetea volteados, cambia turno', () => {
+    it('JUGANDO con timer → resetea volteados, pasa a CAMBIO_TURNO', () => {
       const estado = estadoValido({
         fase: 'JUGANDO',
         timer_activo: true,
         equipo_actual: 1,
         elementos_volteados: [0]
       });
-      const config = configuracionValida();
-      const nuevo = def.aplicarTimeUp(estado, config);
+      const nuevo = def.aplicarTimeUp(estado, configuracionValida());
       expect(nuevo.elementos_volteados).toEqual([]);
-      expect(nuevo.equipo_actual).toBe(2);
-      expect(nuevo.tiempo_restante_seg).toBe(20);
-      expect(nuevo.fase).toBe('JUGANDO');
+      expect(nuevo.fase).toBe('CAMBIO_TURNO');
+      expect(nuevo.timer_activo).toBe(false);
     });
 
     it('JUGANDO sin timer → sin cambios', () => {
@@ -558,10 +610,10 @@ describe('MemoriaGameDefinition', () => {
       expect(def.aplicarTimeUp(estado, configuracionValida())).toBeNull();
     });
 
-    it('ESPERA_CONFIRMACION → sin cambios', () => {
-      const estado = estadoValido({ fase: 'ESPERA_CONFIRMACION' });
+    it('CAMBIO_TURNO → sin cambios', () => {
+      const estado = estadoValido({ fase: 'CAMBIO_TURNO' });
       const nuevo = def.aplicarTimeUp(estado, configuracionValida());
-      expect(nuevo.fase).toBe('ESPERA_CONFIRMACION');
+      expect(nuevo.fase).toBe('CAMBIO_TURNO');
     });
 
     it('no muta estado original', () => {
@@ -574,6 +626,10 @@ describe('MemoriaGameDefinition', () => {
       const original = JSON.parse(JSON.stringify(estado));
       def.aplicarTimeUp(estado, configuracionValida());
       expect(estado).toEqual(original);
+    });
+
+    it('estado null → null', () => {
+      expect(def.aplicarTimeUp(null, configuracionValida())).toBeNull();
     });
   });
 
@@ -681,21 +737,14 @@ describe('MemoriaGameDefinition', () => {
   });
 
   /* =============================================================
-     Grupo 15 — Flujo completo (3 tests)
+     Grupo 15 — Flujo completo (5 tests)
      ============================================================= */
 
   describe('flujo completo', () => {
-    it('Eq1 encuentra 1 pareja, pierde 1, Eq2 encuentra 1, FIN_DE_RONDA', () => {
-      let estado = def.estadoInicial(configuracionValida({ parejas_por_ronda: 1, puntos_por_pareja: 10 }));
+    it('Eq1 encuentra 1 pareja, FIN_DE_RONDA', () => {
       const config = configuracionValida({ parejas_por_ronda: 1, puntos_por_pareja: 10 });
-
-      // Ir a SELECCIONANDO_SET
-      estado = { ...estado, fase: 'SELECCIONANDO_SET' };
-
-      // Seleccionar set con 1 item (2 elementos)
-      // Forzar orden conocido: ambos elementos son pareja (id_pareja = 'p1')
-      estado = {
-        ...estado,
+      let estado = {
+        ...def.estadoInicial(config),
         elementos: [
           { id_pareja: 'p1', contenido: 'A', imagen_url: undefined, categoria: undefined, descubierto: false },
           { id_pareja: 'p1', contenido: 'A', imagen_url: undefined, categoria: undefined, descubierto: false }
@@ -705,24 +754,18 @@ describe('MemoriaGameDefinition', () => {
         tiempo_restante_seg: 20
       };
 
-      // Eq1 voltear 2 → pareja
-      estado = def.voltearElemento(estado, 0);
+      estado = def.voltearElemento(estado, 0, config);
       expect(estado.fase).toBe('JUGANDO');
-      estado = def.voltearElemento(estado, 1);
-      expect(estado.fase).toBe('ESPERA_CONFIRMACION');
-
-      estado = def.confirmarPareja(estado, config);
+      estado = def.voltearElemento(estado, 1, config);
       expect(estado.puntos_equipo_1).toBe(10);
       expect(estado.parejas_encontradas).toBe(1);
       expect(estado.fase).toBe('FIN_DE_RONDA');
     });
 
-    it('Eq1 falla, Eq2 acierta', () => {
-      let estado = def.estadoInicial(configuracionValida({ parejas_por_ronda: 1, puntos_por_pareja: 10 }));
-      const config = configuracionValida({ parejas_por_ronda: 1, puntos_por_pareja: 10 });
-
-      estado = {
-        ...estado,
+    it('Eq1 falla → CAMBIO_TURNO → iniciarTurno → Eq2 acierta', () => {
+      const config = configuracionValida({ parejas_por_ronda: 2, puntos_por_pareja: 10 });
+      let estado = {
+        ...def.estadoInicial(config),
         elementos: [
           { id_pareja: 'p1', contenido: 'A', imagen_url: undefined, categoria: undefined, descubierto: false },
           { id_pareja: 'p2', contenido: 'B', imagen_url: undefined, categoria: undefined, descubierto: false },
@@ -731,37 +774,72 @@ describe('MemoriaGameDefinition', () => {
         ],
         fase: 'JUGANDO',
         timer_activo: true,
-        tiempo_restante_seg: 20,
-        parejas_por_ronda: 2
+        tiempo_restante_seg: 20
       };
 
-      // Eq1 voltear 0 y 2 → no pareja (p1 y p1? No,索引 0 es p1-a, 索引 2 es p1-b)
-      // Indices: 0=p1-a, 1=p2-a, 2=p1-b, 3=p2-b
-      // Voltear 0 (p1) y 1 (p2) → no pareja
-      estado = def.voltearElemento(estado, 0);
-      estado = def.voltearElemento(estado, 1);
-      expect(estado.fase).toBe('ESPERA_CONFIRMACION');
+      // Eq1: 0 (p1) y 1 (p2) → no pareja
+      estado = def.voltearElemento(estado, 0, config);
+      estado = def.voltearElemento(estado, 1, config);
+      expect(estado.fase).toBe('CAMBIO_TURNO');
 
-      estado = def.confirmarPareja(estado, config);
-      expect(estado.puntos_equipo_1).toBe(0);
-      expect(estado.equipo_actual).toBe(2); // cambia turno
+      // Iniciar turno Eq2
+      estado = def.iniciarTurno(estado, config);
+      expect(estado.equipo_actual).toBe(2);
+      expect(estado.fase).toBe('JUGANDO');
 
-      // Eq2 voltear 0 y 2 → pareja (ambos p1)
-      estado = def.voltearElemento(estado, 0);
-      estado = def.voltearElemento(estado, 2);
-      expect(estado.fase).toBe('ESPERA_CONFIRMACION');
-
-      estado = def.confirmarPareja(estado, config);
+      // Eq2: 0 (p1) y 2 (p1) → pareja
+      estado = def.voltearElemento(estado, 0, config);
+      estado = def.voltearElemento(estado, 2, config);
       expect(estado.puntos_equipo_2).toBe(10);
       expect(estado.parejas_equipo_2).toBe(1);
     });
 
-    it('inmutabilidad: reducers no mutan estado original', () => {
-      const estado = def.estadoInicial(configuracionValida());
-      const original = JSON.parse(JSON.stringify(estado));
-      const estadoConSet = { ...estado, fase: 'SELECCIONANDO_SET' };
-      def.seleccionarSet(estadoConSet, setValido(3), configuracionValida({ parejas_por_ronda: 3 }), { shuffle: () => 0.5 });
-      expect(estado).toEqual(original);
+    it('timeUp → CAMBIO_TURNO → iniciarTurno', () => {
+      const config = configuracionValida({ parejas_por_ronda: 2, tiempo_turno_seg: 10 });
+      let estado = {
+        ...def.estadoInicial(config),
+        elementos: [
+          { id_pareja: 'p1', contenido: 'A', imagen_url: undefined, categoria: undefined, descubierto: false },
+          { id_pareja: 'p2', contenido: 'B', imagen_url: undefined, categoria: undefined, descubierto: false },
+          { id_pareja: 'p1', contenido: 'A', imagen_url: undefined, categoria: undefined, descubierto: false },
+          { id_pareja: 'p2', contenido: 'B', imagen_url: undefined, categoria: undefined, descubierto: false }
+        ],
+        fase: 'JUGANDO',
+        timer_activo: true,
+        tiempo_restante_seg: 10
+      };
+
+      // timeUp
+      estado = def.aplicarTimeUp(estado, config);
+      expect(estado.fase).toBe('CAMBIO_TURNO');
+      expect(estado.timer_activo).toBe(false);
+
+      // Iniciar turno
+      estado = def.iniciarTurno(estado, config);
+      expect(estado.fase).toBe('JUGANDO');
+      expect(estado.timer_activo).toBe(true);
+      expect(estado.tiempo_restante_seg).toBe(10);
+    });
+
+    it('cambiarTurno manual desde JUGANDO', () => {
+      const config = configuracionValida({ parejas_por_ronda: 2 });
+      const estado = estadoValido({ fase: 'JUGANDO', equipo_actual: 1 });
+      const nuevo = def.cambiarTurno(estado, config);
+      expect(nuevo.fase).toBe('CAMBIO_TURNO');
+      expect(nuevo.equipo_actual).toBe(2);
+      expect(nuevo.timer_activo).toBe(false);
+    });
+
+    it('flujo multi-ronda: 2 rondas, ronda 2 termina en FIN_DE_JUEGO', () => {
+      const config = configuracionValida({ rondas: 2, parejas_por_ronda: 1, puntos_por_pareja: 10 });
+      let estado = def.estadoInicial(config);
+      estado = { ...estado, fase: 'FIN_DE_RONDA', ronda_actual: 1, total_rondas: 2 };
+      estado = def.iniciarSiguienteRonda(estado, config);
+      expect(estado.ronda_actual).toBe(2);
+      expect(estado.fase).toBe('INICIO_RONDA');
+      estado = { ...estado, fase: 'FIN_DE_RONDA', ronda_actual: 2, total_rondas: 2 };
+      estado = def.iniciarSiguienteRonda(estado, config);
+      expect(estado.fase).toBe('FIN_DE_JUEGO');
     });
   });
 });
