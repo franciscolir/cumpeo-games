@@ -215,6 +215,7 @@ _(ninguna)_
 | 2026-09-22 | 5 | 5.7c | ✅ APROBADO | Memoricé: UI Pública (24 tests). | 79cc2b7 |
 | 2026-09-22 | 5 | 5.7d | ✅ APROBADO | Memoricé: e2e (10 tests). | d1ff93d |
 | 2026-09-22 | 5 | 5.8-pre | ✅ APROBADO | Cierre documental de mecánica de Anti-Trivia. Decisiones: respuesta incorrecta válida, lista de respuestas correctas, conductor decide. | — |
+| 2026-09-22 | 5 | 5.8-pre-fix | ✅ APROBADO | Anti-Trivia: ESPERA_VALIDACION cuando el timer llega a 0 y el jugador alcanzó a responder. | — |
 | 2026-09-21 | 5 | 5.4-pre | ✅ APROBADO | Cierre documental de mecánica de Pictionary. Decisiones: estructura del item del set, orden fijo de modos, bonus manual. | — |
 | 2026-09-21 | 5 | 5.4a | ✅ APROBADO | Pictionary GameDefinition + reducers + 74 tests unitarios. Archivos: PictionaryGameDefinition.js, tests, registro.js. | ef53390 |
 

@@ -237,6 +237,7 @@ de implementarse.
 | 5.13 | 2026-09-22 | Memoricé completa (5.7a-d). 10 e2e. Conteo 8/10. |
 | 5.14 | 2026-09-22 | Cierre documental de 5.7. ROADMAP limpiado (conteos consistentes). |
 | 5.15 | 2026-09-22 | Cierre documental de mecánica de Anti-Trivia. Conteo 9/10. |
+| 5.16 | 2026-09-22 | 5.8-pre-fix: ESPERA_VALIDACION y confirmaciones tras time up. |
 
 ---
 

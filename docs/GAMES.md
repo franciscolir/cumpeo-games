@@ -202,24 +202,40 @@ Responder correctamente más preguntas que el equipo rival. Gana el equipo con m
 
 ## Desarrollo del turno
 
-1. **SELECCIONANDO_SET**: el conductor elige un set del almacén.
-2. **MOSTRANDO_PREGUNTA** (pregunta 1 de 5): se muestra la pregunta y opciones en la TV.
-3. **SELECCIONANDO_RESPUESTA**: timer corre. El conductor selecciona la opción (A/B/C/D) que dijo el equipo. Presiona "Validar".
-4. **MOSTRANDO_RESULTADO**: el sistema compara con `respuesta_correcta_index` y asigna puntos automáticamente. Muestra la respuesta correcta.
-5. Se repite pasos 2-4 hasta completar 5 preguntas.
-6. **CAMBIO_TURNO**: cambia al otro equipo.
+1. **SELECCIONANDO_SET**: conductor elige 1 set para el equipo activo.
+2. **MOSTRANDO_PREGUNTA**: se muestra pregunta + lista de respuestas correctas en pantalla.
+3. **RESPONDIENDO**: timer 30s corre. El equipo dice una respuesta verbal.
+
+Desde RESPONDIENDO hay 3 transiciones posibles:
+
+**Caso A — Conductor marca Acierto/Error mientras corre el timer:**
+- Fase → MOSTRANDO_RESULTADO.
+- Timer se cancela.
+
+**Caso B — Timer llega a 0 y el conductor confirma que el jugador NO respondió:**
+- Fase → MOSTRANDO_RESULTADO (sin puntaje).
+- Registrado como "sin respuesta".
+
+**Caso C — Timer llega a 0 y el conductor confirma que el jugador SÍ respondió:**
+- Fase → ESPERA_VALIDACION.
+- El conductor valida (Acierto/Error).
+- Fase → MOSTRANDO_RESULTADO.
+
+4. **ESPERA_VALIDACION**: el conductor presiona "Acierto" o "Error". El timer está detenido.
+5. **MOSTRANDO_RESULTADO**: se revela la decisión.
+6. Continúa con la siguiente pregunta.
+7. Al terminar N preguntas → CAMBIO_TURNO.
+8. Eq2 juega su set.
+9. FIN_DE_RONDA.
 
 ## Timer
 
-- 30 segundos por pregunta (configurable: `tiempo_por_pregunta_seg`).
-- Al agotarse: la pregunta se marca como incorrecta automáticamente.
-
-## Validación
-
-- El conductor NO marca correcto/incorrecto manualmente.
-- El conductor SELECCIONA la opción (A/B/C/D) que dijo el equipo.
-- Después presiona "Validar".
-- El sistema compara y asigna puntos automáticamente.
+- 30s por pregunta (configurable: `tiempo_respuesta_seg`).
+- Corre solo en fase RESPONDIENDO.
+- Al llegar a 0: se detiene. NO es error automático. El conductor decide:
+  - Confirma que el jugador respondió → ESPERA_VALIDACION.
+  - Confirma que el jugador no respondió → MOSTRANDO_RESULTADO sin puntaje.
+- El conductor puede marcar Acierto/Error en cualquier momento (RESPONDIENDO o ESPERA_VALIDACION).
 
 ## Puntuación
 
@@ -240,7 +256,9 @@ NO existe.
 
 ## Fases
 
-`INICIO_RONDA`, `SELECCIONANDO_SET`, `MOSTRANDO_PREGUNTA`, `SELECCIONANDO_RESPUESTA`, `MOSTRANDO_RESULTADO`, `CAMBIO_TURNO`, `FIN_DE_RONDA`, `FIN_DE_JUEGO`.
+`INICIO_RONDA`, `SELECCIONANDO_SET`, `MOSTRANDO_PREGUNTA`,
+`RESPONDIENDO`, `ESPERA_VALIDACION`, `MOSTRANDO_RESULTADO`,
+`CAMBIO_TURNO`, `FIN_DE_RONDA`, `FIN_DE_JUEGO`.
 
 ## Público
 
@@ -770,9 +788,14 @@ equipo con mayor puntaje total.
 1. **SELECCIONANDO_SET**: conductor elige 1 set para el equipo activo.
 2. **MOSTRANDO_PREGUNTA**: se muestra pregunta + lista de respuestas correctas en pantalla.
 3. **RESPONDIENDO**: timer 30s corre. El equipo dice una respuesta verbal.
-   - Si la respuesta NO está en la lista → puede marcar "Acierto".
-   - Si la respuesta SÍ está en la lista → marca "Error".
-4. **ESPERA_VALIDACION**: el conductor presiona "Acierto" o "Error".
+
+Desde RESPONDIENDO hay 3 transiciones posibles:
+
+- **Caso A** — El conductor marca Acierto/Error mientras corre el timer: fase → MOSTRANDO_RESULTADO, timer cancelado.
+- **Caso B** — El timer llega a 0 y el conductor confirma que el jugador NO respondió: fase → MOSTRANDO_RESULTADO sin puntaje.
+- **Caso C** — El timer llega a 0 y el conductor confirma que el jugador SÍ respondió: fase → ESPERA_VALIDACION.
+
+4. **ESPERA_VALIDACION**: el conductor presiona "Acierto" o "Error". El timer está detenido.
 5. **MOSTRANDO_RESULTADO**: se revela la decisión.
 6. Continúa con la siguiente pregunta.
 7. Al terminar N preguntas → CAMBIO_TURNO.
@@ -782,8 +805,11 @@ equipo con mayor puntaje total.
 ## Timer
 
 - 30s por pregunta (configurable: `tiempo_respuesta_seg`).
-- Al agotarse: NO es error automático. El conductor decide.
-- Se pausa en ESPERA_VALIDACION.
+- Corre solo en fase RESPONDIENDO.
+- Al llegar a 0: se detiene. NO es error automático. El conductor decide:
+  - Confirma que el jugador respondió → ESPERA_VALIDACION.
+  - Confirma que no respondió → MOSTRANDO_RESULTADO sin puntaje.
+- El conductor puede marcar Acierto/Error en cualquier momento (RESPONDIENDO o ESPERA_VALIDACION).
 
 ## Puntuación
 

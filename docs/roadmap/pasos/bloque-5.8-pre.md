@@ -73,30 +73,34 @@ equipo con mayor puntaje total.
 
 ### Desarrollo del turno
 
-1. **SELECCIONANDO_SET**: conductor elige 1 set para el equipo activo.
-2. **MOSTRANDO_PREGUNTA**: se muestra pregunta + lista de respuestas
-   correctas en pantalla.
-3. **RESPONDIENDO**: timer 30s corre. El equipo dice una respuesta verbal.
-   - El conductor escucha y evalúa:
-     - Si la respuesta NO está en la lista → puede marcar "Acierto"
-       (es una respuesta incorrecta válida).
-     - Si la respuesta SÍ está en la lista → marca "Error" (rompió la
-       regla).
-4. **ESPERA_VALIDACION**: el conductor presiona "Acierto" o "Error".
-5. **MOSTRANDO_RESULTADO**: se revela la decisión.
+1. SELECCIONANDO_SET: conductor elige 1 set para el equipo activo.
+2. MOSTRANDO_PREGUNTA: se muestra pregunta + lista de respuestas correctas.
+3. RESPONDIENDO: timer 30s corre. El equipo dice una respuesta verbal.
+
+Desde RESPONDIENDO hay 3 transiciones posibles:
+
+- **Caso A** — Conductor marca Acierto/Error mientras corre el timer:
+  fase → MOSTRANDO_RESULTADO, timer cancelado.
+- **Caso B** — Timer llega a 0 y el conductor confirma que NO respondió:
+  fase → MOSTRANDO_RESULTADO sin puntaje.
+- **Caso C** — Timer llega a 0 y el conductor confirma que SÍ respondió:
+  fase → ESPERA_VALIDACION, el conductor valida.
+
+4. ESPERA_VALIDACION: el conductor presiona "Acierto" o "Error".
+5. MOSTRANDO_RESULTADO: se revela la decisión.
 6. Continúa con la siguiente pregunta.
 7. Al terminar N preguntas → CAMBIO_TURNO.
 8. Eq2 juega su set.
 9. FIN_DE_RONDA.
-   - Si hay más rondas → INICIO_RONDA con nuevos sets.
-   - Si no → FIN_DE_JUEGO.
 
 ### Timer
 
-- 30s por pregunta (configurable: `tiempo_respuesta_seg`).
-- Al agotarse: el timer se detiene. NO es error automático. El conductor
-  decide.
-- El timer se pausa en ESPERA_VALIDACION.
+- 30s por pregunta (configurable).
+- Corre solo en RESPONDIENDO.
+- Al llegar a 0: se detiene. NO es error automático. El conductor decide
+  si el jugador respondió (→ ESPERA_VALIDACION) o no respondió
+  (→ MOSTRANDO_RESULTADO sin puntaje).
+- El conductor puede marcar Acierto/Error en cualquier momento.
 
 ### Puntuación
 
@@ -127,3 +131,12 @@ equipo con mayor puntaje total.
 
 ✅ APROBADO. Anti-Trivia cerrada documentalmente. Bloque 5 en 9/10.
 Siguiente: 5.8a (dominio).
+
+---
+
+## Correcciones post-cierre
+
+**5.8-pre-fix (2026-09-22):** se ajustó la mecánica para agregar la fase
+`ESPERA_VALIDACION`. El timer puede llegar a 0 y el conductor decide si
+el jugador alcanzó a responder. Si sí → ESPERA_VALIDACION. Si no →
+MOSTRANDO_RESULTADO sin puntaje.
