@@ -207,6 +207,7 @@ _(ninguna)_
 | 2026-09-22 | 5 | 5.6c | ✅ APROBADO | Trivia: UI Pública. | 0acedd5 |
 | 2026-09-22 | 5 | 5.6c-fix | ✅ APROBADO | Trivia: tests estáticos UI pública (25 tests). | 28e8b6f |
 | 2026-09-22 | 5 | 5.6d | ✅ APROBADO | Trivia: e2e (10 tests) + fix wrapper items en shell. | afba7a0 |
+| 2026-09-22 | 5 | 5.7-pre | ✅ APROBADO | Cierre documental de mecánica de Memoricé. Decisiones: grilla de parejas, turnos por equipo, timer por turno, puntos por pareja. | — |
 | 2026-09-21 | 5 | 5.4-pre | ✅ APROBADO | Cierre documental de mecánica de Pictionary. Decisiones: estructura del item del set, orden fijo de modos, bonus manual. | — |
 | 2026-09-21 | 5 | 5.4a | ✅ APROBADO | Pictionary GameDefinition + reducers + 74 tests unitarios. Archivos: PictionaryGameDefinition.js, tests, registro.js. | ef53390 |
 

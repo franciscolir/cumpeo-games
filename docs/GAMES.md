@@ -260,22 +260,75 @@ Juego basado en memoria.
 
 Recordar correctamente elementos previamente mostrados o presentados.
 
-## Mecánica pendiente de cierre
+## Mecánica cerrada
 
-Falta definir:
+### Concepto
 
--   cantidad de elementos;
--   tiempo de exposición;
--   orden;
--   rondas;
--   participantes;
--   forma de ocultar elementos;
--   respuesta;
--   puntuación;
--   errores;
--   repetición;
--   victoria;
--   uso de Sets.
+Juego de memoria con parejas de elementos. Los elementos se muestran boca abajo en una grilla y los equipos deben encontrar las parejas.
+
+### Objetivo
+
+Encontrar más parejas que el equipo rival. Gana el equipo con mayor puntaje total.
+
+### Estructura
+
+- 2 equipos (Eq1 y Eq2).
+- Cada ronda: ambos equipos juegan el mismo set de imágenes.
+- 1 set = 1 ronda. Se pueden jugar N rondas con N sets.
+- Se barajan N parejas de elementos boca abajo en una grilla.
+- Grilla 4x4 o 5x5 según cantidad de elementos.
+
+### Set (estructura del item)
+
+```json
+{
+  "contenido": "string",
+  "imagen_url": "string",
+  "categoria": "string"
+}
+```
+
+- `contenido`: string no vacío (palabra o texto del elemento).
+- `imagen_url`: string opcional (URL de la imagen).
+- `categoria`: string opcional (categoría del elemento).
+
+### Validación del set
+
+- Debe tener al menos `parejas_por_ronda` items (default 6).
+- Cada item: `contenido` string no vacío.
+
+### Desarrollo de la ronda
+
+1. **INICIO_RONDA**: se inicia la ronda.
+2. **SELECCIONANDO_SET**: el conductor elige 1 set (aplica para ambos equipos).
+3. **PREPARANDO_GRILLA**: el sistema baraja los 2N elementos y asigna `id_pareja`.
+4. **JUGANDO (turno Eq1)**: timer 20s corre. El conductor presiona elemento 1 y luego elemento 2.
+   - Si son pareja → +10 puntos a Eq1, elementos quedan visibles, sigue Eq1.
+   - Si no → elementos se ocultan, pasa turno a Eq2.
+5. Continúa hasta que todas las parejas estén encontradas.
+6. **FIN_DE_RONDA**: se muestra el marcador.
+   - Si hay más rondas → INICIO_RONDA con nuevo set.
+   - Si no → FIN_DE_JUEGO.
+
+### Timer
+
+- 20 segundos por turno (configurable: `tiempo_turno_seg`).
+- Al agotarse con 1 elemento volteado: los 2 se ocultan, pasa turno.
+- Al agotarse sin elementos: pasa turno.
+
+### Puntuación
+
+- `puntos_por_pareja`: configurable (default 10).
+- Ganador: mayor puntaje total. Empate técnico si empatan.
+
+### Fases
+
+`INICIO_RONDA`, `SELECCIONANDO_SET`, `PREPARANDO_GRILLA`, `JUGANDO`, `ESPERA_CONFIRMACION`, `CAMBIO_TURNO`, `FIN_DE_RONDA`, `FIN_DE_JUEGO`.
+
+### Público
+
+- Ve la grilla completa con estado de cada elemento (boca abajo, volteado temporal, descubierto).
+- Ve: equipo activo, timer, marcador, parejas encontradas.
 
 ------------------------------------------------------------------------
 
