@@ -10,6 +10,7 @@ import { CancionIncompletaGameDefinition } from './cancion-incompleta/CancionInc
 import { PictionaryGameDefinition } from './pictionary/PictionaryGameDefinition.js';
 import { HistoriaEnredadaGameDefinition } from './historia-enredada/HistoriaEnredadaGameDefinition.js';
 import { MemoriaGameDefinition } from './memoria/MemoriaGameDefinition.js';
+import { AntiTriviaGameDefinition } from './anti-trivia/AntiTriviaGameDefinition.js';
 
 /**
  * Registra todos los juegos disponibles en el registry.
@@ -24,7 +25,8 @@ export function registrarTodos(registry) {
     CancionIncompletaGameDefinition,
     PictionaryGameDefinition,
     HistoriaEnredadaGameDefinition,
-    MemoriaGameDefinition
+    MemoriaGameDefinition,
+    AntiTriviaGameDefinition
   ];
 
   for (const def of definiciones) {
