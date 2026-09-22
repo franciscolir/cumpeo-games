@@ -194,6 +194,12 @@ _(ninguna)_
 | 2026-09-22 | 5 | 5.4-rosco-fix-v2 | ✅ APROBADO | Retry lazy en Rosco (bug #59). Rosco 18/18. | 699204b |
 | 2026-09-22 | 5 | 5.4-e | ✅ APROBADO | Fix juego_nombre en obtenerContextoEspera (bug #67). Pictionary 11/11. | 3eb742d |
 | 2026-09-22 | 5 | 5.5-pre | ✅ APROBADO | Cierre documental de mecánica de Historia Enredada. | — |
+| 2026-09-22 | 5 | 5.5-pre-fix | ✅ APROBADO | 1 ronda = 2 historias (1 por equipo). Orden Eq1 → Eq2. | f1e7552 |
+| 2026-09-22 | 5 | 5.5a | ✅ APROBADO | Historia Enredada: GameDefinition + reducers + 40 tests. | b7f6f25 |
+| 2026-09-22 | 5 | 5.5a-fix | ✅ APROBADO | Conteo de juegos en bootstrap/seed (5→6). | 6321c3c |
+| 2026-09-22 | 5 | 5.5b | ✅ APROBADO | Historia Enredada: UI Conductor + 30 tests. | c982efd |
+| 2026-09-22 | 5 | 5.5c | ✅ APROBADO | Historia Enredada: UI Pública + 18 tests. | 068f151 |
+| 2026-09-22 | 5 | 5.5d | ✅ APROBADO | Historia Enredada: e2e (9/10 passing, 1 skipped). Fix cargarItemsDeJuego (id) y shell-publica (itemsHistoria). | dc9d34e |
 | 2026-09-21 | 5 | 5.4-pre | ✅ APROBADO | Cierre documental de mecánica de Pictionary. Decisiones: estructura del item del set, orden fijo de modos, bonus manual. | — |
 | 2026-09-21 | 5 | 5.4a | ✅ APROBADO | Pictionary GameDefinition + reducers + 74 tests unitarios. Archivos: PictionaryGameDefinition.js, tests, registro.js. | ef53390 |
 
@@ -220,3 +226,6 @@ _(ninguna)_
 | 62 | Cada juego nuevo tiende a reinventar el helper de e2e. Extraer un helper común que parametrice crearPartida con el código del juego. | Paso 5.3f (detectado) | Media |
 | 67 | `PartidaRepository.obtenerContextoEspera` no mapeaba `juego_nombre`, causando que la UI pública mostrara `PICTIONARY` (código crudo) en lugar de `Pictionary`. | Paso 5.4-e (detectado) | Cerrada (5.4-e) |
 | 68 | El test "modo 1: público carga la partida" pasó por 3 versiones (simplificado → reforzado → funcional). Verificar que el refuerzo se mantuvo. | Paso 5.4-rosco-fix-v2 (detectado) | Baja |
+| 69 | El cambio de `cargarItemsDeJuego` (ahora devuelve `id` además del contenido) puede afectar a Trivia cuyos tests asumen items sin `id`. Verificar al cerrar 5.6. | Paso 5.5d (detectado) | Baja |
+| 70 | El test "set sin historias suficientes no permite arrancar la ronda" está `test.skip`. Para des-skipearlo, el helper necesita aceptar `itemsCount: 0`. | Paso 5.5d (detectado) | Baja |
+| 71 | El test "cards excluyen historias usadas" era flaky con `waitForTimeout`. Se estabilizó con `waitForFunction`. Patrón a aplicar en tests futuros. | Paso 5.5d (detectado) | Media |
