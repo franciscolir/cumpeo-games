@@ -4,15 +4,23 @@
    Implementa el contrato GameDefinition (ver GameDefinitionRegistry).
 
    Trivia es un juego de preguntas y respuestas múltiples.
-   Cada set contiene items con pregunta, opciones y respuesta correcta.
+   Cada ronda tiene 2 turnos: Eq1 primero, Eq2 después.
+   Cada turno: el equipo responde 5 preguntas de un set propio.
    ============================================================= */
 
 import { ValidacionError } from '../../repositories/errors.js';
 
-const FASES = Object.freeze([
+/* =============================================================
+   Constantes
+   ============================================================= */
+
+export const FASES = Object.freeze([
+  'INICIO_RONDA',
+  'SELECCIONANDO_SET',
   'MOSTRANDO_PREGUNTA',
   'SELECCIONANDO_RESPUESTA',
   'MOSTRANDO_RESULTADO',
+  'CAMBIO_TURNO',
   'FIN_DE_RONDA',
   'FIN_DE_JUEGO'
 ]);
@@ -22,6 +30,10 @@ const MAX_OPCIONES = 6;
 const DIFICULTAD_MIN = 1;
 const DIFICULTAD_MAX = 3;
 
+/* =============================================================
+   Helpers internos
+   ============================================================= */
+
 function esEnteroNoNegativo(valor) {
   return Number.isInteger(valor) && valor >= 0;
 }
@@ -30,25 +42,33 @@ function esEnteroMayorQue(valor, minimo) {
   return Number.isInteger(valor) && valor >= minimo;
 }
 
-function validarArrayNoVacio(valor, nombre) {
-  if (!Array.isArray(valor)) {
-    throw new ValidacionError(`${nombre} debe ser un array`);
-  }
-  if (valor.length === 0) {
-    throw new ValidacionError(`${nombre} no puede estar vacío`);
-  }
-}
+/* =============================================================
+   GameDefinition
+   ============================================================= */
 
 export const TriviaGameDefinition = {
   codigo: 'TRIVIA',
   nombre: 'Trivia',
   requiere_set: true,
 
+  /* =============================================================
+     Configuración
+     ============================================================= */
+
+  defaultConfig: Object.freeze({
+    rondas: 1,
+    preguntas_por_turno: 5,
+    tiempo_por_pregunta_seg: 30,
+    puntos_por_acierto: 10,
+    penalizacion_por_error: 0,
+    penalizacion_por_pasar: 0
+  }),
+
   /**
-   * Valida la configuración de Trivia para un CircuitoJuego.
+   * Valida la configuración de Trivia.
    * @param {object} config
-   * @returns {true} si la configuración es válida.
-   * @throws {ValidacionError} si falta algún campo o tiene valor inválido.
+   * @returns {true}
+   * @throws {ValidacionError}
    */
   validarConfiguracion(config) {
     if (!config || typeof config !== 'object') {
@@ -59,47 +79,60 @@ export const TriviaGameDefinition = {
       throw new ValidacionError('rondas debe ser un entero >= 1');
     }
 
-    if (!esEnteroMayorQue(config.preguntas_por_ronda, 1)) {
-      throw new ValidacionError('preguntas_por_ronda debe ser un entero >= 1');
-    }
-
-    if (!esEnteroNoNegativo(config.puntos_por_acierto)) {
-      throw new ValidacionError('puntos_por_acierto debe ser un entero >= 0');
-    }
-
-    if (typeof config.penalizacion_activa !== 'boolean') {
-      throw new ValidacionError('penalizacion_activa debe ser booleano');
-    }
-
-    if (!esEnteroNoNegativo(config.penalizacion_puntos)) {
-      throw new ValidacionError('penalizacion_puntos debe ser un entero >= 0');
-    }
-
-    if (config.penalizacion_activa === true && config.penalizacion_puntos <= 0) {
-      throw new ValidacionError(
-        'Si penalizacion_activa es true, penalizacion_puntos debe ser > 0'
-      );
+    if (!esEnteroMayorQue(config.preguntas_por_turno, 1)) {
+      throw new ValidacionError('preguntas_por_turno debe ser un entero >= 1');
     }
 
     if (!esEnteroMayorQue(config.tiempo_por_pregunta_seg, 1)) {
       throw new ValidacionError('tiempo_por_pregunta_seg debe ser un entero >= 1');
     }
 
+    if (!esEnteroNoNegativo(config.puntos_por_acierto)) {
+      throw new ValidacionError('puntos_por_acierto debe ser un entero >= 0');
+    }
+
+    if (!esEnteroNoNegativo(config.penalizacion_por_error)) {
+      throw new ValidacionError('penalizacion_por_error debe ser un entero >= 0');
+    }
+
+    if (!esEnteroNoNegativo(config.penalizacion_por_pasar)) {
+      throw new ValidacionError('penalizacion_por_pasar debe ser un entero >= 0');
+    }
+
     return true;
   },
 
+  /* =============================================================
+     Validación de set
+     ============================================================= */
+
   /**
-   * Valida el contenido de un set de Trivia (snapshot).
+   * Valida el contenido de un set de Trivia.
    * @param {object} contenido - { items: [...] }
-   * @returns {true} si el contenido es válido.
-   * @throws {ValidacionError} si algún item tiene formato inválido.
+   * @param {object} config - configuración con preguntas_por_turno
+   * @returns {true}
+   * @throws {ValidacionError}
    */
-  validarContenidoSet(contenido) {
+  validarContenidoSet(contenido, config) {
+    const preguntasPorTurno = config?.preguntas_por_turno || 5;
+
     if (!contenido || typeof contenido !== 'object') {
       throw new ValidacionError('El contenido debe ser un objeto');
     }
 
-    validarArrayNoVacio(contenido.items, 'items');
+    if (!Array.isArray(contenido.items)) {
+      throw new ValidacionError('items debe ser un array');
+    }
+
+    if (contenido.items.length === 0) {
+      throw new ValidacionError('items no puede estar vacío');
+    }
+
+    if (contenido.items.length < preguntasPorTurno) {
+      throw new ValidacionError(
+        `items debe tener al menos ${preguntasPorTurno} items (preguntas_por_turno)`
+      );
+    }
 
     for (let i = 0; i < contenido.items.length; i++) {
       const item = contenido.items[i];
@@ -158,12 +191,287 @@ export const TriviaGameDefinition = {
     return true;
   },
 
+  /* =============================================================
+     Estado inicial
+     ============================================================= */
+
   /**
-   * Valida el estado dinámico de un juego Trivia.
-   * @param {object} estado
-   * @returns {true} si el estado es válido.
-   * @throws {ValidacionError} si el estado tiene formato inválido.
+   * Crea el estado inicial de una partida de Trivia.
+   * @param {object} config
+   * @returns {object}
    */
+  estadoInicial(config) {
+    return {
+      ronda_actual: 1,
+      total_rondas: config?.rondas || 1,
+      fase: 'INICIO_RONDA',
+      equipo_actual: 1,
+      set_equipo_1: null,
+      set_equipo_2: null,
+      preguntas_equipo_1: [],
+      preguntas_equipo_2: [],
+      pregunta_actual_index: 0,
+      opcion_seleccionada: null,
+      respuestas: [],
+      puntos_equipo_1: 0,
+      puntos_equipo_2: 0
+    };
+  },
+
+  /* =============================================================
+     Reducers puros
+     ============================================================= */
+
+  seleccionarSet(estado, set) {
+    if (!estado || typeof estado !== 'object') return estado;
+
+    if (estado.fase !== 'SELECCIONANDO_SET') {
+      throw new ValidacionError('Solo se puede seleccionar set en fase SELECCIONANDO_SET');
+    }
+
+    if (!set || !Array.isArray(set.items) || set.items.length === 0) {
+      throw new ValidacionError('El set debe tener items');
+    }
+
+    const equipo = estado.equipo_actual;
+    const keySet = `set_equipo_${equipo}`;
+    const keyPreguntas = `preguntas_equipo_${equipo}`;
+
+    return {
+      ...estado,
+      [keySet]: set.id || null,
+      [keyPreguntas]: [...set.items],
+      pregunta_actual_index: 0,
+      fase: 'MOSTRANDO_PREGUNTA'
+    };
+  },
+
+  iniciarSeleccion(estado) {
+    if (!estado || typeof estado !== 'object') return estado;
+
+    if (estado.fase !== 'MOSTRANDO_PREGUNTA') {
+      throw new ValidacionError('Solo se puede iniciar selección desde MOSTRANDO_PREGUNTA');
+    }
+
+    return {
+      ...estado,
+      fase: 'SELECCIONANDO_RESPUESTA'
+    };
+  },
+
+  seleccionarOpcion(estado, opcionIndex) {
+    if (!estado || typeof estado !== 'object') return estado;
+
+    if (estado.fase !== 'SELECCIONANDO_RESPUESTA') {
+      throw new ValidacionError('Solo se puede seleccionar opción en fase SELECCIONANDO_RESPUESTA');
+    }
+
+    if (!Number.isInteger(opcionIndex)) {
+      throw new ValidacionError('opcionIndex debe ser un entero');
+    }
+
+    return {
+      ...estado,
+      opcion_seleccionada: opcionIndex
+    };
+  },
+
+  validarRespuesta(estado, config) {
+    if (!estado || typeof estado !== 'object') return estado;
+
+    if (estado.fase !== 'SELECCIONANDO_RESPUESTA') {
+      throw new ValidacionError('Solo se puede validar en fase SELECCIONANDO_RESPUESTA');
+    }
+
+    if (estado.opcion_seleccionada === null || estado.opcion_seleccionada === undefined) {
+      throw new ValidacionError('Debe seleccionar una opción antes de validar');
+    }
+
+    const equipo = estado.equipo_actual;
+    const keyPreguntas = `preguntas_equipo_${equipo}`;
+    const keyPuntos = `puntos_equipo_${equipo}`;
+
+    const preguntas = estado[keyPreguntas];
+    const preguntaActual = preguntas[estado.pregunta_actual_index];
+
+    if (!preguntaActual) {
+      throw new ValidacionError('No hay pregunta actual');
+    }
+
+    const correcta = estado.opcion_seleccionada === preguntaActual.respuesta_correcta_index;
+    let puntos = 0;
+
+    if (correcta) {
+      puntos = config?.puntos_por_acierto || 10;
+    } else {
+      puntos = -(config?.penalizacion_por_error || 0);
+    }
+
+    const respuesta = {
+      equipo,
+      pregunta_index: estado.pregunta_actual_index,
+      opcion_index: estado.opcion_seleccionada,
+      correcta,
+      puntos,
+      paso: false
+    };
+
+    return {
+      ...estado,
+      [keyPuntos]: (estado[keyPuntos] || 0) + puntos,
+      respuestas: [...estado.respuestas, respuesta],
+      opcion_seleccionada: null,
+      fase: 'MOSTRANDO_RESULTADO'
+    };
+  },
+
+  pasarPregunta(estado, config) {
+    if (!estado || typeof estado !== 'object') return estado;
+
+    if (estado.fase !== 'SELECCIONANDO_RESPUESTA') {
+      throw new ValidacionError('Solo se puede pasar en fase SELECCIONANDO_RESPUESTA');
+    }
+
+    const equipo = estado.equipo_actual;
+    const penalizacion = config?.penalizacion_por_pasar || 0;
+    const keyPuntos = `puntos_equipo_${equipo}`;
+
+    const respuesta = {
+      equipo,
+      pregunta_index: estado.pregunta_actual_index,
+      opcion_index: null,
+      correcta: false,
+      puntos: -penalizacion,
+      paso: true
+    };
+
+    return {
+      ...estado,
+      [keyPuntos]: (estado[keyPuntos] || 0) - penalizacion,
+      respuestas: [...estado.respuestas, respuesta],
+      opcion_seleccionada: null,
+      fase: 'MOSTRANDO_RESULTADO'
+    };
+  },
+
+  siguientePregunta(estado, config) {
+    if (!estado || typeof estado !== 'object') return estado;
+
+    if (estado.fase !== 'MOSTRANDO_RESULTADO') {
+      throw new ValidacionError('Solo se puede avanzar pregunta desde MOSTRANDO_RESULTADO');
+    }
+
+    const preguntasPorTurno = config?.preguntas_por_turno || 5;
+    const siguiente = estado.pregunta_actual_index + 1;
+
+    if (siguiente < preguntasPorTurno) {
+      return {
+        ...estado,
+        pregunta_actual_index: siguiente,
+        fase: 'MOSTRANDO_PREGUNTA'
+      };
+    }
+
+    // No quedan preguntas en este turno
+    if (estado.equipo_actual === 1) {
+      return {
+        ...estado,
+        fase: 'CAMBIO_TURNO',
+        equipo_actual: 2,
+        pregunta_actual_index: 0
+      };
+    } else {
+      // Último turno de la ronda
+      const siguienteRonda = estado.ronda_actual + 1;
+      if (siguienteRonda <= (estado.total_rondas || 1)) {
+        return {
+          ...estado,
+          fase: 'FIN_DE_RONDA'
+        };
+      } else {
+        return {
+          ...estado,
+          fase: 'FIN_DE_JUEGO'
+        };
+      }
+    }
+  },
+
+  cambiarTurno(estado) {
+    if (!estado || typeof estado !== 'object') return estado;
+
+    if (estado.fase !== 'CAMBIO_TURNO') {
+      throw new ValidacionError('Solo se puede cambiar turno desde CAMBIO_TURNO');
+    }
+
+    return {
+      ...estado,
+      equipo_actual: 2,
+      pregunta_actual_index: 0,
+      fase: 'SELECCIONANDO_SET'
+    };
+  },
+
+  iniciarSiguienteRonda(estado, config) {
+    if (!estado || typeof estado !== 'object') return estado;
+
+    if (estado.fase !== 'FIN_DE_RONDA') {
+      throw new ValidacionError('Solo se puede iniciar siguiente ronda desde FIN_DE_RONDA');
+    }
+
+    const siguienteRonda = estado.ronda_actual + 1;
+    const totalRondas = estado.total_rondas || (config?.rondas || 1);
+
+    if (siguienteRonda > totalRondas) {
+      return { ...estado, fase: 'FIN_DE_JUEGO' };
+    }
+
+    return {
+      ...estado,
+      ronda_actual: siguienteRonda,
+      equipo_actual: 1,
+      set_equipo_1: null,
+      set_equipo_2: null,
+      preguntas_equipo_1: [],
+      preguntas_equipo_2: [],
+      pregunta_actual_index: 0,
+      opcion_seleccionada: null,
+      fase: 'INICIO_RONDA'
+    };
+  },
+
+  calcularPuntuacion(estado, equipo) {
+    if (!estado || typeof estado !== 'object') return { puntos: 0 };
+    return {
+      puntos: estado[`puntos_equipo_${equipo}`] || 0
+    };
+  },
+
+  calcularResultado(estadoJuego) {
+    if (!estadoJuego || typeof estadoJuego !== 'object') {
+      throw new ValidacionError('El estado del juego debe ser un objeto');
+    }
+
+    const p1 = typeof estadoJuego.puntos_equipo_1 === 'number'
+      ? estadoJuego.puntos_equipo_1 : 0;
+    const p2 = typeof estadoJuego.puntos_equipo_2 === 'number'
+      ? estadoJuego.puntos_equipo_2 : 0;
+
+    let ganador = null;
+    if (p1 > p2) ganador = 1;
+    else if (p2 > p1) ganador = 2;
+
+    return {
+      puntos_equipo_1: p1,
+      puntos_equipo_2: p2,
+      ganador
+    };
+  },
+
+  /* =============================================================
+     Validación de estado
+     ============================================================= */
+
   validarEstadoJuego(estado) {
     if (!estado || typeof estado !== 'object') {
       throw new ValidacionError('El estado debe ser un objeto');
@@ -173,45 +481,16 @@ export const TriviaGameDefinition = {
       throw new ValidacionError('ronda_actual debe ser un entero >= 1');
     }
 
-    if (!esEnteroNoNegativo(estado.pregunta_actual_index)) {
-      throw new ValidacionError('pregunta_actual_index debe ser un entero >= 0');
+    if (!FASES.includes(estado.fase)) {
+      throw new ValidacionError(`fase inválida: ${estado.fase}`);
     }
 
-    if (typeof estado.fase !== 'string' || !FASES.includes(estado.fase)) {
-      throw new ValidacionError(
-        `fase inválida. Debe ser una de: ${FASES.join(', ')}`
-      );
+    if (estado.equipo_actual !== 1 && estado.equipo_actual !== 2) {
+      throw new ValidacionError('equipo_actual debe ser 1 o 2');
     }
 
     if (!Array.isArray(estado.respuestas)) {
       throw new ValidacionError('respuestas debe ser un array');
-    }
-
-    for (let i = 0; i < estado.respuestas.length; i++) {
-      const r = estado.respuestas[i];
-      if (!r || typeof r !== 'object') {
-        throw new ValidacionError(`respuestas[${i}] debe ser un objeto`);
-      }
-      if (r.equipo !== 1 && r.equipo !== 2 && r.equipo !== 0) {
-        throw new ValidacionError(
-          `respuestas[${i}].equipo inválido. Debe ser 0, 1 o 2`
-        );
-      }
-      if (!Number.isInteger(r.opcion_index) && r.opcion_index !== null) {
-        throw new ValidacionError(
-          `respuestas[${i}].opcion_index debe ser un entero o null`
-        );
-      }
-      if (typeof r.correcta !== 'boolean') {
-        throw new ValidacionError(
-          `respuestas[${i}].correcta debe ser booleano`
-        );
-      }
-      if (typeof r.puntos !== 'number' || !Number.isFinite(r.puntos)) {
-        throw new ValidacionError(
-          `respuestas[${i}].puntos debe ser un número finito`
-        );
-      }
     }
 
     if (typeof estado.puntos_equipo_1 !== 'number' || !Number.isFinite(estado.puntos_equipo_1)) {
@@ -225,65 +504,39 @@ export const TriviaGameDefinition = {
     return true;
   },
 
-  /**
-   * Calcula el resultado final de un juego Trivia.
-   * @param {object} estadoJuego
-   * @returns {{ puntos_equipo_1: number, puntos_equipo_2: number }}
-   * @throws {ValidacionError} si el estado no contiene los campos de puntos.
-   */
-  calcularResultado(estadoJuego) {
-    if (!estadoJuego || typeof estadoJuego !== 'object') {
-      throw new ValidacionError('El estado del juego debe ser un objeto');
-    }
+  /* =============================================================
+     TimeUp
+     ============================================================= */
 
-    const p1 = typeof estadoJuego.puntos_equipo_1 === 'number'
-      ? estadoJuego.puntos_equipo_1
-      : 0;
-    const p2 = typeof estadoJuego.puntos_equipo_2 === 'number'
-      ? estadoJuego.puntos_equipo_2
-      : 0;
+  aplicarTimeUp(estado) {
+    if (!estado || typeof estado !== 'object') return null;
 
-    return {
-      puntos_equipo_1: p1,
-      puntos_equipo_2: p2
-    };
-  },
-
-  /**
-   * Aplica el efecto de tiempo agotado para la pregunta actual.
-   * Devuelve un nuevo objeto (no muta el original).
-   * @param {object} estadoJuego
-   * @returns {object|null} Nuevo estado o null si ya terminó el juego.
-   * @throws {ValidacionError} si el estado es inválido.
-   */
-  aplicarTimeUp(estadoJuego) {
-    if (!estadoJuego || typeof estadoJuego !== 'object') {
-      throw new ValidacionError('El estado del juego debe ser un objeto');
-    }
-
-    if (estadoJuego.fase === 'FIN_DE_JUEGO') {
+    if (estado.fase === 'FIN_DE_JUEGO') {
       return null;
     }
 
-    if (estadoJuego.fase === 'FIN_DE_RONDA') {
-      return { ...estadoJuego };
+    if (estado.fase !== 'SELECCIONANDO_RESPUESTA') {
+      return { ...estado };
     }
 
-    if (estadoJuego.fase === 'MOSTRANDO_RESULTADO') {
-      return { ...estadoJuego };
-    }
+    const equipo = estado.equipo_actual;
+    const keyPuntos = `puntos_equipo_${equipo}`;
 
-    const respuestaTimeUp = {
-      equipo: 0,
+    const respuesta = {
+      equipo,
+      pregunta_index: estado.pregunta_actual_index,
       opcion_index: null,
       correcta: false,
-      puntos: 0
+      puntos: 0,
+      paso: false
     };
 
     return {
-      ...estadoJuego,
-      fase: 'MOSTRANDO_RESULTADO',
-      respuestas: [...estadoJuego.respuestas, respuestaTimeUp]
+      ...estado,
+      [keyPuntos]: (estado[keyPuntos] || 0),
+      respuestas: [...estado.respuestas, respuesta],
+      opcion_seleccionada: null,
+      fase: 'MOSTRANDO_RESULTADO'
     };
   }
 };
