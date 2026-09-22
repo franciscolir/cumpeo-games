@@ -18,7 +18,7 @@ test('el dashboard muestra la sesión', async ({ page }) => {
 
 test('el dashboard muestra TRIVIA como juego registrado', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByText('Trivia')).toBeVisible();
+  await expect(page.getByText('Trivia', { exact: true })).toBeVisible();
 });
 
 test('el tema se resuelve a light o dark', async ({ page }) => {

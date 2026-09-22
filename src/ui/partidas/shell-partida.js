@@ -14,6 +14,9 @@ import { cargarItemsDeJuego } from '../games/_shared/index.js';
 let cleanupSuscripciones = null;
 let intervalId = null;
 let cleanupsGameUI = [];
+let heartbeatId = null;
+
+const HEARTBEAT_MS = 10000;
 
 /**
  * Renderiza el shell completo del conductor de una partida.
@@ -24,6 +27,7 @@ let cleanupsGameUI = [];
 export async function renderShellPartida(container, app, params) {
   _limpiarSuscripciones();
   _limpiarGameUIs();
+  _limpiarHeartbeat();
 
   await _renderContenido(container, app, params.id);
 
@@ -64,6 +68,36 @@ function _iniciarPolling(container, app, partidaId) {
     }
     await _renderContenido(container, app, partidaId);
   }, 2000);
+}
+
+/**
+ * INV-093: renueva el lease de control cada 10s mientras la
+ * sesión sea la dueña. Si el lease ya expiró, reintenta tomarControl
+ * (misma sesión puede readquirir lease expirado).
+ */
+function _iniciarHeartbeat(app, partidaId) {
+  if (heartbeatId) return;
+  const sessionId = app.session.sessionId;
+  heartbeatId = setInterval(async () => {
+    if (!window.location.hash.match(/^#\/partidas\/[^/?]+$/)) {
+      _limpiarHeartbeat();
+      return;
+    }
+    try {
+      await app.services.partida.renovarControl(partidaId, sessionId);
+    } catch (_) {
+      try {
+        await app.services.partida.tomarControl(partidaId, sessionId);
+      } catch (__) { /* sin control: el render seguinte lo reflejará */ }
+    }
+  }, HEARTBEAT_MS);
+}
+
+function _limpiarHeartbeat() {
+  if (heartbeatId) {
+    clearInterval(heartbeatId);
+    heartbeatId = null;
+  }
 }
 
 function _limpiarSuscripciones() {
@@ -113,6 +147,7 @@ async function _renderContenido(container, app, partidaId) {
     `;
     bindHeaderListeners(container);
     _limpiarSuscripciones();
+    _limpiarHeartbeat();
     if (intervalId) { clearInterval(intervalId); intervalId = null; }
     return;
   }
@@ -1090,8 +1125,11 @@ async function _renderContenido(container, app, partidaId) {
   bindHeaderListeners(container);
 
   if (puedeControlar) {
+    _iniciarHeartbeat(app, partidaId);
     _bindModeracion(container, app, partidaId);
     await _cargarModeracion(container, app, partidaId);
+  } else {
+    _limpiarHeartbeat();
   }
 
   if (gameUI) {
