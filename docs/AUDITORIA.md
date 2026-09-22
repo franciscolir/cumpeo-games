@@ -201,6 +201,12 @@ _(ninguna)_
 | 2026-09-22 | 5 | 5.5c | ✅ APROBADO | Historia Enredada: UI Pública + 18 tests. | 068f151 |
 | 2026-09-22 | 5 | 5.5d | ✅ APROBADO | Historia Enredada: e2e (9/10 passing, 1 skipped). Fix cargarItemsDeJuego (id) y shell-publica (itemsHistoria). | dc9d34e |
 | 2026-09-22 | 5 | 5.6-pre | ✅ APROBADO | Cierre documental de mecánica de Trivia. Decisiones: 2 equipos, 5 preguntas por turno, sets propios, timer 30s, validación por selección de opción. | — |
+| 2026-09-22 | 5 | 5.6a | ✅ APROBADO | Trivia: GameDefinition reescrito (8 fases, 9 reducers, 77 tests). | 2d9190d |
+| 2026-09-22 | 5 | 5.6b-1 | ✅ APROBADO | Trivia: UI Conductor reescrita (8 fases, 31 tests). | 8bee291 |
+| 2026-09-22 | 5 | 5.6b-2 | ✅ APROBADO | Trivia: shell actions (11 nuevas, retry lazy en 3). | 38eca68 |
+| 2026-09-22 | 5 | 5.6c | ✅ APROBADO | Trivia: UI Pública. | 0acedd5 |
+| 2026-09-22 | 5 | 5.6c-fix | ✅ APROBADO | Trivia: tests estáticos UI pública (25 tests). | 28e8b6f |
+| 2026-09-22 | 5 | 5.6d | ✅ APROBADO | Trivia: e2e (10 tests) + fix wrapper items en shell. | afba7a0 |
 | 2026-09-21 | 5 | 5.4-pre | ✅ APROBADO | Cierre documental de mecánica de Pictionary. Decisiones: estructura del item del set, orden fijo de modos, bonus manual. | — |
 | 2026-09-21 | 5 | 5.4a | ✅ APROBADO | Pictionary GameDefinition + reducers + 74 tests unitarios. Archivos: PictionaryGameDefinition.js, tests, registro.js. | ef53390 |
 
