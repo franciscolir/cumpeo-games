@@ -208,6 +208,12 @@ _(ninguna)_
 | 2026-09-22 | 5 | 5.6c-fix | ✅ APROBADO | Trivia: tests estáticos UI pública (25 tests). | 28e8b6f |
 | 2026-09-22 | 5 | 5.6d | ✅ APROBADO | Trivia: e2e (10 tests) + fix wrapper items en shell. | afba7a0 |
 | 2026-09-22 | 5 | 5.7-pre | ✅ APROBADO | Cierre documental de mecánica de Memoricé. Decisiones: grilla de parejas, turnos por equipo, timer por turno, puntos por pareja. | — |
+| 2026-09-22 | 5 | 5.7a | ✅ APROBADO | Memoricé: GameDefinition (8 fases, 6 reducers, 77 tests). | f158afb |
+| 2026-09-22 | 5 | 5.7a-fix | ✅ APROBADO | Memoricé: auto-evaluación de pareja + CAMBIO_TURNO real (92 tests). | 62617c0 |
+| 2026-09-22 | 5 | 5.7b | ✅ APROBADO | Memoricé: UI Conductor + shell (32 tests UI). | a00b8d1 |
+| 2026-09-22 | 5 | 5.7b-fix | ✅ APROBADO | Memoricé: PREPARANDO_GRILLA como fase real (97 + 32 tests). | 34a27fe |
+| 2026-09-22 | 5 | 5.7c | ✅ APROBADO | Memoricé: UI Pública (24 tests). | 79cc2b7 |
+| 2026-09-22 | 5 | 5.7d | ✅ APROBADO | Memoricé: e2e (10 tests). | d1ff93d |
 | 2026-09-21 | 5 | 5.4-pre | ✅ APROBADO | Cierre documental de mecánica de Pictionary. Decisiones: estructura del item del set, orden fijo de modos, bonus manual. | — |
 | 2026-09-21 | 5 | 5.4a | ✅ APROBADO | Pictionary GameDefinition + reducers + 74 tests unitarios. Archivos: PictionaryGameDefinition.js, tests, registro.js. | ef53390 |
 
@@ -240,3 +246,7 @@ _(ninguna)_
 | 74 | El timer público de Trivia usa `window._triviaConfig` que no se setea en ningún lado. El timer siempre usa 30s por default, ignorando `tiempo_por_pregunta_seg`. | Paso 5.6d (detectado) | Baja |
 | 75 | Tests e2e de Trivia: `turnos.spec.js:7` tarda 11s, `validacion.spec.js:111` tarda 29.7s. Considerar reducir tiempos de espera. | Paso 5.6d (detectado) | Baja |
 | 76 | El agente reportó 9/10 tras 5.6d, pero el conteo real es 8/10 hasta cerrar 5.6-cierre. | Paso 5.6d (detectado) | Baja |
+| 77 | El agente reporta el conteo del Bloque 5 como "10/10" antes de tiempo (5.7c y 5.7d). El conteo real es 7/10. | Paso 5.7d (detectado) | Baja |
+| 78 | El helper e2e de Memoria no exporta `encontrarParejaEnEstado` / `encontrarNoParejaEnEstado` (están inline). El reporte del agente dijo que estaban exportadas. | Paso 5.7d (detectado) | Baja |
+| 79 | Test `flujo-completo.spec.js:13` de Memoria tarda 10s. Considerar optimizar. | Paso 5.7d (detectado) | Baja |
+| 80 | ROADMAP con deuda estructural: conteos inconsistentes (`/10`, `/16`, `/20`, `/21`), historial con `5.7` duplicado, sección 2 desincronizada. Corregido en 5.7-cierre. | Paso 5.7d (detectado) | Media |

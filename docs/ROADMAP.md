@@ -2,7 +2,7 @@
 
 **Versión:** 1.0
 **Última actualización:** 2026-09-18
-**Estado global:** Bloques 0, 1, 2, 3, 4 cerrados · Bloque 5 en progreso (9/10) · ★ MVP alcanzado ★
+**Estado global:** Bloques 0, 1, 2, 3, 4 cerrados · Bloque 5 en progreso (8/10) · ★ MVP alcanzado ★
 **Rama:** feature/vertical-slice
 
 ---
@@ -38,7 +38,7 @@
 | 2 | Shell de partida (Conductor + Pública) | ✅ CERRADO | 13/13 | 5e32d5b | 2026-09-19 |
 | 3 | Móvil + moderación | ✅ CERRADO | 6/6 | 9ca4e7a | 2026-09-19 |
 | 4 | "¿Qué piensa el público?" | ✅ CERRADO | 13/13 | 2e19767 | 2026-09-21 |
-| 5 | Juegos restantes | 🔄 EN PROGRESO | 9/10 | — | — |
+| 5 | Juegos restantes | 🔄 EN PROGRESO | 8/10 | — | — |
 | 6 | Migración e2e a Supabase (opcional) | ⬜ PENDIENTE | 0/? | — | — |
 
 **★ MVP se alcanza al cerrar el Bloque 4 ★**
@@ -170,7 +170,7 @@ El Bloque 3 pasa de 7 a 6 pasos.
 **Bloque 4 cerrado. ★ MVP alcanzado ★. Bloque 5 en progreso.**
 ---
 
-### Bloque 5 — Juegos restantes 🔄 EN PROGRESO (9/10)
+### Bloque 5 — Juegos restantes 🔄 EN PROGRESO (8/10)
 
 **Objetivo:** Implementar los 10 pasos del Bloque 5 (refactor + 9 juegos).
 
@@ -188,7 +188,7 @@ UI pública, tests e2e) y se cuenta como **1 paso**.
 | 5.4 | Pictionary end-to-end | ✅ APROBADO | d076f9e, ef53390, c84613e, 0835a28, 3eb742d |
 | 5.5 | Historia Enredada end-to-end | ✅ APROBADO | 65e86e6, b7f6f25, c982efd, 068f151, dc9d34e |
 | 5.6 | Trivia end-to-end | ✅ APROBADO | 9269eb1, 2d9190d, 8bee291, 38eca68, 0acedd5, 28e8b6f, afba7a0 |
-| 5.7 | Memoricé — cerrar mecánica + implementar | 🔄 EN CURSO | — |
+| 5.7 | Memoricé end-to-end | ✅ APROBADO | cc06fee, f158afb, 62617c0, a00b8d1, 34a27fe, 79cc2b7, d1ff93d |
 | 5.8 | Anti-Trivia — cerrar mecánica + implementar | ⬜ | — |
 | 5.9 | Enlaces — cerrar mecánica + implementar | ⬜ | — |
 
@@ -222,19 +222,20 @@ de implementarse.
 | 3.0 | 2026-09-19 | Bloque 3 cerrado. 6/6 pasos. 540 unit + 40 e2e. |
 | 4.0 | 2026-09-21 | Bloque 4 cerrado. ★ MVP alcanzado ★. 13/13 pasos. |
 | 5.0 | 2026-09-21 | Bloque 5 iniciado. 5.0 y 5.1a aprobados. 609 unit + 59 e2e. |
-| 5.1 | 2026-09-21 | Paso 5.1b aprobado (editor de items de Trivia). |
-| 5.2 | 2026-09-21 | Reordenamiento del Bloque 5 por madurez de mecánica. CI/Pic/HE cerradas. Conteo 4/10. |
-| 5.3 | 2026-09-21 | Mecánica de Rosco cerrada. Desglose 5.2a-d. Conteo 5/16. |
-| 5.4 | 2026-09-21 | Rosco completo (5.2a-d). Conteo 9/16. |
-| 5.5 | 2026-09-21 | Canción Incompleta completa (5.3a-f). 9 e2e reales + 23 tests UI. Conteo 10/20. |
-| 5.6 | 2026-09-21 | Cierre documental de mecánica de Pictionary. Conteo 11/21. |
+| 5.1 | 2026-09-21 | Paso 5.1b aprobado (editor de items de Trivia). Conteo 1/10. |
+| 5.2 | 2026-09-21 | Reordenamiento del Bloque 5 por madurez de mecánica. CI/Pic/HE cerradas. Conteo 2/10. |
+| 5.3 | 2026-09-21 | Mecánica de Rosco cerrada. Desglose 5.2a-d. Conteo 2/10. |
+| 5.4 | 2026-09-21 | Rosco completo (5.2a-d). Conteo 3/10. |
+| 5.5 | 2026-09-21 | Canción Incompleta completa (5.3a-f). 9 e2e reales + 23 tests UI. Conteo 4/10. |
+| 5.6 | 2026-09-21 | Cierre documental de mecánica de Pictionary. Conteo 4/10. |
 | 5.7 | 2026-09-22 | Pictionary completo (5.4a-e). Bug #59 y #67 resueltos. Rosco 18/18. Conteo 5/10. |
-| 5.7 | 2026-09-21 | Pictionary GameDefinition + reducers + 74 tests unitarios. Conteo 12/21. |
-| 5.8 | 2026-09-22 | Cierre documental de mecánica de Historia Enredada. Conteo 6/10. |
-| 5.9 | 2026-09-22 | Historia Enredada completa (5.5a-d). Fix en cargarItemsDeJuego y shell-publica. 9/10 e2e. Conteo 7/10. |
-| 5.10 | 2026-09-22 | Cierre documental de mecánica de Trivia. Conteo 8/10. |
-| 5.11 | 2026-09-22 | Trivia completa (5.6a-d). Fix wrapper items en shell. 10 e2e. Conteo 9/10. |
-| 5.12 | 2026-09-22 | Cierre documental de mecánica de Memoricé. Conteo 10/10. |
+| 5.8 | 2026-09-22 | Cierre documental de mecánica de Historia Enredada. Conteo 5/10. |
+| 5.9 | 2026-09-22 | Historia Enredada completa (5.5a-d). Fix en cargarItemsDeJuego y shell-publica. 9/10 e2e. Conteo 6/10. |
+| 5.10 | 2026-09-22 | Cierre documental de mecánica de Trivia. Conteo 6/10. |
+| 5.11 | 2026-09-22 | Trivia completa (5.6a-d). Fix wrapper items en shell. 10 e2e. Conteo 7/10. |
+| 5.12 | 2026-09-22 | Cierre documental de mecánica de Memoricé. Conteo 7/10. |
+| 5.13 | 2026-09-22 | Memoricé completa (5.7a-d). 10 e2e. Conteo 8/10. |
+| 5.14 | 2026-09-22 | Cierre documental de 5.7. ROADMAP limpiado (conteos consistentes). |
 
 ---
 
