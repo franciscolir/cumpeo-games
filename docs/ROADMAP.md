@@ -2,7 +2,7 @@
 
 **Versión:** 1.0
 **Última actualización:** 2026-09-18
-**Estado global:** Bloques 0, 1, 2, 3, 4 cerrados · Bloque 5 en progreso (12/21) · ★ MVP alcanzado ★
+**Estado global:** Bloques 0, 1, 2, 3, 4 cerrados · Bloque 5 en progreso (5/10) · ★ MVP alcanzado ★
 **Rama:** feature/vertical-slice
 
 ---
@@ -38,7 +38,7 @@
 | 2 | Shell de partida (Conductor + Pública) | ✅ CERRADO | 13/13 | 5e32d5b | 2026-09-19 |
 | 3 | Móvil + moderación | ✅ CERRADO | 6/6 | 9ca4e7a | 2026-09-19 |
 | 4 | "¿Qué piensa el público?" | ✅ CERRADO | 13/13 | 2e19767 | 2026-09-21 |
-| 5 | Juegos restantes | 🔄 EN PROGRESO | 11/21 | — | — |
+| 5 | Juegos restantes | 🔄 EN PROGRESO | 5/10 | — | — |
 | 6 | Migración e2e a Supabase (opcional) | ⬜ PENDIENTE | 0/? | — | — |
 
 **★ MVP se alcanza al cerrar el Bloque 4 ★**
@@ -170,39 +170,36 @@ El Bloque 3 pasa de 7 a 6 pasos.
 **Bloque 4 cerrado. ★ MVP alcanzado ★. Bloque 5 en progreso.**
 ---
 
-### Bloque 5 — Juegos restantes 🔄 EN PROGRESO (11/21)
+### Bloque 5 — Juegos restantes 🔄 EN PROGRESO (5/10)
 
-**Objetivo:** Implementar los juegos restantes en orden de madurez de mecánica.
+**Objetivo:** Implementar los 10 pasos del Bloque 5 (refactor + 9 juegos).
+
+Cada juego se cierra con su propio ciclo (mecánica, dominio, UI conductor,
+UI pública, tests e2e) y se cuenta como **1 paso**.
 
 #### Pasos
 
-| # | Juego / Paso | Estado | Commit |
-|---|--------------|--------|--------|
+| # | Juego / Paso | Estado | Commits clave |
+|---|--------------|--------|---------------|
 | 5.0 | Refactor: `cargarItemsDeJuego` + `crearTimer` | ✅ APROBADO | 96ba9c5 |
-| 5.1a | Trivia conectada al shell del conductor | ✅ APROBADO | 58e2043 |
-| 5.1b | Editor de items de Trivia en formulario de sets | ✅ APROBADO | a2cafb5 |
-| 5.1c | Cierre documental: mecánicas CI/Pic/HE + reordenamiento | ✅ APROBADO | efc9b9a |
-| 5.1d | Cierre documental: mecánica de Rosco | ✅ APROBADO | 08ca2d2 |
-| 5.2a | Rosco — GameDefinition + validación | ✅ APROBADO | 79c4493 |
-| 5.2b | Rosco — UI Conductor | ✅ APROBADO | 7ec5603 |
-| 5.2c | Rosco — UI Pública | ✅ APROBADO | a90e23b |
-| 5.2d | Rosco — Tests e2e | ✅ APROBADO | 94a89d1 |
-| 5.3a | Canción Incompleta — GameDefinition + reducers | ✅ APROBADO | 1934d99 |
-| 5.3b | Canción Incompleta — UI Conductor | ✅ APROBADO | ee9a42c |
-| 5.3c | Canción Incompleta — UI Pública | ✅ APROBADO | 8323849 |
-| 5.3d | Canción Incompleta — e2e (rechazado, reemplazado) | ⚠️ REEMPLAZADO | 496cc5a |
-| 5.3e | Canción Incompleta — FIN_DE_RONDA + timer toggle | ✅ APROBADO | 8f608ee |
-| 5.3f | Canción Incompleta — fix e2e + timer público + tests | ✅ APROBADO | a9d76d5 |
-| 5.4-pre | Cierre documental de mecánica de Pictionary | ✅ APROBADO | — |
-| 5.4a | Pictionary — GameDefinition + reducers + tests | ✅ APROBADO | ef53390 |
-| 5.4 | Pictionary end-to-end | ⬜ | — |
+| 5.1 | Trivia (conductor + editor + mecánica) | ✅ APROBADO | 58e2043, a2cafb5, efc9b9a |
+| 5.2 | Rosco end-to-end | ✅ APROBADO | 79c4493, 7ec5603, a90e23b, 94a89d1, 08ca2d2 |
+| 5.3 | Canción Incompleta end-to-end | ✅ APROBADO | 1934d99, ee9a42c, 8323849, a9d76d5 |
+| 5.4 | Pictionary end-to-end | ✅ APROBADO | d076f9e, ef53390, c84613e, 0835a28, 3eb742d |
 | 5.5 | Historia Enredada end-to-end | ⬜ | — |
 | 5.6 | Trivia — cerrar mecánica + UI pública/móvil/tests | ⬜ | — |
 | 5.7 | Memoricé — cerrar mecánica + implementar | ⬜ | — |
 | 5.8 | Anti-Trivia — cerrar mecánica + implementar | ⬜ | — |
 | 5.9 | Enlaces — cerrar mecánica + implementar | ⬜ | — |
 
-**Nota:** 5.3d entregó tests no-e2e y fue rechazado; 5.3e completó el dominio pero dejó el timer público sin implementar; 5.3f cerró todo (9 e2e reales pasando). El conteo efectivo es 11/21 aprobados.
+**Nota:** Los sub-pasos (5.x-pre, 5.xa, 5.xb, etc.) se documentan en
+`docs/roadmap/pasos/bloque-5.x-cierre.md` y no cuentan como pasos separados.
+El detalle granular queda en los acta de cierre de cada juego.
+
+**Reordenamiento (5.1c):** se prioriza por madurez de mecánica. Rosco,
+Canción Incompleta, Pictionary e Historia Enredada tienen mecánica cerrada.
+Trivia, Memoricé, Anti-Trivia y Enlaces requieren decisiones de diseño antes
+de implementarse.
 
 
 ### Bloque 6 — Migración e2e a Supabase (opcional) ⬜ PENDIENTE
@@ -231,6 +228,7 @@ El Bloque 3 pasa de 7 a 6 pasos.
 | 5.4 | 2026-09-21 | Rosco completo (5.2a-d). Conteo 9/16. |
 | 5.5 | 2026-09-21 | Canción Incompleta completa (5.3a-f). 9 e2e reales + 23 tests UI. Conteo 10/20. |
 | 5.6 | 2026-09-21 | Cierre documental de mecánica de Pictionary. Conteo 11/21. |
+| 5.7 | 2026-09-22 | Pictionary completo (5.4a-e). Bug #59 y #67 resueltos. Rosco 18/18. Conteo 5/10. |
 | 5.7 | 2026-09-21 | Pictionary GameDefinition + reducers + 74 tests unitarios. Conteo 12/21. |
 ---
 

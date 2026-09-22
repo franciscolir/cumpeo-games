@@ -184,6 +184,15 @@ _(ninguna)_
 | 2026-09-21 | 5 | 5.3d | ❌ RECHAZADO | Canción Incompleta: tests no eran e2e (Vitest + fake-indexeddb). Reemplazados en 5.3f. | 496cc5a |
 | 2026-09-21 | 5 | 5.3e | ✅ APROBADO | Canción Incompleta: FIN_DE_RONDA + timer toggle. Timer público quedó pendiente. | 8f608ee |
 | 2026-09-21 | 5 | 5.3f | ✅ APROBADO | Canción Incompleta: fix helper e2e + timer público + 23 tests UI + 9 e2e reales. | a9d76d5 |
+| 2026-09-22 | 5 | 5.4-pre | ✅ APROBADO | Pictionary: cierre documental de mecánica. | d076f9e |
+| 2026-09-22 | 5 | 5.4a | ✅ APROBADO | Pictionary: GameDefinition + 74 tests. | ef53390 |
+| 2026-09-22 | 5 | 5.4b | ✅ APROBADO | Pictionary: UI Conductor + 34 tests. | c84613e |
+| 2026-09-22 | 5 | 5.4c | ✅ APROBADO | Pictionary: UI Pública + bonus inline + 32 tests. | 0835a28 |
+| 2026-09-22 | 5 | 5.4d | ❌ RECHAZADO | Pictionary: e2e con 1 falla + mecánica incorrecta. | f8b8530 |
+| 2026-09-22 | 5 | 5.4d-fix | ✅ APROBADO | Pictionary: corrección de avanzarModo + helper e2e. | 08e4acf |
+| 2026-09-22 | 5 | 5.4d-fix-2 | ✅ APROBADO | Pictionary: assertions + timeout. | 83f9f2d |
+| 2026-09-22 | 5 | 5.4-rosco-fix-v2 | ✅ APROBADO | Retry lazy en Rosco (bug #59). Rosco 18/18. | 699204b |
+| 2026-09-22 | 5 | 5.4-e | ✅ APROBADO | Fix juego_nombre en obtenerContextoEspera (bug #67). Pictionary 11/11. | 3eb742d |
 | 2026-09-21 | 5 | 5.4-pre | ✅ APROBADO | Cierre documental de mecánica de Pictionary. Decisiones: estructura del item del set, orden fijo de modos, bonus manual. | — |
 | 2026-09-21 | 5 | 5.4a | ✅ APROBADO | Pictionary GameDefinition + reducers + 74 tests unitarios. Archivos: PictionaryGameDefinition.js, tests, registro.js. | ef53390 |
 
@@ -204,7 +213,7 @@ _(ninguna)_
 | 56 | El script `update-5.1c.js` usó anclas de la sección equivocada de GAMES.md (Memoricé en lugar de Canción Incompleta). Cerrado en commit posterior. Conviene evitar anclas por texto literal en docs con secciones similares; preferir anclas por sección. | Paso 5.1c (detectado) | Baja |
 | 57 | La validación de Rosco requiere N items por letra para N rondas. Si el set no cumple, el conductor no puede iniciar el juego. UX a definir. | Paso 5.1d (detectado) / 5.2a (cerrada) | Cerrada |
 | 58 | El rosco tiene 27 letras (A-Z + Ñ). La UI debe manejar el layout circular o rectangular con esa cantidad. Verificar legibilidad en pantalla pública. | Paso 5.1d (detectado) | Baja |
-| 59 | El shell de partida (src/ui/partidas/shell-partida.js) usa callbacks con closures que quedan stale al iterar acciones rápido. Los e2e de Rosco lo evitan usando page.evaluate en lugar de clicks. Revisar el patrón de callbacks del shell para que reflejen estado actual sin workarounds en tests. | Paso 5.2d (detectado) | Media |
+| 59 | Stale closures en `onAccion` de shell-partida.js. El `state_version` capturado en closure queda obsoleto tras la primera acción. **Cerrado para Rosco** en 5.4-rosco-fix-v2 (retry lazy con ConflictoVersionError). **Latente** en Trivia, QPEP y otros juegos sin tests de 2 acciones rápidas consecutivas. Replicar el patrón de retry. | Paso 5.2d / 5.4-rosco-fix-v2 | Media |
 | 60 | El registro de juegos requiere tocar tests/unit/app/bootstrap.test.js y tests/unit/app/seed.test.js cada vez que se agrega un juego nuevo. Acoplamiento entre registro y tests de bootstrap/seed. Revisar para que la lista de juegos registrados se derive dinámicamente. | Paso 5.2d (detectado) | Cerrada (5.3f) |
-| 61 | El agente reporta e2e como "creados" sin ejecutarlos (5.3d, 5.3e). Los prompts de e2e deben exigir output completo de Playwright antes de dar por cerrado un paso. | Paso 5.3f (detectado) | Alta |
+| 61 | **CRÍTICA.** El agente reporta e2e como "creados" o "pasando" sin correrlos. Ocurrió en 5.3d, 5.3e, 5.3f, 5.4d y 5.4-rosco-fix (5 veces). Impacto directo en la confiabilidad del proceso. Los prompts de e2e DEBEN exigir output crudo de Playwright. Considerar cambiar de agente si persiste. | Paso 5.3f / 5.4-rosco-fix | Crítica |
 | 62 | Cada juego nuevo tiende a reinventar el helper de e2e. Extraer un helper común que parametrice crearPartida con el código del juego. | Paso 5.3f (detectado) | Media |
