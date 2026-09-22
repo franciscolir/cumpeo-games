@@ -13,6 +13,7 @@ import { cargarItemsDeJuego } from '../games/_shared/index.js';
 import { crearTimer } from '../games/_shared/index.js';
 import { ALFABETO, ESTADO_LETRA, RoscoGameDefinition } from '../../games/rosco/RoscoGameDefinition.js';
 import { PictionaryGameDefinition } from '../../games/pictionary/PictionaryGameDefinition.js';
+import { AntiTriviaGameDefinition } from '../../games/anti-trivia/AntiTriviaGameDefinition.js';
 
 let cleanupSuscripciones = null;
 let intervalId = null;
@@ -32,6 +33,8 @@ let _picTimerKey = null;
 
 let _triviaTimer = null;
 let _triviaTimerKey = null;
+
+let _antiTriviaTimer = null;
 
 /**
  * Renderiza el shell público completo.
@@ -132,6 +135,7 @@ async function _renderContenido(container, app, codigo) {
   const esPictionary = juegoActivo?.juego_codigo === 'PICTIONARY';
   const esTrivia = juegoActivo?.juego_codigo === 'TRIVIA';
   const esMemoria = juegoActivo?.juego_codigo === 'MEMORIA';
+  const esAntiTrivia = juegoActivo?.juego_codigo === 'ANTI_TRIVIA';
   const itemsQPEP = esQPEP ? await cargarItemsDeJuego(app, juegoActivo) : null;
   const itemsRosco = esRosco ? await cargarItemsDeJuego(app, juegoActivo) : null;
   const itemsHistoria = esHistoriaEnredada ? await cargarItemsDeJuego(app, juegoActivo) : null;
@@ -153,6 +157,8 @@ async function _renderContenido(container, app, codigo) {
     escenarioHTML = _renderEscenarioTrivia(juegoActivo, fase, contexto);
   } else if (esMemoria) {
     escenarioHTML = _renderEscenarioMemoria(juegoActivo, fase, contexto);
+  } else if (esAntiTrivia) {
+    escenarioHTML = _renderEscenarioAntiTrivia(juegoActivo, fase, contexto);
   } else {
     escenarioHTML = _renderEscenario(juegoActivo);
   }
@@ -191,6 +197,9 @@ async function _renderContenido(container, app, codigo) {
   }
   if (esTrivia && juegoActivo?.estado_juego) {
     _iniciarTimerTriviaPublico(juegoActivo.estado_juego, container);
+  }
+  if (esAntiTrivia && juegoActivo?.estado_juego) {
+    _iniciarTimerAntiTriviaPublico(juegoActivo, container);
   }
 }
 
@@ -1697,4 +1706,215 @@ function _iniciarTimerTriviaPublico(estadoJuego, container) {
 function _limpiarTimerTriviaPublico() {
   _triviaTimer?.cancelar();
   _triviaTimer = null;
+}
+
+/* =============================================================
+   Escenario Anti-Trivia (público)
+
+   Ve: pregunta, lista de respuestas correctas a evitar, equipo
+   activo, timer, marcador y si la respuesta fue acierto o error.
+   NO ve: la respuesta específica que dio el jugador.
+   ============================================================= */
+
+function _ultimaRespuestaAntiTrivia(estadoJuego) {
+  const idx = estadoJuego.pregunta_actual_index || 0;
+  const equipo = estadoJuego.equipo_actual || 1;
+  const respuestas = estadoJuego.respuestas || [];
+  for (let i = respuestas.length - 1; i >= 0; i--) {
+    const r = respuestas[i];
+    if (r.pregunta_index === idx && r.equipo === equipo) return r;
+  }
+  return null;
+}
+
+function _renderEscenarioAntiTrivia(juegoActivo, fase, contexto) {
+  const estadoJuego = juegoActivo?.estado_juego || {};
+  const equipo1 = contexto?.equipos?.[0] || { nombre: 'Eq1' };
+  const equipo2 = contexto?.equipos?.[1] || { nombre: 'Eq2' };
+  const equipoActual = estadoJuego.equipo_actual || 1;
+  const ronda = estadoJuego.ronda_actual || 1;
+  const totalRondas = estadoJuego.total_rondas || 1;
+  const pts1 = estadoJuego.puntos_equipo_1 || 0;
+  const pts2 = estadoJuego.puntos_equipo_2 || 0;
+  const tiempoAgotado = estadoJuego.tiempo_agotado === true;
+
+  const equipoActivoNombre = equipoActual === 1 ? equipo1.nombre : equipo2.nombre;
+  const equipoActivoColor = equipoActual === 1 ? 'border-[#00D2FF] bg-[#00D2FF]/15' : 'border-[#FF3344] bg-[#FF3344]/15';
+
+  let inner = '';
+
+  if (!fase || fase === 'INICIO_RONDA') {
+    inner = `
+      <p class="font-display-hero text-5xl text-primary uppercase mb-2">¡A JUGAR!</p>
+      <p class="font-headline-md uppercase text-on-surface">Anti-Trivia</p>
+      ${fase === 'INICIO_RONDA' ? '<p class="font-body-md text-on-surface-variant mt-2">Esperando inicio de ronda…</p>' : ''}
+    `;
+  } else if (fase === 'SELECCIONANDO_SET') {
+    inner = `
+      <p class="font-headline-md uppercase text-on-surface mb-2">Seleccionando set</p>
+      <p class="font-headline-md uppercase ${equipoActual === 1 ? 'text-[#00D2FF]' : 'text-[#FF3344]'} mb-2">${equipoActivoNombre}</p>
+      <p class="font-body-md text-on-surface-variant mt-2">El conductor elige un set para el equipo…</p>
+    `;
+  } else if (fase === 'MOSTRANDO_PREGUNTA' || fase === 'RESPONDIENDO' || fase === 'ESPERA_VALIDACION' || fase === 'MOSTRANDO_RESULTADO') {
+    const preguntas = equipoActual === 1 ? (estadoJuego.preguntas_equipo_1 || []) : (estadoJuego.preguntas_equipo_2 || []);
+    const idx = estadoJuego.pregunta_actual_index || 0;
+    const pregunta = preguntas[idx];
+    const respuestasCorrectas = pregunta?.respuestas_correctas || [];
+
+    const listaHTML = respuestasCorrectas.length > 0
+      ? `
+        <p class="font-label-md uppercase text-on-surface-variant mt-4 mb-2">Respuestas correctas a evitar</p>
+        <ul class="flex flex-col gap-1">
+          ${respuestasCorrectas.map((r) => `<li class="font-body-md text-on-surface bg-surface-container-high border border-on-surface-variant/40 rounded-md px-3 py-1.5">${r}</li>`).join('')}
+        </ul>
+      `
+      : '';
+
+    let indicadorHTML = '';
+    if (fase === 'RESPONDIENDO' && tiempoAgotado) {
+      indicadorHTML = `
+        <div class="bg-error/20 border-2 border-error rounded-xl p-3 text-center mt-4" data-anti-trivia-tiempo-agotado>
+          <p class="font-headline-sm uppercase text-error">Tiempo agotado</p>
+        </div>
+      `;
+    } else if (fase === 'ESPERA_VALIDACION') {
+      indicadorHTML = `
+        <div class="bg-comicYellow border-2 border-on-surface rounded-xl p-3 text-center mt-4">
+          <p class="font-headline-sm uppercase text-on-surface">El conductor está validando…</p>
+        </div>
+      `;
+    } else if (fase === 'MOSTRANDO_RESULTADO') {
+      const ultima = _ultimaRespuestaAntiTrivia(estadoJuego);
+      if (ultima?.resultado === 'acierto') {
+        indicadorHTML = `
+          <div class="bg-tertiary/30 border-2 border-tertiary rounded-xl p-3 text-center mt-4" data-anti-trivia-resultado="acierto">
+            <p class="font-headline-sm uppercase text-on-surface">¡Acierto!</p>
+          </div>
+        `;
+      } else if (ultima?.resultado === 'error') {
+        indicadorHTML = `
+          <div class="bg-error/30 border-2 border-error rounded-xl p-3 text-center mt-4" data-anti-trivia-resultado="error">
+            <p class="font-headline-sm uppercase text-on-surface">Error</p>
+          </div>
+        `;
+      } else {
+        indicadorHTML = `
+          <div class="bg-surface-container-high border-2 border-on-surface-variant rounded-xl p-3 text-center mt-4" data-anti-trivia-resultado="sin_respuesta">
+            <p class="font-headline-sm uppercase text-on-surface-variant">Sin respuesta</p>
+          </div>
+        `;
+      }
+    }
+
+    const timerHTML = fase === 'RESPONDIENDO'
+      ? `
+        <div class="bg-comicYellow border-2.5 border-on-surface rounded-xl p-4 shadow-comic-sm text-center mt-4">
+          <p class="font-label-md uppercase">Tiempo restante</p>
+          <p id="anti-trivia-pub-timer" class="font-display-hero text-4xl text-primary">${estadoJuego.tiempo_restante_seg ?? 30}s</p>
+        </div>
+      `
+      : '';
+
+    inner = `
+      <div class="w-full max-w-2xl">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+          <span class="font-label-md uppercase text-on-surface-variant">Pregunta ${idx + 1} / ${preguntas.length}</span>
+          <span class="font-label-md uppercase text-on-surface-variant">Equipo: <span class="${equipoActual === 1 ? 'text-[#00D2FF]' : 'text-[#FF3344]'}">${equipoActivoNombre}</span></span>
+        </div>
+        <p class="font-display-hero text-3xl text-on-surface uppercase leading-tight mb-2">
+          ${pregunta?.pregunta || 'Sin pregunta'}
+        </p>
+        ${listaHTML}
+        ${indicadorHTML}
+        ${timerHTML}
+      </div>
+    `;
+  } else if (fase === 'CAMBIO_TURNO') {
+    inner = `
+      <p class="font-display-hero text-4xl text-primary uppercase mb-2">Cambio de turno</p>
+      <p class="font-headline-md uppercase ${equipoActual === 1 ? 'text-[#00D2FF]' : 'text-[#FF3344]'} mb-2">${equipoActivoNombre}</p>
+      <p class="font-body-md text-on-surface-variant mt-2">Prepará el siguiente set…</p>
+    `;
+  } else if (fase === 'FIN_DE_RONDA') {
+    inner = `
+      <p class="font-display-hero text-5xl text-primary uppercase mb-4">Fin de ronda</p>
+      <p class="font-headline-md uppercase text-on-surface mb-2">Ronda ${ronda} / ${totalRondas}</p>
+    `;
+  } else if (fase === 'FIN_DE_JUEGO') {
+    const resultado = AntiTriviaGameDefinition?.calcularResultado(estadoJuego) || {};
+    const ganador = resultado.ganador;
+    let ganadorNombre = 'Empate técnico';
+    let ganadorColor = 'text-on-surface-variant';
+    if (ganador === 1) { ganadorNombre = equipo1.nombre; ganadorColor = 'text-[#00D2FF]'; }
+    else if (ganador === 2) { ganadorNombre = equipo2.nombre; ganadorColor = 'text-[#FF3344]'; }
+
+    inner = `
+      <p class="font-display-hero text-5xl text-primary uppercase mb-4">¡Juego terminado!</p>
+      <p class="font-headline-md uppercase ${ganadorColor} mb-4">${ganadorNombre}</p>
+    `;
+  } else {
+    inner = `
+      <p class="font-display-hero text-5xl text-primary uppercase mb-2">¡A JUGAR!</p>
+      <p class="font-headline-md uppercase text-on-surface">Anti-Trivia</p>
+    `;
+  }
+
+  return `
+    <section class="flex items-center justify-center p-6 border-b-2.5 border-on-surface bg-surface">
+      <div class="w-full max-w-3xl bg-surface-container-lowest border-3 border-on-surface rounded-2xl p-8 shadow-comic-lg text-center flex flex-col items-center justify-center min-h-[30vh]">
+        ${inner}
+        <div class="grid grid-cols-2 gap-4 w-full max-w-lg mt-6">
+          <div class="border-2.5 ${equipoActual === 1 ? equipoActivoColor : 'border-on-surface bg-surface-container-lowest'} rounded-xl p-4 shadow-comic-sm text-center">
+            <p class="font-body-md uppercase">${equipo1.nombre}</p>
+            <p class="font-display-hero text-3xl text-primary">${pts1}</p>
+          </div>
+          <div class="border-2.5 ${equipoActual === 2 ? equipoActivoColor : 'border-on-surface bg-surface-container-lowest'} rounded-xl p-4 shadow-comic-sm text-center">
+            <p class="font-body-md uppercase">${equipo2.nombre}</p>
+            <p class="font-display-hero text-3xl text-primary">${pts2}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function _iniciarTimerAntiTriviaPublico(juegoActivo, container) {
+  _limpiarTimerAntiTriviaPublico();
+
+  const estadoJuego = juegoActivo?.estado_juego || {};
+  const fase = estadoJuego.fase || '';
+  const config = juegoActivo?.configuracion_congelada || {};
+  const tiempoTotal = config?.tiempo_respuesta_seg || 30;
+
+  const el = container.querySelector('#anti-trivia-pub-timer');
+  if (!el) return;
+
+  if (fase !== 'RESPONDIENDO' || !estadoJuego.timer_activo || estadoJuego.tiempo_agotado) {
+    const restante = estadoJuego.tiempo_agotado
+      ? 0
+      : (estadoJuego.tiempo_restante_seg ?? tiempoTotal);
+    el.textContent = `${restante}s`;
+    return;
+  }
+
+  const juegoId = estadoJuego.juego_id || juegoActivo?.id || '';
+  const equipo = estadoJuego.equipo_actual || 1;
+  const preguntaIdx = estadoJuego.pregunta_actual_index || 0;
+  const key = `${juegoId}:eq${equipo}:p${preguntaIdx}`;
+
+  _antiTriviaTimer = crearTimer({
+    duracionSeg: tiempoTotal,
+    onTick: (restante) => {
+      if (el) el.textContent = `${restante}s`;
+    },
+    onCierre: () => {
+      if (el) el.textContent = '0s';
+    }
+  });
+  _antiTriviaTimer.iniciarSiCambio(key);
+}
+
+function _limpiarTimerAntiTriviaPublico() {
+  _antiTriviaTimer?.cancelar();
+  _antiTriviaTimer = null;
 }
