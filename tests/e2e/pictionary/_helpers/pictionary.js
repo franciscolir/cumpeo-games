@@ -192,25 +192,23 @@ export async function jugarTurnoUI(page) {
 }
 
 /**
- * Avanza N turnos programáticamente (vía service calls).
+ * Avanza N turnos programáticamente (vía service calls, sin dynamic import).
  * Cada iteración completa un turno full (INICIO→ADIVINANDO→next).
  */
 export async function avanzarTurnosProgramatico(page, partidaId, cantidad) {
   await page.evaluate(async ({ pid, cantidad }) => {
-    const { PictionaryGameDefinition } = await import('/src/games/pictionary/PictionaryGameDefinition.js');
-
     for (let i = 0; i < cantidad; i++) {
       let ctx = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
       let je = ctx.juegos[0];
       let estado = je.estado_juego;
-      let config = je.configuracion_congelada || PictionaryGameDefinition.defaultConfig;
+      let config = je.configuracion_congelada;
 
       if (estado.fase === 'FIN_DE_RONDA' || estado.fase === 'FIN_DE_JUEGO') break;
 
       if (estado.fase === 'INICIO_RONDA') {
-        let nuevoEstado = PictionaryGameDefinition.seleccionarModo(estado);
-        nuevoEstado = PictionaryGameDefinition.mostrarPalabra(nuevoEstado, { items: [] });
-        nuevoEstado = PictionaryGameDefinition.iniciarTiempo(nuevoEstado);
+        let nuevoEstado = { ...estado, fase: 'MOSTRANDO_PALABRA' };
+        nuevoEstado = { ...nuevoEstado, palabra_actual: { modo: nuevoEstado.modo_actual, concepto: 'X' }, prohibidas_actuales: [] };
+        nuevoEstado = { ...nuevoEstado, fase: 'ADIVINANDO', timer_corriendo: true, turno_activo: true };
 
         await window.cumpeo.services.partida.actualizarEstadoJuego(
           pid, je.id, nuevoEstado, je.state_version,
@@ -221,17 +219,48 @@ export async function avanzarTurnosProgramatico(page, partidaId, cantidad) {
       ctx = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
       je = ctx.juegos[0];
       estado = je.estado_juego;
-      config = je.configuracion_congelada || PictionaryGameDefinition.defaultConfig;
+      config = je.configuracion_congelada;
 
       if (estado.fase === 'ADIVINANDO') {
-        let nuevoEstado = PictionaryGameDefinition.detenerTiempo(estado, estado.tiempo_restante_seg || 0);
-        nuevoEstado = PictionaryGameDefinition.aplicarAcierto(nuevoEstado, config);
+        let nuevoEstado = { ...estado, fase: 'ESPERA_VALIDACION', timer_corriendo: false, tiempo_restante_seg: 0, turno_activo: false };
+        const puntos = config?.puntos_por_acierto || 10;
+        const key = `puntos_equipo_${estado.equipo_actual}`;
+        nuevoEstado = { ...nuevoEstado, [key]: (nuevoEstado[key] || 0) + puntos };
+
+        let avanzado = avanzarTurnoSimple(nuevoEstado, config);
 
         await window.cumpeo.services.partida.actualizarEstadoJuego(
-          pid, je.id, nuevoEstado, je.state_version,
+          pid, je.id, avanzado, je.state_version,
           window.cumpeo.session.sessionId, crypto.randomUUID()
         );
       }
+    }
+
+    function avanzarTurnoSimple(estado, config) {
+      const palabrasPorModo = config?.palabras_por_modo || 1;
+      const palabrasDelTurno = (estado.palabras_del_turno || 0) + 1;
+
+      if (palabrasDelTurno < palabrasPorModo) {
+        return { ...estado, palabra_actual_index: (estado.palabra_actual_index || 0) + 1, palabras_del_turno: palabrasDelTurno, fase: 'INICIO_RONDA', timer_corriendo: false, turno_activo: false, palabra_actual: null, prohibidas_actuales: [] };
+      }
+
+      const modoActual = estado.modo_actual || 1;
+      const equipo = estado.equipo_actual;
+      const base = { ...estado, palabra_actual_index: 0, palabras_del_turno: 0, fase: 'INICIO_RONDA', timer_corriendo: false, turno_activo: false, palabra_actual: null, prohibidas_actuales: [] };
+
+      if (modoActual < 4) return { ...base, modo_actual: modoActual + 1 };
+
+      if (equipo === 1) return { ...base, equipo_actual: 2, modo_actual: 1 };
+
+      const ronda = estado.ronda_actual || 1;
+      const totalRondas = estado.total_rondas || 1;
+      const keyTurnos = `turnos_completados_equipo_${equipo}`;
+      const turnosCompletados = (estado[keyTurnos] || 0) + 1;
+      const nuevoEstado = { ...base, [keyTurnos]: turnosCompletados };
+
+      if (ronda >= totalRondas) return { ...nuevoEstado, fase: 'FIN_DE_JUEGO', timer_corriendo: false, turno_activo: false };
+
+      return { ...nuevoEstado, ronda_actual: ronda + 1, modo_actual: 1, equipo_actual: 1, fase: 'FIN_DE_RONDA', timer_corriendo: false, turno_activo: false };
     }
   }, { pid: partidaId, cantidad }, { timeout: 60000 });
 }

@@ -453,31 +453,22 @@ export const PictionaryGameDefinition = {
     const modoActual = estado.modo_actual || 1;
     const equipo = estado.equipo_actual;
 
-    if (equipo === 1) {
-      return {
-        ...estado,
-        equipo_actual: 2,
-        fase: 'INICIO_RONDA',
-        timer_corriendo: false,
-        tiempo_restante_seg: estado.tiempo_restante_seg,
-        turno_activo: false,
-        palabra_actual: null,
-        prohibidas_actuales: []
-      };
-    }
+    const base = {
+      ...estado,
+      fase: 'INICIO_RONDA',
+      timer_corriendo: false,
+      tiempo_restante_seg: estado.tiempo_restante_seg,
+      turno_activo: false,
+      palabra_actual: null,
+      prohibidas_actuales: []
+    };
 
     if (modoActual < 4) {
-      return {
-        ...estado,
-        modo_actual: modoActual + 1,
-        equipo_actual: 1,
-        fase: 'INICIO_RONDA',
-        timer_corriendo: false,
-        tiempo_restante_seg: estado.tiempo_restante_seg,
-        turno_activo: false,
-        palabra_actual: null,
-        prohibidas_actuales: []
-      };
+      return { ...base, modo_actual: modoActual + 1 };
+    }
+
+    if (equipo === 1) {
+      return { ...base, equipo_actual: 2, modo_actual: 1 };
     }
 
     return this.cambiarTurno(estado);

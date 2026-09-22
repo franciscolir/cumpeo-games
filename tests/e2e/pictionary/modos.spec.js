@@ -20,25 +20,27 @@ test.beforeEach(loginTestUser);
 
 async function saltarAModo(page, partidaId, modo) {
   await page.evaluate(async ({ pid, modo }) => {
-    const { PictionaryGameDefinition } = await import('/src/games/pictionary/PictionaryGameDefinition.js');
-
-    const aciertosNecesarios = (modo - 1) * 2;
+    const aciertosNecesarios = modo - 1;
 
     for (let i = 0; i < aciertosNecesarios; i++) {
       const ctx = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
       const je = ctx.juegos[0];
       const estado = { ...je.estado_juego };
-      const config = je.configuracion_congelada || PictionaryGameDefinition.defaultConfig;
+      const config = je.configuracion_congelada;
 
-      let nuevoEstado = PictionaryGameDefinition.seleccionarModo(estado);
+      let nuevoEstado = { ...estado, fase: 'MOSTRANDO_PALABRA' };
       nuevoEstado = {
         ...nuevoEstado,
         palabra_actual: { modo: nuevoEstado.modo_actual, concepto: 'X' },
         prohibidas_actuales: []
       };
-      nuevoEstado = PictionaryGameDefinition.iniciarTiempo(nuevoEstado);
-      nuevoEstado = PictionaryGameDefinition.detenerTiempo(nuevoEstado, nuevoEstado.tiempo_restante_seg || 0);
-      nuevoEstado = PictionaryGameDefinition.aplicarAcierto(nuevoEstado, config);
+      nuevoEstado = { ...nuevoEstado, fase: 'ADIVINANDO', timer_corriendo: true, turno_activo: true };
+      nuevoEstado = { ...nuevoEstado, fase: 'ESPERA_VALIDACION', timer_corriendo: false, tiempo_restante_seg: 0, turno_activo: false };
+      const puntos = config?.puntos_por_acierto || 10;
+      const key = `puntos_equipo_${estado.equipo_actual}`;
+      nuevoEstado = { ...nuevoEstado, [key]: (nuevoEstado[key] || 0) + puntos };
+
+      nuevoEstado = avanzarTurnoSimple(nuevoEstado, config);
 
       await window.cumpeo.services.partida.actualizarEstadoJuego(
         pid, je.id, nuevoEstado, je.state_version,
@@ -50,7 +52,7 @@ async function saltarAModo(page, partidaId, modo) {
     const je = ctx.juegos[0];
     const estado = { ...je.estado_juego };
 
-    const nuevoEstado = PictionaryGameDefinition.seleccionarModo(estado);
+    let nuevoEstado = { ...estado, fase: 'MOSTRANDO_PALABRA' };
     const fakeItem = { modo: modo, concepto: `TEST_M${modo}`, prohibidas: modo === 1 ? ['PROH_A', 'PROH_B'] : [] };
     nuevoEstado.palabra_actual = fakeItem;
     nuevoEstado.prohibidas_actuales = fakeItem.prohibidas;
@@ -59,6 +61,31 @@ async function saltarAModo(page, partidaId, modo) {
       pid, je.id, nuevoEstado, je.state_version,
       window.cumpeo.session.sessionId, crypto.randomUUID()
     );
+
+    function avanzarTurnoSimple(estado, config) {
+      const palabrasPorModo = config?.palabras_por_modo || 1;
+      const palabrasDelTurno = (estado.palabras_del_turno || 0) + 1;
+
+      if (palabrasDelTurno < palabrasPorModo) {
+        return { ...estado, palabra_actual_index: (estado.palabra_actual_index || 0) + 1, palabras_del_turno: palabrasDelTurno, fase: 'INICIO_RONDA', timer_corriendo: false, turno_activo: false, palabra_actual: null, prohibidas_actuales: [] };
+      }
+
+      const modoActual = estado.modo_actual || 1;
+      const equipo = estado.equipo_actual;
+      const base = { ...estado, palabra_actual_index: 0, palabras_del_turno: 0, fase: 'INICIO_RONDA', timer_corriendo: false, turno_activo: false, palabra_actual: null, prohibidas_actuales: [] };
+
+      if (modoActual < 4) return { ...base, modo_actual: modoActual + 1 };
+      if (equipo === 1) return { ...base, equipo_actual: 2, modo_actual: 1 };
+
+      const ronda = estado.ronda_actual || 1;
+      const totalRondas = estado.total_rondas || 1;
+      const keyTurnos = `turnos_completados_equipo_${equipo}`;
+      const turnosCompletados = (estado[keyTurnos] || 0) + 1;
+      const nuevoEstado = { ...base, [keyTurnos]: turnosCompletados };
+
+      if (ronda >= totalRondas) return { ...nuevoEstado, fase: 'FIN_DE_JUEGO', timer_corriendo: false, turno_activo: false };
+      return { ...nuevoEstado, ronda_actual: ronda + 1, modo_actual: 1, equipo_actual: 1, fase: 'FIN_DE_RONDA', timer_corriendo: false, turno_activo: false };
+    }
   }, { pid: partidaId, modo });
 }
 
@@ -84,7 +111,7 @@ test('modo 1: conductor ve prohibidas', async ({ page }) => {
   await expect(gameArea.getByText('PROH_B')).toBeVisible();
 });
 
-test('modo 1: público carga la partida', async ({ page }) => {
+test('modo 1: público carga la partida y muestra concepto y prohibidas', async ({ page }) => {
   const { partidaId, codigo } = await crearPartidaPictionary(page);
   await irAConductor(page, partidaId);
   await iniciarPartidaPictionary(page, partidaId);
@@ -104,9 +131,13 @@ test('modo 1: público carga la partida', async ({ page }) => {
   await page.waitForLoadState('networkidle');
   await page.waitForTimeout(2000);
 
-  await expect(page.locator('body')).toBeVisible();
-  const bodyText = await page.locator('body').textContent();
+  const body = page.locator('body');
+  await expect(body).toBeVisible();
+  const bodyText = await body.textContent();
   expect(bodyText).toContain('Pictionary');
+  expect(bodyText).toContain('TEST_M1');
+  expect(bodyText).toContain('PROH_A');
+  expect(bodyText).toContain('PROH_B');
 });
 
 test('modo 2: conductor ve sin prohibidas', async ({ page }) => {

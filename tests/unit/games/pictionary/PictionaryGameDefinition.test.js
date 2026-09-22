@@ -373,7 +373,7 @@ describe('Flujo de turno completo (equipo 1, modo 1)', () => {
    ============================================================= */
 
 describe('Cambio de equipo', () => {
-  it('equipo 1 completa modo → pasa a equipo 2', () => {
+  it('equipo 1 completa modo 1 → sigue en equipo 1, avanza a modo 2', () => {
     const config = configuracionValida({ rondas: 2, palabras_por_modo: 1 });
     let estado = PictionaryGameDefinition.estadoInicial(config);
     const set = contenidoValido(2, 1);
@@ -383,6 +383,24 @@ describe('Cambio de equipo', () => {
     estado = PictionaryGameDefinition.iniciarTiempo(estado);
     estado = PictionaryGameDefinition.detenerTiempo(estado, 30);
     estado = PictionaryGameDefinition.aplicarAcierto(estado, config);
+
+    expect(estado.equipo_actual).toBe(1);
+    expect(estado.modo_actual).toBe(2);
+    expect(estado.fase).toBe('INICIO_RONDA');
+  });
+
+  it('equipo 1 completa los 4 modos → pasa a equipo 2 modo 1', () => {
+    const config = configuracionValida({ rondas: 2, palabras_por_modo: 1 });
+    let estado = PictionaryGameDefinition.estadoInicial(config);
+    const set = contenidoValido(2, 1);
+
+    for (let i = 0; i < 4; i++) {
+      estado = PictionaryGameDefinition.seleccionarModo(estado);
+      estado = PictionaryGameDefinition.mostrarPalabra(estado, set);
+      estado = PictionaryGameDefinition.iniciarTiempo(estado);
+      estado = PictionaryGameDefinition.detenerTiempo(estado, 30);
+      estado = PictionaryGameDefinition.aplicarAcierto(estado, config);
+    }
 
     expect(estado.equipo_actual).toBe(2);
     expect(estado.modo_actual).toBe(1);
