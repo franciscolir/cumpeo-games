@@ -131,6 +131,7 @@ async function _renderContenido(container, app, codigo) {
   const esHistoriaEnredada = juegoActivo?.juego_codigo === 'HISTORIA_ENREDADA';
   const esPictionary = juegoActivo?.juego_codigo === 'PICTIONARY';
   const esTrivia = juegoActivo?.juego_codigo === 'TRIVIA';
+  const esMemoria = juegoActivo?.juego_codigo === 'MEMORIA';
   const itemsQPEP = esQPEP ? await cargarItemsDeJuego(app, juegoActivo) : null;
   const itemsRosco = esRosco ? await cargarItemsDeJuego(app, juegoActivo) : null;
   const itemsHistoria = esHistoriaEnredada ? await cargarItemsDeJuego(app, juegoActivo) : null;
@@ -150,6 +151,8 @@ async function _renderContenido(container, app, codigo) {
     escenarioHTML = _renderEscenarioHistoriaEnredada(juegoActivo, fase, { ...contexto, itemsDelJuego: itemsHistoria });
   } else if (esTrivia) {
     escenarioHTML = _renderEscenarioTrivia(juegoActivo, fase, contexto);
+  } else if (esMemoria) {
+    escenarioHTML = _renderEscenarioMemoria(juegoActivo, fase, contexto);
   } else {
     escenarioHTML = _renderEscenario(juegoActivo);
   }
@@ -1508,6 +1511,141 @@ function _renderEscenarioTrivia(juegoActivo, fase, contexto) {
   return `
     <section class="flex items-center justify-center p-6 border-b-2.5 border-on-surface bg-surface">
       <div class="w-full max-w-3xl bg-surface-container-lowest border-3 border-on-surface rounded-2xl p-8 shadow-comic-lg text-center flex flex-col items-center justify-center min-h-[30vh]">
+        ${inner}
+        <div class="grid grid-cols-2 gap-4 w-full max-w-lg mt-6">
+          <div class="border-2.5 ${equipoActual === 1 ? equipoActivoColor : 'border-on-surface bg-surface-container-lowest'} rounded-xl p-4 shadow-comic-sm text-center">
+            <p class="font-body-md uppercase">${equipo1.nombre}</p>
+            <p class="font-display-hero text-3xl text-primary">${pts1}</p>
+          </div>
+          <div class="border-2.5 ${equipoActual === 2 ? equipoActivoColor : 'border-on-surface bg-surface-container-lowest'} rounded-xl p-4 shadow-comic-sm text-center">
+            <p class="font-body-md uppercase">${equipo2.nombre}</p>
+            <p class="font-display-hero text-3xl text-primary">${pts2}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function _renderEscenarioMemoria(juegoActivo, fase, contexto) {
+  const estadoJuego = juegoActivo?.estado_juego || {};
+  const equipo1 = contexto?.equipos?.[0] || { nombre: 'Eq1' };
+  const equipo2 = contexto?.equipos?.[1] || { nombre: 'Eq2' };
+  const equipoActual = estadoJuego.equipo_actual || 1;
+  const ronda = estadoJuego.ronda_actual || 1;
+  const totalRondas = estadoJuego.total_rondas || 1;
+  const pts1 = estadoJuego.puntos_equipo_1 || 0;
+  const pts2 = estadoJuego.puntos_equipo_2 || 0;
+  const elementos = estadoJuego.elementos || [];
+  const volteados = new Set(estadoJuego.elementos_volteados || []);
+  const descubiertos = new Set(estadoJuego.elementos_descubiertos || []);
+  const parejasEncontradas = estadoJuego.parejas_encontradas || 0;
+  const totalParejas = elementos.length / 2;
+
+  const equipoActivoNombre = equipoActual === 1 ? equipo1.nombre : equipo2.nombre;
+  const equipoActivoColor = equipoActual === 1
+    ? 'border-[#00D2FF] bg-[#00D2FF]/15'
+    : 'border-[#FF3344] bg-[#FF3344]/15';
+
+  const cols = elementos.length > 0 ? Math.ceil(Math.sqrt(elementos.length)) : 1;
+
+  const grillaHTML = elementos.map((el, i) => {
+    const estaVolteado = volteados.has(i);
+    const estaDescubierto = descubiertos.has(i);
+    const visible = estaVolteado || estaDescubierto;
+
+    if (visible) {
+      const contenidoHTML = el.imagen_url
+        ? `<img src="${el.imagen_url}" alt="${el.contenido}" class="max-h-full max-w-full object-contain" />`
+        : `<p class="font-body-md text-on-surface text-center px-1">${el.contenido}</p>`;
+      const claseFondo = estaDescubierto
+        ? 'bg-tertiary/20 border-tertiary'
+        : 'bg-comicYellow/30 border-comicYellow';
+      return `
+        <div class="border-2.5 ${claseFondo} rounded-lg p-2 aspect-square flex items-center justify-center overflow-hidden">
+          ${contenidoHTML}
+        </div>
+      `;
+    }
+
+    return `
+      <div class="border-2.5 border-on-surface bg-on-surface rounded-lg p-2 aspect-square flex items-center justify-center">
+        <p class="font-display-hero text-2xl text-background">${i + 1}</p>
+      </div>
+    `;
+  }).join('');
+
+  let inner = '';
+
+  if (!fase || fase === 'INICIO_RONDA') {
+    inner = `
+      <p class="font-display-hero text-5xl text-primary uppercase mb-2">¡A JUGAR!</p>
+      <p class="font-headline-md uppercase text-on-surface">Memoricé</p>
+      ${fase === 'INICIO_RONDA' ? '<p class="font-body-md text-on-surface-variant mt-2">Esperando inicio de ronda…</p>' : ''}
+    `;
+  } else if (fase === 'SELECCIONANDO_SET') {
+    inner = `
+      <p class="font-display-hero text-4xl text-primary uppercase mb-2">Eligiendo grilla</p>
+      <p class="font-body-md text-on-surface-variant mt-2">El conductor elige un set…</p>
+    `;
+  } else if (fase === 'PREPARANDO_GRILLA') {
+    inner = `
+      <p class="font-display-hero text-4xl text-primary uppercase mb-2">Preparando grilla</p>
+      <p class="font-body-md text-on-surface-variant mt-2">Barajando elementos…</p>
+    `;
+  } else if (fase === 'JUGANDO' || fase === 'CAMBIO_TURNO') {
+    const mostrarTimer = fase === 'JUGANDO' && estadoJuego.timer_activo;
+    const timerSeg = estadoJuego.tiempo_restante_seg ?? 20;
+    const modal = fase === 'CAMBIO_TURNO'
+      ? `<div class="fixed inset-0 bg-on-surface/80 flex items-center justify-center z-50">
+           <div class="bg-surface-container-lowest border-3 border-on-surface rounded-2xl p-8 shadow-comic-lg text-center">
+             <p class="font-display-hero text-4xl text-primary uppercase">Turno de</p>
+             <p class="font-display-hero text-5xl text-on-surface uppercase mt-2">${equipoActivoNombre}</p>
+           </div>
+         </div>`
+      : '';
+
+    inner = `
+      <div class="text-center mb-4">
+        <p class="font-label-md uppercase text-on-surface-variant">
+          Ronda ${ronda} / ${totalRondas} · Parejas ${parejasEncontradas} / ${totalParejas}
+        </p>
+        <p class="font-label-md uppercase ${equipoActual === 1 ? 'text-[#00D2FF]' : 'text-[#FF3344]'}">
+          ${equipoActivoNombre}
+        </p>
+      </div>
+      <div class="grid gap-2 mx-auto" style="grid-template-columns: repeat(${cols}, minmax(0, 1fr)); max-width: 700px;">
+        ${grillaHTML}
+      </div>
+      ${mostrarTimer ? `<p id="memoria-timer-publico" class="font-display-hero text-4xl text-tertiary mt-4 text-center">${timerSeg}s</p>` : ''}
+      ${modal}
+    `;
+  } else if (fase === 'FIN_DE_RONDA') {
+    inner = `
+      <p class="font-display-hero text-5xl text-primary uppercase mb-4">Fin de ronda</p>
+      <p class="font-headline-md uppercase text-on-surface mb-2">Ronda ${ronda} / ${totalRondas}</p>
+    `;
+  } else if (fase === 'FIN_DE_JUEGO') {
+    const ganador = pts1 > pts2 ? 1 : pts2 > pts1 ? 2 : null;
+    let ganadorNombre = 'Empate técnico';
+    let ganadorColor = 'text-on-surface-variant';
+    if (ganador === 1) { ganadorNombre = equipo1.nombre; ganadorColor = 'text-[#00D2FF]'; }
+    else if (ganador === 2) { ganadorNombre = equipo2.nombre; ganadorColor = 'text-[#FF3344]'; }
+
+    inner = `
+      <p class="font-display-hero text-5xl text-primary uppercase mb-4">¡Juego terminado!</p>
+      <p class="font-headline-md uppercase ${ganadorColor} mb-4">${ganadorNombre}</p>
+    `;
+  } else {
+    inner = `
+      <p class="font-display-hero text-5xl text-primary uppercase mb-2">¡A JUGAR!</p>
+      <p class="font-headline-md uppercase text-on-surface">Memoricé</p>
+    `;
+  }
+
+  return `
+    <section class="flex items-center justify-center p-6 border-b-2.5 border-on-surface bg-surface">
+      <div class="w-full max-w-4xl bg-surface-container-lowest border-3 border-on-surface rounded-2xl p-8 shadow-comic-lg text-center flex flex-col items-center justify-center min-h-[30vh]">
         ${inner}
         <div class="grid grid-cols-2 gap-4 w-full max-w-lg mt-6">
           <div class="border-2.5 ${equipoActual === 1 ? equipoActivoColor : 'border-on-surface bg-surface-container-lowest'} rounded-xl p-4 shadow-comic-sm text-center">
