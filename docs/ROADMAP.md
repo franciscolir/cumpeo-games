@@ -2,7 +2,7 @@
 
 **Versión:** 1.0
 **Última actualización:** 2026-09-18
-**Estado global:** Bloques 0, 1, 2, 3, 4 cerrados · Bloque 5 cerrado (10/10) · ★ MVP alcanzado ★
+**Estado global:** Bloques 0, 1, 2, 3, 4 cerrados · Bloque 5 en progreso (9/10) · ★ MVP alcanzado ★
 **Rama:** feature/vertical-slice
 
 ---
@@ -170,7 +170,7 @@ El Bloque 3 pasa de 7 a 6 pasos.
 **Bloque 4 cerrado. ★ MVP alcanzado ★. Bloque 5 en progreso.**
 ---
 
-### Bloque 5 — Juegos restantes ✅ CERRADO (10/10)
+### Bloque 5 — Juegos restantes 🔄 EN PROGRESO (9/10)
 
 **Objetivo:** Implementar los 10 pasos del Bloque 5 (refactor + 9 juegos).
 
