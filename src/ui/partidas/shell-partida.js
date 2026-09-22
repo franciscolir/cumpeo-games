@@ -126,11 +126,11 @@ async function _renderContenido(container, app, partidaId) {
   const gameUI = codigoJuego ? app.uiRegistry.obtener(codigoJuego) : null;
   const estadoJuego = juegoActivo ? (juegoActivo.estado_juego || {}) : {};
 
-  const itemsDelJuego = (codigoJuego === 'QUE_PIENSA_EL_PUBLICO' || codigoJuego === 'TRIVIA' || codigoJuego === 'ROSCO' || codigoJuego === 'PICTIONARY' || codigoJuego === 'HISTORIA_ENREDADA' || codigoJuego === 'MEMORIA')
+  const itemsDelJuego = (codigoJuego === 'QUE_PIENSA_EL_PUBLICO' || codigoJuego === 'TRIVIA' || codigoJuego === 'ROSCO' || codigoJuego === 'PICTIONARY' || codigoJuego === 'HISTORIA_ENREDADA' || codigoJuego === 'MEMORIA' || codigoJuego === 'ANTI_TRIVIA')
     ? await cargarItemsDeJuego(app, juegoActivo)
     : null;
 
-  const setsDisponibles = (codigoJuego === 'TRIVIA' || codigoJuego === 'MEMORIA')
+  const setsDisponibles = (codigoJuego === 'TRIVIA' || codigoJuego === 'MEMORIA' || codigoJuego === 'ANTI_TRIVIA')
     ? await app.services.set.listarSetsActivosPorJuego(juegoActivo.juego_id)
     : null;
 
@@ -417,6 +417,143 @@ async function _renderContenido(container, app, partidaId) {
           const config = juegoActivo.configuracion_congelada || MemoriaGameDefinition.defaultConfig;
           const nuevoEstado = MemoriaGameDefinition.aplicarTimeUp(estadoJuego, config);
           if (!nuevoEstado) return;
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId, juegoActivo.id, nuevoEstado,
+            juegoActivo.state_version, sessionId, nuevoActionId()
+          );
+        } else if (tipo === 'iniciar-juego-antitrivia') {
+          const { AntiTriviaGameDefinition } = await import('../../games/anti-trivia/AntiTriviaGameDefinition.js');
+          const config = juegoActivo.configuracion_congelada || AntiTriviaGameDefinition.defaultConfig;
+          AntiTriviaGameDefinition.validarConfiguracion(config);
+          const estadoInicial = AntiTriviaGameDefinition.estadoInicial(config);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId, juegoActivo.id, estadoInicial,
+            juegoActivo.state_version, sessionId, nuevoActionId()
+          );
+        } else if (tipo === 'iniciar-ronda-antitrivia') {
+          const nuevoEstado = { ...estadoJuego, fase: 'SELECCIONANDO_SET' };
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId, juegoActivo.id, nuevoEstado,
+            juegoActivo.state_version, sessionId, nuevoActionId()
+          );
+        } else if (tipo === 'seleccionar-set-antitrivia') {
+          const { AntiTriviaGameDefinition } = await import('../../games/anti-trivia/AntiTriviaGameDefinition.js');
+          const itemsRaw = await app.services.set.listarItemsDeSet(payload.set.id);
+          const items = itemsRaw.map((it) => ({ ...it.contenido, id: it.id }));
+          const setConItems = { ...payload.set, items };
+          const config = juegoActivo.configuracion_congelada || AntiTriviaGameDefinition.defaultConfig;
+          const nuevoEstado = AntiTriviaGameDefinition.seleccionarSet(estadoJuego, setConItems, config);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId, juegoActivo.id, nuevoEstado,
+            juegoActivo.state_version, sessionId, nuevoActionId()
+          );
+        } else if (tipo === 'iniciar-respuesta-antitrivia') {
+          const { AntiTriviaGameDefinition } = await import('../../games/anti-trivia/AntiTriviaGameDefinition.js');
+          const config = juegoActivo.configuracion_congelada || AntiTriviaGameDefinition.defaultConfig;
+          const nuevoEstado = AntiTriviaGameDefinition.iniciarRespuesta(estadoJuego, config);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId, juegoActivo.id, nuevoEstado,
+            juegoActivo.state_version, sessionId, nuevoActionId()
+          );
+        } else if (tipo === 'marcar-acierto-antitrivia') {
+          const ejecutarAntiTrivia = async (juegoRef, estadoRef) => {
+            const { AntiTriviaGameDefinition } = await import('../../games/anti-trivia/AntiTriviaGameDefinition.js');
+            const config = juegoRef.configuracion_congelada || AntiTriviaGameDefinition.defaultConfig;
+            const nuevoEstado = AntiTriviaGameDefinition.marcarAcierto(estadoRef, config);
+            await app.services.partida.actualizarEstadoJuego(
+              partidaId, juegoRef.id, nuevoEstado,
+              juegoRef.state_version, sessionId, nuevoActionId()
+            );
+          };
+          try {
+            await ejecutarAntiTrivia(juegoActivo, estadoJuego);
+          } catch (err) {
+            if (err?.name === 'ConflictoVersionError') {
+              const ctx = await app.services.partida.obtenerContextoEspera(partidaId);
+              const juegoFresh = ctx.juegos.find((j) => j.id === juegoActivo.id);
+              if (!juegoFresh) throw err;
+              await ejecutarAntiTrivia(juegoFresh, juegoFresh.estado_juego || {});
+            } else {
+              throw err;
+            }
+          }
+        } else if (tipo === 'marcar-error-antitrivia') {
+          const ejecutarAntiTrivia = async (juegoRef, estadoRef) => {
+            const { AntiTriviaGameDefinition } = await import('../../games/anti-trivia/AntiTriviaGameDefinition.js');
+            const config = juegoRef.configuracion_congelada || AntiTriviaGameDefinition.defaultConfig;
+            const nuevoEstado = AntiTriviaGameDefinition.marcarError(estadoRef, config);
+            await app.services.partida.actualizarEstadoJuego(
+              partidaId, juegoRef.id, nuevoEstado,
+              juegoRef.state_version, sessionId, nuevoActionId()
+            );
+          };
+          try {
+            await ejecutarAntiTrivia(juegoActivo, estadoJuego);
+          } catch (err) {
+            if (err?.name === 'ConflictoVersionError') {
+              const ctx = await app.services.partida.obtenerContextoEspera(partidaId);
+              const juegoFresh = ctx.juegos.find((j) => j.id === juegoActivo.id);
+              if (!juegoFresh) throw err;
+              await ejecutarAntiTrivia(juegoFresh, juegoFresh.estado_juego || {});
+            } else {
+              throw err;
+            }
+          }
+        } else if (tipo === 'time-up-antitrivia') {
+          const { AntiTriviaGameDefinition } = await import('../../games/anti-trivia/AntiTriviaGameDefinition.js');
+          const nuevoEstado = AntiTriviaGameDefinition.aplicarTimeUp(estadoJuego);
+          if (!nuevoEstado) return;
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId, juegoActivo.id, nuevoEstado,
+            juegoActivo.state_version, sessionId, nuevoActionId()
+          );
+        } else if (tipo === 'jugador-respondio-antitrivia') {
+          const { AntiTriviaGameDefinition } = await import('../../games/anti-trivia/AntiTriviaGameDefinition.js');
+          const nuevoEstado = AntiTriviaGameDefinition.confirmarRespuestaMencionada(estadoJuego);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId, juegoActivo.id, nuevoEstado,
+            juegoActivo.state_version, sessionId, nuevoActionId()
+          );
+        } else if (tipo === 'no-respondio-antitrivia') {
+          const { AntiTriviaGameDefinition } = await import('../../games/anti-trivia/AntiTriviaGameDefinition.js');
+          const nuevoEstado = AntiTriviaGameDefinition.confirmarSinRespuesta(estadoJuego);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId, juegoActivo.id, nuevoEstado,
+            juegoActivo.state_version, sessionId, nuevoActionId()
+          );
+        } else if (tipo === 'siguiente-pregunta-antitrivia') {
+          const ejecutarAntiTrivia = async (juegoRef, estadoRef) => {
+            const { AntiTriviaGameDefinition } = await import('../../games/anti-trivia/AntiTriviaGameDefinition.js');
+            const config = juegoRef.configuracion_congelada || AntiTriviaGameDefinition.defaultConfig;
+            const nuevoEstado = AntiTriviaGameDefinition.siguientePregunta(estadoRef, config);
+            await app.services.partida.actualizarEstadoJuego(
+              partidaId, juegoRef.id, nuevoEstado,
+              juegoRef.state_version, sessionId, nuevoActionId()
+            );
+          };
+          try {
+            await ejecutarAntiTrivia(juegoActivo, estadoJuego);
+          } catch (err) {
+            if (err?.name === 'ConflictoVersionError') {
+              const ctx = await app.services.partida.obtenerContextoEspera(partidaId);
+              const juegoFresh = ctx.juegos.find((j) => j.id === juegoActivo.id);
+              if (!juegoFresh) throw err;
+              await ejecutarAntiTrivia(juegoFresh, juegoFresh.estado_juego || {});
+            } else {
+              throw err;
+            }
+          }
+        } else if (tipo === 'iniciar-turno-antitrivia') {
+          const { AntiTriviaGameDefinition } = await import('../../games/anti-trivia/AntiTriviaGameDefinition.js');
+          const nuevoEstado = AntiTriviaGameDefinition.cambiarTurno(estadoJuego);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId, juegoActivo.id, nuevoEstado,
+            juegoActivo.state_version, sessionId, nuevoActionId()
+          );
+        } else if (tipo === 'iniciar-siguiente-ronda-antitrivia') {
+          const { AntiTriviaGameDefinition } = await import('../../games/anti-trivia/AntiTriviaGameDefinition.js');
+          const config = juegoActivo.configuracion_congelada || AntiTriviaGameDefinition.defaultConfig;
+          const nuevoEstado = AntiTriviaGameDefinition.iniciarSiguienteRonda(estadoJuego, config);
           await app.services.partida.actualizarEstadoJuego(
             partidaId, juegoActivo.id, nuevoEstado,
             juegoActivo.state_version, sessionId, nuevoActionId()
