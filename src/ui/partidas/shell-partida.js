@@ -222,7 +222,8 @@ async function _renderContenido(container, app, partidaId) {
           );
         } else if (tipo === 'seleccionar-set-trivia') {
           const { TriviaGameDefinition } = await import('../../games/trivia/TriviaGameDefinition.js');
-          const items = await app.services.set.listarItemsDeSet(payload.set.id);
+          const itemsRaw = await app.services.set.listarItemsDeSet(payload.set.id);
+          const items = itemsRaw.map((it) => ({ ...it.contenido, id: it.id }));
           const setConItems = { ...payload.set, items };
           const nuevoEstado = TriviaGameDefinition.seleccionarSet(estadoJuego, setConItems);
           await app.services.partida.actualizarEstadoJuego(
