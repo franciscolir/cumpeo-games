@@ -8,6 +8,7 @@ import { QuePiensaElPublicoGameDefinition } from './que-piensa-el-publico/QuePie
 import { RoscoGameDefinition } from './rosco/RoscoGameDefinition.js';
 import { CancionIncompletaGameDefinition } from './cancion-incompleta/CancionIncompletaGameDefinition.js';
 import { PictionaryGameDefinition } from './pictionary/PictionaryGameDefinition.js';
+import { HistoriaEnredadaGameDefinition } from './historia-enredada/HistoriaEnredadaGameDefinition.js';
 
 /**
  * Registra todos los juegos disponibles en el registry.
@@ -20,7 +21,8 @@ export function registrarTodos(registry) {
     QuePiensaElPublicoGameDefinition,
     RoscoGameDefinition,
     CancionIncompletaGameDefinition,
-    PictionaryGameDefinition
+    PictionaryGameDefinition,
+    HistoriaEnredadaGameDefinition
   ];
 
   for (const def of definiciones) {
