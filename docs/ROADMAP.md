@@ -2,7 +2,7 @@
 
 **Versión:** 1.0
 **Última actualización:** 2026-09-18
-**Estado global:** Bloques 0, 1, 2, 3, 4 cerrados · Bloque 5 en progreso (8/10) · ★ MVP alcanzado ★
+**Estado global:** Bloques 0, 1, 2, 3, 4 cerrados · Bloque 5 en progreso (9/10) · ★ MVP alcanzado ★
 **Rama:** feature/vertical-slice
 
 ---
@@ -38,7 +38,7 @@
 | 2 | Shell de partida (Conductor + Pública) | ✅ CERRADO | 13/13 | 5e32d5b | 2026-09-19 |
 | 3 | Móvil + moderación | ✅ CERRADO | 6/6 | 9ca4e7a | 2026-09-19 |
 | 4 | "¿Qué piensa el público?" | ✅ CERRADO | 13/13 | 2e19767 | 2026-09-21 |
-| 5 | Juegos restantes | 🔄 EN PROGRESO | 8/10 | — | — |
+| 5 | Juegos restantes | 🔄 EN PROGRESO | 9/10 | — | — |
 | 6 | Migración e2e a Supabase (opcional) | ⬜ PENDIENTE | 0/? | — | — |
 
 **★ MVP se alcanza al cerrar el Bloque 4 ★**
@@ -170,7 +170,7 @@ El Bloque 3 pasa de 7 a 6 pasos.
 **Bloque 4 cerrado. ★ MVP alcanzado ★. Bloque 5 en progreso.**
 ---
 
-### Bloque 5 — Juegos restantes 🔄 EN PROGRESO (8/10)
+### Bloque 5 — Juegos restantes 🔄 EN PROGRESO (9/10)
 
 **Objetivo:** Implementar los 10 pasos del Bloque 5 (refactor + 9 juegos).
 
@@ -189,7 +189,7 @@ UI pública, tests e2e) y se cuenta como **1 paso**.
 | 5.5 | Historia Enredada end-to-end | ✅ APROBADO | 65e86e6, b7f6f25, c982efd, 068f151, dc9d34e |
 | 5.6 | Trivia end-to-end | ✅ APROBADO | 9269eb1, 2d9190d, 8bee291, 38eca68, 0acedd5, 28e8b6f, afba7a0 |
 | 5.7 | Memoricé end-to-end | ✅ APROBADO | cc06fee, f158afb, 62617c0, a00b8d1, 34a27fe, 79cc2b7, d1ff93d |
-| 5.8 | Anti-Trivia — cerrar mecánica + implementar | ⬜ | — |
+| 5.8 | Anti-Trivia — cerrar mecánica + implementar | 🔄 EN CURSO | — |
 | 5.9 | Enlaces — cerrar mecánica + implementar | ⬜ | — |
 
 **Nota:** Los sub-pasos (5.x-pre, 5.xa, 5.xb, etc.) se documentan en
@@ -236,6 +236,7 @@ de implementarse.
 | 5.12 | 2026-09-22 | Cierre documental de mecánica de Memoricé. Conteo 7/10. |
 | 5.13 | 2026-09-22 | Memoricé completa (5.7a-d). 10 e2e. Conteo 8/10. |
 | 5.14 | 2026-09-22 | Cierre documental de 5.7. ROADMAP limpiado (conteos consistentes). |
+| 5.15 | 2026-09-22 | Cierre documental de mecánica de Anti-Trivia. Conteo 9/10. |
 
 ---
 

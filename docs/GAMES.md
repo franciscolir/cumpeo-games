@@ -709,28 +709,99 @@ No aplica. El juego es físico.
 | Ruidos | Indicados en la historia. El jugador no decide |
 
 
-# 11. ANTI-TRIVIA
+# 11. ANTI-TRIVIA — Mecánica cerrada
 
 ## Concepto
 
-Juego relacionado con preguntas y respuestas, pero con una lógica
-diferente de una Trivia convencional.
+Anti-juego de preguntas y respuestas. A diferencia de una Trivia
+convencional, el jugador debe dar una respuesta INCORRECTA.
 
-## Estado de definición
+Se muestra la pregunta + una lista de respuestas correctas en pantalla.
+El jugador NO debe decir ninguna de las respuestas correctas.
+Debe dar una respuesta que NO esté en la lista.
 
-La mecánica todavía no está suficientemente documentada.
+## Objetivo
 
-No deben inventarse:
+Dar la mayor cantidad de respuestas incorrectas válidas. Gana el
+equipo con mayor puntaje total.
 
--   respuesta;
--   puntuación;
--   tiempo;
--   turnos;
--   rondas;
--   penalizaciones;
--   victoria;
--   Sets;
--   participación pública.
+## Estructura
+
+- 2 equipos (Eq1 y Eq2).
+- Cada ronda = 2 turnos: Eq1 → Eq2.
+- Cada turno: el equipo responde N preguntas de su set.
+- Cada equipo tiene SU PROPIO SET.
+- Sets elegidos al inicio de cada turno.
+- N rondas configurables (default 1).
+
+## Set (estructura del item)
+
+```json
+{
+  "pregunta": "string",
+  "respuestas_correctas": ["string", "string"],
+  "categoria": "string"
+}
+```
+
+- `pregunta`: string no vacío.
+- `respuestas_correctas`: array no vacío de strings (las respuestas correctas a evitar).
+- `categoria`: string opcional.
+
+## Validación del set
+
+- Debe tener al menos `preguntas_por_turno` items (default 5).
+- Cada item: `pregunta` no vacía, `respuestas_correctas` array no vacío.
+
+## Configuración
+
+```js
+{
+  rondas: 1,
+  preguntas_por_turno: 5,
+  tiempo_respuesta_seg: 30,
+  penalizacion_por_error: 0,
+  puntos_por_acierto: 10
+}
+```
+
+## Desarrollo del turno
+
+1. **SELECCIONANDO_SET**: conductor elige 1 set para el equipo activo.
+2. **MOSTRANDO_PREGUNTA**: se muestra pregunta + lista de respuestas correctas en pantalla.
+3. **RESPONDIENDO**: timer 30s corre. El equipo dice una respuesta verbal.
+   - Si la respuesta NO está en la lista → puede marcar "Acierto".
+   - Si la respuesta SÍ está en la lista → marca "Error".
+4. **ESPERA_VALIDACION**: el conductor presiona "Acierto" o "Error".
+5. **MOSTRANDO_RESULTADO**: se revela la decisión.
+6. Continúa con la siguiente pregunta.
+7. Al terminar N preguntas → CAMBIO_TURNO.
+8. Eq2 juega su set.
+9. FIN_DE_RONDA.
+
+## Timer
+
+- 30s por pregunta (configurable: `tiempo_respuesta_seg`).
+- Al agotarse: NO es error automático. El conductor decide.
+- Se pausa en ESPERA_VALIDACION.
+
+## Puntuación
+
+- `puntos_por_acierto`: configurable (default 10).
+- `penalizacion_por_error`: configurable (default 0).
+- Ganador: mayor puntaje total. Empate técnico.
+
+## Fases
+
+`INICIO_RONDA`, `SELECCIONANDO_SET`, `MOSTRANDO_PREGUNTA`,
+`RESPONDIENDO`, `ESPERA_VALIDACION`, `MOSTRANDO_RESULTADO`,
+`CAMBIO_TURNO`, `FIN_DE_RONDA`, `FIN_DE_JUEGO`.
+
+## Público
+
+- Ve: pregunta, lista de respuestas correctas, equipo activo, timer, marcador.
+- Ve: si la respuesta fue acierto o error (color verde/rojo).
+- NO ve: la respuesta específica que dio el jugador.
 
 ------------------------------------------------------------------------
 
@@ -883,5 +954,5 @@ explícitamente como **TBD** hasta ser acordada.
   Rosco                     Cerrada    Sí    Sí           Configurable   Sí
   Pictionary                Cerrada    Sí    Configurable Configurable   Sí
   Historia Enredada         Cerrada    Sí    No aplica    Configurable   No
-  Anti-Trivia               Pendiente  TBD   TBD          TBD            TBD
+  Anti-Trivia               Cerrada    Sí    Configurable Configurable   No
   Enlaces                   Pendiente  TBD   TBD          TBD            TBD
