@@ -50,8 +50,8 @@ test('jugar un modo completo suma 10 puntos y avanza a modo 2', async ({ page })
 
   const ctx2 = await obtenerContextoPictionary(page, partidaId);
   expect(ctx2.estadoJuego.puntos_equipo_1).toBe(10);
-  expect(ctx2.estadoJuego.modo_actual).toBe(1);
-  expect(ctx2.estadoJuego.equipo_actual).toBe(2);
+  expect(ctx2.estadoJuego.modo_actual).toBe(2);
+  expect(ctx2.estadoJuego.equipo_actual).toBe(1);
 });
 
 test('jugar los 4 modos de ambos equipos en ronda 1 llega a FIN_DE_RONDA con rondas=2', async ({ page }) => {
