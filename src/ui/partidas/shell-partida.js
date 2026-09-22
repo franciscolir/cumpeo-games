@@ -405,59 +405,122 @@ async function _renderContenido(container, app, partidaId) {
             nuevoActionId()
           );
         } else if (tipo === 'marcar-acierto-rosco') {
-          const { RoscoGameDefinition } = await import('../../games/rosco/RoscoGameDefinition.js');
-          const config = juegoActivo.configuracion_congelada || RoscoGameDefinition.defaultConfig;
-          const letraActual = estadoJuego.rosco?.[estadoJuego.indice_actual]?.letra;
-          if (!letraActual) return;
-          let nuevoEstado = RoscoGameDefinition.aplicarAcierto(estadoJuego, letraActual, config);
-          nuevoEstado = RoscoGameDefinition.avanzarLetra(nuevoEstado);
-          if (nuevoEstado.fase === 'FIN_DE_RONDA') {
+          const ejecutarRosco = async (juegoRef, estadoRef) => {
+            const { RoscoGameDefinition } = await import('../../games/rosco/RoscoGameDefinition.js');
+            const config = juegoRef.configuracion_congelada || RoscoGameDefinition.defaultConfig;
+            const letraActual = estadoRef.rosco?.[estadoRef.indice_actual]?.letra;
+            if (!letraActual) return;
+            let nuevoEstado = RoscoGameDefinition.aplicarAcierto(estadoRef, letraActual, config);
+            nuevoEstado = RoscoGameDefinition.avanzarLetra(nuevoEstado);
             await app.services.partida.actualizarEstadoJuego(
-              partidaId, juegoActivo.id, nuevoEstado,
-              juegoActivo.state_version, sessionId, nuevoActionId()
+              partidaId, juegoRef.id, nuevoEstado,
+              juegoRef.state_version, sessionId, nuevoActionId()
             );
-          } else {
-            await app.services.partida.actualizarEstadoJuego(
-              partidaId, juegoActivo.id, nuevoEstado,
-              juegoActivo.state_version, sessionId, nuevoActionId()
-            );
+          };
+          try {
+            await ejecutarRosco(juegoActivo, estadoJuego);
+          } catch (err) {
+            if (err?.name === 'ConflictoVersionError') {
+              const ctx = await app.services.partida.obtenerContextoEspera(partidaId);
+              const juegoFresh = ctx.juegos.find((j) => j.id === juegoActivo.id);
+              if (!juegoFresh) throw err;
+              await ejecutarRosco(juegoFresh, juegoFresh.estado_juego || {});
+            } else {
+              throw err;
+            }
           }
         } else if (tipo === 'marcar-error-rosco') {
-          const { RoscoGameDefinition } = await import('../../games/rosco/RoscoGameDefinition.js');
-          const config = juegoActivo.configuracion_congelada || RoscoGameDefinition.defaultConfig;
-          const letraActual = estadoJuego.rosco?.[estadoJuego.indice_actual]?.letra;
-          if (!letraActual) return;
-          let nuevoEstado = RoscoGameDefinition.aplicarError(estadoJuego, letraActual, config);
-          nuevoEstado = RoscoGameDefinition.cambiarTurno(nuevoEstado);
-          await app.services.partida.actualizarEstadoJuego(
-            partidaId, juegoActivo.id, nuevoEstado,
-            juegoActivo.state_version, sessionId, nuevoActionId()
-          );
+          const ejecutarRosco = async (juegoRef, estadoRef) => {
+            const { RoscoGameDefinition } = await import('../../games/rosco/RoscoGameDefinition.js');
+            const config = juegoRef.configuracion_congelada || RoscoGameDefinition.defaultConfig;
+            const letraActual = estadoRef.rosco?.[estadoRef.indice_actual]?.letra;
+            if (!letraActual) return;
+            let nuevoEstado = RoscoGameDefinition.aplicarError(estadoRef, letraActual, config);
+            nuevoEstado = RoscoGameDefinition.cambiarTurno(nuevoEstado);
+            await app.services.partida.actualizarEstadoJuego(
+              partidaId, juegoRef.id, nuevoEstado,
+              juegoRef.state_version, sessionId, nuevoActionId()
+            );
+          };
+          try {
+            await ejecutarRosco(juegoActivo, estadoJuego);
+          } catch (err) {
+            if (err?.name === 'ConflictoVersionError') {
+              const ctx = await app.services.partida.obtenerContextoEspera(partidaId);
+              const juegoFresh = ctx.juegos.find((j) => j.id === juegoActivo.id);
+              if (!juegoFresh) throw err;
+              await ejecutarRosco(juegoFresh, juegoFresh.estado_juego || {});
+            } else {
+              throw err;
+            }
+          }
         } else if (tipo === 'pasapalabra-rosco') {
-          const { RoscoGameDefinition } = await import('../../games/rosco/RoscoGameDefinition.js');
-          const letraActual = estadoJuego.rosco?.[estadoJuego.indice_actual]?.letra;
-          if (!letraActual) return;
-          let nuevoEstado = RoscoGameDefinition.aplicarPasapalabra(estadoJuego, letraActual);
-          nuevoEstado = RoscoGameDefinition.avanzarLetra(nuevoEstado);
-          nuevoEstado = RoscoGameDefinition.cambiarTurno(nuevoEstado);
-          await app.services.partida.actualizarEstadoJuego(
-            partidaId, juegoActivo.id, nuevoEstado,
-            juegoActivo.state_version, sessionId, nuevoActionId()
-          );
+          const ejecutarRosco = async (juegoRef, estadoRef) => {
+            const { RoscoGameDefinition } = await import('../../games/rosco/RoscoGameDefinition.js');
+            const letraActual = estadoRef.rosco?.[estadoRef.indice_actual]?.letra;
+            if (!letraActual) return;
+            let nuevoEstado = RoscoGameDefinition.aplicarPasapalabra(estadoRef, letraActual);
+            nuevoEstado = RoscoGameDefinition.avanzarLetra(nuevoEstado);
+            nuevoEstado = RoscoGameDefinition.cambiarTurno(nuevoEstado);
+            await app.services.partida.actualizarEstadoJuego(
+              partidaId, juegoRef.id, nuevoEstado,
+              juegoRef.state_version, sessionId, nuevoActionId()
+            );
+          };
+          try {
+            await ejecutarRosco(juegoActivo, estadoJuego);
+          } catch (err) {
+            if (err?.name === 'ConflictoVersionError') {
+              const ctx = await app.services.partida.obtenerContextoEspera(partidaId);
+              const juegoFresh = ctx.juegos.find((j) => j.id === juegoActivo.id);
+              if (!juegoFresh) throw err;
+              await ejecutarRosco(juegoFresh, juegoFresh.estado_juego || {});
+            } else {
+              throw err;
+            }
+          }
         } else if (tipo === 'saltar-letra-rosco') {
-          const { RoscoGameDefinition } = await import('../../games/rosco/RoscoGameDefinition.js');
-          const nuevoEstado = RoscoGameDefinition.avanzarLetra(estadoJuego);
-          await app.services.partida.actualizarEstadoJuego(
-            partidaId, juegoActivo.id, nuevoEstado,
-            juegoActivo.state_version, sessionId, nuevoActionId()
-          );
+          const ejecutarRosco = async (juegoRef, estadoRef) => {
+            const { RoscoGameDefinition } = await import('../../games/rosco/RoscoGameDefinition.js');
+            const nuevoEstado = RoscoGameDefinition.avanzarLetra(estadoRef);
+            await app.services.partida.actualizarEstadoJuego(
+              partidaId, juegoRef.id, nuevoEstado,
+              juegoRef.state_version, sessionId, nuevoActionId()
+            );
+          };
+          try {
+            await ejecutarRosco(juegoActivo, estadoJuego);
+          } catch (err) {
+            if (err?.name === 'ConflictoVersionError') {
+              const ctx = await app.services.partida.obtenerContextoEspera(partidaId);
+              const juegoFresh = ctx.juegos.find((j) => j.id === juegoActivo.id);
+              if (!juegoFresh) throw err;
+              await ejecutarRosco(juegoFresh, juegoFresh.estado_juego || {});
+            } else {
+              throw err;
+            }
+          }
         } else if (tipo === 'siguiente-equipo-rosco') {
-          const { RoscoGameDefinition } = await import('../../games/rosco/RoscoGameDefinition.js');
-          const nuevoEstado = RoscoGameDefinition.cambiarTurno(estadoJuego);
-          await app.services.partida.actualizarEstadoJuego(
-            partidaId, juegoActivo.id, nuevoEstado,
-            juegoActivo.state_version, sessionId, nuevoActionId()
-          );
+          const ejecutarRosco = async (juegoRef, estadoRef) => {
+            const { RoscoGameDefinition } = await import('../../games/rosco/RoscoGameDefinition.js');
+            const nuevoEstado = RoscoGameDefinition.cambiarTurno(estadoRef);
+            await app.services.partida.actualizarEstadoJuego(
+              partidaId, juegoRef.id, nuevoEstado,
+              juegoRef.state_version, sessionId, nuevoActionId()
+            );
+          };
+          try {
+            await ejecutarRosco(juegoActivo, estadoJuego);
+          } catch (err) {
+            if (err?.name === 'ConflictoVersionError') {
+              const ctx = await app.services.partida.obtenerContextoEspera(partidaId);
+              const juegoFresh = ctx.juegos.find((j) => j.id === juegoActivo.id);
+              if (!juegoFresh) throw err;
+              await ejecutarRosco(juegoFresh, juegoFresh.estado_juego || {});
+            } else {
+              throw err;
+            }
+          }
         } else if (tipo === 'siguiente-ronda-rosco') {
           const { RoscoGameDefinition } = await import('../../games/rosco/RoscoGameDefinition.js');
           const config = juegoActivo.configuracion_congelada || RoscoGameDefinition.defaultConfig;

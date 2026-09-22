@@ -97,24 +97,25 @@ test('fin de ronda aparece al completar todas las letras', async ({ page }) => {
   await page.click('#btn-rosco-iniciar-turno');
   await page.waitForTimeout(500);
 
-  await page.evaluate(async (pid) => {
-    const { RoscoGameDefinition } = await import('/src/games/rosco/RoscoGameDefinition.js');
-    for (let i = 0; i < 27; i++) {
-      const ctx = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
-      const je = ctx.juegos[0];
-      const estado = je.estado_juego;
-      if (estado.fase === 'FIN_DE_RONDA' || estado.fase === 'FIN_DE_JUEGO') break;
-      const config = je.configuracion_congelada || RoscoGameDefinition.defaultConfig;
-      const letraActual = estado.rosco?.[estado.indice_actual]?.letra;
-      if (!letraActual) break;
-      let nuevoEstado = RoscoGameDefinition.aplicarAcierto(estado, letraActual, config);
-      nuevoEstado = RoscoGameDefinition.avanzarLetra(nuevoEstado);
-      await window.cumpeo.services.partida.actualizarEstadoJuego(
-        pid, je.id, nuevoEstado, je.state_version,
-        window.cumpeo.session.sessionId, crypto.randomUUID()
-      );
-    }
-  }, partidaId);
+  for (let i = 0; i < 27; i++) {
+    const ctx = await obtenerContextoRosco(page, partidaId);
+    const fase = ctx.estadoJuego.fase;
+    if (fase === 'FIN_DE_RONDA' || fase === 'FIN_DE_JUEGO') break;
+
+    const ptsAntes = (ctx.estadoJuego.puntos_equipo_1 || 0) + (ctx.estadoJuego.puntos_equipo_2 || 0);
+    await page.click('#btn-rosco-acierto');
+
+    await page.waitForFunction(
+      async ({ pid, ptsAntes }) => {
+        const ctxW = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
+        const je = ctxW.juegos[0];
+        const ptsAhora = (je.estado_juego.puntos_equipo_1 || 0) + (je.estado_juego.puntos_equipo_2 || 0);
+        return ptsAhora > ptsAntes;
+      },
+      { pid: partidaId, ptsAntes },
+      { timeout: 10000 }
+    );
+  }
 
   await page.waitForTimeout(500);
 
@@ -139,24 +140,25 @@ test('siguiente ronda inicia nuevo rosco', async ({ page }) => {
   await page.click('#btn-rosco-iniciar-turno');
   await page.waitForTimeout(500);
 
-  await page.evaluate(async (pid) => {
-    const { RoscoGameDefinition } = await import('/src/games/rosco/RoscoGameDefinition.js');
-    for (let i = 0; i < 27; i++) {
-      const ctx = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
-      const je = ctx.juegos[0];
-      const estado = je.estado_juego;
-      if (estado.fase === 'FIN_DE_RONDA' || estado.fase === 'FIN_DE_JUEGO') break;
-      const config = je.configuracion_congelada || RoscoGameDefinition.defaultConfig;
-      const letraActual = estado.rosco?.[estado.indice_actual]?.letra;
-      if (!letraActual) break;
-      let nuevoEstado = RoscoGameDefinition.aplicarAcierto(estado, letraActual, config);
-      nuevoEstado = RoscoGameDefinition.avanzarLetra(nuevoEstado);
-      await window.cumpeo.services.partida.actualizarEstadoJuego(
-        pid, je.id, nuevoEstado, je.state_version,
-        window.cumpeo.session.sessionId, crypto.randomUUID()
-      );
-    }
-  }, partidaId);
+  for (let i = 0; i < 27; i++) {
+    const ctx = await obtenerContextoRosco(page, partidaId);
+    const fase = ctx.estadoJuego.fase;
+    if (fase === 'FIN_DE_RONDA' || fase === 'FIN_DE_JUEGO') break;
+
+    const ptsAntes = (ctx.estadoJuego.puntos_equipo_1 || 0) + (ctx.estadoJuego.puntos_equipo_2 || 0);
+    await page.click('#btn-rosco-acierto');
+
+    await page.waitForFunction(
+      async ({ pid, ptsAntes }) => {
+        const ctxW = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
+        const je = ctxW.juegos[0];
+        const ptsAhora = (je.estado_juego.puntos_equipo_1 || 0) + (je.estado_juego.puntos_equipo_2 || 0);
+        return ptsAhora > ptsAntes;
+      },
+      { pid: partidaId, ptsAntes },
+      { timeout: 10000 }
+    );
+  }
 
   await page.waitForTimeout(500);
 
@@ -184,24 +186,25 @@ test('fin de juego en última ronda', async ({ page }) => {
   await page.click('#btn-rosco-iniciar-turno');
   await page.waitForTimeout(500);
 
-  await page.evaluate(async (pid) => {
-    const { RoscoGameDefinition } = await import('/src/games/rosco/RoscoGameDefinition.js');
-    for (let i = 0; i < 27; i++) {
-      const ctx = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
-      const je = ctx.juegos[0];
-      const estado = je.estado_juego;
-      if (estado.fase === 'FIN_DE_RONDA' || estado.fase === 'FIN_DE_JUEGO') break;
-      const config = je.configuracion_congelada || RoscoGameDefinition.defaultConfig;
-      const letraActual = estado.rosco?.[estado.indice_actual]?.letra;
-      if (!letraActual) break;
-      let nuevoEstado = RoscoGameDefinition.aplicarAcierto(estado, letraActual, config);
-      nuevoEstado = RoscoGameDefinition.avanzarLetra(nuevoEstado);
-      await window.cumpeo.services.partida.actualizarEstadoJuego(
-        pid, je.id, nuevoEstado, je.state_version,
-        window.cumpeo.session.sessionId, crypto.randomUUID()
-      );
-    }
-  }, partidaId);
+  for (let i = 0; i < 27; i++) {
+    const ctx = await obtenerContextoRosco(page, partidaId);
+    const fase = ctx.estadoJuego.fase;
+    if (fase === 'FIN_DE_RONDA' || fase === 'FIN_DE_JUEGO') break;
+
+    const ptsAntes = (ctx.estadoJuego.puntos_equipo_1 || 0) + (ctx.estadoJuego.puntos_equipo_2 || 0);
+    await page.click('#btn-rosco-acierto');
+
+    await page.waitForFunction(
+      async ({ pid, ptsAntes }) => {
+        const ctxW = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
+        const je = ctxW.juegos[0];
+        const ptsAhora = (je.estado_juego.puntos_equipo_1 || 0) + (je.estado_juego.puntos_equipo_2 || 0);
+        return ptsAhora > ptsAntes;
+      },
+      { pid: partidaId, ptsAntes },
+      { timeout: 10000 }
+    );
+  }
 
   await page.waitForTimeout(500);
 

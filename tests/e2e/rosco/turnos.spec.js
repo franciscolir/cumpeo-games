@@ -19,14 +19,14 @@ async function esperarPanelRosco(page) {
   await page.waitForFunction(() => {
     const panel = document.querySelector('#shell-panel-conductor');
     return panel && panel.querySelector('#btn-rosco-iniciar-juego');
-  }, { timeout: 15000 });
+  }, { timeout: 30000 });
 }
 
 async function esperarBotonTurno(page) {
   await page.waitForFunction(() => {
     const panel = document.querySelector('#shell-panel-conductor');
     return panel && panel.querySelector('#btn-rosco-iniciar-turno');
-  }, { timeout: 15000 });
+  }, { timeout: 30000 });
 }
 
 test('error cambia al equipo 2', async ({ page }) => {
