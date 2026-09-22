@@ -126,7 +126,7 @@ async function _renderContenido(container, app, partidaId) {
   const gameUI = codigoJuego ? app.uiRegistry.obtener(codigoJuego) : null;
   const estadoJuego = juegoActivo ? (juegoActivo.estado_juego || {}) : {};
 
-  const itemsDelJuego = (codigoJuego === 'QUE_PIENSA_EL_PUBLICO' || codigoJuego === 'TRIVIA' || codigoJuego === 'ROSCO' || codigoJuego === 'PICTIONARY')
+  const itemsDelJuego = (codigoJuego === 'QUE_PIENSA_EL_PUBLICO' || codigoJuego === 'TRIVIA' || codigoJuego === 'ROSCO' || codigoJuego === 'PICTIONARY' || codigoJuego === 'HISTORIA_ENREDADA')
     ? await cargarItemsDeJuego(app, juegoActivo)
     : null;
 
@@ -805,6 +805,76 @@ async function _renderContenido(container, app, partidaId) {
             sessionId,
             nuevoActionId()
           );
+        } else if (tipo === 'iniciar-juego-historia') {
+          const { HistoriaEnredadaGameDefinition } = await import('../../games/historia-enredada/HistoriaEnredadaGameDefinition.js');
+          const config = juegoActivo.configuracion_congelada || HistoriaEnredadaGameDefinition.defaultConfig;
+          HistoriaEnredadaGameDefinition.validarConfiguracion(config);
+          const contenidoSet = { items: itemsDelJuego || [] };
+          const validacion = HistoriaEnredadaGameDefinition.validarContenidoSet(contenidoSet, config);
+          if (!validacion.ok) {
+            window.alert('Set inválido:\n' + validacion.errores.join('\n'));
+            return;
+          }
+          const estadoInicial = HistoriaEnredadaGameDefinition.estadoInicial(config);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId, juegoActivo.id, estadoInicial,
+            juegoActivo.state_version, sessionId, nuevoActionId()
+          );
+        } else if (tipo === 'iniciar-ronda-historia') {
+          const { HistoriaEnredadaGameDefinition } = await import('../../games/historia-enredada/HistoriaEnredadaGameDefinition.js');
+          const nuevoEstado = HistoriaEnredadaGameDefinition.iniciarRonda(estadoJuego);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId, juegoActivo.id, nuevoEstado,
+            juegoActivo.state_version, sessionId, nuevoActionId()
+          );
+        } else if (tipo === 'seleccionar-historia-historia') {
+          const { HistoriaEnredadaGameDefinition } = await import('../../games/historia-enredada/HistoriaEnredadaGameDefinition.js');
+          const set = { items: itemsDelJuego || [] };
+          const nuevoEstado = HistoriaEnredadaGameDefinition.seleccionarHistoria(estadoJuego, payload.historiaId, set);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId, juegoActivo.id, nuevoEstado,
+            juegoActivo.state_version, sessionId, nuevoActionId()
+          );
+        } else if (tipo === 'empezar-actuacion-historia') {
+          const { HistoriaEnredadaGameDefinition } = await import('../../games/historia-enredada/HistoriaEnredadaGameDefinition.js');
+          const nuevoEstado = HistoriaEnredadaGameDefinition.empezarActuacion(estadoJuego);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId, juegoActivo.id, nuevoEstado,
+            juegoActivo.state_version, sessionId, nuevoActionId()
+          );
+        } else if (tipo === 'empezar-votacion-historia') {
+          const { HistoriaEnredadaGameDefinition } = await import('../../games/historia-enredada/HistoriaEnredadaGameDefinition.js');
+          const nuevoEstado = HistoriaEnredadaGameDefinition.empezarVotacion(estadoJuego);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId, juegoActivo.id, nuevoEstado,
+            juegoActivo.state_version, sessionId, nuevoActionId()
+          );
+        } else if (tipo === 'asignar-puntos-historia') {
+          const { HistoriaEnredadaGameDefinition } = await import('../../games/historia-enredada/HistoriaEnredadaGameDefinition.js');
+          const config = juegoActivo.configuracion_congelada || HistoriaEnredadaGameDefinition.defaultConfig;
+          const nuevoEstado = HistoriaEnredadaGameDefinition.asignarPuntos(estadoJuego, config, payload.puntos || 0);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId, juegoActivo.id, nuevoEstado,
+            juegoActivo.state_version, sessionId, nuevoActionId()
+          );
+        } else if (tipo === 'iniciar-siguiente-ronda-historia') {
+          const { HistoriaEnredadaGameDefinition } = await import('../../games/historia-enredada/HistoriaEnredadaGameDefinition.js');
+          const config = juegoActivo.configuracion_congelada || HistoriaEnredadaGameDefinition.defaultConfig;
+          const nuevoEstado = HistoriaEnredadaGameDefinition.iniciarSiguienteRonda(estadoJuego, config);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId, juegoActivo.id, nuevoEstado,
+            juegoActivo.state_version, sessionId, nuevoActionId()
+          );
+        } else if (tipo === 'finalizar-historia') {
+          const { HistoriaEnredadaGameDefinition } = await import('../../games/historia-enredada/HistoriaEnredadaGameDefinition.js');
+          const config = juegoActivo.configuracion_congelada || HistoriaEnredadaGameDefinition.defaultConfig;
+          const resultado = HistoriaEnredadaGameDefinition.calcularResultado(estadoJuego, config);
+          const nuevoEstado = { ...estadoJuego, fase: 'FIN_DE_JUEGO', resultado };
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId, juegoActivo.id, nuevoEstado,
+            juegoActivo.state_version, sessionId, nuevoActionId()
+          );
+
         } else {
           console.warn(`[ShellPartida] Acción desconocida: ${tipo}`);
           return;

@@ -8,6 +8,7 @@ import { QuePiensaElPublicoGameUI } from './que-piensa-el-publico/QuePiensaElPub
 import { RoscoGameUI } from './rosco/RoscoGameUI.js';
 import { CancionIncompletaGameUI } from './cancion-incompleta/CancionIncompletaGameUI.js';
 import { PictionaryGameUI } from './pictionary/PictionaryGameUI.js';
+import { HistoriaEnredadaGameUI } from './historia-enredada/HistoriaEnredadaGameUI.js';
 
 /**
  * Registra todos los GameUIs disponibles en el registry.
@@ -20,7 +21,8 @@ export function registrarGameUIs(uiRegistry) {
     QuePiensaElPublicoGameUI,
     RoscoGameUI,
     CancionIncompletaGameUI,
-    PictionaryGameUI
+    PictionaryGameUI,
+    HistoriaEnredadaGameUI
   ];
 
   for (const ui of gameUIs) {
