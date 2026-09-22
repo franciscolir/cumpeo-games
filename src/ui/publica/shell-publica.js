@@ -129,6 +129,7 @@ async function _renderContenido(container, app, codigo) {
   const esPictionary = juegoActivo?.juego_codigo === 'PICTIONARY';
   const itemsQPEP = esQPEP ? await cargarItemsDeJuego(app, juegoActivo) : null;
   const itemsRosco = esRosco ? await cargarItemsDeJuego(app, juegoActivo) : null;
+  const itemsHistoria = esHistoriaEnredada ? await cargarItemsDeJuego(app, juegoActivo) : null;
   const fase = juegoActivo?.estado_juego?.fase || '';
   const mostrarGaleria = !juegoActivo;
 
@@ -142,7 +143,7 @@ async function _renderContenido(container, app, codigo) {
   } else if (esPictionary) {
     escenarioHTML = _renderEscenarioPictionary(juegoActivo, fase, contexto);
   } else if (esHistoriaEnredada) {
-    escenarioHTML = _renderEscenarioHistoriaEnredada(juegoActivo, fase, contexto);
+    escenarioHTML = _renderEscenarioHistoriaEnredada(juegoActivo, fase, { ...contexto, itemsDelJuego: itemsHistoria });
   } else {
     escenarioHTML = _renderEscenario(juegoActivo);
   }

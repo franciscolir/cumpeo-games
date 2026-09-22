@@ -4,7 +4,8 @@
    Lee los items del set activo para un juego:
    1. Si tiene snapshot_id → lee set_snapshots → source_set_id.
    2. Fallback: busca sets activos del juego, toma el más reciente.
-   3. Lee items del set, ordena por orden, devuelve contenidos.
+   3. Lee items del set, ordena por orden, devuelve contenidos
+      (preservando el `id` del item).
    ============================================================= */
 
 export async function cargarItemsDeJuego(app, juegoActivo) {
@@ -30,7 +31,12 @@ export async function cargarItemsDeJuego(app, juegoActivo) {
     }
 
     const items = await app.services.set.listarItemsDeSet(setId);
-    return items.sort((a, b) => a.orden - b.orden).map((it) => it.contenido || it);
+    return items
+      .sort((a, b) => a.orden - b.orden)
+      .map((it) => ({
+        id: it.id,
+        ...(it.contenido || {})
+      }));
   } catch (_) {
     return null;
   }
