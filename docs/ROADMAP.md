@@ -232,6 +232,8 @@ de implementarse.
 
 **Objetivo:** Crear formularios de sets dedicados por juego y rediseñar el rosco.
 
+| # | Paso | Estado | Commit |
+|---|------|--------|--------|
 | 7.0a | Refactor: extraer editores QPEP/Trivia | ✅ APROBADO | dfb901c |
 | 7.1a | Dominio de Rosco: N rondas = N sets | ✅ APROBADO | 12145ae |
 | 7.1b | UI conductor de Rosco: modal inicio | ✅ APROBADO | 0f67f43 |
