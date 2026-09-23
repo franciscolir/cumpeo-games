@@ -9,6 +9,7 @@ import { renderEditorItemsQPEP } from '../games/que-piensa-el-publico/editor.js'
 import { renderEditorItemsTrivia } from '../games/trivia/editor.js';
 import { renderEditorItemsRosco } from '../games/rosco/editor.js';
 import { renderEditorItemsMemoria } from '../games/memoria/editor.js';
+import { renderEditorItemsAntiTrivia } from '../games/anti-trivia/editor.js';
 
 /**
  * Renderiza el formulario de set.
@@ -38,6 +39,7 @@ export async function renderFormularioSet(container, app, params = {}) {
   const esTrivia = juegoDelSet?.codigo === 'TRIVIA';
   const esRosco = juegoDelSet?.codigo === 'ROSCO';
   const esMemoria = juegoDelSet?.codigo === 'MEMORIA';
+  const esAntiTrivia = juegoDelSet?.codigo === 'ANTI_TRIVIA';
 
   const nombre = set ? set.nombre : '';
   const descripcion = set ? (set.descripcion || '') : '';
@@ -95,7 +97,8 @@ export async function renderFormularioSet(container, app, params = {}) {
       ${esEdicion && esTrivia ? '<div id="editor-items-trivia"></div>' : ''}
       ${esEdicion && esRosco ? '<div id="editor-items-rosco"></div>' : ''}
       ${esEdicion && esMemoria ? '<div id="editor-items-memoria"></div>' : ''}
-      ${esEdicion && !esQPEP && !esTrivia && !esRosco && !esMemoria ? '<p class="mt-8 font-body-sm text-on-surface-variant italic">Este juego aún no tiene editor de items.</p>' : ''}
+      ${esEdicion && esAntiTrivia ? '<div id="editor-items-anti-trivia"></div>' : ''}
+      ${esEdicion && !esQPEP && !esTrivia && !esRosco && !esMemoria && !esAntiTrivia ? '<p class="mt-8 font-body-sm text-on-surface-variant italic">Este juego aún no tiene editor de items.</p>' : ''}
     </main>
   `;
 
@@ -150,5 +153,7 @@ export async function renderFormularioSet(container, app, params = {}) {
     await renderEditorItemsRosco(container, app, set.id, set);
   } else if (esEdicion && esMemoria) {
     await renderEditorItemsMemoria(container, app, set.id, set);
+  } else if (esEdicion && esAntiTrivia) {
+    await renderEditorItemsAntiTrivia(container, app, set.id);
   }
 }
