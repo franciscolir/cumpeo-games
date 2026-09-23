@@ -18,7 +18,29 @@ import {
 const CANTIDADES = [6, 8, 10, 12];
 const CANTIDAD_DEFAULT = 6;
 
-function _renderEditorItemsMemoria(cantidad) {
+function _esPredeterminado(set) {
+  return set?.es_predeterminado === true;
+}
+
+function _renderEditorItemsMemoria(cantidad, soloLectura = false) {
+  if (soloLectura) {
+    return `
+    <section class="mt-8 border-t-2.5 border-on-surface pt-6" id="editor-items-memoria">
+      <h2 class="font-headline-md uppercase mb-4">Imágenes de Memoricé</h2>
+
+      <p class="font-body-md text-on-surface-variant mb-4">Este set es predeterminado y no se puede editar.</p>
+
+      <div id="grilla-slots-memoria" class="grid grid-cols-3 sm:grid-cols-4 gap-3 mb-6"></div>
+
+      <button id="btn-guardar-memoria" type="button" disabled
+        class="font-label-md uppercase border-2 border-on-surface-variant rounded-lg px-4 py-2 bg-surface-container-low text-on-surface-variant cursor-not-allowed opacity-60">Guardar</button>
+
+      <p id="item-error-memoria" class="font-body-sm text-error mt-2 hidden"></p>
+      <p id="item-ok-memoria" class="font-body-sm text-tertiary mt-2 hidden"></p>
+    </section>
+  `;
+  }
+
   const botones = CANTIDADES.map((n) => `
     <button type="button" data-cantidad="${n}" id="btn-cantidad-${n}"
       class="font-label-md uppercase border-2 rounded-lg px-3 py-1 transition ${n === cantidad
@@ -46,7 +68,29 @@ function _renderEditorItemsMemoria(cantidad) {
   `;
 }
 
-function _renderSlot(idx, storageRef, url) {
+function _renderSlot(idx, storageRef, url, soloLectura = false) {
+  if (soloLectura) {
+    if (storageRef && storageRef.startsWith('emoji:')) {
+      return `
+      <div class="slot-memoria border-2 border-on-surface rounded-lg aspect-square flex items-center justify-center bg-surface-container-lowest" data-idx="${idx}">
+        <span class="font-display-hero text-4xl text-on-surface">${storageRef.slice(6)}</span>
+      </div>
+    `;
+    }
+    if (storageRef && url) {
+      return `
+      <div class="slot-memoria border-2 border-on-surface rounded-lg aspect-square relative overflow-hidden bg-surface-container-lowest" data-idx="${idx}">
+        <img src="${url}" alt="Imagen ${idx + 1}" class="w-full h-full object-cover" data-preview-idx="${idx}" />
+      </div>
+    `;
+    }
+    return `
+    <div class="slot-memoria border-2 border-dashed border-on-surface-variant rounded-lg aspect-square flex items-center justify-center bg-surface-container-lowest" data-idx="${idx}">
+      <span class="absolute font-body-sm text-on-surface-variant pointer-events-none">${idx + 1}</span>
+    </div>
+  `;
+  }
+
   if (storageRef && url) {
     return `
       <div class="slot-memoria border-2 border-on-surface rounded-lg aspect-square relative overflow-hidden bg-surface-container-lowest" data-idx="${idx}">
@@ -70,8 +114,9 @@ function _pintarGrilla(container) {
   const estado = container.__memoriaEstado;
   const grilla = container.querySelector('#grilla-slots-memoria');
   if (!grilla) return;
+  const soloLectura = estado.soloLectura === true;
   grilla.innerHTML = estado.slots
-    .map((s, i) => _renderSlot(i, s.storageRef, s.url))
+    .map((s, i) => _renderSlot(i, s.storageRef, s.url, soloLectura))
     .join('');
 }
 
@@ -91,7 +136,10 @@ async function _cargarItems(container, app, setId) {
   estado.slots = [];
   for (let i = 0; i < estado.cantidad; i++) {
     const ref = refs[i] || null;
-    const url = ref ? await obtenerUrlImagenMemoria(app, ref) : null;
+    let url = null;
+    if (ref && !ref.startsWith('emoji:')) {
+      url = await obtenerUrlImagenMemoria(app, ref);
+    }
     estado.slots.push({ storageRef: ref, url });
   }
 
@@ -161,7 +209,7 @@ async function _cambiarCantidad(container, app, nueva) {
     estado.slots = estado.slots.slice(0, nueva);
   }
 
-  container.innerHTML = _renderEditorItemsMemoria(nueva);
+  container.innerHTML = _renderEditorItemsMemoria(nueva, estado.soloLectura === true);
   _pintarGrilla(container);
   _bindEditorItemsMemoria(
     container,
@@ -217,6 +265,10 @@ function _bindSlots(container, app) {
 function _bindEditorItemsMemoria(container, app, setId, set) {
   const estado = container.__memoriaEstado;
   container.__memoriaCtx = { app, setId, set };
+
+  if (estado.soloLectura === true) {
+    return;
+  }
 
   for (const n of CANTIDADES) {
     const btn = container.querySelector(`#btn-cantidad-${n}`);
@@ -288,17 +340,20 @@ export async function renderEditorItemsMemoria(container, app, setId, set) {
   const mount = container.querySelector('#editor-items-memoria');
   if (!mount) return;
 
+  const soloLectura = _esPredeterminado(set);
+
   container.__memoriaEstado = {
     slots: [],
     cantidad: CANTIDAD_DEFAULT,
     subidosEnSesion: new Set(),
-    pendientesBorrar: new Set()
+    pendientesBorrar: new Set(),
+    soloLectura
   };
   container.__memoriaCtx = { app, setId, set };
 
   await _cargarItems(container, app, setId);
 
-  mount.outerHTML = _renderEditorItemsMemoria(container.__memoriaEstado.cantidad);
+  mount.outerHTML = _renderEditorItemsMemoria(container.__memoriaEstado.cantidad, soloLectura);
   _pintarGrilla(container);
   _bindEditorItemsMemoria(container, app, setId, set);
 }

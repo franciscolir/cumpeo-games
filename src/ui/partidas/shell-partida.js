@@ -87,7 +87,7 @@ async function _resolverUrlsImagenesMemoria(app, estadoJuego) {
   const refs = [...new Set(
     elementos
       .map((el) => el?.imagen_url)
-      .filter((ref) => typeof ref === 'string' && ref !== '')
+      .filter((ref) => typeof ref === 'string' && ref !== '' && !ref.startsWith('emoji:'))
   )];
   for (const ref of refs) {
     try {

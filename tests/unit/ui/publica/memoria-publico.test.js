@@ -138,5 +138,24 @@ describe('Memoricé — UI pública', () => {
     it('grilla usa mapa con fallback al ref crudo', () => {
       expect(SHELL).toMatch(/function _renderEscenarioMemoria[\s\S]*?urlsImagenes\[el\.imagen_url\] \|\| el\.imagen_url/);
     });
+
+    it('el helper salta refs con prefijo emoji:', () => {
+      expect(SHELL).toMatch(/function _resolverUrlsImagenesMemoria[\s\S]*?!ref\.startsWith\('emoji:'\)/);
+    });
+  });
+
+  describe('render de emojis (prefijo emoji:)', () => {
+    it('detecta esEmoji en _renderEscenarioMemoria', () => {
+      expect(SHELL).toMatch(/function _renderEscenarioMemoria[\s\S]*?esEmoji/);
+      expect(SHELL).toMatch(/function _renderEscenarioMemoria[\s\S]*?url\.startsWith\('emoji:'\)/);
+    });
+
+    it('renderiza span con el emoji (slice(6))', () => {
+      expect(SHELL).toMatch(/function _renderEscenarioMemoria[\s\S]*?url\.slice\(6\)/);
+    });
+
+    it('no renderiza img para refs emoji:', () => {
+      expect(SHELL).toMatch(/function _renderEscenarioMemoria[\s\S]*?esEmoji\s*\n?\s*\? `<span/);
+    });
   });
 });

@@ -15,6 +15,7 @@ import { GameUIRegistry, registrarGameUIs } from '../ui/games/index.js';
 import { SessionContext } from './session-context.js';
 import { registrarTodos } from '../games/registro.js';
 import { seedJuegos } from './seed.js';
+import { seedMemoriaPredeterminados } from './seed-memoria-predeterminados.js';
 import { crearStorageAdapter } from '../adapters/storage/index.js';
 import { FotoPublicaRepository } from '../repositories/FotoPublicaRepository.js';
 import { MensajePublicoRepository } from '../repositories/MensajePublicoRepository.js';
@@ -57,6 +58,7 @@ export async function bootstrap(adapter, { usuarioId = null } = {}) {
   registrarTodos(services.registry);
   registrarGameUIs(uiRegistry);
   await seedJuegos(services, services.registry);
+  await seedMemoriaPredeterminados(services, services.registry);
 
   const app = {
     adapter,

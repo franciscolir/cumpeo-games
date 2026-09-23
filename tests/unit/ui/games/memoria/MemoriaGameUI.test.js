@@ -357,6 +357,59 @@ describe('MemoriaGameUI', () => {
     });
   });
 
+  describe('render de emojis (prefijo emoji:)', () => {
+    function elementosEmoji() {
+      return [
+        { id_pareja: 'p1', contenido: '', imagen_url: 'emoji:🐶', descubierto: false },
+        { id_pareja: 'p2', contenido: '', imagen_url: 'emoji:⭐', descubierto: false },
+        { id_pareja: 'p1', contenido: '', imagen_url: 'emoji:🐶', descubierto: false },
+        { id_pareja: 'p2', contenido: '', imagen_url: 'emoji:⭐', descubierto: false }
+      ];
+    }
+
+    it('JUGANDO con imagen_url emoji: renderiza <span> con el emoji', () => {
+      const estado = estadoBase({
+        fase: 'JUGANDO',
+        elementos: elementosEmoji(),
+        elementos_descubiertos: [0, 1, 2, 3]
+      });
+      MemoriaGameUI.renderizarAreaJuego(estado, container, contextoBase(), { onAccion: vi.fn() });
+      expect(container.innerHTML).toContain('<span class="font-display-hero text-4xl text-on-surface">🐶</span>');
+      expect(container.innerHTML).toContain('<span class="font-display-hero text-4xl text-on-surface">⭐</span>');
+      expect(container.innerHTML).not.toContain('<img src="emoji:');
+    });
+
+    it('JUGANDO con imagen_url URL renderiza <img>', () => {
+      const estado = estadoBase({
+        fase: 'JUGANDO',
+        elementos: [
+          { id_pareja: 'p1', contenido: '', imagen_url: 'ref-a', descubierto: false },
+          { id_pareja: 'p2', contenido: '', imagen_url: 'ref-b', descubierto: false },
+          { id_pareja: 'p1', contenido: '', imagen_url: 'ref-a', descubierto: false },
+          { id_pareja: 'p2', contenido: '', imagen_url: 'ref-b', descubierto: false }
+        ],
+        elementos_descubiertos: [0, 1, 2, 3]
+      });
+      const ctx = contextoBase({
+        urlsImagenes: { 'ref-a': 'https://cdn.example/a.png', 'ref-b': 'https://cdn.example/b.png' }
+      });
+      MemoriaGameUI.renderizarAreaJuego(estado, container, ctx, { onAccion: vi.fn() });
+      expect(container.innerHTML).toContain('<img src="https://cdn.example/a.png"');
+      expect(container.innerHTML).toContain('<img src="https://cdn.example/b.png"');
+    });
+
+    it('CAMBIO_TURNO con imagen_url emoji: renderiza <span>', () => {
+      const estado = estadoBase({
+        fase: 'CAMBIO_TURNO',
+        elementos: elementosEmoji()
+      });
+      MemoriaGameUI.renderizarAreaJuego(estado, container, contextoBase(), { onAccion: vi.fn() });
+      expect(container.innerHTML).toContain('>🐶<');
+      expect(container.innerHTML).toContain('>⭐<');
+      expect(container.innerHTML).not.toContain('<img src="emoji:');
+    });
+  });
+
   describe('cleanup', () => {
     it('no falla', () => {
       expect(() => MemoriaGameUI.cleanup()).not.toThrow();

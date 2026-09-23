@@ -111,7 +111,7 @@ async function _resolverUrlsImagenesMemoria(app, estadoJuego) {
   const refs = [...new Set(
     elementos
       .map((el) => el?.imagen_url)
-      .filter((ref) => typeof ref === 'string' && ref !== '')
+      .filter((ref) => typeof ref === 'string' && ref !== '' && !ref.startsWith('emoji:'))
   )];
   for (const ref of refs) {
     try {
@@ -1547,8 +1547,11 @@ function _renderEscenarioMemoria(juegoActivo, fase, contexto) {
 
     if (visible) {
       const url = el.imagen_url ? (urlsImagenes[el.imagen_url] || el.imagen_url) : null;
+      const esEmoji = typeof url === 'string' && url.startsWith('emoji:');
       const contenidoHTML = url
-        ? `<img src="${url}" alt="${el.contenido || ''}" class="max-h-full max-w-full object-contain" />`
+        ? (esEmoji
+          ? `<span class="font-display-hero text-4xl text-on-surface">${url.slice(6)}</span>`
+          : `<img src="${url}" alt="${el.contenido || ''}" class="max-h-full max-w-full object-contain" />`)
         : `<p class="font-body-md text-on-surface text-center px-1">${el.contenido || '?'}</p>`;
       const claseFondo = estaDescubierto
         ? 'bg-tertiary/20 border-tertiary'

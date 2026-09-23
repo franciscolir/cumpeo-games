@@ -122,8 +122,11 @@ function _renderGrilla(elementos, elementosVolteados, elementosDescubiertos, esC
     }
 
     const url = el.imagen_url ? (urlsImagenes?.[el.imagen_url] || el.imagen_url) : null;
+    const esEmoji = typeof url === 'string' && url.startsWith('emoji:');
     const contenido = visible ? (url
-      ? `<img src="${url}" alt="${el.contenido || ''}" class="max-h-full max-w-full object-contain">`
+      ? (esEmoji
+        ? `<span class="font-display-hero text-4xl text-on-surface">${url.slice(6)}</span>`
+        : `<img src="${url}" alt="${el.contenido || ''}" class="max-h-full max-w-full object-contain">`)
       : `<span class="font-display-hero text-lg text-on-surface">${el.contenido || '?'}</span>`)
       : `<span class="font-display-hero text-2xl text-on-surface/60">?</span>`;
 

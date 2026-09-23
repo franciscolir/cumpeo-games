@@ -488,4 +488,69 @@ describe('renderEditorItemsMemoria', () => {
       expect(app.services.set.agregarItem).toHaveBeenCalledTimes(6);
     });
   });
+
+  describe('set predeterminado (modo lectura)', () => {
+    const SET_PREDET = { id: SET_ID, es_predeterminado: true };
+
+    it('muestra mensaje de solo lectura', async () => {
+      await renderEditorItemsMemoria(container, app, SET_ID, SET_PREDET);
+      expect(container.innerHTML).toContain('Este set es predeterminado y no se puede editar.');
+    });
+
+    it('botón Guardar está deshabilitado', async () => {
+      await renderEditorItemsMemoria(container, app, SET_ID, SET_PREDET);
+      expect(container.innerHTML).toMatch(/id="btn-guardar-memoria"[^>]*disabled/);
+    });
+
+    it('no renderiza file inputs', async () => {
+      await renderEditorItemsMemoria(container, app, SET_ID, SET_PREDET);
+      expect(contar(grillaHtml(container), /type="file"/g)).toBe(0);
+      expect(grillaHtml(container)).not.toContain('data-file-idx');
+    });
+
+    it('no renderiza botones ×', async () => {
+      await renderEditorItemsMemoria(container, app, SET_ID, SET_PREDET);
+      expect(contar(grillaHtml(container), /data-quitar-idx=/g)).toBe(0);
+      expect(grillaHtml(container)).not.toContain('data-accion="quitar"');
+    });
+
+    it('no renderiza selector de cantidad', async () => {
+      await renderEditorItemsMemoria(container, app, SET_ID, SET_PREDET);
+      expect(container.innerHTML).not.toContain('selector-cantidad-memoria');
+      expect(container.innerHTML).not.toContain('btn-cantidad-6');
+    });
+
+    it('no persiste al clickear Guardar (sin handler / disabled)', async () => {
+      await renderEditorItemsMemoria(container, app, SET_ID, SET_PREDET);
+      const btn = container.querySelector('#btn-guardar-memoria');
+      btn.click();
+      expect(app.services.set.agregarItem).not.toHaveBeenCalled();
+      expect(app.services.set.eliminarItem).not.toHaveBeenCalled();
+    });
+
+    it('muestra emojis en slots sin resolver storage', async () => {
+      app = crearApp([
+        { id: 'i1', orden: 1, contenido: { imagen_url: 'emoji:🐶' } },
+        { id: 'i2', orden: 2, contenido: { imagen_url: 'emoji:⭐' } },
+        { id: 'i3', orden: 3, contenido: { imagen_url: 'emoji:🔥' } },
+        { id: 'i4', orden: 4, contenido: { imagen_url: 'emoji:🌙' } },
+        { id: 'i5', orden: 5, contenido: { imagen_url: 'emoji:⚽' } },
+        { id: 'i6', orden: 6, contenido: { imagen_url: 'emoji:🎵' } }
+      ]);
+      await renderEditorItemsMemoria(container, app, SET_ID, SET_PREDET);
+
+      expect(app.storage.obtenerUrlPublica).not.toHaveBeenCalled();
+      expect(grillaHtml(container)).toContain('>🐶<');
+      expect(grillaHtml(container)).toContain('>⭐<');
+      expect(container.__memoriaEstado.soloLectura).toBe(true);
+    });
+
+    it('set NO predeterminado sigue editable', async () => {
+      await renderEditorItemsMemoria(container, app, SET_ID, { id: SET_ID });
+      expect(container.innerHTML).not.toContain('no se puede editar');
+      expect(contar(grillaHtml(container), /type="file"/g)).toBe(6);
+      expect(container.innerHTML).toMatch(/id="btn-guardar-memoria"[^>]*>/);
+      expect(container.innerHTML).not.toMatch(/id="btn-guardar-memoria"[^>]*disabled/);
+    });
+  });
 });
