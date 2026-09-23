@@ -228,7 +228,7 @@ _(ninguna)_
 | 2026-09-21 | 5 | 5.4-pre | ✅ APROBADO | Cierre documental de mecánica de Pictionary. Decisiones: estructura del item del set, orden fijo de modos, bonus manual. | — |
 | 2026-09-21 | 5 | 5.4a | ✅ APROBADO | Pictionary GameDefinition + reducers + 74 tests unitarios. Archivos: PictionaryGameDefinition.js, tests, registro.js. | ef53390 |
 | 2026-09-23 | 5 | ✅ CERRADO | 11/11 pasos. 9 juegos implementados. 1749 unit + ~215 e2e. Commit de cierre: 9b7dfdc. |
-
+| 2026-09-23 | 7 | 7.1c | ✅ APROBADO | Rediseño circular del rosco (conductor + pública). renderRosco compartido. 38+57+41 tests. 1857 unit. | 3908371 |
 
 ## Deuda técnica nueva
 | 46 | Test e2e crea respuestas con participanteId inventado (FK violada) | Paso 4.8a | Media |
@@ -274,4 +274,4 @@ _(ninguna)_
 | 93 | `_bindDragAndDrop` en `EnlacesGameUI.js` tiene una comparación duplicada: `=== 'false'` (string) y `=== false` (boolean). La segunda nunca matchea. Código muerto. | Paso 5.9b (detectado) | Baja |
 | 95 | `shell-partida.js:707` sobrescribe `config.rondas` localmente para `validarSetsElegidos`. No muta la config congelada (spread), pero es frágil. Alternativa: que `validarSetsElegidos` valide `sets.length` directo. | Paso 7.1b (detectado) | Baja |
 | 96 | Los prompts deben verificar el `git show` del archivo real antes de decir "MANTENER X". El agente no puede distinguir entre X real y X inventado por el prompt. | Paso 7.1a (detectado) | Media |
-
+| 97 | `shell-publica.js` líneas 604, 616 buscan `#rosco-pub-timer-eq1` / `#rosco-pub-timer-eq2` pero el HTML no los tiene. Bug pre-existente, no tocado en 7.1c. | Paso 7.1c (detectado) | Media |
