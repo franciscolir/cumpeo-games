@@ -831,30 +831,180 @@ Desde RESPONDIENDO hay 3 transiciones posibles:
 
 ------------------------------------------------------------------------
 
-# 12. ENLACES
+# 12. ENLACES — Mecánica cerrada
 
 ## Concepto
 
-Juego basado en establecer conexiones entre elementos.
+Juego de asociación 1:1. Se muestran dos columnas de conceptos: la
+columna A (fija) y la columna B (desordenada). El equipo debe ordenar
+la columna B para que cada elemento quede alineado con su par
+correspondiente de la columna A.
 
-## Estado de definición
+## Objetivo
 
-La mecánica funcional todavía no está cerrada.
+Alinear correctamente la mayor cantidad de pares posible. Gana el
+equipo con más aciertos al final de N rondas.
 
-Falta definir:
+## Estructura
 
--   elementos que se conectan;
--   objetivo;
--   selección;
--   respuesta válida;
--   turnos;
--   rondas;
--   tiempo;
--   puntuación;
--   errores;
--   finalización;
--   Set;
--   participación pública.
+- 2 equipos (Eq1 y Eq2).
+- Cada ronda tiene 2 turnos: Eq1 primero, Eq2 después.
+- Cada turno: el equipo ordena una columna B de `pares_por_turno`
+  elementos (default 8).
+- Cada equipo tiene SU PROPIO SET (pueden ser distintos).
+- Sets elegidos del almacén al inicio de cada turno.
+- N rondas configurables (default 1).
+
+## Set (estructura del item)
+
+```json
+{
+  "concepto_a": "Cervantes",
+  "concepto_b": "Quijote",
+  "categoria": "Literatura",
+  "dificultad": 1
+}
+concepto_a: string no vacío (columna A).
+
+concepto_b: string no vacío (columna B).
+
+categoria: string opcional.
+
+dificultad: 1 | 2 | 3 (opcional).
+
+Cada item del set es UN PAR correcto (concepto_a ↔ concepto_b).
+
+Validación del set
+Debe tener al menos pares_por_turno items (default 8).
+
+Cada item: concepto_a y concepto_b strings no vacíos.
+
+No puede haber concepto_a duplicados ni concepto_b duplicados
+dentro del mismo set (cada elemento aparece una sola vez).
+
+Selección de set por equipo
+El conductor elige un set del almacén para el equipo activo.
+
+Los sets pueden ser distintos para cada equipo.
+
+Desarrollo del turno
+SELECCIONANDO_SET: el conductor elige 1 set para el equipo activo.
+
+PREPARANDO_TABLERO: el sistema toma pares_por_turno items del
+set, extrae los concepto_a (columna A, orden fijo) y los
+concepto_b (columna B, orden aleatorio).
+
+ORDENANDO: timer tiempo_turno_seg corre (default 60s). El
+equipo mira la pantalla pública y dicta verbalmente al conductor qué
+mover. El conductor arrastra elementos de la columna B arriba/abajo
+para ordenarlos.
+
+El conductor puede deshacer movimientos mientras el timer corre.
+
+Time-up: la columna B se congela. Fase → ESPERA_VALIDACION.
+Ya no se puede mover nada.
+
+Validar (el conductor presiona "Validar" en cualquier momento, o
+después del time-up): fase → MOSTRANDO_RESULTADO.
+
+MOSTRANDO_RESULTADO: se evalúa cada fila. Para cada posición i,
+si columna_B[i] es el par de columna_A[i], es acierto. Cada
+acierto suma puntos_por_acierto.
+
+Al terminar el turno de Eq1, pasa a Eq2.
+
+CAMBIO_TURNO.
+
+Eq2 juega su set.
+
+FIN_DE_RONDA.
+
+FIN_DE_JUEGO si no hay más rondas.
+
+Timer
+tiempo_turno_seg: configurable (default 60s).
+
+Corre solo en fase ORDENANDO.
+
+Al llegar a 0: se detiene. La columna B se congela.
+
+Pasa automáticamente a ESPERA_VALIDACION.
+
+El conductor puede validar antes del time-up sin esperar.
+
+Puntuación
+puntos_por_acierto: configurable (default 10).
+
+No hay penalización por error. Una fila incorrecta simplemente
+no suma puntos.
+
+No hay penalización por no terminar.
+
+Ganador: mayor puntaje total. Empate técnico si empatan.
+
+Pasar
+NO existe. El equipo no "pasa" filas. Solo ordena lo que puede.
+
+Deshacer
+El conductor puede deshacer movimientos mientras el timer corre.
+
+Una vez que el timer llega a 0, no se puede deshacer.
+
+Después de validar, no se puede deshacer.
+
+Interacción del conductor
+Drag-and-drop real de los elementos de la columna B.
+
+Arrastra un elemento arriba o abajo para cambiar su posición.
+
+El resto de la columna se reordena automáticamente.
+
+Botón "Validar" para forzar la evaluación antes del time-up.
+
+Botón "Deshacer" (opcional, mientras el timer corre).
+
+La implementación del drag-and-drop se decide en 5.9a.
+
+Configuración
+js
+{
+  rondas: 1,
+  pares_por_turno: 8,
+  tiempo_turno_seg: 60,
+  puntos_por_acierto: 10
+}
+Fases
+INICIO_RONDA, SELECCIONANDO_SET, PREPARANDO_TABLERO, ORDENANDO,
+ESPERA_VALIDACION, MOSTRANDO_RESULTADO, CAMBIO_TURNO,
+FIN_DE_RONDA, FIN_DE_JUEGO.
+
+Público
+Ve: columna A (fija), columna B (en movimiento en vivo, reflejando
+los movimientos del conductor), timer, marcador, equipo activo,
+progreso de la ronda.
+
+Ve: los movimientos del conductor en tiempo real.
+
+NO ve: cuáles son los pares correctos hasta que se valida.
+
+NO ve: la respuesta correcta antes de MOSTRANDO_RESULTADO.
+
+Estado específico
+Campo	Descripción
+equipo_actual	1 o 2
+ronda_actual	Ronda en curso
+total_rondas	Total de rondas
+fase	Fase actual
+columna_a	Array de concepto_a (orden fijo)
+columna_b	Array de concepto_b (orden actual)
+orden_inicial_b	Orden inicial aleatorio
+movimientos	Historial de movimientos (para deshacer)
+validado	Boolean (true si el conductor validó)
+resultado_turno	{ aciertos, total }
+puntos_equipo_1	Puntaje acumulado Eq1
+puntos_equipo_2	Puntaje acumulado Eq2
+tiempo_restante_seg	Tiempo restante
+tiempo_agotado	Boolean
 
 ------------------------------------------------------------------------
 
