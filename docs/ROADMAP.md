@@ -40,6 +40,7 @@
 | 4 | "¿Qué piensa el público?" | ✅ CERRADO | 13/13 | 2e19767 | 2026-09-21 |
 | 5 | Juegos restantes | ✅ CERRADO | 11/11 | 9b7dfdc | 2026-09-23 |
 | 6 | Migración e2e a Supabase (opcional) | ⏸️ POSPUESTO | — | — | 2026-09-23 |
+| 7 | Formularios de sets por juego | 🔄 EN PROGRESO | 3/10 | — | — |
 
 **★ MVP se alcanza al cerrar el Bloque 4 ★**
 **Decisión al cerrar Bloque 5 (2026-09-23):** POSPUESTO INDEFINIDAMENTE.
@@ -227,6 +228,25 @@ de implementarse.
 
 ---
 
+### Bloque 7 — Formularios de sets por juego 🔄 EN PROGRESO (3/10)
+
+**Objetivo:** Crear formularios de sets dedicados por juego y rediseñar el rosco.
+
+| # | Paso | Estado | Commit |
+|---|------|--------|--------|
+| 7.0a | Refactor: extraer editores QPEP/Trivia | ✅ APROBADO | dfb901c |
+| 7.1a | Dominio de Rosco: N rondas = N sets | ✅ APROBADO | 12145ae |
+| 7.1b | UI conductor de Rosco: modal inicio | ✅ APROBADO | 0f67f43 |
+| 7.1c | Rediseño del rosco (conductor + pública) | 🔄 EN CURSO | — |
+| 7.1d | Editor de Rosco: grilla 27 filas | ⬜ PENDIENTE | — |
+| 7.2 | Memoricé: editor + sets predeterminados | ⬜ PENDIENTE | — |
+| 7.3 | Anti-Trivia: editor | ⬜ PENDIENTE | — |
+| 7.4 | Enlaces: editor | ⬜ PENDIENTE | — |
+| 7.5 | Trivia: editor (4 alternativas con checkbox) | ⬜ PENDIENTE | — |
+| 7.6 | QPEP: editor simplificado | ⬜ PENDIENTE | — |
+| 7.7 | Pictionary: 4 editores + 2 bancos | ⬜ PENDIENTE | — |
+| 7.8 | Historia Enredada: historias + colores | ⬜ PENDIENTE | — |
+
 ## 4. Historial de actualizaciones
 
 | Versión | Fecha | Cambio |
@@ -261,7 +281,9 @@ de implementarse.
 | 5.20 | 2026-09-23 | 5.9b: EnlacesGameUI + drag-and-drop. 1699 unit. |
 | 5.21 | 2026-09-23 | 5.9c: Enlaces pública + timer. 50 tests. Leak controlado. 1749 unit. |
 | 5.22 | 2026-09-23 | 5.9d: e2e Enlaces (19 tests). ★ BLOQUE 5 CERRADO ★. 1749 unit. |
-
+| 7.1 | 2026-09-23 | 7.0a: editores extraídos. 1749 unit. |
+| 7.2 | 2026-09-23 | 7.1a: dominio Rosco N sets. 1780 unit. |
+| 7.3 | 2026-09-23 | 7.1b: modal inicio + N sets. 1794 unit. |
 ---
 
 ## 5. Convenciones

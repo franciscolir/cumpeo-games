@@ -23,6 +23,9 @@
 | 2026-09-23 | 5 | 5.9b | ✅ APROBADO | EnlacesGameUI + shell actions + drag-and-drop HTML5. 67 tests. | acc423f |
 | 2026-09-23 | 5 | 5.9c | ✅ APROBADO | Enlaces pública + timer. 50 tests. Leak de pares_correctos y movimientos controlado (tests anti-leak). | d5e0694 |
 | 2026-09-23 | 5 | 5.9d | ✅ APROBADO | 19 tests e2e Enlaces (drag-drop + flujo + puntuación + timer + validación). Deuda #61 respetada. | 9b7dfdc |
+| 2026-09-23 | 7 | 7.0a | ✅ APROBADO | Refactor: extraer editores QPEP/Trivia. formulario.js 741→144. 1749 unit. | dfb901c |
+| 2026-09-23 | 7 | 7.1a | ✅ APROBADO | Dominio Rosco: N rondas = N sets. 101 tests Rosco. 1780 unit. | 12145ae |
+| 2026-09-23 | 7 | 7.1b | ✅ APROBADO | Modal de inicio + N sets. 43 tests UI, 18 e2e. 1794 unit. | 0f67f43 |
 ---
 
 ## Correcciones pendientes
@@ -269,3 +272,5 @@ _(ninguna)_
 | 91 | `GameDefinition.validarContenidoSet(contenido, config)` recibe un 2do parámetro `config` no documentado en MASTER §8.3.2. Es necesario (para validar `pares_por_turno`), pero el contrato debería actualizarse. | Paso 5.9a (detectado) | Baja |
 | 92 | El contrato `GameDefinition` permite `opts` en `prepararTablero` (para inyectar RNG). Bien para testabilidad. Pero el contrato documentado en MASTER §8.3.2 no menciona reducers ni `opts`. Conviene actualizar MASTER al cerrar Bloque 5. | Paso 5.9a (detectado) | Baja |
 | 93 | `_bindDragAndDrop` en `EnlacesGameUI.js` tiene una comparación duplicada: `=== 'false'` (string) y `=== false` (boolean). La segunda nunca matchea. Código muerto. | Paso 5.9b (detectado) | Baja |
+| 95 | `shell-partida.js:707` sobrescribe `config.rondas` localmente para `validarSetsElegidos`. No muta la config congelada (spread), pero es frágil. Alternativa: que `validarSetsElegidos` valide `sets.length` directo. | Paso 7.1b (detectado) | Baja |
+| 96 | Los prompts deben verificar el `git show` del archivo real antes de decir "MANTENER X". El agente no puede distinguir entre X real y X inventado por el prompt. | Paso 7.1a (detectado) | Media |
