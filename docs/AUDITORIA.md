@@ -288,5 +288,3 @@ _(ninguna)_
 | 102 | El editor de Memoricé guarda estado en `container.__memoriaEstado` para acceso desde tests. Práctica cuestionable. Considerar mocks o refactor. | Paso 7.2c (detectado) | Baja |
 | 103 | `shell-partida.js` no tiene unit tests (solo e2e). La resolución de storageRefs a URLs quedó cubierta solo por `node --check` + simetría con `shell-publica`. Considerar agregar tests. | Paso 7.2d (detectado) | Media |
 | 104 | `shell-publica.js` muta `contexto.urlsImagenes` en vez de pasar un 4to parámetro. Efecto secundario. Considerar refactor. | Paso 7.2d (detectado) | Baja |
-| 103 | `shell-partida.js` no tiene unit tests (solo e2e). La resolución de storageRefs a URLs quedó cubierta solo por `node --check` + simetría con `shell-publica`. Considerar agregar tests. | Paso 7.2d (detectado) | Media |
-| 104 | `shell-publica.js` muta `contexto.urlsImagenes` en vez de pasar un 4to parámetro. Efecto secundario. Considerar refactor. | Paso 7.2d (detectado) | Baja |

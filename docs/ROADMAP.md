@@ -40,7 +40,7 @@
 | 4 | "¿Qué piensa el público?" | ✅ CERRADO | 13/13 | 2e19767 | 2026-09-21 |
 | 5 | Juegos restantes | ✅ CERRADO | 11/11 | 9b7dfdc | 2026-09-23 |
 | 6 | Migración e2e a Supabase (opcional) | ⏸️ POSPUESTO | — | — | 2026-09-23 |
-| 7 | Formularios de sets por juego | 🔄 EN PROGRESO | 4/10 | — | — |
+| 7 | Formularios de sets por juego | 🔄 EN PROGRESO | 9/10 | — | — |
 
 **★ MVP se alcanza al cerrar el Bloque 4 ★**
 **Decisión al cerrar Bloque 5 (2026-09-23):** POSPUESTO INDEFINIDAMENTE.
@@ -228,24 +228,23 @@ de implementarse.
 
 ---
 
-### Bloque 7 — Formularios de sets por juego 🔄 EN PROGRESO (7/10)
+### Bloque 7 — Formularios de sets por juego 🔄 EN PROGRESO (9/10)
 
 **Objetivo:** Crear formularios de sets dedicados por juego y rediseñar el rosco.
 
-| # | Paso | Estado | Commit |
-|---|------|--------|--------|
 | 7.0a | Refactor: extraer editores QPEP/Trivia | ✅ APROBADO | dfb901c |
 | 7.1a | Dominio de Rosco: N rondas = N sets | ✅ APROBADO | 12145ae |
 | 7.1b | UI conductor de Rosco: modal inicio | ✅ APROBADO | 0f67f43 |
 | 7.1c | Rediseño del rosco (conductor + pública) | ✅ APROBADO | 3908371 |
 | 7.1d | Editor de Rosco: grilla 27 filas | ✅ APROBADO | 9771694 |
-| 7.2 | Memoricé: editor + sets predeterminados | ⬜ PENDIENTE | — |
 | 7.2a | Modelo Memoricé: imagen_url + es_predeterminado | ✅ APROBADO | 83df5b8 |
 | 7.2b | Storage helpers para imágenes | ✅ APROBADO | 5cba1fa |
 | 7.2c | Editor de Memoricé | ✅ APROBADO | 353f1d0 |
+| 7.2d | Resolver storageRef a URL en UI | ✅ APROBADO | 3ea02b9 |
+| 7.2e | Sets predeterminados (Emojis, Íconos) | ⬜ PENDIENTE | — |
 | 7.3 | Anti-Trivia: editor | ⬜ PENDIENTE | — |
 | 7.4 | Enlaces: editor | ⬜ PENDIENTE | — |
-| 7.5 | Trivia: editor (4 alternativas con checkbox) | ⬜ PENDIENTE | — |
+| 7.5 | Trivia: editor | ⬜ PENDIENTE | — |
 | 7.6 | QPEP: editor simplificado | ⬜ PENDIENTE | — |
 | 7.7 | Pictionary: 4 editores + 2 bancos | ⬜ PENDIENTE | — |
 | 7.8 | Historia Enredada: historias + colores | ⬜ PENDIENTE | — |
@@ -292,6 +291,7 @@ de implementarse.
 | 7.6 | 2026-09-23 | 7.2a: modelo Memoricé. 1901 unit. |
 | 7.7 | 2026-09-23 | 7.2b: storage helpers. 1916 unit. |
 | 7.8 | 2026-09-23 | 7.2c: editor de Memoricé. 1956 unit. |
+| 7.9 | 2026-09-23 | 7.2d: resolver ref a URL en UI. 1964 unit. |
 ---
 
 ## 5. Convenciones
