@@ -20,6 +20,7 @@
 | 2026-09-18 | 0 | 0.1–0.6 | ✅ APROBADO | Bloque documental. MASTER pendiente de integración manual. | — |
 | 2026-09-23 | 5 | 5.8 (cierre) | ✅ CERRADO | Anti-Trivia 12/12 e2e. Memoricé 10/10. Run completo 179/184. 4 fallas residuales (2 pre-existentes, 2 flaky). | 1d865dd |
 
+| 2026-09-23 | 5 | 5.9a | ✅ APROBADO | EnlacesGameDefinition + 11 reducers + 135 tests. Registro/bootstrap/seed actualizados. | 53f29e9 |
 ---
 
 ## Correcciones pendientes
@@ -266,3 +267,5 @@ _(ninguna)_
 | 88 | `shell-partida.spec.js:277` "uiRegistry tiene QuePiensaElPublicoGameUI registrado" espera un count desactualizado (2 vs 8). Test necesita actualizarse para reflejar los 8 GameUIs. | Run completo 5.8e (detectado) | Media |
 | 89 | `shell-publica.spec.js:351` "pública muestra resultado en REVELANDO" falla con `ConflictoVersionError` (race condition entre el test y el polling de 2s). | Run completo 5.8e (detectado) | Media |
 | 90 | `rosco/flujo-completo.spec.js:56` "rosco se renderiza con 27 letras" flaky en run completo, pasa en aislamiento y con `--repeat-each=3`. Probable acumulación de estado. | Run completo 5.8e (detectado) | Baja |
+| 91 | `GameDefinition.validarContenidoSet(contenido, config)` recibe un 2do parámetro `config` no documentado en MASTER §8.3.2. Es necesario (para validar `pares_por_turno`), pero el contrato debería actualizarse. | Paso 5.9a (detectado) | Baja |
+| 92 | El contrato `GameDefinition` permite `opts` en `prepararTablero` (para inyectar RNG). Bien para testabilidad. Pero el contrato documentado en MASTER §8.3.2 no menciona reducers ni `opts`. Conviene actualizar MASTER al cerrar Bloque 5. | Paso 5.9a (detectado) | Baja |

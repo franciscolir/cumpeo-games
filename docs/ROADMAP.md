@@ -183,7 +183,7 @@ El Bloque 3 pasa de 7 a 6 pasos.
 | 5.6 | Trivia end-to-end | ✅ APROBADO | 9269eb1, 2d9190d, 8bee291, 38eca68, 0acedd5, 28e8b6f, afba7a0 |
 | 5.7 | Memoricé end-to-end | ✅ APROBADO | cc06fee, f158afb, 62617c0, a00b8d1, 34a27fe, 79cc2b7, d1ff93d |
 | 5.8 | Anti-Trivia end-to-end | ✅ CERRADO | 92cc14c, 141093e, c384044, 14a3cf3, 5d9cd95, 1d865dd |
-| 5.9 | Enlaces — cerrar mecánica + implementar | ⬜ PENDIENTE | — |
+| 5.9 | Enlaces — cerrar mecánica + implementar | 🔄 EN CURSO | 9496347 (pre), 53f29e9 (a) |
 
 #### Detalle del paso 5.8 — Anti-Trivia (CERRADO)
 
@@ -248,6 +248,7 @@ de implementarse.
 | 5.16 | 2026-09-22 | 5.8-pre-fix: ESPERA_VALIDACION y confirmaciones tras time up. |
 | 5.17 | 2026-09-23 | 5.8-revert: heartbeat removido (regresión e2e). C1 aplicado. 1497 unit. |
 | 5.18 | 2026-09-23 | 5.8e: heartbeat en ControlService. Anti-Trivia 12/12, Memoricé 10/10, run completo 179/184. 5.8 CERRADO. |
+| 5.19 | 2026-09-23 | 5.9a: EnlacesGameDefinition + 135 tests. 1632 unit totales. |
 
 ---
 
