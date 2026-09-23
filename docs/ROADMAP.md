@@ -2,7 +2,7 @@
 
 **Versión:** 1.0
 **Última actualización:** 2026-09-18
-**Estado global:** Bloques 0, 1, 2, 3, 4, 5 cerrados · Bloque 6 pendiente (opcional) · ★ MVP alcanzado ★
+**Estado global:** Bloques 0, 1, 2, 3, 4, 5 cerrados · Bloque 6 pospuesto · Bloque 7 en progreso (11/16) · ★ MVP alcanzado ★
 **Rama:** feature/vertical-slice
 
 ---
@@ -21,9 +21,9 @@
 
 | Métrica | Valor |
 |---------|-------|
-| Bloques totales | 7 (0 al 6) |
+| Bloques totales | 8 (0 al 7) |
 | Bloques cerrados | 6 (Bloques 0, 1, 2, 3, 4, 5) |
-| Bloques en progreso | 0 |
+| Bloques en progreso | 1 (Bloque 7) |
 | Bloques pendientes | 1 (Bloque 6, opcional) |
 | MVP alcanzado | Sí (al cerrar Bloque 4, 2026-09-21) |
 | Fecha estimada MVP | Alcanzado |
@@ -40,7 +40,7 @@
 | 4 | "¿Qué piensa el público?" | ✅ CERRADO | 13/13 | 2e19767 | 2026-09-21 |
 | 5 | Juegos restantes | ✅ CERRADO | 11/11 | 9b7dfdc | 2026-09-23 |
 | 6 | Migración e2e a Supabase (opcional) | ⏸️ POSPUESTO | — | — | 2026-09-23 |
-| 7 | Formularios de sets por juego | 🔄 EN PROGRESO | 9/10 | — | — |
+| 7 | Formularios de sets por juego | 🔄 EN PROGRESO | 11/16 | — | — |
 
 **★ MVP se alcanza al cerrar el Bloque 4 ★**
 **Decisión al cerrar Bloque 5 (2026-09-23):** POSPUESTO INDEFINIDAMENTE.
@@ -296,7 +296,6 @@ de implementarse.
 | 7.9 | 2026-09-23 | 7.2d: resolver ref a URL en UI. 1964 unit. |
 | 7.10 | 2026-09-23 | 7.2e: sets predeterminados con emojis e íconos. 1986 unit. |
 | 7.11 | 2026-09-23 | 7.3: editor de Anti-Trivia (lista + respuestas dinámicas). 45 tests. 2031 unit. |
-| 7.11 | 2026-09-23 | 7.3: editor de Anti-Trivia. 45 tests. 2031 unit. |
 ---
 
 ## 5. Convenciones
