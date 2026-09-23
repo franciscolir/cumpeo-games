@@ -14,6 +14,7 @@ import { crearTimer } from '../games/_shared/index.js';
 import { ALFABETO, ESTADO_LETRA, RoscoGameDefinition } from '../../games/rosco/RoscoGameDefinition.js';
 import { PictionaryGameDefinition } from '../../games/pictionary/PictionaryGameDefinition.js';
 import { AntiTriviaGameDefinition } from '../../games/anti-trivia/AntiTriviaGameDefinition.js';
+import { EnlacesGameDefinition } from '../../games/enlaces/EnlacesGameDefinition.js';
 
 let cleanupSuscripciones = null;
 let intervalId = null;
@@ -36,6 +37,8 @@ let _triviaTimerKey = null;
 
 let _antiTriviaTimer = null;
 
+let _enlacesTimer = null;
+
 /**
  * Renderiza el shell público completo.
  * @param {HTMLElement} container
@@ -44,6 +47,7 @@ let _antiTriviaTimer = null;
  */
 export async function renderShellPublica(container, app, params) {
   _limpiarSuscripciones();
+  _limpiarTimerEnlacesPublico();
   if (intervalId) { clearInterval(intervalId); intervalId = null; }
   if (intervalGaleriaId) { clearInterval(intervalGaleriaId); intervalGaleriaId = null; }
   mensajesActuales = '';
@@ -136,6 +140,7 @@ async function _renderContenido(container, app, codigo) {
   const esTrivia = juegoActivo?.juego_codigo === 'TRIVIA';
   const esMemoria = juegoActivo?.juego_codigo === 'MEMORIA';
   const esAntiTrivia = juegoActivo?.juego_codigo === 'ANTI_TRIVIA';
+  const esEnlaces = juegoActivo?.juego_codigo === 'ENLACES';
   const itemsQPEP = esQPEP ? await cargarItemsDeJuego(app, juegoActivo) : null;
   const itemsRosco = esRosco ? await cargarItemsDeJuego(app, juegoActivo) : null;
   const itemsHistoria = esHistoriaEnredada ? await cargarItemsDeJuego(app, juegoActivo) : null;
@@ -159,6 +164,8 @@ async function _renderContenido(container, app, codigo) {
     escenarioHTML = _renderEscenarioMemoria(juegoActivo, fase, contexto);
   } else if (esAntiTrivia) {
     escenarioHTML = _renderEscenarioAntiTrivia(juegoActivo, fase, contexto);
+  } else if (esEnlaces) {
+    escenarioHTML = _renderEscenarioEnlaces(juegoActivo, fase, contexto);
   } else {
     escenarioHTML = _renderEscenario(juegoActivo);
   }
@@ -200,6 +207,9 @@ async function _renderContenido(container, app, codigo) {
   }
   if (esAntiTrivia && juegoActivo?.estado_juego) {
     _iniciarTimerAntiTriviaPublico(juegoActivo, container);
+  }
+  if (esEnlaces && juegoActivo?.estado_juego) {
+    _iniciarTimerEnlacesPublico(juegoActivo, container);
   }
 }
 
@@ -1917,4 +1927,218 @@ function _iniciarTimerAntiTriviaPublico(juegoActivo, container) {
 function _limpiarTimerAntiTriviaPublico() {
   _antiTriviaTimer?.cancelar();
   _antiTriviaTimer = null;
+}
+
+/* =============================================================
+   Escenario Enlaces (público)
+
+   Ve: columnas A/B, timer en ORDENANDO, equipo activo,
+   indicadores ✓/✗ por fila solo en MOSTRANDO_RESULTADO,
+   resultado del turno y marcador.
+
+   NO ve: movimientos. pares_correctos solo se lee internamente
+   para calcular los indicadores en MOSTRANDO_RESULTADO y nunca
+   se vuelca el mapa al HTML.
+   ============================================================= */
+
+function _renderEscenarioEnlaces(juegoActivo, fase, contexto) {
+  const estadoJuego = juegoActivo?.estado_juego || {};
+  const equipo1 = contexto?.equipos?.[0] || { nombre: 'Eq1' };
+  const equipo2 = contexto?.equipos?.[1] || { nombre: 'Eq2' };
+  const equipoActual = estadoJuego.equipo_actual || 1;
+  const ronda = estadoJuego.ronda_actual || 1;
+  const totalRondas = estadoJuego.total_rondas || 1;
+  const pts1 = estadoJuego.puntos_equipo_1 || 0;
+  const pts2 = estadoJuego.puntos_equipo_2 || 0;
+  const config = juegoActivo?.configuracion_congelada || {};
+  const segundos = config.tiempo_turno_seg || 60;
+
+  const equipoActivoNombre = equipoActual === 1 ? equipo1.nombre : equipo2.nombre;
+  const equipoActivoColor = equipoActual === 1
+    ? 'border-[#00D2FF] bg-[#00D2FF]/15'
+    : 'border-[#FF3344] bg-[#FF3344]/15';
+
+  const columnaA = estadoJuego.columna_a || [];
+  const columnaB = estadoJuego.columna_b || [];
+  const mostrarIndicadores = fase === 'MOSTRANDO_RESULTADO';
+  const pares = mostrarIndicadores ? (estadoJuego.pares_correctos || {}) : {};
+
+  const itemsA = columnaA.map((a, i) => {
+    let indicador = '';
+    if (mostrarIndicadores) {
+      const esAcierto = pares[a] === columnaB[i];
+      indicador = esAcierto
+        ? '<span class="ml-2 text-tertiary font-bold" data-enlaces-pub-indicador="acierto">✓</span>'
+        : '<span class="ml-2 text-error font-bold" data-enlaces-pub-indicador="error">✗</span>';
+    }
+    return `
+      <li class="font-body-md text-on-surface bg-surface-container-high border border-on-surface-variant/40 rounded-md px-3 py-1.5 flex items-center justify-between" data-enlaces-pub-fila-a="${i}">
+        <span>${a}</span>${indicador}
+      </li>
+    `;
+  }).join('');
+
+  const itemsB = columnaB.map((b, i) => `
+    <li class="font-body-md text-on-surface bg-comicYellow/40 border-2 border-on-surface rounded-md px-3 py-1.5" data-enlaces-pub-fila-b="${i}">
+      ${b}
+    </li>
+  `).join('');
+
+  const tableroHTML = `
+    <div class="grid grid-cols-2 gap-4 w-full max-w-2xl mx-auto text-left mt-3">
+      <div>
+        <p class="font-label-md uppercase text-on-surface-variant mb-2">Columna A</p>
+        <ul class="flex flex-col gap-1" data-enlaces-pub-columna-a>${itemsA}</ul>
+      </div>
+      <div>
+        <p class="font-label-md uppercase text-on-surface-variant mb-2">Columna B</p>
+        <ul class="flex flex-col gap-1" data-enlaces-pub-columna-b>${itemsB}</ul>
+      </div>
+    </div>
+  `;
+
+  let inner = '';
+
+  if (!fase || fase === 'INICIO_RONDA') {
+    inner = `
+      <p class="font-display-hero text-5xl text-primary uppercase mb-2">¡A JUGAR!</p>
+      <p class="font-headline-md uppercase text-on-surface">Enlaces</p>
+      ${fase === 'INICIO_RONDA' ? '<p class="font-body-md text-on-surface-variant mt-2">Esperando inicio del turno…</p>' : ''}
+    `;
+  } else if (fase === 'SELECCIONANDO_SET') {
+    inner = `
+      <p class="font-display-hero text-4xl text-primary uppercase mb-2">Seleccionando set</p>
+      <p class="font-headline-md uppercase ${equipoActual === 1 ? 'text-[#00D2FF]' : 'text-[#FF3344]'} mb-2">${equipoActivoNombre}</p>
+      <p class="font-body-md text-on-surface-variant mt-2">El conductor elige un set para ${equipoActivoNombre}…</p>
+    `;
+  } else if (fase === 'PREPARANDO_TABLERO') {
+    inner = `
+      <p class="font-display-hero text-4xl text-primary uppercase mb-2">Preparando tablero</p>
+      <p class="font-body-md text-on-surface-variant mt-2">Preparando tablero…</p>
+    `;
+  } else if (fase === 'ORDENANDO') {
+    const restante = estadoJuego.tiempo_restante_seg ?? segundos;
+    inner = `
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+        <span class="font-label-md uppercase text-on-surface-variant">Ronda ${ronda} / ${totalRondas}</span>
+        <span class="font-label-md uppercase text-on-surface-variant">Equipo: <span class="${equipoActual === 1 ? 'text-[#00D2FF]' : 'text-[#FF3344]'}">${equipoActivoNombre}</span></span>
+      </div>
+      <div class="bg-comicYellow border-2.5 border-on-surface rounded-xl p-4 shadow-comic-sm text-center">
+        <p class="font-label-md uppercase">Tiempo restante</p>
+        <p id="enlaces-pub-timer" class="font-display-hero text-4xl text-primary">${restante}s</p>
+      </div>
+      ${tableroHTML}
+    `;
+  } else if (fase === 'ESPERA_VALIDACION') {
+    inner = `
+      <p class="font-label-md uppercase text-on-surface-variant mb-1">Ronda ${ronda} / ${totalRondas} · ${equipoActivoNombre}</p>
+      ${tableroHTML}
+      <div class="bg-comicYellow border-2 border-on-surface rounded-xl p-3 text-center mt-4">
+        <p class="font-headline-sm uppercase text-on-surface">Esperando validación…</p>
+      </div>
+    `;
+  } else if (fase === 'MOSTRANDO_RESULTADO') {
+    const resultado = estadoJuego.resultado_turno;
+    inner = `
+      <p class="font-label-md uppercase text-on-surface-variant mb-1">Ronda ${ronda} / ${totalRondas} · ${equipoActivoNombre}</p>
+      <p class="font-headline-md uppercase text-on-surface mt-2">Resultado del turno</p>
+      ${tableroHTML}
+      ${resultado
+        ? `<p class="font-headline-sm uppercase text-on-surface-variant mt-3" data-enlaces-pub-resultado>Aciertos: ${resultado.aciertos} / ${resultado.total}</p>`
+        : ''}
+    `;
+  } else if (fase === 'CAMBIO_TURNO') {
+    inner = `
+      <p class="font-display-hero text-4xl text-primary uppercase mb-2">Cambio de turno</p>
+      <p class="font-headline-md uppercase ${equipoActual === 1 ? 'text-[#00D2FF]' : 'text-[#FF3344]'} mb-2">Turno de ${equipoActivoNombre}</p>
+      <p class="font-body-md text-on-surface-variant mt-2">Prepará el siguiente turno…</p>
+    `;
+  } else if (fase === 'FIN_DE_RONDA') {
+    inner = `
+      <p class="font-display-hero text-5xl text-primary uppercase mb-4">Fin de ronda</p>
+      <p class="font-headline-md uppercase text-on-surface mb-2">Ronda ${ronda} / ${totalRondas}</p>
+    `;
+  } else if (fase === 'FIN_DE_JUEGO') {
+    const resultado = EnlacesGameDefinition?.calcularResultado(estadoJuego) || {};
+    const ganador = resultado.ganador;
+    let ganadorNombre = 'Empate técnico';
+    let ganadorColor = 'text-on-surface-variant';
+    if (ganador === 1) { ganadorNombre = equipo1.nombre; ganadorColor = 'text-[#00D2FF]'; }
+    else if (ganador === 2) { ganadorNombre = equipo2.nombre; ganadorColor = 'text-[#FF3344]'; }
+
+    inner = `
+      <p class="font-display-hero text-5xl text-primary uppercase mb-4">¡Juego terminado!</p>
+      <p class="font-headline-md uppercase ${ganadorColor} mb-4">${ganadorNombre}</p>
+    `;
+  } else {
+    inner = `
+      <p class="font-display-hero text-5xl text-primary uppercase mb-2">¡A JUGAR!</p>
+      <p class="font-headline-md uppercase text-on-surface">Enlaces</p>
+    `;
+  }
+
+  return `
+    <section class="flex items-center justify-center p-6 border-b-2.5 border-on-surface bg-surface">
+      <div class="w-full max-w-3xl bg-surface-container-lowest border-3 border-on-surface rounded-2xl p-8 shadow-comic-lg text-center flex flex-col items-center justify-center min-h-[30vh]">
+        ${inner}
+        <div class="grid grid-cols-2 gap-4 w-full max-w-lg mt-6">
+          <div class="border-2.5 ${equipoActual === 1 ? equipoActivoColor : 'border-on-surface bg-surface-container-lowest'} rounded-xl p-4 shadow-comic-sm text-center">
+            <p class="font-body-md uppercase">${equipo1.nombre}</p>
+            <p class="font-display-hero text-3xl text-primary">${pts1}</p>
+          </div>
+          <div class="border-2.5 ${equipoActual === 2 ? equipoActivoColor : 'border-on-surface bg-surface-container-lowest'} rounded-xl p-4 shadow-comic-sm text-center">
+            <p class="font-body-md uppercase">${equipo2.nombre}</p>
+            <p class="font-display-hero text-3xl text-primary">${pts2}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function _iniciarTimerEnlacesPublico(juegoActivo, container) {
+  const estadoJuego = juegoActivo?.estado_juego || {};
+  const fase = estadoJuego.fase || '';
+  const config = juegoActivo?.configuracion_congelada || {};
+  const segundos = config.tiempo_turno_seg || 60;
+
+  const el = container.querySelector('#enlaces-pub-timer');
+  if (!el) {
+    _limpiarTimerEnlacesPublico();
+    return;
+  }
+
+  if (fase !== 'ORDENANDO' || estadoJuego.tiempo_agotado) {
+    _limpiarTimerEnlacesPublico();
+    const restante = estadoJuego.tiempo_agotado
+      ? 0
+      : (estadoJuego.tiempo_restante_seg ?? segundos);
+    el.textContent = `${restante}s`;
+    return;
+  }
+
+  const juegoId = juegoActivo?.id || estadoJuego.juego_id || '';
+  const equipo = estadoJuego.equipo_actual || 1;
+  const ronda = estadoJuego.ronda_actual || 1;
+  const key = `${juegoId}:eq${equipo}:r${ronda}`;
+
+  if (!_enlacesTimer) {
+    _enlacesTimer = crearTimer({
+      duracionSeg: segundos,
+      onTick: (restante) => {
+        const t = container.querySelector('#enlaces-pub-timer');
+        if (t) t.textContent = `${restante}s`;
+      },
+      onCierre: () => {
+        const t = container.querySelector('#enlaces-pub-timer');
+        if (t) t.textContent = '0s';
+      }
+    });
+  }
+  _enlacesTimer.iniciarSiCambio(key);
+}
+
+function _limpiarTimerEnlacesPublico() {
+  _enlacesTimer?.cancelar();
+  _enlacesTimer = null;
 }
