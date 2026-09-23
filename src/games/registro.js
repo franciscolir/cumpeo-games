@@ -11,6 +11,7 @@ import { PictionaryGameDefinition } from './pictionary/PictionaryGameDefinition.
 import { HistoriaEnredadaGameDefinition } from './historia-enredada/HistoriaEnredadaGameDefinition.js';
 import { MemoriaGameDefinition } from './memoria/MemoriaGameDefinition.js';
 import { AntiTriviaGameDefinition } from './anti-trivia/AntiTriviaGameDefinition.js';
+import { EnlacesGameDefinition } from './enlaces/EnlacesGameDefinition.js';
 
 /**
  * Registra todos los juegos disponibles en el registry.
@@ -26,7 +27,8 @@ export function registrarTodos(registry) {
     PictionaryGameDefinition,
     HistoriaEnredadaGameDefinition,
     MemoriaGameDefinition,
-    AntiTriviaGameDefinition
+    AntiTriviaGameDefinition,
+    EnlacesGameDefinition
   ];
 
   for (const def of definiciones) {

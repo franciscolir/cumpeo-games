@@ -28,12 +28,12 @@ describe('seedJuegos', () => {
     await borrarBase();
   });
 
-  it('registry con 8 defs crea 8 Juegos', async () => {
+  it('registry con 9 defs crea 9 Juegos', async () => {
     const { services } = await bootstrap(adapter);
     const juegos = await services.juego.listarJuegos();
-    expect(juegos.length).toBe(8);
+    expect(juegos.length).toBe(9);
     const codigos = juegos.map((j) => j.codigo).sort();
-    expect(codigos).toEqual(['ANTI_TRIVIA', 'CANCION_INCOMPLETA', 'HISTORIA_ENREDADA', 'MEMORIA', 'PICTIONARY', 'QUE_PIENSA_EL_PUBLICO', 'ROSCO', 'TRIVIA']);
+    expect(codigos).toEqual(['ANTI_TRIVIA', 'CANCION_INCOMPLETA', 'ENLACES', 'HISTORIA_ENREDADA', 'MEMORIA', 'PICTIONARY', 'QUE_PIENSA_EL_PUBLICO', 'ROSCO', 'TRIVIA']);
   });
 
   it('el Juego creado tiene codigo y nombre correctos', async () => {
