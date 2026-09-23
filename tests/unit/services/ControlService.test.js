@@ -1,9 +1,10 @@
 import 'fake-indexeddb/auto';
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 import { LocalAdapter } from '../../../src/adapters/LocalAdapter.js';
 import { ControlService } from '../../../src/services/ControlService.js';
 import { DB_NAME } from '../../../src/adapters/schema.js';
+import { SinControlError } from '../../../src/repositories/errors.js';
 
 function borrarBase() {
   return new Promise((resolve, reject) => {
@@ -136,6 +137,98 @@ describe('ControlService', () => {
       await expect(
         service.conControl('p1', 's1', 'no-fn')
       ).rejects.toThrow(/función/);
+    });
+  });
+
+  describe('heartbeat', () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      service.detenerTodosLosHeartbeats();
+      vi.useRealTimers();
+      vi.restoreAllMocks();
+    });
+
+    it('1. iniciarHeartbeat agenda un interval', () => {
+      service.iniciarHeartbeat('p1', 's1');
+      expect(service._heartbeats.size).toBe(1);
+      expect(service._heartbeats.has('p1')).toBe(true);
+    });
+
+    it('2. Tras 10s, llama a renovarControl(partidaId, sessionId)', async () => {
+      const spy = vi.spyOn(service, 'renovarControl').mockResolvedValue({ renovado: true });
+      service.iniciarHeartbeat('p1', 's1');
+      await vi.advanceTimersByTimeAsync(10000);
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledWith('p1', 's1');
+    });
+
+    it('3. Tras 20s, llama dos veces', async () => {
+      const spy = vi.spyOn(service, 'renovarControl').mockResolvedValue({ renovado: true });
+      service.iniciarHeartbeat('p1', 's1');
+      await vi.advanceTimersByTimeAsync(20000);
+      expect(spy).toHaveBeenCalledTimes(2);
+    });
+
+    it('4. Si renovarControl lanza, llama a tomarControl', async () => {
+      vi.spyOn(service, 'renovarControl').mockRejectedValue(new SinControlError('p1'));
+      const tomar = vi.spyOn(service, 'tomarControl').mockResolvedValue({ adquirido: true });
+      service.iniciarHeartbeat('p1', 's1');
+      await vi.advanceTimersByTimeAsync(10000);
+      expect(tomar).toHaveBeenCalledTimes(1);
+      expect(tomar).toHaveBeenCalledWith('p1', 's1');
+    });
+
+    it('5. Si ambos lanzan, no rompe', async () => {
+      vi.spyOn(service, 'renovarControl').mockRejectedValue(new Error('renovar fail'));
+      vi.spyOn(service, 'tomarControl').mockRejectedValue(new Error('tomar fail'));
+      service.iniciarHeartbeat('p1', 's1');
+      await vi.advanceTimersByTimeAsync(30000);
+      expect(service._heartbeats.has('p1')).toBe(true);
+    });
+
+    it('6. detenerHeartbeat cancela el interval', () => {
+      service.iniciarHeartbeat('p1', 's1');
+      service.detenerHeartbeat('p1');
+      expect(service._heartbeats.size).toBe(0);
+      expect(service._heartbeats.has('p1')).toBe(false);
+    });
+
+    it('7. Tras detener, no hay más llamadas', async () => {
+      const spy = vi.spyOn(service, 'renovarControl').mockResolvedValue({ renovado: true });
+      service.iniciarHeartbeat('p1', 's1');
+      service.detenerHeartbeat('p1');
+      await vi.advanceTimersByTimeAsync(50000);
+      expect(spy).not.toHaveBeenCalled();
+    });
+
+    it('8. Llamar dos veces iniciarHeartbeat no duplica el interval', () => {
+      service.iniciarHeartbeat('p1', 's1');
+      service.iniciarHeartbeat('p1', 's1');
+      expect(service._heartbeats.size).toBe(1);
+    });
+
+    it('9. detenerTodosLosHeartbeats limpia todos', () => {
+      service.iniciarHeartbeat('p1', 's1');
+      service.iniciarHeartbeat('p2', 's1');
+      service.iniciarHeartbeat('p3', 's1');
+      expect(service._heartbeats.size).toBe(3);
+      service.detenerTodosLosHeartbeats();
+      expect(service._heartbeats.size).toBe(0);
+    });
+
+    it('10. Diferentes partidaIds tienen intervals independientes', async () => {
+      const spy = vi.spyOn(service, 'renovarControl').mockResolvedValue({ renovado: true });
+      service.iniciarHeartbeat('p1', 's1');
+      service.iniciarHeartbeat('p2', 's1');
+      service.detenerHeartbeat('p1');
+      await vi.advanceTimersByTimeAsync(10000);
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledWith('p2', 's1');
+      expect(service._heartbeats.has('p1')).toBe(false);
+      expect(service._heartbeats.has('p2')).toBe(true);
     });
   });
 });

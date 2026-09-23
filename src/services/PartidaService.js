@@ -129,6 +129,30 @@ export class PartidaService {
     return this.control.verificarControl(partidaId, sessionId);
   }
 
+  /**
+   * Agenda heartbeat de lease (INV-093) para la partida.
+   * @param {string} partidaId
+   * @param {string} sessionId
+   */
+  iniciarHeartbeat(partidaId, sessionId) {
+    this.control.iniciarHeartbeat(partidaId, sessionId);
+  }
+
+  /**
+   * Cancela el heartbeat de la partida.
+   * @param {string} partidaId
+   */
+  detenerHeartbeat(partidaId) {
+    this.control.detenerHeartbeat(partidaId);
+  }
+
+  /**
+   * Cancela todos los heartbeats activos.
+   */
+  detenerTodosLosHeartbeats() {
+    this.control.detenerTodosLosHeartbeats();
+  }
+
   /* =============================================================
      Grupo 3 — Escritura crítica (delegan a this.partidas, con actionId)
      ============================================================= */

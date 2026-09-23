@@ -17,10 +17,13 @@ import {
 } from '../repositories/errors.js';
 import { validarNoVacio } from '../repositories/utils.js';
 
+const HEARTBEAT_MS = 10000;
+
 export class ControlService {
   constructor(adapter) {
     this.adapter = adapter;
     this.repo = new ControlRepository(adapter);
+    this._heartbeats = new Map();
   }
 
   /* =============================================================
@@ -119,5 +122,55 @@ export class ControlService {
       throw new SinControlError(partidaId);
     }
     return fn();
+  }
+
+  /* =============================================================
+     Heartbeat (INV-093: lease 30s, heartbeat cada 10s)
+     ============================================================= */
+
+  /**
+   * Agenda un heartbeat cada HEARTBEAT_MS para renovar el lease.
+   * No duplica si ya existe heartbeat para esa partida.
+   * @param {string} partidaId
+   * @param {string} sessionId
+   */
+  iniciarHeartbeat(partidaId, sessionId) {
+    validarNoVacio(partidaId, 'partidaId');
+    validarNoVacio(sessionId, 'sessionId');
+    if (this._heartbeats.has(partidaId)) return;
+
+    const intervalId = setInterval(async () => {
+      try {
+        await this.renovarControl(partidaId, sessionId);
+      } catch (_) {
+        try {
+          await this.tomarControl(partidaId, sessionId);
+        } catch (__) { /* silencio: el siguiente tick reintenta */ }
+      }
+    }, HEARTBEAT_MS);
+
+    this._heartbeats.set(partidaId, intervalId);
+  }
+
+  /**
+   * Cancela el heartbeat de una partida.
+   * @param {string} partidaId
+   */
+  detenerHeartbeat(partidaId) {
+    const intervalId = this._heartbeats.get(partidaId);
+    if (intervalId !== undefined) {
+      clearInterval(intervalId);
+      this._heartbeats.delete(partidaId);
+    }
+  }
+
+  /**
+   * Cancela todos los heartbeats activos.
+   */
+  detenerTodosLosHeartbeats() {
+    for (const intervalId of this._heartbeats.values()) {
+      clearInterval(intervalId);
+    }
+    this._heartbeats.clear();
   }
 }

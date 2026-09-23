@@ -24,6 +24,7 @@ let cleanupsGameUI = [];
 export async function renderShellPartida(container, app, params) {
   _limpiarSuscripciones();
   _limpiarGameUIs();
+  app.services.partida.detenerTodosLosHeartbeats();
 
   await _renderContenido(container, app, params.id);
 
@@ -99,6 +100,7 @@ async function _renderContenido(container, app, partidaId) {
     `;
     bindHeaderListeners(container);
     _limpiarSuscripciones();
+    app.services.partida.detenerHeartbeat(partidaId);
     if (intervalId) { clearInterval(intervalId); intervalId = null; }
     return;
   }
@@ -113,6 +115,7 @@ async function _renderContenido(container, app, partidaId) {
     `;
     bindHeaderListeners(container);
     _limpiarSuscripciones();
+    app.services.partida.detenerHeartbeat(partidaId);
     if (intervalId) { clearInterval(intervalId); intervalId = null; }
     return;
   }
@@ -1090,8 +1093,11 @@ async function _renderContenido(container, app, partidaId) {
   bindHeaderListeners(container);
 
   if (puedeControlar) {
+    app.services.partida.iniciarHeartbeat(partidaId, sessionId);
     _bindModeracion(container, app, partidaId);
     await _cargarModeracion(container, app, partidaId);
+  } else {
+    app.services.partida.detenerHeartbeat(partidaId);
   }
 
   if (gameUI) {
