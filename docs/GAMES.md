@@ -395,7 +395,8 @@ El alfabeto NO es configurable. Siempre incluye la Ñ.
 
 El mismo Set se utiliza para ambos equipos.
 
-Rondas por partida: configurable (N rondas). 1 rosco = 1 ronda.
+Rondas por partida: configurable (N rondas). 1 ronda = 1 set.
+N rondas = N sets elegidos al iniciar el juego.
 
 ### Item del set
 
@@ -411,10 +412,8 @@ Rondas por partida: configurable (N rondas). 1 rosco = 1 ronda.
 
 | Regla | Detalle |
 |-------|---------|
-| Items requeridos | Debe tener items para las 27 letras |
-| Items por letra | Cada letra debe tener al menos N items (N = rondas configuradas) |
-| Ejemplo 2 rondas | Mínimo 54 items |
-| Ejemplo 3 rondas | Mínimo 81 items |
+| Items requeridos | Exactamente 27 items (1 por letra) |
+| Items por letra | Exactamente 1 item por letra (A–Z + Ñ) |
 
 ## Turnos
 
@@ -485,6 +484,7 @@ El Rosco termina al cumplirse la condición de finalización:
 -   agotamiento del tiempo.
 
 N rondas configurables. Fin de partida tras N rondas.
+Cada ronda usa un set distinto (el set N de los N elegidos al iniciar).
 
 ## Validación
 
@@ -515,6 +515,8 @@ La respuesta es verbal, NO se tipea.
 | 2 temporizadores | Uno por equipo |
 | Ronda actual | Número de ronda en curso |
 | Total de rondas | N configuradas |
+| Sets por ronda | Array de N sets (1 por ronda) |
+| Set de ronda actual | El set activo en la ronda en curso |
 
 ## Público
 
@@ -530,7 +532,7 @@ El público muestra:
 ## Reinicio entre rondas
 
 -   El rosco se limpia (todas las letras vuelven a "pendiente").
--   Se reasignan las pendientes + se barajan nuevas del set.
+-   Se carga el set de la nueva ronda (N rondas = N sets distintos).
 
 ------------------------------------------------------------------------
 

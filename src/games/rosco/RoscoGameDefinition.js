@@ -120,13 +120,13 @@ export const RoscoGameDefinition = {
 
   /**
    * Valida que un set tenga la estructura correcta para Rosco.
+   * 1 set = 27 letras (A–Z + Ñ), exactamente 1 definición + 1 respuesta por letra.
    * @param {object} contenido - { items: [...] }
-   * @param {object} config - configuración con rondas
+   * @param {object} [config] - no usado para rondas (compatibilidad de contrato)
    * @returns {{ ok: boolean, errores: string[] }}
    */
   validarContenidoSet(contenido, config) {
     const errores = [];
-    const rondas = config?.rondas || 1;
 
     if (!contenido || typeof contenido !== 'object') {
       return { ok: false, errores: ['El contenido debe ser un objeto'] };
@@ -136,8 +136,8 @@ export const RoscoGameDefinition = {
       return { ok: false, errores: ['items debe ser un array'] };
     }
 
-    if (contenido.items.length === 0) {
-      return { ok: false, errores: ['items no puede estar vacío'] };
+    if (contenido.items.length !== 27) {
+      errores.push('El set debe tener exactamente 27 items (1 por letra)');
     }
 
     const itemsPorLetra = {};
@@ -179,11 +179,9 @@ export const RoscoGameDefinition = {
     for (const letra of ALFABETO) {
       const items = itemsPorLetra[letra];
       if (items.length === 0) {
-        errores.push(`Letra "${letra}" no tiene items`);
-      } else if (items.length < rondas) {
-        errores.push(
-          `Letra "${letra}" tiene ${items.length} item(s), se necesitan al menos ${rondas}`
-        );
+        errores.push(`Falta la letra ${letra}`);
+      } else if (items.length > 1) {
+        errores.push(`La letra ${letra} tiene más de un item`);
       }
     }
 
@@ -196,19 +194,29 @@ export const RoscoGameDefinition = {
 
   /**
    * Crea el estado inicial de una partida de Rosco.
+   * N rondas = N sets distintos (1 ronda = 1 set).
    * @param {object} config
+   * @param {Array<{id?: string, items: object[]}>} [sets] - N sets elegidos; opcional
    * @returns {object} Estado inicial
    */
-  estadoInicial(config) {
+  estadoInicial(config, sets = null) {
+    const totalRondas = config.rondas || 1;
+    const setsPorRonda = Array.isArray(sets) && sets.length > 0
+      ? sets
+      : [{ id: null, items: [] }];
+    const setRondaActual = setsPorRonda[0] || { id: null, items: [] };
+
     return {
       ronda_actual: 1,
-      total_rondas: config.rondas || 1,
+      total_rondas: totalRondas,
       fase: 'INICIO_RONDA',
       equipo_actual: 1,
       puntos_equipo_1: 0,
       puntos_equipo_2: 0,
       letras_completadas_equipo_1: 0,
       letras_completadas_equipo_2: 0,
+      sets_por_ronda: setsPorRonda,
+      set_ronda_actual: setRondaActual,
       rosco: ALFABETO.map((letra) => ({
         letra,
         estado: ESTADO_LETRA.PENDIENTE,
@@ -375,35 +383,26 @@ export const RoscoGameDefinition = {
   },
 
   /**
-   * Limpia el rosco para una nueva ronda.
-   * Reasigna pendientes + baraja nuevas del set.
+   * Limpia el rosco para una nueva ronda y carga el set de esa ronda.
    * @param {object} estado
-   * @param {object} contenidoSet - { items: [...] }
-   * @returns {object} Nuevo estado con rosco reiniciado
+   * @param {object} contenidoSet - set de la ronda N ({ id?, items })
+   * @returns {object} Nuevo estado con rosco reiniciado y set actualizado
    */
   limpiarRoscoParaNuevaRonda(estado, contenidoSet) {
-    const items = contenidoSet?.items || [];
-    const rondas = estado.total_rondas || 1;
-
-    const itemsPorLetra = {};
-    for (const letra of ALFABETO) {
-      itemsPorLetra[letra] = [];
-    }
-    for (const item of items) {
-      if (SET_LETRAS.has(item.letra)) {
-        itemsPorLetra[item.letra].push(item);
-      }
-    }
-
     const rosco = ALFABETO.map((letra) => ({
       letra,
       estado: ESTADO_LETRA.PENDIENTE,
       equipo_asignado: null
     }));
 
+    const setRondaActual = contenidoSet != null
+      ? contenidoSet
+      : (estado.set_ronda_actual || { id: null, items: [] });
+
     return {
       ...estado,
       rosco,
+      set_ronda_actual: setRondaActual,
       indice_actual: 0,
       ronda_actual: estado.ronda_actual + 1,
       fase: 'INICIO_RONDA',
@@ -493,6 +492,18 @@ export const RoscoGameDefinition = {
       throw new ValidacionError('rosco debe tener 27 letras');
     }
 
+    if (!Array.isArray(estado.sets_por_ronda)) {
+      throw new ValidacionError('sets_por_ronda debe ser un array');
+    }
+
+    if (estado.sets_por_ronda.length < 1) {
+      throw new ValidacionError('sets_por_ronda debe tener al menos 1 set');
+    }
+
+    if (!estado.set_ronda_actual || typeof estado.set_ronda_actual !== 'object') {
+      throw new ValidacionError('set_ronda_actual debe ser un objeto');
+    }
+
     if (typeof estado.puntos_equipo_1 !== 'number' || !Number.isFinite(estado.puntos_equipo_1)) {
       throw new ValidacionError('puntos_equipo_1 debe ser un número finito');
     }
@@ -506,6 +517,44 @@ export const RoscoGameDefinition = {
     }
 
     return true;
+  },
+
+  /**
+   * Valida que los sets elegidos al iniciar el juego sean coherentes
+   * con la configuración (N rondas = N sets, cada uno con 27 letras).
+   * @param {Array} sets - array de N sets elegidos
+   * @param {object} config - con rondas
+   * @returns {{ ok: boolean, errores: string[] }}
+   */
+  validarSetsElegidos(sets, config) {
+    const errores = [];
+    const rondas = config?.rondas || 1;
+
+    if (!Array.isArray(sets)) {
+      return { ok: false, errores: ['sets debe ser un array'] };
+    }
+
+    if (sets.length !== rondas) {
+      errores.push(
+        `Se requieren exactamente ${rondas} set(s) (1 por ronda), se recibieron ${sets.length}`
+      );
+    }
+
+    for (let i = 0; i < sets.length; i++) {
+      const set = sets[i];
+      if (!set || typeof set !== 'object') {
+        errores.push(`sets[${i}] debe ser un objeto`);
+        continue;
+      }
+      const resultado = this.validarContenidoSet(set, config);
+      if (!resultado.ok) {
+        for (const err of resultado.errores) {
+          errores.push(`Set ${i + 1}: ${err}`);
+        }
+      }
+    }
+
+    return { ok: errores.length === 0, errores };
   },
 
   /**

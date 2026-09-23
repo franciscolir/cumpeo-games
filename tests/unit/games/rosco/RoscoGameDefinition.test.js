@@ -22,26 +22,31 @@ function configuracionValida(overrides = {}) {
   };
 }
 
-function generarItemsValidos(rondas = 2) {
-  const items = [];
-  for (const letra of ALFABETO) {
-    for (let r = 0; r < rondas; r++) {
-      items.push({
-        letra,
-        definicion: `Definición de ${letra} (ronda ${r + 1})`,
-        respuesta: `Respuesta ${letra} ${r + 1}`
-      });
-    }
-  }
-  return items;
+function generarItemsValidos() {
+  return ALFABETO.map((letra) => ({
+    letra,
+    definicion: `Definición de ${letra}`,
+    respuesta: `Respuesta ${letra}`
+  }));
 }
 
-function contenidoValido(rondas = 2) {
-  return { items: generarItemsValidos(rondas) };
+function contenidoValido() {
+  return { items: generarItemsValidos() };
 }
 
-function estadoInicial(configOverrides = {}) {
-  return RoscoGameDefinition.estadoInicial(configuracionValida(configOverrides));
+function generarSet(id = 'set-1') {
+  return { id, items: generarItemsValidos() };
+}
+
+function generarSets(n = 2) {
+  return Array.from({ length: n }, (_, i) => generarSet(`set-${i + 1}`));
+}
+
+function estadoInicial(configOverrides = {}, sets = null) {
+  return RoscoGameDefinition.estadoInicial(
+    configuracionValida(configOverrides),
+    sets
+  );
 }
 
 /* =============================================================
@@ -101,43 +106,62 @@ describe('validarConfiguracion', () => {
   it('penalizacion_puntos negativa → error', () => {
     expect(() => RoscoGameDefinition.validarConfiguracion(configuracionValida({ penalizacion_puntos: -1 }))).toThrow(ValidacionError);
   });
+
+  it('defaultConfig mantiene 10/5', () => {
+    expect(RoscoGameDefinition.defaultConfig.puntos_por_acierto).toBe(10);
+    expect(RoscoGameDefinition.defaultConfig.penalizacion_puntos).toBe(5);
+    expect(RoscoGameDefinition.defaultConfig.rondas).toBe(1);
+  });
 });
 
 /* =============================================================
-   Grupo 3 — validarContenidoSet
+   Grupo 3 — validarContenidoSet (exactamente 27 items)
    ============================================================= */
 
 describe('validarContenidoSet', () => {
-  it('set válido (27 letras, 2 items cada una) → ok', () => {
-    const config = configuracionValida({ rondas: 2 });
-    const resultado = RoscoGameDefinition.validarContenidoSet(contenidoValido(2), config);
-    expect(resultado.ok).toBe(true);
-    expect(resultado.errores).toHaveLength(0);
-  });
-
-  it('set con 1 ronda y 27 items → ok', () => {
+  it('set válido (27 letras, 1 item cada una) → ok', () => {
     const config = configuracionValida({ rondas: 1 });
-    const items = ALFABETO.map((letra) => ({
-      letra,
-      definicion: `Def ${letra}`,
-      respuesta: `Resp ${letra}`
-    }));
-    const resultado = RoscoGameDefinition.validarContenidoSet({ items }, config);
+    const resultado = RoscoGameDefinition.validarContenidoSet(contenidoValido(), config);
     expect(resultado.ok).toBe(true);
     expect(resultado.errores).toHaveLength(0);
   });
 
-  it('set vacío → error', () => {
+  it('set válido con config rondas=3 → ok (no depende de rondas)', () => {
+    const config = configuracionValida({ rondas: 3 });
+    const resultado = RoscoGameDefinition.validarContenidoSet(contenidoValido(), config);
+    expect(resultado.ok).toBe(true);
+  });
+
+  it('set vacío → error exactamente 27', () => {
     const config = configuracionValida();
     const resultado = RoscoGameDefinition.validarContenidoSet({ items: [] }, config);
     expect(resultado.ok).toBe(false);
-    expect(resultado.errores.length).toBeGreaterThan(0);
+    expect(resultado.errores.some((e) => e.includes('exactamente 27'))).toBe(true);
   });
 
   it('set null → error', () => {
     const config = configuracionValida();
     const resultado = RoscoGameDefinition.validarContenidoSet(null, config);
     expect(resultado.ok).toBe(false);
+  });
+
+  it('items no array → error', () => {
+    const resultado = RoscoGameDefinition.validarContenidoSet({ items: 'nope' }, configuracionValida());
+    expect(resultado.ok).toBe(false);
+    expect(resultado.errores[0]).toContain('array');
+  });
+
+  it('26 items (letra M faltante) → error exactamente 27 + Falta la letra M', () => {
+    const config = configuracionValida();
+    const items = ALFABETO.filter((l) => l !== 'M').map((letra) => ({
+      letra,
+      definicion: `Def ${letra}`,
+      respuesta: `Resp ${letra}`
+    }));
+    const resultado = RoscoGameDefinition.validarContenidoSet({ items }, config);
+    expect(resultado.ok).toBe(false);
+    expect(resultado.errores.some((e) => e.includes('exactamente 27'))).toBe(true);
+    expect(resultado.errores.some((e) => e.includes('Falta la letra M'))).toBe(true);
   });
 
   it('letra faltante → error listando la letra', () => {
@@ -149,25 +173,49 @@ describe('validarContenidoSet', () => {
     }));
     const resultado = RoscoGameDefinition.validarContenidoSet({ items }, config);
     expect(resultado.ok).toBe(false);
-    expect(resultado.errores.some((e) => e.includes('"M"'))).toBe(true);
+    expect(resultado.errores.some((e) => e.includes('Falta la letra M'))).toBe(true);
   });
 
-  it('letra con menos de N items → error listando letra y déficit', () => {
-    const config = configuracionValida({ rondas: 3 });
-    const items = ALFABETO.map((letra) => ({
-      letra,
-      definicion: `Def ${letra}`,
-      respuesta: `Resp ${letra}`
-    }));
+  it('28 items (letra duplicada) → error exactamente 27 + más de un item', () => {
+    const config = configuracionValida();
+    const items = [
+      ...generarItemsValidos(),
+      { letra: 'A', definicion: 'Dup', respuesta: 'Dup' }
+    ];
     const resultado = RoscoGameDefinition.validarContenidoSet({ items }, config);
     expect(resultado.ok).toBe(false);
-    expect(resultado.errores.some((e) => e.includes('tiene 1 item(s)') && e.includes('necesitan al menos 3'))).toBe(true);
+    expect(resultado.errores.some((e) => e.includes('exactamente 27'))).toBe(true);
+    expect(resultado.errores.some((e) => e.includes('La letra A tiene más de un item'))).toBe(true);
+  });
+
+  it('27 items pero una letra duplicada y otra faltante → errores por letra', () => {
+    const config = configuracionValida();
+    const items = generarItemsValidos().filter((i) => i.letra !== 'M');
+    items.push({ letra: 'A', definicion: 'Dup', respuesta: 'Dup' });
+    const resultado = RoscoGameDefinition.validarContenidoSet({ items }, config);
+    expect(resultado.ok).toBe(false);
+    expect(resultado.errores.some((e) => e.includes('Falta la letra M'))).toBe(true);
+    expect(resultado.errores.some((e) => e.includes('La letra A tiene más de un item'))).toBe(true);
+  });
+
+  it('no acepta 2 items por letra aunque rondas=2', () => {
+    const config = configuracionValida({ rondas: 2 });
+    const items = [];
+    for (const letra of ALFABETO) {
+      for (let r = 0; r < 2; r++) {
+        items.push({ letra, definicion: `Def ${letra} r${r}`, respuesta: `Resp ${letra} ${r}` });
+      }
+    }
+    const resultado = RoscoGameDefinition.validarContenidoSet({ items }, config);
+    expect(resultado.ok).toBe(false);
+    expect(resultado.errores.some((e) => e.includes('exactamente 27'))).toBe(true);
+    expect(resultado.errores.some((e) => e.includes('más de un item'))).toBe(true);
   });
 
   it('item con letra inválida → error', () => {
     const config = configuracionValida({ rondas: 1 });
     const items = [
-      ...ALFABETO.map((letra) => ({ letra, definicion: `Def ${letra}`, respuesta: `Resp ${letra}` })),
+      ...generarItemsValidos(),
       { letra: '!', definicion: 'Inválida', respuesta: 'X' }
     ];
     const resultado = RoscoGameDefinition.validarContenidoSet({ items }, config);
@@ -177,11 +225,9 @@ describe('validarContenidoSet', () => {
 
   it('item con definicion vacía → error', () => {
     const config = configuracionValida({ rondas: 1 });
-    const items = ALFABETO.map((letra) => ({
-      letra,
-      definicion: letra === 'A' ? '' : `Def ${letra}`,
-      respuesta: `Resp ${letra}`
-    }));
+    const items = generarItemsValidos().map((item) =>
+      item.letra === 'A' ? { ...item, definicion: '' } : item
+    );
     const resultado = RoscoGameDefinition.validarContenidoSet({ items }, config);
     expect(resultado.ok).toBe(false);
     expect(resultado.errores.some((e) => e.includes('definicion'))).toBe(true);
@@ -189,31 +235,24 @@ describe('validarContenidoSet', () => {
 
   it('item con respuesta vacía → error', () => {
     const config = configuracionValida({ rondas: 1 });
-    const items = ALFABETO.map((letra) => ({
-      letra,
-      definicion: `Def ${letra}`,
-      respuesta: letra === 'Z' ? '' : `Resp ${letra}`
-    }));
+    const items = generarItemsValidos().map((item) =>
+      item.letra === 'Z' ? { ...item, respuesta: '' } : item
+    );
     const resultado = RoscoGameDefinition.validarContenidoSet({ items }, config);
     expect(resultado.ok).toBe(false);
     expect(resultado.errores.some((e) => e.includes('respuesta'))).toBe(true);
   });
 
-  itemsPorLetra: it('múltiples letras con déficit → lista todas', () => {
-    const config = configuracionValida({ rondas: 2 });
-    const items = ALFABETO.map((letra) => ({
-      letra,
-      definicion: `Def ${letra}`,
-      respuesta: `Resp ${letra}`
-    }));
-    const resultado = RoscoGameDefinition.validarContenidoSet({ items }, config);
-    expect(resultado.ok).toBe(false);
-    expect(resultado.errores.length).toBe(27);
+  it('todas las letras ausentes → lista las 27 faltantes', () => {
+    const config = configuracionValida({ rondas: 1 });
+    const resultado = RoscoGameDefinition.validarContenidoSet({ items: [] }, config);
+    const faltantes = resultado.errores.filter((e) => e.includes('Falta la letra'));
+    expect(faltantes).toHaveLength(27);
   });
 });
 
 /* =============================================================
-   Grupo 4 — estadoInicial
+   Grupo 4 — estadoInicial (N sets)
    ============================================================= */
 
 describe('estadoInicial', () => {
@@ -248,6 +287,38 @@ describe('estadoInicial', () => {
   it('fase = INICIO_RONDA', () => {
     const estado = estadoInicial();
     expect(estado.fase).toBe('INICIO_RONDA');
+  });
+
+  it('sin sets → 1 set vacío en sets_por_ronda', () => {
+    const estado = estadoInicial();
+    expect(estado.sets_por_ronda).toHaveLength(1);
+    expect(estado.sets_por_ronda[0].items).toEqual([]);
+    expect(estado.set_ronda_actual).toBe(estado.sets_por_ronda[0]);
+  });
+
+  it('recibe N sets → sets_por_ronda tiene N', () => {
+    const sets = generarSets(3);
+    const estado = estadoInicial({ rondas: 3 }, sets);
+    expect(estado.sets_por_ronda).toHaveLength(3);
+    expect(estado.sets_por_ronda[0].id).toBe('set-1');
+    expect(estado.sets_por_ronda[2].id).toBe('set-3');
+  });
+
+  it('set_ronda_actual = primer set', () => {
+    const sets = generarSets(2);
+    const estado = estadoInicial({ rondas: 2 }, sets);
+    expect(estado.set_ronda_actual.id).toBe('set-1');
+    expect(estado.set_ronda_actual.items).toHaveLength(27);
+  });
+
+  it('total_rondas = config.rondas', () => {
+    const estado = estadoInicial({ rondas: 4 }, generarSets(4));
+    expect(estado.total_rondas).toBe(4);
+  });
+
+  it('total_rondas default = 1', () => {
+    const estado = estadoInicial({ rondas: 1 });
+    expect(estado.total_rondas).toBe(1);
   });
 });
 
@@ -450,7 +521,7 @@ describe('cambiarTurno', () => {
 });
 
 /* =============================================================
-   Grupo 8 — Reinicio entre rondas
+   Grupo 8 — Reinicio entre rondas (cambio de set)
    ============================================================= */
 
 describe('limpiarRoscoParaNuevaRonda', () => {
@@ -460,33 +531,43 @@ describe('limpiarRoscoParaNuevaRonda', () => {
     estado = RoscoGameDefinition.aplicarError(estado, 'B', configuracionValida());
     estado = RoscoGameDefinition.aplicarPasapalabra(estado, 'C');
 
-    const config = configuracionValida({ rondas: 2 });
-    const contenido = contenidoValido(2);
-    const nuevo = RoscoGameDefinition.limpiarRoscoParaNuevaRonda(estado, contenido);
+    const set2 = generarSet('set-2');
+    const nuevo = RoscoGameDefinition.limpiarRoscoParaNuevaRonda(estado, set2);
 
     expect(nuevo.rosco.every((l) => l.estado === ESTADO_LETRA.PENDIENTE)).toBe(true);
   });
 
   it('incrementa ronda_actual', () => {
     const estado = estadoInicial();
-    const contenido = contenidoValido(2);
-    const nuevo = RoscoGameDefinition.limpiarRoscoParaNuevaRonda(estado, contenido);
+    const set2 = generarSet('set-2');
+    const nuevo = RoscoGameDefinition.limpiarRoscoParaNuevaRonda(estado, set2);
     expect(nuevo.ronda_actual).toBe(2);
+  });
+
+  it('cambia set_ronda_actual al set de la nueva ronda', () => {
+    const sets = generarSets(2);
+    const estado = estadoInicial({ rondas: 2 }, sets);
+    expect(estado.set_ronda_actual.id).toBe('set-1');
+
+    const nuevo = RoscoGameDefinition.limpiarRoscoParaNuevaRonda(estado, sets[1]);
+    expect(nuevo.set_ronda_actual.id).toBe('set-2');
+    expect(nuevo.set_ronda_actual.items).toHaveLength(27);
+    expect(nuevo.set_ronda_actual).not.toBe(estado.set_ronda_actual);
   });
 
   it('resetea equipo_actual a 1', () => {
     const estado = estadoInicial();
     estado.equipo_actual = 2;
-    const contenido = contenidoValido(2);
-    const nuevo = RoscoGameDefinition.limpiarRoscoParaNuevaRonda(estado, contenido);
+    const set2 = generarSet('set-2');
+    const nuevo = RoscoGameDefinition.limpiarRoscoParaNuevaRonda(estado, set2);
     expect(nuevo.equipo_actual).toBe(1);
   });
 
   it('resetea indice_actual a 0', () => {
     const estado = estadoInicial();
     estado.indice_actual = 10;
-    const contenido = contenidoValido(2);
-    const nuevo = RoscoGameDefinition.limpiarRoscoParaNuevaRonda(estado, contenido);
+    const set2 = generarSet('set-2');
+    const nuevo = RoscoGameDefinition.limpiarRoscoParaNuevaRonda(estado, set2);
     expect(nuevo.indice_actual).toBe(0);
   });
 
@@ -495,16 +576,24 @@ describe('limpiarRoscoParaNuevaRonda', () => {
     estado = RoscoGameDefinition.aplicarAcierto(estado, 'A', configuracionValida());
     estado = RoscoGameDefinition.aplicarAcierto(estado, 'B', configuracionValida());
 
-    const contenido = contenidoValido(2);
-    const nuevo = RoscoGameDefinition.limpiarRoscoParaNuevaRonda(estado, contenido);
+    const set2 = generarSet('set-2');
+    const nuevo = RoscoGameDefinition.limpiarRoscoParaNuevaRonda(estado, set2);
     expect(nuevo.puntos_equipo_1).toBe(20);
   });
 
   it('fase = INICIO_RONDA', () => {
     const estado = estadoInicial();
-    const contenido = contenidoValido(2);
-    const nuevo = RoscoGameDefinition.limpiarRoscoParaNuevaRonda(estado, contenido);
+    const set2 = generarSet('set-2');
+    const nuevo = RoscoGameDefinition.limpiarRoscoParaNuevaRonda(estado, set2);
     expect(nuevo.fase).toBe('INICIO_RONDA');
+  });
+
+  it('preserva sets_por_ronda (N sets intactos)', () => {
+    const sets = generarSets(3);
+    const estado = estadoInicial({ rondas: 3 }, sets);
+    const nuevo = RoscoGameDefinition.limpiarRoscoParaNuevaRonda(estado, sets[1]);
+    expect(nuevo.sets_por_ronda).toHaveLength(3);
+    expect(nuevo.sets_por_ronda[2].id).toBe('set-3');
   });
 });
 
@@ -600,7 +689,144 @@ describe('aplicarTimeUp', () => {
 });
 
 /* =============================================================
-   Grupo 11 — Integración con GameDefinitionRegistry
+   Grupo 11 — validarEstadoJuego
+   ============================================================= */
+
+describe('validarEstadoJuego', () => {
+  it('estado inicial válido → true', () => {
+    const estado = estadoInicial();
+    expect(RoscoGameDefinition.validarEstadoJuego(estado)).toBe(true);
+  });
+
+  it('estado con N sets → true', () => {
+    const estado = estadoInicial({ rondas: 2 }, generarSets(2));
+    expect(RoscoGameDefinition.validarEstadoJuego(estado)).toBe(true);
+  });
+
+  it('estado null → error', () => {
+    expect(() => RoscoGameDefinition.validarEstadoJuego(null)).toThrow(ValidacionError);
+  });
+
+  it('ronda_actual inválida → error', () => {
+    const estado = estadoInicial();
+    estado.ronda_actual = 0;
+    expect(() => RoscoGameDefinition.validarEstadoJuego(estado)).toThrow(ValidacionError);
+  });
+
+  it('total_rondas inválido → error', () => {
+    const estado = estadoInicial();
+    estado.total_rondas = 0;
+    expect(() => RoscoGameDefinition.validarEstadoJuego(estado)).toThrow(ValidacionError);
+  });
+
+  it('rosco sin 27 letras → error', () => {
+    const estado = estadoInicial();
+    estado.rosco = estado.rosco.slice(0, 10);
+    expect(() => RoscoGameDefinition.validarEstadoJuego(estado)).toThrow(ValidacionError);
+  });
+
+  it('sets_por_ronda no array → error', () => {
+    const estado = estadoInicial();
+    estado.sets_por_ronda = 'nope';
+    expect(() => RoscoGameDefinition.validarEstadoJuego(estado)).toThrow('sets_por_ronda');
+  });
+
+  it('sets_por_ronda vacío → error', () => {
+    const estado = estadoInicial();
+    estado.sets_por_ronda = [];
+    expect(() => RoscoGameDefinition.validarEstadoJuego(estado)).toThrow('sets_por_ronda');
+  });
+
+  it('set_ronda_actual ausente → error', () => {
+    const estado = estadoInicial();
+    estado.set_ronda_actual = null;
+    expect(() => RoscoGameDefinition.validarEstadoJuego(estado)).toThrow('set_ronda_actual');
+  });
+
+  it('equipo_actual inválido → error', () => {
+    const estado = estadoInicial();
+    estado.equipo_actual = 3;
+    expect(() => RoscoGameDefinition.validarEstadoJuego(estado)).toThrow(ValidacionError);
+  });
+});
+
+/* =============================================================
+   Grupo 12 — validarSetsElegidos
+   ============================================================= */
+
+describe('validarSetsElegidos', () => {
+  it('N sets válidos con config.rondas = N → ok', () => {
+    const sets = generarSets(3);
+    const config = configuracionValida({ rondas: 3 });
+    const resultado = RoscoGameDefinition.validarSetsElegidos(sets, config);
+    expect(resultado.ok).toBe(true);
+    expect(resultado.errores).toHaveLength(0);
+  });
+
+  it('1 set válido con rondas=1 → ok', () => {
+    const sets = [generarSet('s1')];
+    const config = configuracionValida({ rondas: 1 });
+    const resultado = RoscoGameDefinition.validarSetsElegidos(sets, config);
+    expect(resultado.ok).toBe(true);
+  });
+
+  it('sets no array → error', () => {
+    const resultado = RoscoGameDefinition.validarSetsElegidos('nope', configuracionValida());
+    expect(resultado.ok).toBe(false);
+    expect(resultado.errores[0]).toContain('array');
+  });
+
+  it('cantidad distinta a rondas → error', () => {
+    const sets = generarSets(2);
+    const config = configuracionValida({ rondas: 3 });
+    const resultado = RoscoGameDefinition.validarSetsElegidos(sets, config);
+    expect(resultado.ok).toBe(false);
+    expect(resultado.errores.some((e) => e.includes('exactamente 3'))).toBe(true);
+  });
+
+  it('más sets que rondas → error', () => {
+    const sets = generarSets(3);
+    const config = configuracionValida({ rondas: 2 });
+    const resultado = RoscoGameDefinition.validarSetsElegidos(sets, config);
+    expect(resultado.ok).toBe(false);
+    expect(resultado.errores.some((e) => e.includes('exactamente 2'))).toBe(true);
+  });
+
+  it('set inválido (items incompletos) → error con prefijo Set N', () => {
+    const sets = [
+      generarSet('s1'),
+      { id: 's2', items: generarItemsValidos().slice(0, 10) }
+    ];
+    const config = configuracionValida({ rondas: 2 });
+    const resultado = RoscoGameDefinition.validarSetsElegidos(sets, config);
+    expect(resultado.ok).toBe(false);
+    expect(resultado.errores.some((e) => e.startsWith('Set 2:'))).toBe(true);
+    expect(resultado.errores.some((e) => e.includes('exactamente 27'))).toBe(true);
+  });
+
+  it('set no objeto → error', () => {
+    const sets = [null];
+    const config = configuracionValida({ rondas: 1 });
+    const resultado = RoscoGameDefinition.validarSetsElegidos(sets, config);
+    expect(resultado.ok).toBe(false);
+    expect(resultado.errores.some((e) => e.includes('sets[0]'))).toBe(true);
+  });
+
+  it('múltiples sets inválidos → lista errores de todos', () => {
+    const sets = [
+      { id: 'a', items: [] },
+      { id: 'b', items: [] }
+    ];
+    const config = configuracionValida({ rondas: 2 });
+    const resultado = RoscoGameDefinition.validarSetsElegidos(sets, config);
+    expect(resultado.ok).toBe(false);
+    expect(resultado.errores.some((e) => e.startsWith('Set 1:'))).toBe(true);
+    expect(resultado.errores.some((e) => e.startsWith('Set 2:'))).toBe(true);
+  });
+});
+
+/* =============================================================
+   Grupo 13 — Integración con GameDefinitionRegistry
    ============================================================= */
 
 describe('integración con GameDefinitionRegistry', () => {
@@ -616,5 +842,14 @@ describe('integración con GameDefinitionRegistry', () => {
     registry.registrar(RoscoGameDefinition);
     expect(() => registry.validarRequerimientos('ROSCO', {})).toThrow();
     expect(registry.validarRequerimientos('ROSCO', { snapshot_id: 's1' })).toBe(true);
+  });
+
+  it('contrato mínimo presente (incluye validarSetsElegidos)', () => {
+    expect(typeof RoscoGameDefinition.validarConfiguracion).toBe('function');
+    expect(typeof RoscoGameDefinition.validarContenidoSet).toBe('function');
+    expect(typeof RoscoGameDefinition.validarEstadoJuego).toBe('function');
+    expect(typeof RoscoGameDefinition.validarSetsElegidos).toBe('function');
+    expect(typeof RoscoGameDefinition.calcularResultado).toBe('function');
+    expect(typeof RoscoGameDefinition.aplicarTimeUp).toBe('function');
   });
 });
