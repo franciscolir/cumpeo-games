@@ -1,7 +1,7 @@
 # CUMPEO — Prompt Inicial de Continuidad
 
-**Versión:** 1.0
-**Fecha:** 2026-09-18
+**Versión:** 1.1
+**Fecha:** 2026-09-23
 **Propósito:** Este archivo es un **prompt inicial**. Cualquier persona o asistente que retome el proyecto debe leerlo primero. No duplica información: indica **qué leer** y **cómo trabajar**.
 
 ---
@@ -19,6 +19,7 @@ Stack actual:
 - IndexedDB (dev) + Supabase (prod).
 - Vitest (unit) + Playwright (e2e) + Vitest integration.
 
+**Estado actual (2026-09-23):** Bloques 0–5 cerrados. 9 juegos implementados end-to-end (QPEP, Trivia, Rosco, Canción Incompleta, Pictionary, Historia Enredada, Memoricé, Anti-Trivia, Enlaces). MVP alcanzado al cerrar Bloque 4. Bloque 6 (migración e2e a Supabase) es opcional y no iniciado.
 ---
 
 ## 2. Antes de cualquier acción: leer estos documentos
@@ -202,6 +203,20 @@ Si retomás el proyecto (nueva sesión, nuevo asistente, nueva persona):
 **¿Qué no debo hacer?**
 → Sección 8 de este archivo (reglas invariantes).
 
+### Estado al 2026-09-23
+
+- **Bloques 0–5 cerrados.**
+- **Bloque 6 (opcional, no iniciado).**
+- **Unit tests:** 1749 (61 archivos).
+- **E2E:** ~215 tests, todos con LocalAdapter.
+- **Integration:** 99 tests contra Supabase Cloud.
+- **Deudas pendientes:** #51 (AUDITORIA historial duplicado), #82–#86, #91–#93.
+
+### Próximo paso al retomar
+
+1. **Leer** `docs/ROADMAP.md` → sección "Bloque 6" (opcional).
+2. **Decidir** si se hace Bloque 6 (migración e2e a Supabase) o se prioriza otra cosa.
+3. **Si no se hace Bloque 6:** cerrar el proyecto o trabajar en deudas pendientes (#51, MASTER pendiente de integración).
 ---
 
 ## 10. Problemas comunes y cómo evitarlos

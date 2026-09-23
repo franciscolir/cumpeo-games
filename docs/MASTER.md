@@ -1,9 +1,9 @@
 # CUMPEO — Documento Maestro de Construcción
 
-**Versión:** 2.8
-**Estado:** H4 · H5.1 · H6 · H7.1 · H7.2 · H7.3 · H7.4 · H7.5 · H7.6 · H7.7 · H7.8 · H7.9 · H7.10 · H7.12 COMPLETOS · ~97% proyecto completo
-**Última actualización:** Post-commit `25b3ec6`
-**HEAD:** `feature/vertical-slice` — `25b3ec6`
+**Versión:** 2.9
+**Estado:** H4 · H5.1 · H6 · H7.1–H7.12 COMPLETOS · Bloques 0–5 COMPLETOS · ~99% proyecto completo
+**Última actualización:** Post-commit `9b7dfdc` (cierre Bloque 5)
+**HEAD:** `feature/vertical-slice` — `9b7dfdc`
 **Tests:** 433 unit + 35 e2e + 99 integration
 **Audiencia:** Desarrollador único / equipo reducido
 **Propósito:** Guía única de referencia para construcción, consulta y auditoría del sistema.
@@ -540,20 +540,13 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 
 | Métrica | Valor |
 |---------|-------|
-| Progreso global | ~97% |
-| H4 completado | 100% (5/5 servicios) |
-| H5.1 completado | 100% (Trivia definido) |
-| H6.1 completado | 100% (Bootstrap) |
-| H6.2 completado | 100% (Dashboard) |
-| H6.3 completado | 100% (CRUD circuitos) |
-| H6.4a completado | 100% (JuegoService + seed) |
-| H6.4b completado | 100% (CRUD sets) |
-| H6.5 completado | 100% (Consola del conductor) |
-| H6.6 completado | 100% (Pantalla pública) |
-| Tests unit | 433 (26 archivos) |
-| Tests e2e | 35 |
+| Progreso global | ~99% |
+| Bloques cerrados | 6 (Bloques 0–5) |
+| Juegos implementados | 9 (QPEP, Trivia, Rosco, Canción Incompleta, Pictionary, Historia Enredada, Memoricé, Anti-Trivia, Enlaces) |
+| Tests unit | 1749 (61 archivos) |
+| Tests e2e | ~215 |
 | Tests integration | 99 (contra Supabase Cloud) |
-| Commits totales (rama) | 60+ |
+| Commits totales (rama) | 100+ |
 
 ### 8.2 Fases cerradas
 
@@ -576,6 +569,12 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 | H7.10 — Realtime | SupabaseAdapter.suscribir + UI | Cerrado (e06e480, 0cd1512, 2067d48) |
 | H7.12a — Auth Magic Link | Login/logout con Supabase Auth | Cerrado (145772e) |
 | H7.12b — RLS restrictivo | Políticas específicas + revocación de anon | Cerrado (08e760c) |
+| Bloque 0 — Cierre documental | 5 decisiones cerradas + invariantes | Cerrado (2026-09-18) |
+| Bloque 1 — Modelo de datos extendido | MensajePublico, FotoPublica, StorageAdapter | Cerrado (7c3288f) |
+| Bloque 2 — Shell de partida | ShellPartida + ShellPublica + GameUI contract | Cerrado (5e32d5b) |
+| Bloque 3 — Móvil + moderación | Ruta #/movil, mensajes, fotos, moderación | Cerrado (9ca4e7a) |
+| Bloque 4 — "¿Qué piensa el público?" | Primer juego completo. ★ MVP alcanzado ★ | Cerrado (2e19767) |
+| Bloque 5 — Juegos restantes | 9 juegos implementados end-to-end | Cerrado (9b7dfdc) |
 
 ### 8.3 H4 — Servicios de dominio (CERRADA)
 
@@ -1122,6 +1121,39 @@ Vista de solo lectura para el público. Cierra la fase H6.
 
 **Total: 433 unit + 35 e2e + 99 integration.**
 
+### 8.3.18 Enlaces (Bloque 5, pasos 5.9-pre a 5.9d)
+
+**Cierre documental de mecánica (5.9-pre):**
+- `docs/GAMES.md` §12 actualizado.
+- Juego de asociación 1:1. Columna A fija + columna B desordenada.
+- 9 fases: INICIO_RONDA, SELECCIONANDO_SET, PREPARANDO_TABLERO, ORDENANDO, ESPERA_VALIDACION, MOSTRANDO_RESULTADO, CAMBIO_TURNO, FIN_DE_RONDA, FIN_DE_JUEGO.
+- Drag-and-drop real (HTML5 nativo).
+
+**GameDefinition (5.9a, commit 53f29e9):**
+- `src/games/enlaces/EnlacesGameDefinition.js` (717 líneas).
+- 11 reducers puros.
+- 135 tests unit.
+- Registro/bootstrap/seed actualizados.
+
+**UI Conductor (5.9b, commit acc423f):**
+- `src/ui/games/enlaces/EnlacesGameUI.js` (495 líneas).
+- Drag-and-drop HTML5 nativo (`dragstart`/`dragover`/`drop`/`dragend`).
+- 67 tests unit.
+- Shell actions en `shell-partida.js`.
+
+**UI Pública (5.9c, commit d5e0694):**
+- `src/ui/publica/shell-publica.js` extendido (+224 líneas).
+- `_renderEscenarioEnlaces`, `_iniciarTimerEnlacesPublico`, `_limpiarTimerEnlacesPublico`.
+- Columna A + columna B en vivo + timer + marcador.
+- 50 tests unit.
+- Leak de `pares_correctos` y `movimientos` controlado.
+
+**e2e (5.9d, commit 9b7dfdc):**
+- 6 archivos, 19 tests.
+- `drag-drop.spec.js` (5), `flujo-completo.spec.js` (5), `puntuacion.spec.js` (3), `timer.spec.js` (3), `validacion.spec.js` (3).
+- Helper `_helpers/enlaces.js` con polling robusto.
+- Deuda #61 respetada (output crudo).
+
 ### 8.4 Commits clave
 
 ```
@@ -1183,7 +1215,7 @@ e06e480  feat(adapters): await Realtime subscription before returning cleanup
 25b3ec6  chore: remove accidentally committed .bak file
 ```
 
-### 8.3 Estructura del repositorio
+### 8.5 Estructura del repositorio
 /
 +-- docs/
 | +-- MASTER.md (este archivo)
@@ -1343,6 +1375,27 @@ Migrar a Supabase. Sub-bloques:
     - Magic Link Auth + RLS restrictivo por tipo de tabla.
     - 99 integration tests passing.
 
+### Bloque 5 - Juegos restantes (CERRADA 11/11)
+
+9 juegos implementados end-to-end:
+
+1. **QPEP** (Bloque 4) — cerrado `2e19767`.
+2. **Trivia** (5.1, 5.6) — cerrado `afba7a0`.
+3. **Rosco** (5.2) — cerrado `94a89d1`.
+4. **Canción Incompleta** (5.3) — cerrado `a9d76d5`.
+5. **Pictionary** (5.4) — cerrado `3eb742d`.
+6. **Historia Enredada** (5.5) — cerrado `dc9d34e`.
+7. **Memoricé** (5.7) — cerrado `d1ff93d`.
+8. **Anti-Trivia** (5.8) — cerrado `1d865dd`.
+9. **Enlaces** (5.9) — cerrado `9b7dfdc`.
+
+### Bloque 6 - Migración e2e a Supabase (OPCIONAL)
+
+**Estado:** No iniciado. Decisión pendiente.
+
+**Objetivo:** Migrar los ~215 tests e2e de LocalAdapter a Supabase.
+
+**Recomendación:** Posponer. Los integration tests (99) ya cubren Supabase. Migrar e2e puede introducir flakiness (rate limiting, RLS, latencia).
 
 ## 10. Convenciones de Trabajo
 

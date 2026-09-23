@@ -2,7 +2,7 @@
 
 **Versión:** 1.0
 **Última actualización:** 2026-09-18
-**Estado global:** Bloques 0, 1, 2, 3, 4 cerrados · Bloque 5 en progreso (9/10) · ★ MVP alcanzado ★
+**Estado global:** Bloques 0, 1, 2, 3, 4, 5 cerrados · Bloque 6 pendiente (opcional) · ★ MVP alcanzado ★
 **Rama:** feature/vertical-slice
 
 ---
@@ -22,9 +22,9 @@
 | Métrica | Valor |
 |---------|-------|
 | Bloques totales | 7 (0 al 6) |
-| Bloques cerrados | 5 (Bloques 0, 1, 2, 3, 4) |
-| Bloques en progreso | 1 (Bloque 5) |
-| Bloques pendientes | 1 (Bloque 6) |
+| Bloques cerrados | 6 (Bloques 0, 1, 2, 3, 4, 5) |
+| Bloques en progreso | 0 |
+| Bloques pendientes | 1 (Bloque 6, opcional) |
 | MVP alcanzado | Sí (al cerrar Bloque 4, 2026-09-21) |
 | Fecha estimada MVP | Alcanzado |
 
@@ -38,7 +38,7 @@
 | 2 | Shell de partida (Conductor + Pública) | ✅ CERRADO | 13/13 | 5e32d5b | 2026-09-19 |
 | 3 | Móvil + moderación | ✅ CERRADO | 6/6 | 9ca4e7a | 2026-09-19 |
 | 4 | "¿Qué piensa el público?" | ✅ CERRADO | 13/13 | 2e19767 | 2026-09-21 |
-| 5 | Juegos restantes | 🔄 EN PROGRESO | 9/10 | — | — |
+| 5 | Juegos restantes | ✅ CERRADO | 11/11 | 9b7dfdc | 2026-09-23 |
 | 6 | Migración e2e a Supabase (opcional) | ⬜ PENDIENTE | 0/? | — | — |
 
 **★ MVP se alcanza al cerrar el Bloque 4 ★**
@@ -170,7 +170,7 @@ El Bloque 3 pasa de 7 a 6 pasos.
 **Bloque 4 cerrado. ★ MVP alcanzado ★. Bloque 5 en progreso.**
 ---
 
-### Bloque 5 — Juegos restantes 🔄 EN PROGRESO (10/10)
+### Bloque 5 — Juegos restantes ✅ CERRADO (11/11)
 
 | # | Juego / Paso | Estado | Commits clave |
 |---|--------------|--------|---------------|
@@ -183,7 +183,7 @@ El Bloque 3 pasa de 7 a 6 pasos.
 | 5.6 | Trivia end-to-end | ✅ APROBADO | 9269eb1, 2d9190d, 8bee291, 38eca68, 0acedd5, 28e8b6f, afba7a0 |
 | 5.7 | Memoricé end-to-end | ✅ APROBADO | cc06fee, f158afb, 62617c0, a00b8d1, 34a27fe, 79cc2b7, d1ff93d |
 | 5.8 | Anti-Trivia end-to-end | ✅ CERRADO | 92cc14c, 141093e, c384044, 14a3cf3, 5d9cd95, 1d865dd |
-| 5.9 | Enlaces — cerrar mecánica + implementar | 🔄 EN CURSO | 9496347 (pre), 53f29e9 (a), acc423f (b), d5e0694 (c) |
+| 5.9 | Enlaces — cerrar mecánica + implementar | ✅ CERRADO | 9496347 (pre), 53f29e9 (a), acc423f (b), d5e0694 (c), 9b7dfdc (d) |
 
 #### Detalle del paso 5.8 — Anti-Trivia (CERRADO)
 
@@ -251,6 +251,7 @@ de implementarse.
 | 5.19 | 2026-09-23 | 5.9a: EnlacesGameDefinition + 135 tests. 1632 unit totales. |
 | 5.20 | 2026-09-23 | 5.9b: EnlacesGameUI + drag-and-drop. 1699 unit. |
 | 5.21 | 2026-09-23 | 5.9c: Enlaces pública + timer. 50 tests. Leak controlado. 1749 unit. |
+| 5.22 | 2026-09-23 | 5.9d: e2e Enlaces (19 tests). ★ BLOQUE 5 CERRADO ★. 1749 unit. |
 
 ---
 

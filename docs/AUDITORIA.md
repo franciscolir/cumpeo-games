@@ -22,6 +22,7 @@
 | 2026-09-23 | 5 | 5.9a | ✅ APROBADO | EnlacesGameDefinition + 11 reducers + 135 tests. Registro/bootstrap/seed actualizados. | 53f29e9 |
 | 2026-09-23 | 5 | 5.9b | ✅ APROBADO | EnlacesGameUI + shell actions + drag-and-drop HTML5. 67 tests. | acc423f |
 | 2026-09-23 | 5 | 5.9c | ✅ APROBADO | Enlaces pública + timer. 50 tests. Leak de pares_correctos y movimientos controlado (tests anti-leak). | d5e0694 |
+| 2026-09-23 | 5 | 5.9d | ✅ APROBADO | 19 tests e2e Enlaces (drag-drop + flujo + puntuación + timer + validación). Deuda #61 respetada. | 9b7dfdc |
 ---
 
 ## Correcciones pendientes
@@ -160,16 +161,14 @@ _(ninguna)_
 
 | 2026-09-21 | 4 | 4.8a | ✅ APROBADO | Conteo real de votos al cerrar encuesta. Bug resuelto. | ca6bbc0 |
 
-| 46 | Test e2e crea respuestas con participanteId inventado (FK violada) | Paso 4.8a | Media |
-| 47 | El shell calcula resultado_publico (lógica de juego en UI) | Paso 4.8a | Baja |
-
 | 2026-09-21 | 4 | 4.8b | ✅ APROBADO | Test e2e end-to-end del flujo QPEP completo. ★ MVP alcanzado ★. | 2e19767 |
+| 2026-09-21 | 4 | ✅ CERRADO | 13/13 pasos. ★ MVP alcanzado ★. 595 unit + 59 e2e. |
 
 ## Cierre de bloque
 
 | Fecha | Bloque | Estado | Notas |
 |-------|--------|--------|-------|
-| 2026-09-21 | 4 | ✅ CERRADO | 13/13 pasos. ★ MVP alcanzado ★. 595 unit + 59 e2e. |
+
 
 | 2026-09-21 | 5 | 5.0 | ✅ APROBADO | Refactor: cargarItemsDeJuego + crearTimer. 13 tests nuevos. | (pendiente) |
 
@@ -225,13 +224,12 @@ _(ninguna)_
 | 2026-09-22 | 5 | 5.8d | ❌ RECHAZADO | Heartbeat en shell-partida introdujo regresiones e2e (Memoricé, Rosco, HE, QPEP). Revertido en 5.8-revert. | 14a3cf3 |
 | 2026-09-21 | 5 | 5.4-pre | ✅ APROBADO | Cierre documental de mecánica de Pictionary. Decisiones: estructura del item del set, orden fijo de modos, bonus manual. | — |
 | 2026-09-21 | 5 | 5.4a | ✅ APROBADO | Pictionary GameDefinition + reducers + 74 tests unitarios. Archivos: PictionaryGameDefinition.js, tests, registro.js. | ef53390 |
-
-
-
+| 2026-09-23 | 5 | ✅ CERRADO | 11/11 pasos. 9 juegos implementados. 1749 unit + ~215 e2e. Commit de cierre: 9b7dfdc. |
 
 
 ## Deuda técnica nueva
-
+| 46 | Test e2e crea respuestas con participanteId inventado (FK violada) | Paso 4.8a | Media |
+| 47 | El shell calcula resultado_publico (lógica de juego en UI) | Paso 4.8a | Baja |
 | 48 | Shell aplica `Math.max(0, ...)` en penalización de Trivia. Debería permitir puntos negativos. | Paso 5.1a | Media |
 | 49 | `indexeddb-smoke.spec.js` flaky por orden de ejecución. | Paso 5.1a | Media |
 | 50 | `shell-publica.spec.js:REVELANDO` flaky por race condition. | Paso 5.1a | Media |
