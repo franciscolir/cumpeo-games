@@ -1,5 +1,8 @@
 /* =============================================================
    Rosco E2E Helpers — fixture factories para tests e2e del Rosco.
+
+   Modelo N rondas = N sets: cada set tiene exactamente 27 items
+   (1 por letra, sin campo ronda).
    ============================================================= */
 
 import { waitForCumpeo } from '../../_helpers/auth.js';
@@ -10,60 +13,71 @@ const ALFABETO = [
 ];
 
 /**
- * Crea un set de Rosco con todas las letras del alfabeto.
+ * Crea N sets de Rosco, cada uno con 27 items (1 por letra).
  * @param {import('@playwright/test').Page} page
  * @param {object} opts
- * @param {number} opts.rondas - rondas del juego (default 1)
- * @param {number} opts.segundos - segundos por equipo (default 60)
- * @returns {Promise<{setId: string, juegoId: string}>}
+ * @param {number} opts.cantidad - cantidad de sets (default 1)
+ * @returns {Promise<{juegoId: string, sets: Array<{id: string, nombre: string}>}>}
  */
-export async function crearSetRoscoCompleto(page, opts = {}) {
+export async function crearSetsRosco(page, opts = {}) {
   await waitForCumpeo(page);
-  return await page.evaluate(async (opts) => {
+  return await page.evaluate(async ({ cantidad }) => {
     const juegos = await window.cumpeo.services.juego.listarJuegos();
     const rosco = juegos.find((j) => j.codigo === 'ROSCO');
     if (!rosco) throw new Error('Juego ROSCO no encontrado');
 
     const uid = Date.now().toString(36);
-    const set = await window.cumpeo.services.set.crearSet({
-      juego_id: rosco.id,
-      nombre: `Rosco E2E ${uid}`
-    });
-
     const alfabeto = [
       'A','B','C','D','E','F','G','H','I','J','K','L','M',
       'N','Ñ','O','P','Q','R','S','T','U','V','W','X','Y','Z'
     ];
 
-    const rondas = opts.rondas || 1;
-
-    for (let r = 1; r <= rondas; r++) {
+    const sets = [];
+    for (let s = 1; s <= cantidad; s++) {
+      const nombre = `Rosco E2E S${s} ${uid}`;
+      const set = await window.cumpeo.services.set.crearSet({
+        juego_id: rosco.id,
+        nombre
+      });
       for (const letra of alfabeto) {
         await window.cumpeo.services.set.agregarItem(set.id, {
           letra,
-          definicion: `Definición R${r} de la letra ${letra}`,
-          respuesta: `Respuesta R${r} ${letra}`,
-          ronda: r
+          definicion: `Definición S${s} de la letra ${letra}`,
+          respuesta: `Respuesta S${s} ${letra}`
         });
       }
+      sets.push({ id: set.id, nombre });
     }
 
-    return { setId: set.id, juegoId: rosco.id };
-  }, opts);
+    return { juegoId: rosco.id, sets };
+  }, { cantidad: Math.max(1, opts.cantidad || 1) });
 }
 
 /**
- * Crea una partida completa de Rosco con circuito y set.
+ * Crea uno o más sets de Rosco (retro-compatible).
  * @param {import('@playwright/test').Page} page
  * @param {object} opts
- * @param {number} opts.rondas - rondas (default 1)
+ * @param {number} opts.rondas - cantidad de sets a crear (default 1)
+ * @returns {Promise<{setId: string, juegoId: string, sets: Array}>}
+ */
+export async function crearSetRoscoCompleto(page, opts = {}) {
+  const { juegoId, sets } = await crearSetsRosco(page, { cantidad: opts.rondas || 1 });
+  return { setId: sets[0].id, juegoId, sets };
+}
+
+/**
+ * Crea una partida completa de Rosco con circuito y N sets.
+ * @param {import('@playwright/test').Page} page
+ * @param {object} opts
+ * @param {number} opts.rondas - rondas del circuito (default 1); crea esa cantidad de sets
  * @param {number} opts.segundos - segundos por equipo (default 60)
- * @returns {Promise<{partidaId: string, codigo: string, setId: string}>}
+ * @returns {Promise<{partidaId: string, codigo: string, juegoId: string, sets: Array}>}
  */
 export async function setupPartidaRosco(page, opts = {}) {
-  const { juegoId } = await crearSetRoscoCompleto(page, opts);
+  const rondas = opts.rondas || 1;
+  const { juegoId, sets } = await crearSetsRosco(page, { cantidad: opts.cantidadSets || rondas });
 
-  return await page.evaluate(async ({ juegoId, opts }) => {
+  const partida = await page.evaluate(async ({ juegoId, opts, rondas }) => {
     const uid = Date.now().toString(36);
 
     const circuito = await window.cumpeo.services.circuito.crearCircuito({
@@ -71,7 +85,7 @@ export async function setupPartidaRosco(page, opts = {}) {
       juegos: [{
         juego_id: juegoId,
         configuracion: {
-          rondas: opts.rondas || 1,
+          rondas,
           segundos_por_equipo: opts.segundos || 60,
           puntos_por_acierto: 10,
           penalizacion_puntos: 5
@@ -90,7 +104,7 @@ export async function setupPartidaRosco(page, opts = {}) {
         juegos: [{
           juego_id: juegoId,
           configuracion: {
-            rondas: opts.rondas || 1,
+            rondas,
             segundos_por_equipo: opts.segundos || 60,
             puntos_por_acierto: 10,
             penalizacion_puntos: 5
@@ -110,8 +124,10 @@ export async function setupPartidaRosco(page, opts = {}) {
       crypto.randomUUID()
     );
 
-    return { partidaId: partida.id, codigo: partida.public_codigo, setId: null };
-  }, { juegoId, opts });
+    return { partidaId: partida.id, codigo: partida.public_codigo };
+  }, { juegoId, opts, rondas });
+
+  return { ...partida, juegoId, sets };
 }
 
 /**
@@ -128,6 +144,39 @@ export async function iniciarPartidaRosco(page, partidaId) {
       pid, je.id, window.cumpeo.session.sessionId, crypto.randomUUID()
     );
   }, partidaId);
+}
+
+/**
+ * Abre el modal de inicio, elige N rondas y sus sets, y confirma.
+ * @param {import('@playwright/test').Page} page
+ * @param {object} opts
+ * @param {Array<{id: string}>} opts.sets - sets a elegir en orden (1 por ronda)
+ * @param {number} opts.rondas - default sets.length
+ */
+export async function iniciarJuegoRoscoConSets(page, opts = {}) {
+  const sets = opts.sets || [];
+  const rondas = opts.rondas || sets.length || 1;
+
+  await page.click('#btn-rosco-iniciar-juego');
+  await page.waitForSelector('#rosco-modal-inicio', { timeout: 15000 });
+
+  if (rondas > 1) {
+    await page.selectOption('#rosco-select-rondas', String(rondas));
+  }
+
+  for (let i = 0; i < rondas; i++) {
+    if (!sets[i]) throw new Error(`iniciarJuegoRoscoConSets: falta set para ronda ${i + 1}`);
+    await page.selectOption(`#rosco-select-set-${i}`, sets[i].id);
+  }
+
+  await page.click('#btn-rosco-modal-iniciar');
+}
+
+/**
+ * Abre el modal y confirma con el único set disponible (atajo para 1 ronda).
+ */
+export async function iniciarJuegoRoscoModalUnSet(page, setId) {
+  await iniciarJuegoRoscoConSets(page, { sets: [{ id: setId }], rondas: 1 });
 }
 
 /**

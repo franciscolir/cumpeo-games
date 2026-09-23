@@ -10,6 +10,7 @@ import { loginTestUser, waitForCumpeo } from '../_helpers/auth.js';
 import {
   setupPartidaRosco,
   iniciarPartidaRosco,
+  iniciarJuegoRoscoConSets,
   obtenerContextoRosco
 } from './_helpers/rosco.js';
 
@@ -31,7 +32,7 @@ async function esperarBotonTurno(page) {
 
 test('error cambia al equipo 2', async ({ page }) => {
   await page.goto('/');
-  const { partidaId } = await setupPartidaRosco(page);
+  const { partidaId, sets } = await setupPartidaRosco(page);
 
   await page.goto(`/#/partidas/${partidaId}`);
   await waitForCumpeo(page);
@@ -39,7 +40,7 @@ test('error cambia al equipo 2', async ({ page }) => {
   await iniciarPartidaRosco(page, partidaId);
 
   await esperarPanelRosco(page);
-  await page.click('#btn-rosco-iniciar-juego');
+  await iniciarJuegoRoscoConSets(page, { sets });
   await esperarBotonTurno(page);
   await page.click('#btn-rosco-iniciar-turno');
 
@@ -56,7 +57,7 @@ test('error cambia al equipo 2', async ({ page }) => {
 
 test('pasapalabra cambia de turno y marca letra como pasada', async ({ page }) => {
   await page.goto('/');
-  const { partidaId } = await setupPartidaRosco(page);
+  const { partidaId, sets } = await setupPartidaRosco(page);
 
   await page.goto(`/#/partidas/${partidaId}`);
   await waitForCumpeo(page);
@@ -64,7 +65,7 @@ test('pasapalabra cambia de turno y marca letra como pasada', async ({ page }) =
   await iniciarPartidaRosco(page, partidaId);
 
   await esperarPanelRosco(page);
-  await page.click('#btn-rosco-iniciar-juego');
+  await iniciarJuegoRoscoConSets(page, { sets });
   await esperarBotonTurno(page);
   await page.click('#btn-rosco-iniciar-turno');
 
@@ -82,7 +83,7 @@ test('pasapalabra cambia de turno y marca letra como pasada', async ({ page }) =
 
 test('saltar letra avanza sin marcar estado', async ({ page }) => {
   await page.goto('/');
-  const { partidaId } = await setupPartidaRosco(page);
+  const { partidaId, sets } = await setupPartidaRosco(page);
 
   await page.goto(`/#/partidas/${partidaId}`);
   await waitForCumpeo(page);
@@ -90,7 +91,7 @@ test('saltar letra avanza sin marcar estado', async ({ page }) => {
   await iniciarPartidaRosco(page, partidaId);
 
   await esperarPanelRosco(page);
-  await page.click('#btn-rosco-iniciar-juego');
+  await iniciarJuegoRoscoConSets(page, { sets });
   await esperarBotonTurno(page);
   await page.click('#btn-rosco-iniciar-turno');
 
@@ -104,7 +105,7 @@ test('saltar letra avanza sin marcar estado', async ({ page }) => {
 
 test('siguiente equipo cambia turno manualmente', async ({ page }) => {
   await page.goto('/');
-  const { partidaId } = await setupPartidaRosco(page);
+  const { partidaId, sets } = await setupPartidaRosco(page);
 
   await page.goto(`/#/partidas/${partidaId}`);
   await waitForCumpeo(page);
@@ -112,7 +113,7 @@ test('siguiente equipo cambia turno manualmente', async ({ page }) => {
   await iniciarPartidaRosco(page, partidaId);
 
   await esperarPanelRosco(page);
-  await page.click('#btn-rosco-iniciar-juego');
+  await iniciarJuegoRoscoConSets(page, { sets });
   await esperarBotonTurno(page);
   await page.click('#btn-rosco-iniciar-turno');
 
@@ -129,7 +130,7 @@ test('siguiente equipo cambia turno manualmente', async ({ page }) => {
 
 test('dos aciertos seguidos mantienen mismo equipo', async ({ page }) => {
   await page.goto('/');
-  const { partidaId } = await setupPartidaRosco(page);
+  const { partidaId, sets } = await setupPartidaRosco(page);
 
   await page.goto(`/#/partidas/${partidaId}`);
   await waitForCumpeo(page);
@@ -137,7 +138,7 @@ test('dos aciertos seguidos mantienen mismo equipo', async ({ page }) => {
   await iniciarPartidaRosco(page, partidaId);
 
   await esperarPanelRosco(page);
-  await page.click('#btn-rosco-iniciar-juego');
+  await iniciarJuegoRoscoConSets(page, { sets });
   await esperarBotonTurno(page);
   await page.click('#btn-rosco-iniciar-turno');
 
@@ -154,7 +155,7 @@ test('dos aciertos seguidos mantienen mismo equipo', async ({ page }) => {
 
 test('aciertos de ambos equipos acumulan puntos correctamente', async ({ page }) => {
   await page.goto('/');
-  const { partidaId } = await setupPartidaRosco(page);
+  const { partidaId, sets } = await setupPartidaRosco(page);
 
   await page.goto(`/#/partidas/${partidaId}`);
   await waitForCumpeo(page);
@@ -162,7 +163,7 @@ test('aciertos de ambos equipos acumulan puntos correctamente', async ({ page })
   await iniciarPartidaRosco(page, partidaId);
 
   await esperarPanelRosco(page);
-  await page.click('#btn-rosco-iniciar-juego');
+  await iniciarJuegoRoscoConSets(page, { sets });
   await esperarBotonTurno(page);
   await page.click('#btn-rosco-iniciar-turno');
 

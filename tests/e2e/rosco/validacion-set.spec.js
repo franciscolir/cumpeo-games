@@ -1,12 +1,13 @@
 /* =============================================================
    Rosco Validación de Set — test e2e de validación de sets.
    
-   Cubre: set inválido (letras incorrectas, items insuficientes),
-   y el flujo de iniciar con set válido.
+   Cubre: set inválido (letras incorrectas, items insuficientes)
+   rechazado por el modal de inicio + flujo con set válido.
    ============================================================= */
 
 import { test, expect } from '@playwright/test';
 import { loginTestUser, waitForCumpeo } from '../_helpers/auth.js';
+import { iniciarJuegoRoscoConSets } from './_helpers/rosco.js';
 
 test.beforeEach(loginTestUser);
 
@@ -14,7 +15,7 @@ test('iniciar juego Rosco muestra error si el set tiene letras inválidas', asyn
   await page.goto('/');
   await waitForCumpeo(page);
 
-  const { partidaId } = await page.evaluate(async () => {
+  const { partidaId, setId } = await page.evaluate(async () => {
     const juegos = await window.cumpeo.services.juego.listarJuegos();
     const rosco = juegos.find((j) => j.codigo === 'ROSCO');
 
@@ -68,7 +69,7 @@ test('iniciar juego Rosco muestra error si el set tiene letras inválidas', asyn
       crypto.randomUUID()
     );
 
-    return { partidaId: partida.id };
+    return { partidaId: partida.id, setId: set.id };
   });
 
   await page.goto(`/#/partidas/${partidaId}`);
@@ -93,7 +94,7 @@ test('iniciar juego Rosco muestra error si el set tiene letras inválidas', asyn
     await dialog.accept();
   });
 
-  await page.click('#btn-rosco-iniciar-juego');
+  await iniciarJuegoRoscoConSets(page, { sets: [{ id: setId }], rondas: 1 });
   await page.waitForTimeout(500);
 
   const roscoLetters = page.locator('[data-letra]');
@@ -105,7 +106,7 @@ test('iniciar juego Rosco acepta set con todas las letras válidas', async ({ pa
   await page.goto('/');
   await waitForCumpeo(page);
 
-  const { partidaId } = await page.evaluate(async () => {
+  const { partidaId, setId } = await page.evaluate(async () => {
     const juegos = await window.cumpeo.services.juego.listarJuegos();
     const rosco = juegos.find((j) => j.codigo === 'ROSCO');
 
@@ -163,7 +164,7 @@ test('iniciar juego Rosco acepta set con todas las letras válidas', async ({ pa
       crypto.randomUUID()
     );
 
-    return { partidaId: partida.id };
+    return { partidaId: partida.id, setId: set.id };
   });
 
   await page.goto(`/#/partidas/${partidaId}`);
@@ -184,7 +185,7 @@ test('iniciar juego Rosco acepta set con todas las letras válidas', async ({ pa
     return panel && panel.querySelector('#btn-rosco-iniciar-juego');
   }, { timeout: 15000 });
 
-  await page.click('#btn-rosco-iniciar-juego');
+  await iniciarJuegoRoscoConSets(page, { sets: [{ id: setId }], rondas: 1 });
   await page.waitForTimeout(300);
 
   await expect(page.locator('[data-letra="A"]')).toBeVisible({ timeout: 10000 });

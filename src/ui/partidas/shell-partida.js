@@ -129,11 +129,11 @@ async function _renderContenido(container, app, partidaId) {
   const gameUI = codigoJuego ? app.uiRegistry.obtener(codigoJuego) : null;
   const estadoJuego = juegoActivo ? (juegoActivo.estado_juego || {}) : {};
 
-  const itemsDelJuego = (codigoJuego === 'QUE_PIENSA_EL_PUBLICO' || codigoJuego === 'TRIVIA' || codigoJuego === 'ROSCO' || codigoJuego === 'PICTIONARY' || codigoJuego === 'HISTORIA_ENREDADA' || codigoJuego === 'MEMORIA' || codigoJuego === 'ANTI_TRIVIA' || codigoJuego === 'ENLACES')
+  const itemsDelJuego = (codigoJuego === 'QUE_PIENSA_EL_PUBLICO' || codigoJuego === 'TRIVIA' || codigoJuego === 'PICTIONARY' || codigoJuego === 'HISTORIA_ENREDADA' || codigoJuego === 'MEMORIA' || codigoJuego === 'ANTI_TRIVIA' || codigoJuego === 'ENLACES')
     ? await cargarItemsDeJuego(app, juegoActivo)
     : null;
 
-  const setsDisponibles = (codigoJuego === 'TRIVIA' || codigoJuego === 'MEMORIA' || codigoJuego === 'ANTI_TRIVIA' || codigoJuego === 'ENLACES')
+  const setsDisponibles = (codigoJuego === 'TRIVIA' || codigoJuego === 'MEMORIA' || codigoJuego === 'ANTI_TRIVIA' || codigoJuego === 'ENLACES' || codigoJuego === 'ROSCO')
     ? await app.services.set.listarSetsActivosPorJuego(juegoActivo.juego_id)
     : null;
 
@@ -683,16 +683,34 @@ async function _renderContenido(container, app, partidaId) {
             partidaId, juegoActivo.id, nuevoEstado,
             juegoActivo.state_version, sessionId, nuevoActionId()
           );
-        } else if (tipo === 'iniciar-juego-rosco') {
+        } else if (tipo === 'iniciar-juego-rosco-con-sets') {
           const { RoscoGameDefinition } = await import('../../games/rosco/RoscoGameDefinition.js');
-          const config = juegoActivo.configuracion_congelada || RoscoGameDefinition.defaultConfig;
-          const contenidoSet = { items: itemsDelJuego || [] };
-          const validacion = RoscoGameDefinition.validarContenidoSet(contenidoSet, config);
+          const setsPayload = payload.sets;
+          if (!Array.isArray(setsPayload) || setsPayload.length === 0) {
+            window.alert('Set inválido:\nElegí al menos un set para iniciar');
+            return;
+          }
+          const sets = [];
+          for (const s of setsPayload) {
+            const setId = typeof s === 'string' ? s : s?.id;
+            if (!setId) {
+              window.alert('Set inválido:\nFalta el id de un set');
+              return;
+            }
+            const itemsRaw = await app.services.set.listarItemsDeSet(setId);
+            const items = itemsRaw
+              .sort((a, b) => a.orden - b.orden)
+              .map((it) => ({ id: it.id, ...(it.contenido || {}) }));
+            sets.push({ id: setId, items });
+          }
+          const configBase = juegoActivo.configuracion_congelada || RoscoGameDefinition.defaultConfig;
+          const config = { ...configBase, rondas: sets.length };
+          const validacion = RoscoGameDefinition.validarSetsElegidos(sets, config);
           if (!validacion.ok) {
             window.alert(`Set inválido:\n${validacion.errores.join('\n')}`);
             return;
           }
-          const estadoInicial = RoscoGameDefinition.estadoInicial(config);
+          const estadoInicial = RoscoGameDefinition.estadoInicial(config, sets);
           await app.services.partida.actualizarEstadoJuego(
             partidaId,
             juegoActivo.id,
@@ -829,7 +847,6 @@ async function _renderContenido(container, app, partidaId) {
           }
         } else if (tipo === 'siguiente-ronda-rosco') {
           const { RoscoGameDefinition } = await import('../../games/rosco/RoscoGameDefinition.js');
-          const config = juegoActivo.configuracion_congelada || RoscoGameDefinition.defaultConfig;
           const siguienteRonda = (estadoJuego.ronda_actual || 1) + 1;
           if (siguienteRonda > (estadoJuego.total_rondas || 1)) {
             await app.services.partida.actualizarEstadoJuego(
@@ -838,7 +855,8 @@ async function _renderContenido(container, app, partidaId) {
               juegoActivo.state_version, sessionId, nuevoActionId()
             );
           } else {
-            const contenidoSet = { items: itemsDelJuego || [] };
+            const contenidoSet = estadoJuego.sets_por_ronda?.[siguienteRonda - 1]
+              || { id: null, items: [] };
             const nuevoEstado = RoscoGameDefinition.limpiarRoscoParaNuevaRonda(estadoJuego, contenidoSet);
             await app.services.partida.actualizarEstadoJuego(
               partidaId, juegoActivo.id, nuevoEstado,

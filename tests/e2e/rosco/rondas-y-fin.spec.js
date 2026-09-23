@@ -1,8 +1,9 @@
 /* =============================================================
    Rosco Rondas y Fin — test e2e de rondas múltiples y fin de juego.
    
-   Cubre: cascading pasapalabra, fin de ronda, rondas múltiples,
-   fin de juego con ganador, empate, y conducto↔público sync.
+   Cubre: cascading pasapalabra, fin de ronda, rondas múltiples
+   con N sets distintos, fin de juego con ganador, empate, y
+   conducto↔público sync.
    ============================================================= */
 
 import { test, expect } from '@playwright/test';
@@ -10,6 +11,7 @@ import { loginTestUser, waitForCumpeo } from '../_helpers/auth.js';
 import {
   setupPartidaRosco,
   iniciarPartidaRosco,
+  iniciarJuegoRoscoConSets,
   obtenerContextoRosco
 } from './_helpers/rosco.js';
 
@@ -29,28 +31,9 @@ async function esperarBotonTurno(page) {
   }, { timeout: 15000 });
 }
 
-async function jugarRoscoCompleto(page, rondas) {
-  for (let i = 0; i < 27; i++) {
-    const ctx = await obtenerContextoRosco(page, await page.evaluate(() => window.cumpeo?.partidaId));
-    const fase = ctx.estadoJuego.fase;
-    if (fase === 'CAMBIO_TURNO') {
-      await page.click('#btn-rosco-iniciar-turno');
-      await page.waitForTimeout(100);
-    } else if (fase === 'FIN_DE_RONDA' || fase === 'FIN_DE_JUEGO') {
-      break;
-    }
-
-    const btnAcierto = page.locator('#btn-rosco-acierto');
-    if (await btnAcierto.isVisible({ timeout: 1000 }).catch(() => false)) {
-      await btnAcierto.click();
-    }
-    await page.waitForTimeout(50);
-  }
-}
-
 test('cascading pasapalabra: rosco con pasapalabras permite respuestas del otro equipo', async ({ page }) => {
   await page.goto('/');
-  const { partidaId } = await setupPartidaRosco(page, { rondas: 1, segundos: 60 });
+  const { partidaId, sets } = await setupPartidaRosco(page, { rondas: 1, segundos: 60 });
 
   await page.goto(`/#/partidas/${partidaId}`);
   await waitForCumpeo(page);
@@ -58,7 +41,7 @@ test('cascading pasapalabra: rosco con pasapalabras permite respuestas del otro 
   await iniciarPartidaRosco(page, partidaId);
 
   await esperarPanelRosco(page);
-  await page.click('#btn-rosco-iniciar-juego');
+  await iniciarJuegoRoscoConSets(page, { sets });
   await esperarBotonTurno(page);
   await page.click('#btn-rosco-iniciar-turno');
 
@@ -83,7 +66,7 @@ test('cascading pasapalabra: rosco con pasapalabras permite respuestas del otro 
 
 test('fin de ronda aparece al completar todas las letras', async ({ page }) => {
   await page.goto('/');
-  const { partidaId } = await setupPartidaRosco(page, { rondas: 1, segundos: 60 });
+  const { partidaId, sets } = await setupPartidaRosco(page, { rondas: 1, segundos: 60 });
 
   await page.goto(`/#/partidas/${partidaId}`);
   await waitForCumpeo(page);
@@ -91,7 +74,7 @@ test('fin de ronda aparece al completar todas las letras', async ({ page }) => {
   await iniciarPartidaRosco(page, partidaId);
 
   await esperarPanelRosco(page);
-  await page.click('#btn-rosco-iniciar-juego');
+  await iniciarJuegoRoscoConSets(page, { sets });
   await page.waitForTimeout(500);
   await esperarBotonTurno(page);
   await page.click('#btn-rosco-iniciar-turno');
@@ -124,9 +107,10 @@ test('fin de ronda aparece al completar todas las letras', async ({ page }) => {
   await expect(page.locator('#btn-rosco-siguiente-ronda')).toBeVisible({ timeout: 5000 });
 });
 
-test('siguiente ronda inicia nuevo rosco', async ({ page }) => {
+test('siguiente ronda inicia el set de la ronda 2', async ({ page }) => {
   await page.goto('/');
-  const { partidaId } = await setupPartidaRosco(page, { rondas: 2, segundos: 60 });
+  const { partidaId, sets } = await setupPartidaRosco(page, { rondas: 2, segundos: 60 });
+  expect(sets.length).toBe(2);
 
   await page.goto(`/#/partidas/${partidaId}`);
   await waitForCumpeo(page);
@@ -134,11 +118,15 @@ test('siguiente ronda inicia nuevo rosco', async ({ page }) => {
   await iniciarPartidaRosco(page, partidaId);
 
   await esperarPanelRosco(page);
-  await page.click('#btn-rosco-iniciar-juego');
+  await iniciarJuegoRoscoConSets(page, { sets });
   await page.waitForTimeout(500);
   await esperarBotonTurno(page);
   await page.click('#btn-rosco-iniciar-turno');
   await page.waitForTimeout(500);
+
+  const ctxInicio = await obtenerContextoRosco(page, partidaId);
+  expect(ctxInicio.estadoJuego.total_rondas).toBe(2);
+  expect(ctxInicio.estadoJuego.set_ronda_actual.id).toBe(sets[0].id);
 
   for (let i = 0; i < 27; i++) {
     const ctx = await obtenerContextoRosco(page, partidaId);
@@ -168,11 +156,18 @@ test('siguiente ronda inicia nuevo rosco', async ({ page }) => {
   const ctx = await obtenerContextoRosco(page, partidaId);
   expect(ctx.estadoJuego.ronda_actual).toBe(2);
   expect(ctx.estadoJuego.fase).toBe('INICIO_RONDA');
+  expect(ctx.estadoJuego.set_ronda_actual.id).toBe(sets[1].id);
+
+  await page.waitForFunction(() => {
+    return document.querySelector('[data-letra]');
+  }, { timeout: 10000 });
+  const letras = await page.locator('[data-letra]').count();
+  expect(letras).toBe(27);
 });
 
 test('fin de juego en última ronda', async ({ page }) => {
   await page.goto('/');
-  const { partidaId } = await setupPartidaRosco(page, { rondas: 1, segundos: 60 });
+  const { partidaId, sets } = await setupPartidaRosco(page, { rondas: 1, segundos: 60 });
 
   await page.goto(`/#/partidas/${partidaId}`);
   await waitForCumpeo(page);
@@ -180,7 +175,7 @@ test('fin de juego en última ronda', async ({ page }) => {
   await iniciarPartidaRosco(page, partidaId);
 
   await esperarPanelRosco(page);
-  await page.click('#btn-rosco-iniciar-juego');
+  await iniciarJuegoRoscoConSets(page, { sets });
   await page.waitForTimeout(500);
   await esperarBotonTurno(page);
   await page.click('#btn-rosco-iniciar-turno');
@@ -220,7 +215,7 @@ test('fin de juego en última ronda', async ({ page }) => {
 
 test('pública muestra resultado del rosco', async ({ page }) => {
   await page.goto('/');
-  const { partidaId, codigo } = await setupPartidaRosco(page);
+  const { partidaId, codigo, sets } = await setupPartidaRosco(page);
 
   await page.goto(`/#/partidas/${partidaId}`);
   await waitForCumpeo(page);
@@ -228,7 +223,7 @@ test('pública muestra resultado del rosco', async ({ page }) => {
   await iniciarPartidaRosco(page, partidaId);
 
   await esperarPanelRosco(page);
-  await page.click('#btn-rosco-iniciar-juego');
+  await iniciarJuegoRoscoConSets(page, { sets });
   await esperarBotonTurno(page);
   await page.click('#btn-rosco-iniciar-turno');
 
