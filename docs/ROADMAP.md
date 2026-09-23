@@ -228,7 +228,7 @@ de implementarse.
 
 ---
 
-### Bloque 7 — Formularios de sets por juego 🔄 EN PROGRESO (4/10)
+### Bloque 7 — Formularios de sets por juego 🔄 EN PROGRESO (7/10)
 
 **Objetivo:** Crear formularios de sets dedicados por juego y rediseñar el rosco.
 
@@ -241,6 +241,7 @@ de implementarse.
 | 7.1d | Editor de Rosco: grilla 27 filas | ✅ APROBADO | 9771694 |
 | 7.2 | Memoricé: editor + sets predeterminados | ⬜ PENDIENTE | — |
 | 7.2a | Modelo Memoricé: imagen_url + es_predeterminado | ✅ APROBADO | 83df5b8 |
+| 7.2b | Storage helpers para imágenes | ✅ APROBADO | 5cba1fa |
 | 7.3 | Anti-Trivia: editor | ⬜ PENDIENTE | — |
 | 7.4 | Enlaces: editor | ⬜ PENDIENTE | — |
 | 7.5 | Trivia: editor (4 alternativas con checkbox) | ⬜ PENDIENTE | — |
@@ -288,6 +289,7 @@ de implementarse.
 | 7.4 | 2026-09-23 | 7.1c: rediseño circular del rosco. 1857 unit. |
 | 7.5 | 2026-09-23 | 7.1d: editor de Rosco. 1887 unit. |
 | 7.6 | 2026-09-23 | 7.2a: modelo Memoricé. 1901 unit. |
+| 7.7 | 2026-09-23 | 7.2b: storage helpers. 1916 unit. |
 ---
 
 ## 5. Convenciones
