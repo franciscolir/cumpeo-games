@@ -19,9 +19,7 @@
 |-------|--------|------|-----------|-------|--------|
 | 2026-09-18 | 0 | 0.1–0.6 | ✅ APROBADO | Bloque documental. MASTER pendiente de integración manual. | — |
 | 2026-09-23 | 5 | 5.8 (cierre) | ✅ CERRADO | Anti-Trivia 12/12 e2e. Memoricé 10/10. Run completo 179/184. 4 fallas residuales (2 pre-existentes, 2 flaky). | 1d865dd |
-
 | 2026-09-23 | 5 | 5.9a | ✅ APROBADO | EnlacesGameDefinition + 11 reducers + 135 tests. Registro/bootstrap/seed actualizados. | 53f29e9 |
-| 2026-09-23 | 5 | 5.9a | ✅ APROBADO | EnlacesGameDefinition + 135 tests. Registro/bootstrap/seed actualizados. | 53f29e9 |
 | 2026-09-23 | 5 | 5.9b | ✅ APROBADO | EnlacesGameUI + shell actions + drag-and-drop HTML5. 67 tests. | acc423f |
 ---
 

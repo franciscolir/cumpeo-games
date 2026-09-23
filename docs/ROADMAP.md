@@ -249,8 +249,7 @@ de implementarse.
 | 5.17 | 2026-09-23 | 5.8-revert: heartbeat removido (regresión e2e). C1 aplicado. 1497 unit. |
 | 5.18 | 2026-09-23 | 5.8e: heartbeat en ControlService. Anti-Trivia 12/12, Memoricé 10/10, run completo 179/184. 5.8 CERRADO. |
 | 5.19 | 2026-09-23 | 5.9a: EnlacesGameDefinition + 135 tests. 1632 unit totales. |
-| 5.20 | 2026-09-23 | 5.9a: EnlacesGameDefinition + 135 tests. 1632 unit. |
-| 5.21 | 2026-09-23 | 5.9b: EnlacesGameUI + drag-and-drop. 1699 unit. |
+| 5.20 | 2026-09-23 | 5.9b: EnlacesGameUI + drag-and-drop. 1699 unit. |
 
 ---
 
