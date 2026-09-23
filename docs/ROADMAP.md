@@ -238,7 +238,7 @@ de implementarse.
 | 7.1a | Dominio de Rosco: N rondas = N sets | ✅ APROBADO | 12145ae |
 | 7.1b | UI conductor de Rosco: modal inicio | ✅ APROBADO | 0f67f43 |
 | 7.1c | Rediseño del rosco (conductor + pública) | ✅ APROBADO | 3908371 |
-| 7.1d | Editor de Rosco: grilla 27 filas | ⬜ PENDIENTE | — |
+| 7.1d | Editor de Rosco: grilla 27 filas | ✅ APROBADO | 9771694 |
 | 7.2 | Memoricé: editor + sets predeterminados | ⬜ PENDIENTE | — |
 | 7.3 | Anti-Trivia: editor | ⬜ PENDIENTE | — |
 | 7.4 | Enlaces: editor | ⬜ PENDIENTE | — |
@@ -285,6 +285,7 @@ de implementarse.
 | 7.2 | 2026-09-23 | 7.1a: dominio Rosco N sets. 1780 unit. |
 | 7.3 | 2026-09-23 | 7.1b: modal inicio + N sets. 1794 unit. |
 | 7.4 | 2026-09-23 | 7.1c: rediseño circular del rosco. 1857 unit. |
+| 7.5 | 2026-09-23 | 7.1d: editor de Rosco. 1887 unit. |
 ---
 
 ## 5. Convenciones

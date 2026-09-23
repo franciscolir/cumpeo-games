@@ -26,6 +26,8 @@
 | 2026-09-23 | 7 | 7.0a | ✅ APROBADO | Refactor: extraer editores QPEP/Trivia. formulario.js 741→144. 1749 unit. | dfb901c |
 | 2026-09-23 | 7 | 7.1a | ✅ APROBADO | Dominio Rosco: N rondas = N sets. 101 tests Rosco. 1780 unit. | 12145ae |
 | 2026-09-23 | 7 | 7.1b | ✅ APROBADO | Modal de inicio + N sets. 43 tests UI, 18 e2e. 1794 unit. | 0f67f43 |
+| 2026-09-23 | 7 | 7.1d | ✅ APROBADO | Editor de sets de Rosco (grilla 27 filas). 30 tests. 1887 unit. | 9771694 |
+| 2026-09-23 | 7 | 7.1d-fix | ✅ APROBADO | Revertir SetService.crearSetCompleto sin uso. | e2eae33 |
 ---
 
 ## Correcciones pendientes
@@ -275,3 +277,4 @@ _(ninguna)_
 | 95 | `shell-partida.js:707` sobrescribe `config.rondas` localmente para `validarSetsElegidos`. No muta la config congelada (spread), pero es frágil. Alternativa: que `validarSetsElegidos` valide `sets.length` directo. | Paso 7.1b (detectado) | Baja |
 | 96 | Los prompts deben verificar el `git show` del archivo real antes de decir "MANTENER X". El agente no puede distinguir entre X real y X inventado por el prompt. | Paso 7.1a (detectado) | Media |
 | 97 | `shell-publica.js` líneas 604, 616 buscan `#rosco-pub-timer-eq1` / `#rosco-pub-timer-eq2` pero el HTML no los tiene. Bug pre-existente, no tocado en 7.1c. | Paso 7.1c (detectado) | Media |
+| 98 | El editor de sets no guarda atómicamente. Eliminar + agregar items puede dejar el set inconsistente si falla a mitad. Considerar `reemplazarItems` en el futuro. | Paso 7.1d (detectado) | Media |
