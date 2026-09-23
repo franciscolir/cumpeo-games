@@ -228,7 +228,7 @@ de implementarse.
 
 ---
 
-### Bloque 7 — Formularios de sets por juego 🔄 EN PROGRESO (9/10)
+### Bloque 7 — Formularios de sets por juego 🔄 EN PROGRESO (10/16)
 
 **Objetivo:** Crear formularios de sets dedicados por juego y rediseñar el rosco.
 
@@ -243,7 +243,7 @@ de implementarse.
 | 7.2b | Storage helpers para imágenes | ✅ APROBADO | 5cba1fa |
 | 7.2c | Editor de Memoricé | ✅ APROBADO | 353f1d0 |
 | 7.2d | Resolver storageRef a URL en UI | ✅ APROBADO | 3ea02b9 |
-| 7.2e | Sets predeterminados (Emojis, Íconos) | ⬜ PENDIENTE | — |
+| 7.2e | Sets predeterminados (Emojis, Íconos) | ✅ APROBADO | b576d22 |
 | 7.3 | Anti-Trivia: editor | ⬜ PENDIENTE | — |
 | 7.4 | Enlaces: editor | ⬜ PENDIENTE | — |
 | 7.5 | Trivia: editor | ⬜ PENDIENTE | — |
@@ -294,6 +294,7 @@ de implementarse.
 | 7.7 | 2026-09-23 | 7.2b: storage helpers. 1916 unit. |
 | 7.8 | 2026-09-23 | 7.2c: editor de Memoricé. 1956 unit. |
 | 7.9 | 2026-09-23 | 7.2d: resolver ref a URL en UI. 1964 unit. |
+| 7.10 | 2026-09-23 | 7.2e: sets predeterminados con emojis e íconos. 1986 unit. |
 ---
 
 ## 5. Convenciones

@@ -32,6 +32,7 @@
 | 2026-09-23 | 7 | 7.2b | ✅ APROBADO | Storage helpers para imágenes de Memoricé. 15 tests. 1916 unit. | 5cba1fa |
 | 2026-09-23 | 7 | 7.2c | ✅ APROBADO | Editor de Memoricé (grilla N slots + imágenes). 40 tests. 1956 unit. | 353f1d0 |
 | 2026-09-23 | 7 | 7.2d | ✅ APROBADO | Resolver storageRef a URL en UI. 8 tests. 1964 unit. | 3ea02b9 |
+| 2026-09-23 | 7 | 7.2e | ✅ APROBADO | Sets predeterminados (Emojis/Íconos) + render `emoji:` + editor solo lectura. 22 tests nuevos. 1986 unit. | b576d22 |
 ---
 
 ## Correcciones pendientes
