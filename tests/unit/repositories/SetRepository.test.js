@@ -45,6 +45,20 @@ describe('SetRepository', () => {
     it('rechaza si falta nombre', async () => {
       await expect(repo.crearSet({ juego_id: 'j1', nombre: '' })).rejects.toThrow(/nombre/);
     });
+
+    it('crearSet con es_predeterminado: true → true', async () => {
+      const s = await repo.crearSet({
+        juego_id: 'j1',
+        nombre: 'Predeterminado',
+        es_predeterminado: true
+      });
+      expect(s.es_predeterminado).toBe(true);
+    });
+
+    it('crearSet sin es_predeterminado → false', async () => {
+      const s = await repo.crearSet({ juego_id: 'j1', nombre: 'Normal' });
+      expect(s.es_predeterminado).toBe(false);
+    });
   });
 
   describe('actualizarSet', () => {
@@ -99,6 +113,26 @@ describe('SetRepository', () => {
 
       expect(await repo.obtenerSet(s.id)).toBeUndefined();
       expect(await repo.listarItemsDeSet(s.id)).toHaveLength(0);
+    });
+
+    it('rechaza eliminar set con es_predeterminado: true', async () => {
+      const s = await repo.crearSet({
+        juego_id: 'j1',
+        nombre: 'Pred',
+        es_predeterminado: true
+      });
+      await expect(repo.eliminarSet(s.id)).rejects.toThrow(/predeterminado/);
+      expect(await repo.obtenerSet(s.id)).toBeTruthy();
+    });
+
+    it('permite eliminar set con es_predeterminado: false', async () => {
+      const s = await repo.crearSet({
+        juego_id: 'j1',
+        nombre: 'No pred',
+        es_predeterminado: false
+      });
+      await repo.eliminarSet(s.id);
+      expect(await repo.obtenerSet(s.id)).toBeUndefined();
     });
 
     it('pone source_set_id=NULL en snapshots huérfanos', async () => {

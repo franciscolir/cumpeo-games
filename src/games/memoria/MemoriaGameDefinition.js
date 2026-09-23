@@ -91,6 +91,10 @@ export const MemoriaGameDefinition = {
       throw new ValidacionError('parejas_por_ronda debe ser un entero >= 1');
     }
 
+    if (![6, 8, 10, 12].includes(config.parejas_por_ronda)) {
+      throw new ValidacionError('parejas_por_ronda debe ser 6, 8, 10 o 12');
+    }
+
     if (!esEnteroMayorQue(config.tiempo_turno_seg, 1)) {
       throw new ValidacionError('tiempo_turno_seg debe ser un entero >= 1');
     }
@@ -145,8 +149,16 @@ export const MemoriaGameDefinition = {
         throw new ValidacionError(`items[${i}] debe ser un objeto`);
       }
 
-      if (typeof item.contenido !== 'string' || item.contenido.trim() === '') {
-        throw new ValidacionError(`items[${i}].contenido debe ser un string no vacío`);
+      if (typeof item.imagen_url !== 'string' || item.imagen_url.trim() === '') {
+        throw new ValidacionError(`items[${i}].imagen_url debe ser un string no vacío`);
+      }
+
+      if (item.contenido !== undefined && item.contenido !== null) {
+        if (typeof item.contenido !== 'string' || item.contenido.trim() === '') {
+          throw new ValidacionError(
+            `items[${i}].contenido debe ser un string no vacío si está presente`
+          );
+        }
       }
     }
 

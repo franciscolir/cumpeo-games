@@ -35,6 +35,7 @@ CREATE TABLE sets (
   version integer NOT NULL DEFAULT 1,
   orden_catalogo integer,
   activo boolean NOT NULL DEFAULT true,
+  es_predeterminado boolean NOT NULL DEFAULT false,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
@@ -42,6 +43,7 @@ CREATE TABLE sets (
 CREATE INDEX idx_sets_juego_id ON sets (juego_id);
 CREATE INDEX idx_sets_juego_id_orden_catalogo ON sets (juego_id, orden_catalogo);
 CREATE INDEX idx_sets_activo ON sets (activo);
+CREATE INDEX idx_sets_es_predeterminado ON sets (es_predeterminado);
 
 -- ============================================================
 -- 3. item_sets

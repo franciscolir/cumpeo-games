@@ -25,7 +25,8 @@ function contenidoValido(n = 6) {
   for (let i = 0; i < n; i++) {
     items.push({
       id: `item-${i}`,
-      contenido: `Elemento ${i + 1}`
+      contenido: `Elemento ${i + 1}`,
+      imagen_url: `https://example.com/img/${i + 1}.png`
     });
   }
   return { items };
@@ -177,6 +178,34 @@ describe('MemoriaGameDefinition', () => {
       expect(() => def.validarConfiguracion(configuracionValida({ parejas_por_ronda: 0 }))).toThrow(ValidacionError);
     });
 
+    it('parejas_por_ronda = 6 → true', () => {
+      expect(def.validarConfiguracion(configuracionValida({ parejas_por_ronda: 6 }))).toBe(true);
+    });
+
+    it('parejas_por_ronda = 8 → true', () => {
+      expect(def.validarConfiguracion(configuracionValida({ parejas_por_ronda: 8 }))).toBe(true);
+    });
+
+    it('parejas_por_ronda = 10 → true', () => {
+      expect(def.validarConfiguracion(configuracionValida({ parejas_por_ronda: 10 }))).toBe(true);
+    });
+
+    it('parejas_por_ronda = 12 → true', () => {
+      expect(def.validarConfiguracion(configuracionValida({ parejas_por_ronda: 12 }))).toBe(true);
+    });
+
+    it('parejas_por_ronda = 7 → error (impar fuera de {6,8,10,12})', () => {
+      expect(() => def.validarConfiguracion(configuracionValida({ parejas_por_ronda: 7 }))).toThrow(ValidacionError);
+    });
+
+    it('parejas_por_ronda = 4 → error (mínimo 6)', () => {
+      expect(() => def.validarConfiguracion(configuracionValida({ parejas_por_ronda: 4 }))).toThrow(ValidacionError);
+    });
+
+    it('parejas_por_ronda = 14 → error (máximo 12)', () => {
+      expect(() => def.validarConfiguracion(configuracionValida({ parejas_por_ronda: 14 }))).toThrow(ValidacionError);
+    });
+
     it('tiempo_turno_seg = 0 → error', () => {
       expect(() => def.validarConfiguracion(configuracionValida({ tiempo_turno_seg: 0 }))).toThrow(ValidacionError);
     });
@@ -217,14 +246,44 @@ describe('MemoriaGameDefinition', () => {
       expect(() => def.validarContenidoSet(contenidoValido(3), { parejas_por_ronda: 6 })).toThrow(ValidacionError);
     });
 
-    it('item sin contenido → error', () => {
-      const contenido = { items: [{ id: 'x' }] };
-      expect(() => def.validarContenidoSet(contenido, config)).toThrow(ValidacionError);
+    it('item sin imagen_url → error', () => {
+      const items = contenidoValido(6).items.map((it, i) =>
+        i === 0 ? { id: it.id, contenido: it.contenido } : it
+      );
+      expect(() => def.validarContenidoSet({ items }, config))
+        .toThrow(/items\[0\]\.imagen_url debe ser un string no vacío/);
     });
 
-    it('item con contenido vacío → error', () => {
-      const contenido = { items: [{ id: 'x', contenido: '  ' }] };
-      expect(() => def.validarContenidoSet(contenido, config)).toThrow(ValidacionError);
+    it('item con imagen_url vacía → error', () => {
+      const items = contenidoValido(6).items.map((it, i) =>
+        i === 0 ? { ...it, imagen_url: '  ' } : it
+      );
+      expect(() => def.validarContenidoSet({ items }, config))
+        .toThrow(/items\[0\]\.imagen_url debe ser un string no vacío/);
+    });
+
+    it('item solo con imagen_url (sin contenido) → true', () => {
+      const items = contenidoValido(6).items.map((it) => ({
+        id: it.id,
+        imagen_url: it.imagen_url
+      }));
+      expect(def.validarContenidoSet({ items }, config)).toBe(true);
+    });
+
+    it('item con contenido presente pero vacío → error', () => {
+      const items = contenidoValido(6).items.map((it, i) =>
+        i === 0 ? { ...it, contenido: '  ' } : it
+      );
+      expect(() => def.validarContenidoSet({ items }, config))
+        .toThrow(/items\[0\]\.contenido debe ser un string no vacío si está presente/);
+    });
+
+    it('item sin contenido ni imagen_url → error por imagen_url', () => {
+      const items = contenidoValido(6).items.map((it, i) =>
+        i === 0 ? { id: it.id } : it
+      );
+      expect(() => def.validarContenidoSet({ items }, config))
+        .toThrow(/items\[0\]\.imagen_url/);
     });
 
     it('items no es array → error', () => {

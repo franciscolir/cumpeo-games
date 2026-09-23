@@ -47,9 +47,16 @@ export class SetRepository extends BaseRepository {
    * @param {string} params.nombre - Nombre del set.
    * @param {string|null} [params.descripcion] - Descripción.
    * @param {number|null} [params.orden_catalogo] - Orden en catálogo.
+   * @param {boolean} [params.es_predeterminado=false] - Set predeterminado (no eliminable).
    * @returns {Promise<object>} El set creado.
    */
-  async crearSet({ juego_id, nombre, descripcion = null, orden_catalogo = null }) {
+  async crearSet({
+    juego_id,
+    nombre,
+    descripcion = null,
+    orden_catalogo = null,
+    es_predeterminado = false
+  }) {
     validarNoVacio(juego_id, 'juego_id');
     validarNoVacio(nombre, 'nombre');
 
@@ -62,6 +69,7 @@ export class SetRepository extends BaseRepository {
         version: 1,
         orden_catalogo,
         activo: true,
+        es_predeterminado,
         created_at: ahora(),
         updated_at: ahora()
       };
@@ -78,6 +86,7 @@ export class SetRepository extends BaseRepository {
       version: 1,
       orden_catalogo,
       activo: true,
+      es_predeterminado,
       created_at: ts,
       updated_at: ts
     };
@@ -308,6 +317,10 @@ export class SetRepository extends BaseRepository {
   async eliminarSet(setId) {
     const actual = await this.obtener(setId);
     if (!actual) throw new NoEncontradoError('Set', setId);
+
+    if (actual.es_predeterminado === true) {
+      throw new ValidacionError('No se puede eliminar un set predeterminado');
+    }
 
     if (this.modo === 'supabase') {
       await this.adapter.delete(STORE_ITEMS, { eq: { set_id: setId } });
