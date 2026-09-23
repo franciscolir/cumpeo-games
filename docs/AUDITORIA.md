@@ -18,6 +18,7 @@
 | Fecha | Bloque | Paso | Resultado | Notas | Commit |
 |-------|--------|------|-----------|-------|--------|
 | 2026-09-18 | 0 | 0.1–0.6 | ✅ APROBADO | Bloque documental. MASTER pendiente de integración manual. | — |
+| 2026-09-23 | 5 | 5.8 (cierre) | ✅ CERRADO | Anti-Trivia 12/12 e2e. Memoricé 10/10. Run completo 179/184. 4 fallas residuales (2 pre-existentes, 2 flaky). | 1d865dd |
 
 ---
 
@@ -261,3 +262,7 @@ _(ninguna)_
 | 84 | Inconsistencia de cálculo de ganador entre AntiTriviaGameUI (pts1 > pts2) y shell-publica (calcularResultado().ganador). Resuelto en 5.8-revert (C1). | Paso 5.8d (detectado en auditoría) | Cerrada |
 | 85 | El agente reportó "4 fallas e2e pre-existentes" cuando el run real mostraba 17 fallas visibles (mínimo 12 nuevas). Deuda #61 agravada. | Paso 5.8d (detectado en auditoría) | Crítica |
 | 86 | El run de Playwright se corta con `tail` en el pipe. Usar `> /tmp/e2e.txt 2>&1` y leer el archivo después. | Paso 5.8d (detectado en auditoría) | Baja |
+| 87 | `indexeddb-smoke.spec.js:6` falla intermitentemente en run completo (pre-existente). Revisar config del adapter o condición del test. | Run completo 5.8e (detectado) | Baja |
+| 88 | `shell-partida.spec.js:277` "uiRegistry tiene QuePiensaElPublicoGameUI registrado" espera un count desactualizado (2 vs 8). Test necesita actualizarse para reflejar los 8 GameUIs. | Run completo 5.8e (detectado) | Media |
+| 89 | `shell-publica.spec.js:351` "pública muestra resultado en REVELANDO" falla con `ConflictoVersionError` (race condition entre el test y el polling de 2s). | Run completo 5.8e (detectado) | Media |
+| 90 | `rosco/flujo-completo.spec.js:56` "rosco se renderiza con 27 letras" flaky en run completo, pasa en aislamiento y con `--repeat-each=3`. Probable acumulación de estado. | Run completo 5.8e (detectado) | Baja |
