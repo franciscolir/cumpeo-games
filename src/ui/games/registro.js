@@ -11,6 +11,7 @@ import { PictionaryGameUI } from './pictionary/PictionaryGameUI.js';
 import { HistoriaEnredadaGameUI } from './historia-enredada/HistoriaEnredadaGameUI.js';
 import { MemoriaGameUI } from './memoria/MemoriaGameUI.js';
 import { AntiTriviaGameUI } from './anti-trivia/AntiTriviaGameUI.js';
+import { EnlacesGameUI } from './enlaces/EnlacesGameUI.js';
 
 /**
  * Registra todos los GameUIs disponibles en el registry.
@@ -26,7 +27,8 @@ export function registrarGameUIs(uiRegistry) {
     PictionaryGameUI,
     HistoriaEnredadaGameUI,
     MemoriaGameUI,
-    AntiTriviaGameUI
+    AntiTriviaGameUI,
+    EnlacesGameUI
   ];
 
   for (const ui of gameUIs) {

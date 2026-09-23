@@ -129,11 +129,11 @@ async function _renderContenido(container, app, partidaId) {
   const gameUI = codigoJuego ? app.uiRegistry.obtener(codigoJuego) : null;
   const estadoJuego = juegoActivo ? (juegoActivo.estado_juego || {}) : {};
 
-  const itemsDelJuego = (codigoJuego === 'QUE_PIENSA_EL_PUBLICO' || codigoJuego === 'TRIVIA' || codigoJuego === 'ROSCO' || codigoJuego === 'PICTIONARY' || codigoJuego === 'HISTORIA_ENREDADA' || codigoJuego === 'MEMORIA' || codigoJuego === 'ANTI_TRIVIA')
+  const itemsDelJuego = (codigoJuego === 'QUE_PIENSA_EL_PUBLICO' || codigoJuego === 'TRIVIA' || codigoJuego === 'ROSCO' || codigoJuego === 'PICTIONARY' || codigoJuego === 'HISTORIA_ENREDADA' || codigoJuego === 'MEMORIA' || codigoJuego === 'ANTI_TRIVIA' || codigoJuego === 'ENLACES')
     ? await cargarItemsDeJuego(app, juegoActivo)
     : null;
 
-  const setsDisponibles = (codigoJuego === 'TRIVIA' || codigoJuego === 'MEMORIA' || codigoJuego === 'ANTI_TRIVIA')
+  const setsDisponibles = (codigoJuego === 'TRIVIA' || codigoJuego === 'MEMORIA' || codigoJuego === 'ANTI_TRIVIA' || codigoJuego === 'ENLACES')
     ? await app.services.set.listarSetsActivosPorJuego(juegoActivo.juego_id)
     : null;
 
@@ -420,6 +420,128 @@ async function _renderContenido(container, app, partidaId) {
           const config = juegoActivo.configuracion_congelada || MemoriaGameDefinition.defaultConfig;
           const nuevoEstado = MemoriaGameDefinition.aplicarTimeUp(estadoJuego, config);
           if (!nuevoEstado) return;
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId, juegoActivo.id, nuevoEstado,
+            juegoActivo.state_version, sessionId, nuevoActionId()
+          );
+        } else if (tipo === 'iniciar-juego-enlaces') {
+          const { EnlacesGameDefinition } = await import('../../games/enlaces/EnlacesGameDefinition.js');
+          const config = juegoActivo.configuracion_congelada || EnlacesGameDefinition.defaultConfig;
+          EnlacesGameDefinition.validarConfiguracion(config);
+          const estadoInicial = EnlacesGameDefinition.estadoInicial(config);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId, juegoActivo.id, estadoInicial,
+            juegoActivo.state_version, sessionId, nuevoActionId()
+          );
+        } else if (tipo === 'iniciar-ronda-enlaces') {
+          const nuevoEstado = { ...estadoJuego, fase: 'SELECCIONANDO_SET' };
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId, juegoActivo.id, nuevoEstado,
+            juegoActivo.state_version, sessionId, nuevoActionId()
+          );
+        } else if (tipo === 'seleccionar-set-enlaces') {
+          const { EnlacesGameDefinition } = await import('../../games/enlaces/EnlacesGameDefinition.js');
+          const itemsRaw = await app.services.set.listarItemsDeSet(payload.set.id);
+          const items = itemsRaw.map((it) => ({ ...it.contenido, id: it.id }));
+          const setConItems = { ...payload.set, items };
+          const config = juegoActivo.configuracion_congelada || EnlacesGameDefinition.defaultConfig;
+          const seleccionado = EnlacesGameDefinition.seleccionarSet(estadoJuego, setConItems, config);
+          const nuevoEstado = EnlacesGameDefinition.prepararTablero(seleccionado, undefined, config);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId, juegoActivo.id, nuevoEstado,
+            juegoActivo.state_version, sessionId, nuevoActionId()
+          );
+        } else if (tipo === 'mover-elemento-enlaces') {
+          const ejecutarEnlaces = async (juegoRef, estadoRef) => {
+            const { EnlacesGameDefinition } = await import('../../games/enlaces/EnlacesGameDefinition.js');
+            const nuevoEstado = EnlacesGameDefinition.moverElemento(estadoRef, payload.desdeIdx, payload.hastaIdx);
+            await app.services.partida.actualizarEstadoJuego(
+              partidaId, juegoRef.id, nuevoEstado,
+              juegoRef.state_version, sessionId, nuevoActionId()
+            );
+          };
+          try {
+            await ejecutarEnlaces(juegoActivo, estadoJuego);
+          } catch (err) {
+            if (err?.name === 'ConflictoVersionError') {
+              const ctx = await app.services.partida.obtenerContextoEspera(partidaId);
+              const juegoFresh = ctx.juegos.find((j) => j.id === juegoActivo.id);
+              if (!juegoFresh) throw err;
+              await ejecutarEnlaces(juegoFresh, juegoFresh.estado_juego || {});
+            } else {
+              throw err;
+            }
+          }
+        } else if (tipo === 'deshacer-enlaces') {
+          const { EnlacesGameDefinition } = await import('../../games/enlaces/EnlacesGameDefinition.js');
+          const nuevoEstado = EnlacesGameDefinition.deshacerMovimiento(estadoJuego);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId, juegoActivo.id, nuevoEstado,
+            juegoActivo.state_version, sessionId, nuevoActionId()
+          );
+        } else if (tipo === 'validar-enlaces') {
+          const ejecutarEnlaces = async (juegoRef, estadoRef) => {
+            const { EnlacesGameDefinition } = await import('../../games/enlaces/EnlacesGameDefinition.js');
+            const config = juegoRef.configuracion_congelada || EnlacesGameDefinition.defaultConfig;
+            const nuevoEstado = EnlacesGameDefinition.validar(estadoRef, config);
+            await app.services.partida.actualizarEstadoJuego(
+              partidaId, juegoRef.id, nuevoEstado,
+              juegoRef.state_version, sessionId, nuevoActionId()
+            );
+          };
+          try {
+            await ejecutarEnlaces(juegoActivo, estadoJuego);
+          } catch (err) {
+            if (err?.name === 'ConflictoVersionError') {
+              const ctx = await app.services.partida.obtenerContextoEspera(partidaId);
+              const juegoFresh = ctx.juegos.find((j) => j.id === juegoActivo.id);
+              if (!juegoFresh) throw err;
+              await ejecutarEnlaces(juegoFresh, juegoFresh.estado_juego || {});
+            } else {
+              throw err;
+            }
+          }
+        } else if (tipo === 'time-up-enlaces') {
+          const { EnlacesGameDefinition } = await import('../../games/enlaces/EnlacesGameDefinition.js');
+          const nuevoEstado = EnlacesGameDefinition.aplicarTimeUp(estadoJuego);
+          if (!nuevoEstado) return;
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId, juegoActivo.id, nuevoEstado,
+            juegoActivo.state_version, sessionId, nuevoActionId()
+          );
+        } else if (tipo === 'siguiente-turno-enlaces') {
+          const ejecutarEnlaces = async (juegoRef, estadoRef) => {
+            const { EnlacesGameDefinition } = await import('../../games/enlaces/EnlacesGameDefinition.js');
+            const nuevoEstado = EnlacesGameDefinition.siguienteTurno(estadoRef);
+            await app.services.partida.actualizarEstadoJuego(
+              partidaId, juegoRef.id, nuevoEstado,
+              juegoRef.state_version, sessionId, nuevoActionId()
+            );
+          };
+          try {
+            await ejecutarEnlaces(juegoActivo, estadoJuego);
+          } catch (err) {
+            if (err?.name === 'ConflictoVersionError') {
+              const ctx = await app.services.partida.obtenerContextoEspera(partidaId);
+              const juegoFresh = ctx.juegos.find((j) => j.id === juegoActivo.id);
+              if (!juegoFresh) throw err;
+              await ejecutarEnlaces(juegoFresh, juegoFresh.estado_juego || {});
+            } else {
+              throw err;
+            }
+          }
+        } else if (tipo === 'iniciar-turno-enlaces') {
+          const { EnlacesGameDefinition } = await import('../../games/enlaces/EnlacesGameDefinition.js');
+          const config = juegoActivo.configuracion_congelada || EnlacesGameDefinition.defaultConfig;
+          const nuevoEstado = EnlacesGameDefinition.iniciarSiguienteTurno(estadoJuego, config);
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId, juegoActivo.id, nuevoEstado,
+            juegoActivo.state_version, sessionId, nuevoActionId()
+          );
+        } else if (tipo === 'iniciar-siguiente-ronda-enlaces') {
+          const { EnlacesGameDefinition } = await import('../../games/enlaces/EnlacesGameDefinition.js');
+          const config = juegoActivo.configuracion_congelada || EnlacesGameDefinition.defaultConfig;
+          const nuevoEstado = EnlacesGameDefinition.iniciarSiguienteRonda(estadoJuego, config);
           await app.services.partida.actualizarEstadoJuego(
             partidaId, juegoActivo.id, nuevoEstado,
             juegoActivo.state_version, sessionId, nuevoActionId()
