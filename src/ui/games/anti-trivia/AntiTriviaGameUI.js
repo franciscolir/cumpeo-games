@@ -12,6 +12,7 @@
 
 import { Boton } from '../../components/boton.js';
 import { crearTimer } from '../_shared/index.js';
+import { AntiTriviaGameDefinition } from '../../../games/anti-trivia/AntiTriviaGameDefinition.js';
 
 const NOMBRE_FASES = {
   INICIO_RONDA: 'Inicio de ronda',
@@ -278,9 +279,10 @@ export const AntiTriviaGameUI = {
         </div>
       `;
     } else if (fase === 'FIN_DE_JUEGO') {
-      const res = pts1 > pts2
+      const { ganador } = AntiTriviaGameDefinition.calcularResultado(estadoJuego);
+      const res = ganador === 1
         ? `${equipo1.nombre} gana`
-        : pts2 > pts1
+        : ganador === 2
           ? `${equipo2.nombre} gana`
           : 'Empate técnico';
       contenido = `

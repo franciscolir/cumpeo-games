@@ -189,8 +189,24 @@ UI pública, tests e2e) y se cuenta como **1 paso**.
 | 5.5 | Historia Enredada end-to-end | ✅ APROBADO | 65e86e6, b7f6f25, c982efd, 068f151, dc9d34e |
 | 5.6 | Trivia end-to-end | ✅ APROBADO | 9269eb1, 2d9190d, 8bee291, 38eca68, 0acedd5, 28e8b6f, afba7a0 |
 | 5.7 | Memoricé end-to-end | ✅ APROBADO | cc06fee, f158afb, 62617c0, a00b8d1, 34a27fe, 79cc2b7, d1ff93d |
-| 5.8 | Anti-Trivia — cerrar mecánica + implementar | 🔄 EN CURSO | — |
-| 5.9 | Enlaces — cerrar mecánica + implementar | ⬜ | — |
+| 5.8 | Anti-Trivia — cerrar mecánica + implementar | ⚠️ EN REVISIÓN | ver sub-tabla abajo |
+| 5.9 | Enlaces — cerrar mecánica + implementar | ⬜ PENDIENTE | — |
+
+#### Detalle del paso 5.8 — Anti-Trivia
+
+| Sub-paso | Descripción | Estado | Commit |
+|----------|-------------|--------|--------|
+| 5.8-pre | Cierre documental de mecánica | ✅ APROBADO | — |
+| 5.8-pre-fix | ESPERA_VALIDACION + confirmaciones tras time up | ✅ APROBADO | d00f066 |
+| 5.8a | GameDefinition, validación de set y reducers | ✅ APROBADO | 92cc14c |
+| 5.8b | UI Conductor + shell actions | ⚠️ APROBADO CON CORRECCIÓN | 141093e |
+| 5.8c | UI Pública + timer | ⚠️ APROBADO CON CORRECCIÓN | c384044 |
+| 5.8d | e2e + heartbeat en shell | ❌ RECHAZADO | 14a3cf3 |
+| 5.8-revert | Revert heartbeat + C1 (unificar ganador) | 🔄 PENDIENTE DE VERIFICACIÓN e2e | (sin commitear) |
+
+**Nota sobre 5.8b y 5.8c:** aprobados retroactivamente por auditoría del 2026-09-23 (el agente los construyó sin pasar por auditoría intermedia). El código es correcto; la violación es de proceso.
+
+**Nota sobre 5.8d:** el commit `14a3cf3` introdujo un heartbeat en `shell-partida.js` (scope creep, no pedido en el prompt) que causó regresión sistémica en e2e de Memoricé, Rosco, Historia Enredada y QPEP. Revertido en `5.8-revert`. El heartbeat es conceptualmente correcto (INV-093) y se reabrirá como paso dedicado con tests propios.
 
 **Nota:** Los sub-pasos (5.x-pre, 5.xa, 5.xb, etc.) se documentan en
 `docs/roadmap/pasos/bloque-5.x-cierre.md` y no cuentan como pasos separados.
@@ -238,6 +254,7 @@ de implementarse.
 | 5.14 | 2026-09-22 | Cierre documental de 5.7. ROADMAP limpiado (conteos consistentes). |
 | 5.15 | 2026-09-22 | Cierre documental de mecánica de Anti-Trivia. Conteo 9/10. |
 | 5.16 | 2026-09-22 | 5.8-pre-fix: ESPERA_VALIDACION y confirmaciones tras time up. |
+| 5.17 | 2026-09-23 | 5.8-revert: heartbeat removido (regresión e2e). C1 aplicado. 1487 unit. |
 
 ---
 

@@ -216,6 +216,10 @@ _(ninguna)_
 | 2026-09-22 | 5 | 5.7d | ✅ APROBADO | Memoricé: e2e (10 tests). | d1ff93d |
 | 2026-09-22 | 5 | 5.8-pre | ✅ APROBADO | Cierre documental de mecánica de Anti-Trivia. Decisiones: respuesta incorrecta válida, lista de respuestas correctas, conductor decide. | — |
 | 2026-09-22 | 5 | 5.8-pre-fix | ✅ APROBADO | Anti-Trivia: ESPERA_VALIDACION cuando el timer llega a 0 y el jugador alcanzó a responder. | — |
+| 2026-09-22 | 5 | 5.8a | ✅ APROBADO | Anti-Trivia: GameDefinition, set validation y reducers (128 tests). | 92cc14c |
+| 2026-09-22 | 5 | 5.8b | ✅ APROBADO | Anti-Trivia: UI Conductor + shell actions (56 tests). | 141093e |
+| 2026-09-22 | 5 | 5.8c | ✅ APROBADO | Anti-Trivia: UI Pública + timer (39 tests). | c384044 |
+| 2026-09-22 | 5 | 5.8d | ❌ RECHAZADO | Heartbeat en shell-partida introdujo regresiones e2e (Memoricé, Rosco, HE, QPEP). Revertido en 5.8-revert. | 14a3cf3 |
 | 2026-09-21 | 5 | 5.4-pre | ✅ APROBADO | Cierre documental de mecánica de Pictionary. Decisiones: estructura del item del set, orden fijo de modos, bonus manual. | — |
 | 2026-09-21 | 5 | 5.4a | ✅ APROBADO | Pictionary GameDefinition + reducers + 74 tests unitarios. Archivos: PictionaryGameDefinition.js, tests, registro.js. | ef53390 |
 
@@ -252,3 +256,8 @@ _(ninguna)_
 | 78 | El helper e2e de Memoria no exporta `encontrarParejaEnEstado` / `encontrarNoParejaEnEstado` (están inline). El reporte del agente dijo que estaban exportadas. | Paso 5.7d (detectado) | Baja |
 | 79 | Test `flujo-completo.spec.js:13` de Memoria tarda 10s. Considerar optimizar. | Paso 5.7d (detectado) | Baja |
 | 80 | ROADMAP con deuda estructural: conteos inconsistentes (`/10`, `/16`, `/20`, `/21`), historial con `5.7` duplicado, sección 2 desincronizada. Corregido en 5.7-cierre. | Paso 5.7d (detectado) | Media |
+| 82 | Agente externo construyó 5.8b, 5.8c y 5.8d sin auditoría intermedia. Violación de regla 9 de CONTINUIDAD.md. Escalar si se repite. | Paso 5.8d (detectado en auditoría) | Alta |
+| 83 | Heartbeat en shell-partida.js introdujo regresión sistémica en e2e de Memoricé, Rosco, Historia Enredada y QPEP (12+ fallas nuevas). Revertido en 5.8-revert. Reabrir como paso dedicado con tests propios. | Paso 5.8d (detectado en auditoría) | Alta |
+| 84 | Inconsistencia de cálculo de ganador entre AntiTriviaGameUI (pts1 > pts2) y shell-publica (calcularResultado().ganador). Resuelto en 5.8-revert (C1). | Paso 5.8d (detectado en auditoría) | Cerrada |
+| 85 | El agente reportó "4 fallas e2e pre-existentes" cuando el run real mostraba 17 fallas visibles (mínimo 12 nuevas). Deuda #61 agravada. | Paso 5.8d (detectado en auditoría) | Crítica |
+| 86 | El run de Playwright se corta con `tail` en el pipe. Usar `> /tmp/e2e.txt 2>&1` y leer el archivo después. | Paso 5.8d (detectado en auditoría) | Baja |

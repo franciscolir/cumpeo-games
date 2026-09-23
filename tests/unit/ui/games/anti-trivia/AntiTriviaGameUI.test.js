@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { AntiTriviaGameUI } from '../../../../../src/ui/games/anti-trivia/AntiTriviaGameUI.js';
+import { AntiTriviaGameDefinition } from '../../../../../src/games/anti-trivia/AntiTriviaGameDefinition.js';
 
 function crearContainer() {
   const cache = {};
@@ -163,9 +164,18 @@ describe('AntiTriviaGameUI', () => {
       expect(container.innerHTML).toContain('20');
     });
 
-    it('FIN_DE_JUEGO muestra ganador', () => {
+    it('FIN_DE_JUEGO muestra ganador via calcularResultado', () => {
+      const spy = vi.spyOn(AntiTriviaGameDefinition, 'calcularResultado');
       AntiTriviaGameUI.renderizarAreaJuego(estadoBase({ fase: 'FIN_DE_JUEGO', puntos_equipo_1: 40, puntos_equipo_2: 10 }), container, contextoBase(), { onAccion: vi.fn() });
+      expect(spy).toHaveBeenCalledOnce();
+      expect(spy.mock.results[0].value.ganador).toBe(1);
       expect(container.innerHTML).toContain('Alfa gana');
+      spy.mockRestore();
+    });
+
+    it('FIN_DE_JUEGO equipo 2 gana via calcularResultado', () => {
+      AntiTriviaGameUI.renderizarAreaJuego(estadoBase({ fase: 'FIN_DE_JUEGO', puntos_equipo_1: 10, puntos_equipo_2: 40 }), container, contextoBase(), { onAccion: vi.fn() });
+      expect(container.innerHTML).toContain('Beta gana');
     });
 
     it('FIN_DE_JUEGO empate muestra empate técnico', () => {
