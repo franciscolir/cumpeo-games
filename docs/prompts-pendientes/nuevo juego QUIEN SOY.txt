@@ -1,0 +1,857 @@
+Perfecto. Con esas definiciones ya podemos cerrar la especificación de **¿QUIÉN SOY?** siguiendo exactamente la lógica que venimos utilizando en Cumpeo.
+
+Te dejo el prompt listo para entregárselo al agente que está trabajando sobre la aplicación existente.
+
+---
+
+# PROMPT — NUEVO JUEGO: ¿QUIÉN SOY?
+
+## OBJETIVO
+
+Implementar el nuevo juego **¿QUIÉN SOY?** dentro de la aplicación **Cumpeo existente**.
+
+**NO reconstruir la aplicación desde cero.**
+
+La aplicación ya tiene arquitectura, navegación, vista de conductor, vista pública, sistema de partidas, puntuación, temporizadores, posters, modales y controles generales.
+
+Se debe **integrar el nuevo juego utilizando la arquitectura y componentes existentes**, respetando la separación entre:
+
+* vista del conductor;
+* vista pública;
+* controles generales;
+* controles específicos del juego.
+
+No crear una implementación paralela si ya existe un componente reutilizable.
+
+---
+
+# 1. CONCEPTO DEL JUEGO
+
+**¿QUIÉN SOY?** consiste en adivinar un personaje a partir de **5 descripciones progresivas**.
+
+Cada descripción entrega más información que la anterior.
+
+Mientras menos descripciones necesite el equipo para acertar, **mayor será el puntaje obtenido**.
+
+Ejemplo:
+
+| Descripción utilizada | Puntaje |
+| --------------------- | ------: |
+| 1                     |     100 |
+| 2                     |      80 |
+| 3                     |      60 |
+| 4                     |      40 |
+| 5                     |      20 |
+
+Estos valores son **configurables**.
+
+El público participa **solamente de manera verbal**.
+
+No necesita responder desde teléfonos ni utilizar controles digitales.
+
+El conductor escucha la respuesta y registra el resultado mediante los controles del juego.
+
+---
+
+# 2. SET DE ¿QUIÉN SOY?
+
+Un set está compuesto por **8 personajes configurables**.
+
+Cada personaje contiene:
+
+* **Nombre**
+* **Imagen**
+* **Descripción 1**
+* **Descripción 2**
+* **Descripción 3**
+* **Descripción 4**
+* **Descripción 5**
+
+Las 5 descripciones son obligatorias.
+
+La imagen corresponde al personaje que debe ser adivinado.
+
+---
+
+# 3. FORMULARIO DEL SET
+
+Crear el formulario utilizando el sistema de formularios existente.
+
+## Datos del set
+
+El set debe poder identificarse y administrarse desde la sección SET de la aplicación.
+
+## Personajes
+
+El set contiene **8 personajes**.
+
+Cada personaje debe tener su propio bloque/formulario:
+
+```text
+PERSONAJE 1
+
+Nombre
+[________________________]
+
+Imagen
+[ Subir imagen ]
+
+Descripción 1
+[________________________]
+
+Descripción 2
+[________________________]
+
+Descripción 3
+[________________________]
+
+Descripción 4
+[________________________]
+
+Descripción 5
+[________________________]
+```
+
+Repetir para los 8 personajes.
+
+### Validaciones
+
+No permitir guardar un personaje si falta:
+
+* nombre;
+* imagen;
+* alguna de las 5 descripciones.
+
+No permitir guardar el set si no están completos sus 8 personajes.
+
+Utilizar el sistema de carga de imágenes existente, preferentemente Supabase Storage si esa es la infraestructura ya utilizada por la aplicación.
+
+---
+
+# 4. CONFIGURACIÓN DEL JUEGO
+
+La configuración específica de **¿QUIÉN SOY?** debe permitir configurar:
+
+## Puntaje por descripción
+
+Cinco valores configurables:
+
+```text
+Descripción 1: [100]
+Descripción 2: [80]
+Descripción 3: [60]
+Descripción 4: [40]
+Descripción 5: [20]
+```
+
+No asumir que estos valores son permanentes.
+
+El administrador/conductor debe poder modificarlos.
+
+## Tiempo
+
+Debe existir un **único tiempo general configurable**.
+
+Ejemplo:
+
+```text
+Tiempo por descripción: [10 segundos]
+```
+
+Este mismo tiempo se aplica a cada una de las 5 descripciones.
+
+No crear cinco tiempos independientes.
+
+## Penalización por ERROR
+
+Debe existir una penalización configurable.
+
+La penalización se descuenta directamente del **marcador del equipo**.
+
+Ejemplo conceptual:
+
+```text
+Penalización por error: [-10]
+```
+
+El valor debe ser configurable.
+
+---
+
+# 5. POSTER DE INICIO
+
+Como en los demás juegos:
+
+Antes de comenzar:
+
+* mostrar el **POSTER de ¿QUIÉN SOY?**;
+* utilizar el sistema de poster existente;
+* mantener los controles generales de la aplicación.
+
+Al presionar **INICIAR/PAUSAR**:
+
+* desaparece el poster;
+* comienza el flujo del juego.
+
+---
+
+# 6. SELECCIÓN DEL EQUIPO
+
+Debe existir:
+
+### SELECTOR DE EQUIPO A/B
+
+* determina qué equipo está jugando;
+* el conductor puede cambiar manualmente el equipo;
+* el equipo activo debe quedar claramente identificado.
+
+El cambio de equipo también puede realizarse automáticamente según el flujo configurado.
+
+La selección automática y el cambio manual deben ser compatibles.
+
+---
+
+# 7. TABLERO DEL PERSONAJE
+
+Una vez iniciado el personaje, la pantalla debe mostrar una estructura visual basada en **5 filas horizontales**.
+
+La imagen del personaje debe estar dividida visualmente en **5 partes horizontales**.
+
+Conceptualmente:
+
+```text
+┌─────────────────────────────┐
+│ DESCRIPCIÓN 1               │
+├─────────────────────────────┤
+│                             │
+│       PARTE IMAGEN 1        │
+├─────────────────────────────┤
+│ DESCRIPCIÓN 2               │
+├─────────────────────────────┤
+│       PARTE IMAGEN 2        │
+├─────────────────────────────┤
+│ DESCRIPCIÓN 3               │
+├─────────────────────────────┤
+│       PARTE IMAGEN 3        │
+├─────────────────────────────┤
+│ DESCRIPCIÓN 4               │
+├─────────────────────────────┤
+│       PARTE IMAGEN 4        │
+├─────────────────────────────┤
+│ DESCRIPCIÓN 5               │
+├─────────────────────────────┤
+│       PARTE IMAGEN 5        │
+└─────────────────────────────┘
+```
+
+La implementación visual puede adaptarse al diseño existente, pero debe conservar el concepto:
+
+> **Cada nueva descripción revela una nueva parte de la imagen.**
+
+La imagen completa funciona como un **rompecabezas vertical de 5 partes**.
+
+---
+
+# 8. INICIO DEL PERSONAJE
+
+Al comenzar un personaje:
+
+* ninguna de las 5 partes de la imagen debe estar completamente revelada;
+* se muestra la **Descripción 1**;
+* se mantiene oculta la información visual correspondiente a las partes todavía no reveladas;
+* el conductor dispone del tiempo configurado para esa descripción.
+
+El equipo puede intentar adivinar desde el primer momento.
+
+---
+
+# 9. REVELACIÓN PROGRESIVA
+
+Cada descripción corresponde a una etapa.
+
+### Descripción 1
+
+Se revela:
+
+* Descripción 1;
+* primera parte de la imagen.
+
+Puntaje disponible:
+
+**Puntaje de descripción 1**
+
+---
+
+### Descripción 2
+
+Si el conductor decide avanzar:
+
+* se revela Descripción 2;
+* se revela la segunda parte de la imagen.
+
+Puntaje disponible:
+
+**Puntaje de descripción 2**
+
+---
+
+### Descripción 3
+
+Se revela:
+
+* Descripción 3;
+* tercera parte de la imagen.
+
+---
+
+### Descripción 4
+
+Se revela:
+
+* Descripción 4;
+* cuarta parte de la imagen.
+
+---
+
+### Descripción 5
+
+Se revela:
+
+* Descripción 5;
+* quinta parte de la imagen.
+
+Con esto:
+
+**la imagen queda completamente revelada.**
+
+---
+
+# 10. TIEMPO
+
+El juego utiliza **un tiempo general configurable**.
+
+Ese mismo tiempo se aplica a cada descripción.
+
+Ejemplo:
+
+```text
+Tiempo configurado: 10 segundos
+```
+
+Entonces:
+
+```text
+Descripción 1 → 10 s
+Descripción 2 → 10 s
+Descripción 3 → 10 s
+Descripción 4 → 10 s
+Descripción 5 → 10 s
+```
+
+El tiempo debe reiniciarse cada vez que se avanza a una nueva descripción.
+
+---
+
+# 11. FINALIZACIÓN DEL TIEMPO
+
+Cuando se termina el tiempo de una descripción:
+
+* el juego **NO avanza automáticamente**;
+* el conductor debe decidir cuándo continuar;
+* el botón correspondiente queda preparado para avanzar.
+
+El conductor presiona:
+
+**SIGUIENTE**
+
+para revelar la siguiente descripción y la siguiente parte de la imagen.
+
+Esto permite que el conductor controle el ritmo del juego.
+
+---
+
+# 12. BOTÓN INICIAR TIEMPO / SIGUIENTE
+
+Es un **botón dinámico**.
+
+### Estado inicial de la descripción
+
+**INICIAR TIEMPO**
+
+Al presionarlo:
+
+* inicia el temporizador;
+* comienza el tiempo para responder.
+
+Mientras el tiempo está activo:
+
+* el equipo puede seguir intentando responder.
+
+Cuando termina el tiempo:
+
+* el temporizador se detiene;
+* queda disponible el avance.
+
+El botón pasa a:
+
+**SIGUIENTE**
+
+Al presionar:
+
+* revela la siguiente descripción;
+* revela la siguiente parte de la imagen;
+* reinicia/prepara el tiempo correspondiente a esa nueva descripción.
+
+---
+
+# 13. RESPUESTAS DURANTE EL TIEMPO
+
+El equipo puede intentar responder **tantas veces como quiera mientras exista tiempo disponible**.
+
+No existe un único intento.
+
+El conductor escucha verbalmente las respuestas.
+
+### Si la respuesta es correcta
+
+El conductor presiona:
+
+**CORRECTO**
+
+Entonces:
+
+* registra el acierto;
+* asigna el puntaje correspondiente a la descripción actual;
+* revela inmediatamente la **imagen completa**;
+* finaliza el personaje actual;
+* queda preparado el paso al siguiente personaje.
+
+La puntuación obtenida corresponde al nivel de descripción en que acertó.
+
+---
+
+# 14. ERROR
+
+Si el equipo entrega una respuesta incorrecta durante el tiempo:
+
+El conductor presiona:
+
+**ERROR**
+
+Entonces:
+
+* registra el error;
+* aplica la **penalización configurable**;
+* descuenta esa penalización directamente del marcador del equipo;
+* el equipo puede seguir intentando responder;
+* permanece en la descripción actual;
+* el tiempo continúa corriendo.
+
+No avanzar automáticamente a la siguiente descripción por un ERROR.
+
+Ejemplo:
+
+```text
+Descripción 2
+Puntaje disponible: 80
+
+Equipo responde incorrectamente
+↓
+ERROR
+↓
+-10 puntos
+↓
+continúa intentando
+↓
+todavía dispone del tiempo restante
+```
+
+---
+
+# 15. LLEGADA A DESCRIPCIÓN 5
+
+Cuando se llega a la quinta descripción:
+
+* se revela la quinta parte de la imagen;
+* la imagen queda completa;
+* se muestra la Descripción 5.
+
+Si el equipo acierta:
+
+**CORRECTO**
+
+→ asignar el puntaje correspondiente.
+
+Si termina el tiempo sin acertar:
+
+El botón que normalmente corresponde a:
+
+**SIGUIENTE**
+
+debe cambiar a:
+
+**REVELAR**
+
+---
+
+# 16. BOTÓN REVELAR
+
+Después de la quinta descripción, si nadie acertó:
+
+**SIGUIENTE → REVELAR**
+
+Al presionar **REVELAR**:
+
+* se revela completamente la imagen;
+* se muestra el personaje;
+* se muestra la respuesta correcta;
+* finaliza el personaje;
+* se prepara el avance al siguiente personaje.
+
+La respuesta correcta debe quedar disponible para el conductor y mostrarse al público únicamente cuando corresponde revelar el resultado.
+
+---
+
+# 17. RESPUESTA CORRECTA
+
+Debe existir un elemento:
+
+### TEXTO CON RESPUESTA CORRECTA
+
+No es un botón.
+
+Es información para el conductor.
+
+Debe mostrar:
+
+**Respuesta correcta: [Nombre del personaje]**
+
+No debe mostrarse anticipadamente al público.
+
+---
+
+# 18. BOTONES ESPECÍFICOS
+
+Los controles específicos de ¿QUIÉN SOY? son:
+
+1. **SELECTOR DE EQUIPO A/B**
+2. **INICIAR TIEMPO / SIGUIENTE**
+3. **CORRECTO**
+4. **ERROR**
+5. **BONUS**
+6. **CONFIGURACIÓN**
+
+Además:
+
+### TEXTO CON RESPUESTA CORRECTA
+
+No es botón.
+
+### REVELAR
+
+Es un estado especial del botón **SIGUIENTE** al llegar a la quinta descripción sin acertar.
+
+---
+
+# 19. BONUS
+
+**BONUS**
+
+Permite al conductor entregar puntaje manualmente.
+
+El bonus:
+
+* es independiente del puntaje automático;
+* no reemplaza el sistema de puntaje por descripción;
+* debe utilizar el mecanismo de BONUS ya existente en Cumpeo.
+
+---
+
+# 20. FLUJO COMPLETO DE UN PERSONAJE
+
+```text
+SELECCIONAR EQUIPO
+        ↓
+CARGAR PERSONAJE
+        ↓
+DESCRIPCIÓN 1
++ PARTE 1 IMAGEN
+        ↓
+INICIAR TIEMPO
+        ↓
+EQUIPO INTENTA ADIVINAR
+        │
+        ├── ERROR
+        │     ↓
+        │   penalización
+        │     ↓
+        │   continúa intentando
+        │
+        ├── CORRECTO
+        │     ↓
+        │   asignar puntaje
+        │     ↓
+        │   revelar imagen completa
+        │     ↓
+        │   siguiente personaje
+        │
+        └── termina tiempo
+              ↓
+          SIGUIENTE
+              ↓
+        DESCRIPCIÓN 2
+        + PARTE 2 IMAGEN
+              ↓
+            ...
+              ↓
+        DESCRIPCIÓN 5
+        + PARTE 5 IMAGEN
+              ↓
+        si acierta → CORRECTO
+              ↓
+        si no acierta
+              ↓
+           REVELAR
+              ↓
+        siguiente personaje
+```
+
+---
+
+# 21. LOS 8 PERSONAJES
+
+El set contiene **8 personajes**.
+
+El conductor determina el equipo que jugará cada personaje mediante **SELECTOR A/B**.
+
+El sistema debe permitir:
+
+* selección automática del equipo según el flujo;
+* cambio manual del equipo por parte del conductor.
+
+No asumir que el orden A/B debe ser obligatorio.
+
+El conductor conserva el control sobre qué equipo juega.
+
+---
+
+# 22. FIN DEL SET
+
+Cuando se completan los 8 personajes:
+
+* termina la partida de **¿QUIÉN SOY?**;
+* se registra el puntaje acumulado de ambos equipos;
+* se muestra el resultado final según la estructura existente de Cumpeo;
+* queda preparado el flujo general para **TERMINAR / SIGUIENTE**.
+
+No crear un sistema paralelo de finalización.
+
+Utilizar el flujo general de juegos existente.
+
+---
+
+# 23. VISTA DEL CONDUCTOR
+
+El conductor debe ver:
+
+* equipo activo;
+* personaje actual;
+* descripción actual;
+* partes de imagen reveladas;
+* temporizador;
+* respuesta correcta;
+* puntaje;
+* controles del juego.
+
+La respuesta correcta es información exclusiva del conductor mientras el personaje todavía está en juego.
+
+---
+
+# 24. VISTA PÚBLICA
+
+El público debe ver una versión limpia del juego.
+
+Debe mostrar:
+
+* pregunta/título del juego;
+* descripción actual;
+* imagen parcialmente revelada;
+* progreso visual de las 5 partes;
+* temporizador cuando corresponda;
+* marcador;
+* resultado cuando el personaje sea resuelto.
+
+El público **NO tiene botones de conductor**.
+
+El público participa verbalmente.
+
+No implementar votación ni respuesta mediante móvil para este juego.
+
+---
+
+# 25. PAUSA
+
+Debe utilizar el sistema general de Cumpeo.
+
+Al presionar **PAUSAR**:
+
+* congelar temporizador;
+* congelar estado;
+* mostrar MODAL PAUSA;
+* imagen del árbitro;
+* leyenda PAUSA;
+* fondo desenfocado.
+
+Al reanudar:
+
+* continuar desde exactamente el mismo estado;
+* continuar el tiempo restante.
+
+Si permanece pausado durante el tiempo configurado en Ajustes Generales:
+
+* pasar automáticamente a MODO ESPERA.
+
+---
+
+# 26. TERMINAR / SIGUIENTE
+
+Utilizar exactamente el flujo general existente:
+
+**TERMINAR**
+
+→ modal:
+
+> ¿Finalizar seguro?
+
+Botones:
+
+**OK / CANCELAR**
+
+Si confirma:
+
+* finalizar juego;
+* registrar resultado;
+* cambiar control a **SIGUIENTE**.
+
+Al presionar SIGUIENTE:
+
+* pasar al siguiente juego del circuito;
+* mostrar su POSTER.
+
+---
+
+# 27. REGLAS DE IMPLEMENTACIÓN
+
+## No inventar
+
+No agregar:
+
+* mecánicas adicionales;
+* botones adicionales;
+* votaciones;
+* respuestas móviles;
+* intentos limitados;
+* rebotes;
+* reglas de puntuación no definidas.
+
+## Reutilizar
+
+Reutilizar los componentes existentes de:
+
+* poster;
+* selector A/B;
+* temporizador;
+* BONUS;
+* configuración;
+* puntuación;
+* modal de pausa;
+* modal de finalización;
+* siguiente juego;
+* modo espera;
+* vista pública.
+
+## Estados importantes
+
+El juego debe manejar correctamente:
+
+* poster;
+* selección de equipo;
+* descripción 1;
+* descripción 2;
+* descripción 3;
+* descripción 4;
+* descripción 5;
+* tiempo activo;
+* tiempo agotado;
+* error;
+* correcto;
+* imagen completa;
+* revelar;
+* personaje finalizado;
+* set finalizado;
+* pausa;
+* modo espera.
+
+No resolver estos estados únicamente mediante cambios visuales. Deben estar conectados al estado real del juego.
+
+---
+
+# 28. CRITERIO VISUAL
+
+Mantener la identidad visual existente de Cumpeo.
+
+La imagen del personaje debe sentirse como una imagen **oculta por capas/segmentos horizontales**, no simplemente como una imagen que aparece completa con una animación de opacidad.
+
+La revelación debe ser claramente comprensible:
+
+```text
+████████████████████
+████████████████████  ← oculto
+
+████████████████████
+████████████████████  ← oculto
+
+████████████████████  ← oculto
+████████████████████  ← oculto
+
+████████████████████  ← oculto
+```
+
+Después de cada descripción:
+
+```text
+████████████████████
+████████████████████  ← REVELADO
+
+████████████████████
+████████████████████  ← oculto
+
+████████████████████  ← oculto
+████████████████████  ← oculto
+
+████████████████████  ← oculto
+```
+
+Hasta llegar a:
+
+```text
+████████████████████
+████████████████████
+████████████████████
+████████████████████
+████████████████████
+```
+
+**Imagen completamente revelada.**
+
+---
+
+# 29. RESULTADO ESPERADO
+
+Implementar **¿QUIÉN SOY?** como un juego completamente integrado a Cumpeo, respetando la arquitectura existente.
+
+La experiencia debe ser:
+
+**POSTER → INICIAR → EQUIPO → PERSONAJE → DESCRIPCIÓN + PARTE IMAGEN → TIEMPO → CORRECTO/ERROR → SIGUIENTE DESCRIPCIÓN → REVELACIÓN PROGRESIVA → RESPUESTA → SIGUIENTE PERSONAJE → 8 PERSONAJES → FIN DEL JUEGO.**
+
+El conductor mantiene el control de la dinámica y el público participa exclusivamente de forma verbal.
