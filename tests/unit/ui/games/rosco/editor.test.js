@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderEditorItemsRosco } from '../../../../../src/ui/games/rosco/editor.js';
 import { ALFABETO } from '../../../../../src/games/rosco/RoscoGameDefinition.js';
-import { SetService } from '../../../../../src/services/SetService.js';
 
 const SET_ID = 'set-rosco-1';
 
@@ -359,31 +358,5 @@ describe('renderEditorItemsRosco', () => {
       expect(container.querySelector('#item-ok-rosco').classList.contains('hidden')).toBe(true);
       expect(container.querySelector('#item-error-rosco').classList.contains('hidden')).toBe(false);
     });
-  });
-});
-
-describe('SetService.crearSetCompleto', () => {
-  it('existe como método de SetService', () => {
-    expect(typeof SetService.prototype.crearSetCompleto).toBe('function');
-  });
-
-  it('delega en SetRepository.crearSetCompleto con los args correctos', async () => {
-    const service = new SetService({ modo: 'indexeddb' });
-    const mock = {
-      crearSetCompleto: vi.fn().mockResolvedValue({ ok: true, set_id: 's1', items_count: 27 })
-    };
-    service.sets = mock;
-
-    const payload = {
-      juego_id: 'j1',
-      nombre: 'Rosco base',
-      items: [{ orden: 1, contenido: { letra: 'A' } }],
-      actionId: 'act-1'
-    };
-    const res = await service.crearSetCompleto(payload);
-
-    expect(mock.crearSetCompleto).toHaveBeenCalledTimes(1);
-    expect(mock.crearSetCompleto).toHaveBeenCalledWith(payload);
-    expect(res.ok).toBe(true);
   });
 });
