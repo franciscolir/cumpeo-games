@@ -240,6 +240,7 @@ de implementarse.
 | 7.1c | Rediseño del rosco (conductor + pública) | ✅ APROBADO | 3908371 |
 | 7.1d | Editor de Rosco: grilla 27 filas | ✅ APROBADO | 9771694 |
 | 7.2 | Memoricé: editor + sets predeterminados | ⬜ PENDIENTE | — |
+| 7.2a | Modelo Memoricé: imagen_url + es_predeterminado | ✅ APROBADO | 83df5b8 |
 | 7.3 | Anti-Trivia: editor | ⬜ PENDIENTE | — |
 | 7.4 | Enlaces: editor | ⬜ PENDIENTE | — |
 | 7.5 | Trivia: editor (4 alternativas con checkbox) | ⬜ PENDIENTE | — |
@@ -286,6 +287,7 @@ de implementarse.
 | 7.3 | 2026-09-23 | 7.1b: modal inicio + N sets. 1794 unit. |
 | 7.4 | 2026-09-23 | 7.1c: rediseño circular del rosco. 1857 unit. |
 | 7.5 | 2026-09-23 | 7.1d: editor de Rosco. 1887 unit. |
+| 7.6 | 2026-09-23 | 7.2a: modelo Memoricé. 1901 unit. |
 ---
 
 ## 5. Convenciones

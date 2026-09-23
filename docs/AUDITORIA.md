@@ -28,6 +28,7 @@
 | 2026-09-23 | 7 | 7.1b | ✅ APROBADO | Modal de inicio + N sets. 43 tests UI, 18 e2e. 1794 unit. | 0f67f43 |
 | 2026-09-23 | 7 | 7.1d | ✅ APROBADO | Editor de sets de Rosco (grilla 27 filas). 30 tests. 1887 unit. | 9771694 |
 | 2026-09-23 | 7 | 7.1d-fix | ✅ APROBADO | Revertir SetService.crearSetCompleto sin uso. | e2eae33 |
+| 2026-09-23 | 7 | 7.2a | ✅ APROBADO | Modelo Memoricé: imagen_url requerido + es_predeterminado en sets. 107 tests. 1901 unit. | 83df5b8 |
 ---
 
 ## Correcciones pendientes
@@ -278,3 +279,5 @@ _(ninguna)_
 | 96 | Los prompts deben verificar el `git show` del archivo real antes de decir "MANTENER X". El agente no puede distinguir entre X real y X inventado por el prompt. | Paso 7.1a (detectado) | Media |
 | 97 | `shell-publica.js` líneas 604, 616 buscan `#rosco-pub-timer-eq1` / `#rosco-pub-timer-eq2` pero el HTML no los tiene. Bug pre-existente, no tocado en 7.1c. | Paso 7.1c (detectado) | Media |
 | 98 | El editor de sets no guarda atómicamente. Eliminar + agregar items puede dejar el set inconsistente si falla a mitad. Considerar `reemplazarItems` en el futuro. | Paso 7.1d (detectado) | Media |
+| 99 | Los tests de gameplay de Memoricé usan `parejas_por_ronda: 2` (fuera del rango válido {6,8,10,12}). No rompen porque no llaman a `validarConfiguracion`. Cosméticamente inconsistente. | Paso 7.2a (detectado) | Baja |
+| 100 | Los tests e2e de Memoricé (`_helpers/memoria.js`, `validacion.spec.js`) crean items solo con `contenido`, sin `imagen_url`. Van a romper con el nuevo modelo. Actualizar en 7.2c (editor) o 7.2e (e2e). | Paso 7.2a (detectado) | Media |
