@@ -39,9 +39,18 @@
 | 3 | Móvil + moderación | ✅ CERRADO | 6/6 | 9ca4e7a | 2026-09-19 |
 | 4 | "¿Qué piensa el público?" | ✅ CERRADO | 13/13 | 2e19767 | 2026-09-21 |
 | 5 | Juegos restantes | ✅ CERRADO | 11/11 | 9b7dfdc | 2026-09-23 |
-| 6 | Migración e2e a Supabase (opcional) | ⬜ PENDIENTE | 0/? | — | — |
+| 6 | Migración e2e a Supabase (opcional) | ⏸️ POSPUESTO | — | — | 2026-09-23 |
 
 **★ MVP se alcanza al cerrar el Bloque 4 ★**
+**Decisión al cerrar Bloque 5 (2026-09-23):** POSPUESTO INDEFINIDAMENTE.
+
+Razones:
+- Los 99 integration tests ya cubren Supabase (adapter, repos, RPCs, RLS, Realtime, Auth).
+- Los ~215 e2e cubren la UI con LocalAdapter.
+- Migrar e2e a Supabase introduce flakiness (rate limiting, red) y lentitud (~2h por corrida).
+- El MVP está completo y testeado con la combinación óptima: unit + integration + e2e.
+
+Si en el futuro aparece una necesidad concreta de e2e contra Supabase, se retoma.
 
 ---
 
