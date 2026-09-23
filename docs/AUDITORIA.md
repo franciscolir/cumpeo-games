@@ -274,3 +274,4 @@ _(ninguna)_
 | 93 | `_bindDragAndDrop` en `EnlacesGameUI.js` tiene una comparación duplicada: `=== 'false'` (string) y `=== false` (boolean). La segunda nunca matchea. Código muerto. | Paso 5.9b (detectado) | Baja |
 | 95 | `shell-partida.js:707` sobrescribe `config.rondas` localmente para `validarSetsElegidos`. No muta la config congelada (spread), pero es frágil. Alternativa: que `validarSetsElegidos` valide `sets.length` directo. | Paso 7.1b (detectado) | Baja |
 | 96 | Los prompts deben verificar el `git show` del archivo real antes de decir "MANTENER X". El agente no puede distinguir entre X real y X inventado por el prompt. | Paso 7.1a (detectado) | Media |
+
