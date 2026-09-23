@@ -33,6 +33,7 @@
 | 2026-09-23 | 7 | 7.2c | ✅ APROBADO | Editor de Memoricé (grilla N slots + imágenes). 40 tests. 1956 unit. | 353f1d0 |
 | 2026-09-23 | 7 | 7.2d | ✅ APROBADO | Resolver storageRef a URL en UI. 8 tests. 1964 unit. | 3ea02b9 |
 | 2026-09-23 | 7 | 7.2e | ✅ APROBADO | Sets predeterminados (Emojis/Íconos) + render `emoji:` + editor solo lectura. 22 tests nuevos. 1986 unit. | b576d22 |
+| 2026-09-23 | 7 | 7.3 | ✅ APROBADO | Editor de Anti-Trivia (lista + form con respuestas dinámicas). 45 tests. 2031 unit. | 31cfb0b |
 ---
 
 ## Correcciones pendientes
@@ -289,3 +290,5 @@ _(ninguna)_
 | 102 | El editor de Memoricé guarda estado en `container.__memoriaEstado` para acceso desde tests. Práctica cuestionable. Considerar mocks o refactor. | Paso 7.2c (detectado) | Baja |
 | 103 | `shell-partida.js` no tiene unit tests (solo e2e). La resolución de storageRefs a URLs quedó cubierta solo por `node --check` + simetría con `shell-publica`. Considerar agregar tests. | Paso 7.2d (detectado) | Media |
 | 104 | `shell-publica.js` muta `contexto.urlsImagenes` en vez de pasar un 4to parámetro. Efecto secundario. Considerar refactor. | Paso 7.2d (detectado) | Baja |
+| 108 | `reordenarItems` en Trivia/QPEP (y quizás Rosco) pasa `items.map(i => i.id)` (array de strings) pero el contrato real es `Array<{id}>`. Bug latente. Anti-Trivia lo hace bien. Verificado en 7.3: solo Trivia (`trivia/editor.js:363`) y QPEP (`que-piensa-el-publico/editor.js:222`) lo llaman con strings; Rosco/Memoria no llaman. Corregir. | Paso 7.3 (detectado) | Media |
+| 109 | El editor de Anti-Trivia guarda estado en `container.__antiTriviaEstado`. Precedente de deuda #102. | Paso 7.3 (detectado) | Baja |

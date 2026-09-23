@@ -228,7 +228,7 @@ de implementarse.
 
 ---
 
-### Bloque 7 — Formularios de sets por juego 🔄 EN PROGRESO (10/16)
+### Bloque 7 — Formularios de sets por juego 🔄 EN PROGRESO (11/16)
 
 **Objetivo:** Crear formularios de sets dedicados por juego y rediseñar el rosco.
 
@@ -244,7 +244,7 @@ de implementarse.
 | 7.2c | Editor de Memoricé | ✅ APROBADO | 353f1d0 |
 | 7.2d | Resolver storageRef a URL en UI | ✅ APROBADO | 3ea02b9 |
 | 7.2e | Sets predeterminados (Emojis, Íconos) | ✅ APROBADO | b576d22 |
-| 7.3 | Anti-Trivia: editor | ⬜ PENDIENTE | — |
+| 7.3 | Anti-Trivia: editor | ✅ APROBADO | 31cfb0b |
 | 7.4 | Enlaces: editor | ⬜ PENDIENTE | — |
 | 7.5 | Trivia: editor | ⬜ PENDIENTE | — |
 | 7.6 | QPEP: editor simplificado | ⬜ PENDIENTE | — |
@@ -295,6 +295,8 @@ de implementarse.
 | 7.8 | 2026-09-23 | 7.2c: editor de Memoricé. 1956 unit. |
 | 7.9 | 2026-09-23 | 7.2d: resolver ref a URL en UI. 1964 unit. |
 | 7.10 | 2026-09-23 | 7.2e: sets predeterminados con emojis e íconos. 1986 unit. |
+| 7.11 | 2026-09-23 | 7.3: editor de Anti-Trivia (lista + respuestas dinámicas). 45 tests. 2031 unit. |
+| 7.11 | 2026-09-23 | 7.3: editor de Anti-Trivia. 45 tests. 2031 unit. |
 ---
 
 ## 5. Convenciones
