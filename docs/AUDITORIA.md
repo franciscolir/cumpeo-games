@@ -21,6 +21,8 @@
 | 2026-09-23 | 5 | 5.8 (cierre) | ✅ CERRADO | Anti-Trivia 12/12 e2e. Memoricé 10/10. Run completo 179/184. 4 fallas residuales (2 pre-existentes, 2 flaky). | 1d865dd |
 
 | 2026-09-23 | 5 | 5.9a | ✅ APROBADO | EnlacesGameDefinition + 11 reducers + 135 tests. Registro/bootstrap/seed actualizados. | 53f29e9 |
+| 2026-09-23 | 5 | 5.9a | ✅ APROBADO | EnlacesGameDefinition + 135 tests. Registro/bootstrap/seed actualizados. | 53f29e9 |
+| 2026-09-23 | 5 | 5.9b | ✅ APROBADO | EnlacesGameUI + shell actions + drag-and-drop HTML5. 67 tests. | acc423f |
 ---
 
 ## Correcciones pendientes
@@ -269,3 +271,4 @@ _(ninguna)_
 | 90 | `rosco/flujo-completo.spec.js:56` "rosco se renderiza con 27 letras" flaky en run completo, pasa en aislamiento y con `--repeat-each=3`. Probable acumulación de estado. | Run completo 5.8e (detectado) | Baja |
 | 91 | `GameDefinition.validarContenidoSet(contenido, config)` recibe un 2do parámetro `config` no documentado en MASTER §8.3.2. Es necesario (para validar `pares_por_turno`), pero el contrato debería actualizarse. | Paso 5.9a (detectado) | Baja |
 | 92 | El contrato `GameDefinition` permite `opts` en `prepararTablero` (para inyectar RNG). Bien para testabilidad. Pero el contrato documentado en MASTER §8.3.2 no menciona reducers ni `opts`. Conviene actualizar MASTER al cerrar Bloque 5. | Paso 5.9a (detectado) | Baja |
+| 93 | `_bindDragAndDrop` en `EnlacesGameUI.js` tiene una comparación duplicada: `=== 'false'` (string) y `=== false` (boolean). La segunda nunca matchea. Código muerto. | Paso 5.9b (detectado) | Baja |
