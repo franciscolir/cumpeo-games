@@ -242,6 +242,7 @@ de implementarse.
 | 7.2 | Memoricé: editor + sets predeterminados | ⬜ PENDIENTE | — |
 | 7.2a | Modelo Memoricé: imagen_url + es_predeterminado | ✅ APROBADO | 83df5b8 |
 | 7.2b | Storage helpers para imágenes | ✅ APROBADO | 5cba1fa |
+| 7.2c | Editor de Memoricé | ✅ APROBADO | 353f1d0 |
 | 7.3 | Anti-Trivia: editor | ⬜ PENDIENTE | — |
 | 7.4 | Enlaces: editor | ⬜ PENDIENTE | — |
 | 7.5 | Trivia: editor (4 alternativas con checkbox) | ⬜ PENDIENTE | — |
@@ -290,6 +291,7 @@ de implementarse.
 | 7.5 | 2026-09-23 | 7.1d: editor de Rosco. 1887 unit. |
 | 7.6 | 2026-09-23 | 7.2a: modelo Memoricé. 1901 unit. |
 | 7.7 | 2026-09-23 | 7.2b: storage helpers. 1916 unit. |
+| 7.8 | 2026-09-23 | 7.2c: editor de Memoricé. 1956 unit. |
 ---
 
 ## 5. Convenciones
