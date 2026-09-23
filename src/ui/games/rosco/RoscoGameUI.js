@@ -2,17 +2,17 @@
    RoscoGameUI — GameUI concreto para el juego Rosco.
 
    Renderiza:
-   - Área de juego: rosco de 27 letras + definición actual + timers + marcador
+   - Área de juego: rosco circular (renderRosco) + timers + marcador
    - Panel conductor: botones de control según fase + configuración previa
 
-   Decisión de diseño: el conductor NO ve la respuesta. Solo lee la
-   definición en voz alta y el jugador responde verbalmente. La
-   respuesta se muestra únicamente al público (en 5.2c).
+   Decisión de diseño (1b): el conductor SÍ ve la respuesta en el
+   panel durante TURNO_ACTIVO (card RESPUESTA). El público la ve
+   en la tarjeta central cuando la letra está resuelta.
    ============================================================= */
 
 import { Boton } from '../../components/boton.js';
 import { crearTimer } from '../_shared/index.js';
-import { ALFABETO, ESTADO_LETRA } from '../../../games/rosco/RoscoGameDefinition.js';
+import { renderRosco } from './renderRosco.js';
 
 let _timerEquipo1 = null;
 let _timerEquipo2 = null;
@@ -77,52 +77,14 @@ function _obtenerItemActual(estadoJuego) {
 }
 
 function _renderRosco(estadoJuego) {
-  const rosco = estadoJuego.rosco || [];
-  const indiceActual = estadoJuego.indice_actual || 0;
-
-  const colores = {
-    [ESTADO_LETRA.PENDIENTE]: 'bg-surface-container-lowest border-on-surface',
-    [ESTADO_LETRA.CORRECTA]: 'bg-tertiary/20 border-tertiary',
-    [ESTADO_LETRA.INCORRECTA]: 'bg-error/20 border-error',
-    [ESTADO_LETRA.PASADA]: 'bg-comicYellow/30 border-comicYellow'
-  };
-
-  const lettersHTML = rosco.map((item, i) => {
-    const esActual = i === indiceActual;
-    const esResuelta = item.estado === ESTADO_LETRA.CORRECTA || item.estado === ESTADO_LETRA.INCORRECTA;
-    const claseFondo = colores[item.estado] || colores[ESTADO_LETRA.PENDIENTE];
-    const claseActual = esActual ? 'ring-4 ring-primary scale-110 z-10' : '';
-    const claseResuelta = esResuelta ? 'opacity-70' : '';
-
-    let icono = '';
-    if (item.estado === ESTADO_LETRA.CORRECTA) icono = '✓';
-    else if (item.estado === ESTADO_LETRA.INCORRECTA) icono = '✗';
-    else if (item.estado === ESTADO_LETRA.PASADA) icono = '→';
-
-    return `
-      <div data-letra="${item.letra}" data-index="${i}"
-        class="relative border-2.5 ${claseFondo} ${claseActual} ${claseResuelta} rounded-lg aspect-square flex flex-col items-center justify-center shadow-comic-sm transition-all">
-        <span class="font-display-hero text-lg text-on-surface">${item.letra}</span>
-        ${icono ? `<span class="absolute -top-1 -right-1 text-xs font-bold ${item.estado === ESTADO_LETRA.CORRECTA ? 'text-tertiary' : item.estado === ESTADO_LETRA.INCORRECTA ? 'text-error' : 'text-comicYellow'}">${icono}</span>` : ''}
-      </div>
-    `;
+  const itemActual = _obtenerItemActual(estadoJuego);
+  return renderRosco(estadoJuego, {
+    mostrarRespuesta: false,
+    respuesta: itemActual?.respuesta || '',
+    mostrarLeyenda: true,
+    mostrarAnillo: true,
+    tamañoLetra: 'md'
   });
-
-  return `
-    <div class="grid grid-cols-6 gap-1.5 max-w-sm mx-auto">
-      ${lettersHTML.slice(0, 6).join('')}
-    </div>
-    <div class="grid grid-cols-6 gap-1.5 max-w-sm mx-auto mt-1.5">
-      ${lettersHTML.slice(6, 12).join('')}
-      <div class="col-span-6 flex items-center justify-center min-h-[3rem]">
-        <p class="font-body-md text-on-surface-variant text-center italic">Centro del rosco</p>
-      </div>
-      ${lettersHTML.slice(12, 18).join('')}
-    </div>
-    <div class="grid grid-cols-6 gap-1.5 max-w-sm mx-auto mt-1.5">
-      ${lettersHTML.slice(18, 27).join('')}
-    </div>
-  `;
 }
 
 /* =============================================================
@@ -268,10 +230,6 @@ export const RoscoGameUI = {
     const pts2 = estadoJuego.puntos_equipo_2 || 0;
     const equipoActual = estadoJuego.equipo_actual || 1;
 
-    const itemActual = _obtenerItemActual(estadoJuego);
-    const definicion = itemActual?.definicion || '';
-    const letraActual = estadoJuego.rosco?.[estadoJuego.indice_actual]?.letra || '?';
-
     const tiempo1 = estadoJuego.tiempo_equipo_1 ?? _obtenerSegundosPorEquipo(contexto);
     const tiempo2 = estadoJuego.tiempo_equipo_2 ?? _obtenerSegundosPorEquipo(contexto);
 
@@ -290,11 +248,6 @@ export const RoscoGameUI = {
 
         <div class="bg-surface-container-lowest border-2.5 border-on-surface rounded-2xl p-4 shadow-comic-lg">
           ${_renderRosco(estadoJuego)}
-        </div>
-
-        <div class="bg-surface-container-lowest border-2.5 border-on-surface rounded-xl p-4 shadow-comic-sm">
-          <p class="font-label-md uppercase text-on-surface-variant mb-1">Letra ${letraActual}</p>
-          <p class="font-display-hero text-xl text-on-surface">${definicion || 'Sin definición'}</p>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
@@ -359,9 +312,15 @@ export const RoscoGameUI = {
         `;
         break;
 
-      case 'TURNO_ACTIVO':
+      case 'TURNO_ACTIVO': {
+        const itemActual = _obtenerItemActual(estadoJuego);
+        const respuesta = itemActual?.respuesta || '';
         botonesHTML = `
-          <div class="flex flex-wrap gap-2">
+          <div id="rosco-panel-respuesta" class="bg-[#fff9e6] border-2.5 border-on-surface rounded-xl p-3 shadow-comic-sm">
+            <p class="font-label-md uppercase text-on-surface-variant mb-1">RESPUESTA</p>
+            <p class="font-display-hero text-xl text-on-surface">${respuesta || '—'}</p>
+          </div>
+          <div class="flex flex-wrap gap-2 mt-2">
             ${Boton({ texto: 'OK', variante: 'primary', id: 'btn-rosco-acierto' })}
             ${Boton({ texto: 'X', variante: 'danger', id: 'btn-rosco-error' })}
             ${Boton({ texto: 'Pasapalabra', variante: 'secondary', id: 'btn-rosco-pasapalabra' })}
@@ -372,6 +331,7 @@ export const RoscoGameUI = {
           </div>
         `;
         break;
+      }
 
       case 'CAMBIO_TURNO': {
         const nuevoEquipo = equipoActual === 1 ? 2 : 1;

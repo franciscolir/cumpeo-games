@@ -416,11 +416,64 @@ describe('RoscoGameUI', () => {
       expect(container.innerHTML).toContain('→');
     });
 
-    it('resalta la letra actual con ring', () => {
+    it('resalta la letra actual con la clase active', () => {
       const estado = estadoInicial();
       estado.indice_actual = 5;
       RoscoGameUI.renderizarAreaJuego(estado, container, contextoBase(), { onAccion: vi.fn() });
-      expect(container.innerHTML).toContain('ring-4 ring-primary');
+      expect(container.innerHTML).toContain('letter-btn rounded-full active');
+    });
+  });
+
+  describe('renderizarAreaJuego — rosco circular', () => {
+    it('renderiza .rosco-circular con tamaño md', () => {
+      const estado = estadoInicial();
+      RoscoGameUI.renderizarAreaJuego(estado, container, contextoBase(), { onAccion: vi.fn() });
+      expect(container.innerHTML).toContain('rosco-circular');
+      expect(container.innerHTML).toContain('rosco-size-md');
+    });
+
+    it('cada letter-node tiene posición inline en el círculo', () => {
+      const estado = estadoInicial();
+      RoscoGameUI.renderizarAreaJuego(estado, container, contextoBase(), { onAccion: vi.fn() });
+      const nodes = container.innerHTML.match(/data-letra="[^"]+"[\s\S]*?style="left: [\d.-]+%; top: [\d.-]+%;"/g) || [];
+      expect(nodes.length).toBe(27);
+    });
+
+    it('incluye el anillo SVG de progreso', () => {
+      const estado = estadoInicial();
+      RoscoGameUI.renderizarAreaJuego(estado, container, contextoBase(), { onAccion: vi.fn() });
+      expect(container.innerHTML).toContain('<svg id="rosco-progress"');
+      expect(container.innerHTML).toContain('rotate(-90 200 200)');
+    });
+
+    it('renderiza la tarjeta central con letra y definición', () => {
+      const items = ALFABETO.map((letra) => ({ letra, definicion: `Def ${letra}`, respuesta: `Resp ${letra}` }));
+      const estado = estadoInicial([{ id: 's1', items }]);
+      RoscoGameUI.renderizarAreaJuego(estado, container, contextoBase(), { onAccion: vi.fn() });
+      expect(container.innerHTML).toContain('rosco-central');
+      expect(container.innerHTML).toContain('rosco-letter-badge');
+      expect(container.innerHTML).toContain('rosco-definition');
+    });
+
+    it('el conductor no ve la respuesta en la tarjeta central', () => {
+      const items = ALFABETO.map((letra) => ({ letra, definicion: `Def ${letra}`, respuesta: `Resp ${letra}` }));
+      const estado = estadoInicial([{ id: 's1', items }]);
+      RoscoGameUI.renderizarAreaJuego(estado, container, contextoBase(), { onAccion: vi.fn() });
+      expect(container.innerHTML).not.toContain('rosco-respuesta');
+      expect(container.innerHTML).not.toContain('Resp A');
+    });
+
+    it('renderiza la leyenda con conteos', () => {
+      const estado = estadoInicial();
+      RoscoGameUI.renderizarAreaJuego(estado, container, contextoBase(), { onAccion: vi.fn() });
+      expect(container.innerHTML).toContain('rosco-legend');
+      expect(container.innerHTML).toContain('0 Verdes • 0 Rojas • 27 Restantes');
+    });
+
+    it('ya no renderiza la card de definición vieja (Letra X)', () => {
+      const estado = estadoInicial();
+      RoscoGameUI.renderizarAreaJuego(estado, container, contextoBase(), { onAccion: vi.fn() });
+      expect(container.innerHTML).not.toContain('>Letra A<');
     });
   });
 
@@ -442,12 +495,70 @@ describe('RoscoGameUI', () => {
   });
 
   describe('regresión — conductor no puede retroceder letras', () => {
-    it('letras marcadas como correcta/incorrecta tienen opacity', () => {
+    it('letras marcadas como correcta/incorrecta tienen clase green/red', () => {
       const estado = estadoInicial();
       estado.rosco[0].estado = ESTADO_LETRA.CORRECTA;
       estado.rosco[1].estado = ESTADO_LETRA.INCORRECTA;
       RoscoGameUI.renderizarAreaJuego(estado, container, contextoBase(), { onAccion: vi.fn() });
-      expect(container.innerHTML).toContain('opacity-70');
+      expect(container.innerHTML).toContain('letter-btn rounded-full green');
+      expect(container.innerHTML).toContain('letter-btn rounded-full red');
+      expect(container.innerHTML).not.toContain('opacity-70');
+    });
+  });
+
+  describe('renderizarPanelConductor — card RESPUESTA', () => {
+    function estadoConSet(fase) {
+      const items = ALFABETO.map((letra) => ({ letra, definicion: `Def ${letra}`, respuesta: `Resp ${letra}` }));
+      return { ...estadoInicial([{ id: 's1', items }]), fase };
+    }
+
+    it('TURNO_ACTIVO muestra RESPUESTA con la respuesta de la letra actual', () => {
+      const estado = estadoConSet('TURNO_ACTIVO');
+      RoscoGameUI.renderizarPanelConductor(estado, container, contextoBase(), { onAccion: vi.fn() });
+      expect(container.innerHTML).toContain('rosco-panel-respuesta');
+      expect(container.innerHTML).toContain('RESPUESTA');
+      expect(container.innerHTML).toContain('Resp A');
+    });
+
+    it('TURNO_ACTIVO sin items muestra placeholder —', () => {
+      const estado = { ...estadoInicial(), fase: 'TURNO_ACTIVO' };
+      RoscoGameUI.renderizarPanelConductor(estado, container, contextoBase(), { onAccion: vi.fn() });
+      expect(container.innerHTML).toContain('RESPUESTA');
+      expect(container.innerHTML).toContain('—');
+    });
+
+    it('la card RESPUESTA va arriba de los botones de turno', () => {
+      const estado = estadoConSet('TURNO_ACTIVO');
+      RoscoGameUI.renderizarPanelConductor(estado, container, contextoBase(), { onAccion: vi.fn() });
+      const idxResp = container.innerHTML.indexOf('rosco-panel-respuesta');
+      const idxOk = container.innerHTML.indexOf('btn-rosco-acierto');
+      expect(idxResp).toBeGreaterThan(-1);
+      expect(idxOk).toBeGreaterThan(-1);
+      expect(idxResp).toBeLessThan(idxOk);
+    });
+
+    it('INICIO_RONDA no muestra RESPUESTA', () => {
+      const estado = estadoConSet('INICIO_RONDA');
+      RoscoGameUI.renderizarPanelConductor(estado, container, contextoBase(), { onAccion: vi.fn() });
+      expect(container.innerHTML).not.toContain('RESPUESTA');
+    });
+
+    it('CAMBIO_TURNO no muestra RESPUESTA', () => {
+      const estado = estadoConSet('CAMBIO_TURNO');
+      RoscoGameUI.renderizarPanelConductor(estado, container, contextoBase(), { onAccion: vi.fn() });
+      expect(container.innerHTML).not.toContain('RESPUESTA');
+    });
+
+    it('FIN_DE_RONDA no muestra RESPUESTA', () => {
+      const estado = estadoConSet('FIN_DE_RONDA');
+      RoscoGameUI.renderizarPanelConductor(estado, container, contextoBase(), { onAccion: vi.fn() });
+      expect(container.innerHTML).not.toContain('RESPUESTA');
+    });
+
+    it('FIN_DE_JUEGO no muestra RESPUESTA', () => {
+      const estado = estadoConSet('FIN_DE_JUEGO');
+      RoscoGameUI.renderizarPanelConductor(estado, container, contextoBase(), { onAccion: vi.fn() });
+      expect(container.innerHTML).not.toContain('RESPUESTA');
     });
   });
 

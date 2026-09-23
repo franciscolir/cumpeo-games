@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { ALFABETO, ESTADO_LETRA, RoscoGameDefinition } from '../../../../src/games/rosco/RoscoGameDefinition.js';
+import { _obtenerItemRosco, _renderRoscoPublico } from '../../../../src/ui/publica/shell-publica.js';
+import { renderRosco } from '../../../../src/ui/games/rosco/renderRosco.js';
 
 function crearContainer() {
   return {
@@ -83,50 +85,144 @@ describe('Rosco Público — lógica de rendering', () => {
   });
 
   describe('definición en el centro', () => {
-    it('se obtiene del item actual por letra y ronda', () => {
+    it('se obtiene del item actual por letra desde set_ronda_actual.items', () => {
       const items = itemsBase();
-      const estado = estadoBase();
-      const letraActual = estado.rosco[estado.indice_actual].letra;
-      const ronda = estado.ronda_actual;
-      const item = items.find((it) => it.letra === letraActual && it.ronda === ronda);
-      expect(item).toBeDefined();
-      expect(item.definicion).toContain(letraActual);
+      const estado = { ...estadoBase(), set_ronda_actual: { id: 's1', items } };
+      const item = _obtenerItemRosco(estado);
+      expect(item).not.toBeNull();
+      expect(item.letra).toBe('A');
+      expect(item.definicion).toContain('A');
+    });
+
+    it('no depende del campo ronda de los items', () => {
+      const items = ALFABETO.map((letra) => ({
+        letra,
+        definicion: `Def de ${letra}`,
+        respuesta: `Resp ${letra}`
+      }));
+      const estado = { ...estadoBase(), set_ronda_actual: { id: 's1', items } };
+      const item = _obtenerItemRosco(estado);
+      expect(item.letra).toBe('A');
+      expect(item.definicion).toBe('Def de A');
+    });
+
+    it('devuelve null si no hay set_ronda_actual', () => {
+      const estado = { ...estadoBase(), set_ronda_actual: null };
+      expect(_obtenerItemRosco(estado)).toBeNull();
+    });
+
+    it('devuelve null si la letra actual no está en items', () => {
+      const estado = { ...estadoBase(), set_ronda_actual: { id: 's1', items: [] } };
+      expect(_obtenerItemRosco(estado)).toBeNull();
+    });
+
+    it('devuelve null si el estado no tiene rosco', () => {
+      expect(_obtenerItemRosco({})).toBeNull();
+      expect(_obtenerItemRosco(null)).toBeNull();
+    });
+
+    it('sigue a la letra al avanzar el índice', () => {
+      const items = itemsBase();
+      const estado = { ...estadoBase(), set_ronda_actual: { id: 's1', items }, indice_actual: 1 };
+      const item = _obtenerItemRosco(estado);
+      expect(item.letra).toBe('B');
     });
   });
 
   describe('revelado de la respuesta', () => {
     it('antes de validar: respuesta no se muestra (letra pendiente)', () => {
-      const estado = estadoBase();
-      const letraEstado = estado.rosco[estado.indice_actual].estado;
-      const esResuelta = letraEstado === ESTADO_LETRA.CORRECTA || letraEstado === ESTADO_LETRA.INCORRECTA;
-      expect(esResuelta).toBe(false);
+      const items = itemsBase();
+      const estado = { ...estadoBase(), set_ronda_actual: { id: 's1', items } };
+      const html = _renderRoscoPublico(estado);
+      expect(html).not.toContain('rosco-respuesta');
+      expect(html).not.toContain('Respuesta A');
     });
 
     it('después de OK: respuesta se muestra (letra correcta)', () => {
-      const estado = estadoBase();
+      const items = itemsBase();
       const config = { puntos_por_acierto: 10 };
-      const nuevo = RoscoGameDefinition.aplicarAcierto(estado, 'A', config);
-      const letraEstado = nuevo.rosco[nuevo.indice_actual].estado;
-      const esResuelta = letraEstado === ESTADO_LETRA.CORRECTA || letraEstado === ESTADO_LETRA.INCORRECTA;
-      expect(esResuelta).toBe(true);
+      let estado = { ...estadoBase(), set_ronda_actual: { id: 's1', items } };
+      estado = RoscoGameDefinition.aplicarAcierto(estado, 'A', config);
+      const html = _renderRoscoPublico(estado);
+      expect(html).toContain('rosco-respuesta');
+      expect(html).toContain('Respuesta A');
     });
 
     it('después de X: respuesta se muestra (letra incorrecta)', () => {
-      const estado = estadoBase();
+      const items = itemsBase();
       const config = { penalizacion_puntos: 5 };
-      const nuevo = RoscoGameDefinition.aplicarError(estado, 'A', config);
-      const letraEstado = nuevo.rosco[nuevo.indice_actual].estado;
-      const esResuelta = letraEstado === ESTADO_LETRA.CORRECTA || letraEstado === ESTADO_LETRA.INCORRECTA;
-      expect(esResuelta).toBe(true);
+      let estado = { ...estadoBase(), set_ronda_actual: { id: 's1', items } };
+      estado = RoscoGameDefinition.aplicarError(estado, 'A', config);
+      const html = _renderRoscoPublico(estado);
+      expect(html).toContain('rosco-respuesta');
+      expect(html).toContain('Respuesta A');
     });
 
     it('al avanzar: respuesta desaparece (nueva letra pendiente)', () => {
-      const estado = estadoBase();
+      const items = itemsBase();
       const config = { puntos_por_acierto: 10 };
-      let nuevo = RoscoGameDefinition.aplicarAcierto(estado, 'A', config);
-      nuevo = RoscoGameDefinition.avanzarLetra(nuevo);
-      const letraEstado = nuevo.rosco[nuevo.indice_actual].estado;
-      expect(letraEstado).toBe(ESTADO_LETRA.PENDIENTE);
+      let estado = { ...estadoBase(), set_ronda_actual: { id: 's1', items } };
+      estado = RoscoGameDefinition.aplicarAcierto(estado, 'A', config);
+      estado = RoscoGameDefinition.avanzarLetra(estado);
+      const html = _renderRoscoPublico(estado);
+      expect(html).not.toContain('rosco-respuesta');
+      expect(estado.rosco[estado.indice_actual].estado).toBe(ESTADO_LETRA.PENDIENTE);
+    });
+  });
+
+  describe('_renderRoscoPublico — usa renderRosco compartido', () => {
+    it('renderiza el rosco circular con tamaño lg', () => {
+      const items = itemsBase();
+      const estado = { ...estadoBase(), set_ronda_actual: { id: 's1', items }, fase: 'TURNO_ACTIVO' };
+      const html = _renderRoscoPublico(estado);
+      expect(html).toContain('rosco-circular');
+      expect(html).toContain('rosco-size-lg');
+      expect(html).not.toContain('rosco-size-md');
+    });
+
+    it('renderiza 27 data-letra', () => {
+      const items = itemsBase();
+      const estado = { ...estadoBase(), set_ronda_actual: { id: 's1', items }, fase: 'TURNO_ACTIVO' };
+      const html = _renderRoscoPublico(estado);
+      const nodes = html.match(/data-letra="/g) || [];
+      expect(nodes).toHaveLength(27);
+    });
+
+    it('incluye anillo SVG de progreso y leyenda', () => {
+      const items = itemsBase();
+      const estado = { ...estadoBase(), set_ronda_actual: { id: 's1', items }, fase: 'TURNO_ACTIVO' };
+      const html = _renderRoscoPublico(estado);
+      expect(html).toContain('<svg id="rosco-progress"');
+      expect(html).toContain('rosco-legend');
+    });
+
+    it('muestra la definición de la letra actual en la tarjeta central', () => {
+      const items = itemsBase();
+      const estado = { ...estadoBase(), set_ronda_actual: { id: 's1', items }, fase: 'TURNO_ACTIVO' };
+      const html = _renderRoscoPublico(estado);
+      expect(html).toContain('rosco-central');
+      expect(html).toContain('Definición de A');
+    });
+
+    it('es el mismo renderizador que usa el conductor (renderRosco)', () => {
+      const items = itemsBase();
+      const estado = { ...estadoBase(), set_ronda_actual: { id: 's1', items }, fase: 'TURNO_ACTIVO' };
+      const htmlPublico = _renderRoscoPublico(estado);
+      const htmlConductor = renderRosco(estado, { tamañoLetra: 'md' });
+      expect(htmlPublico).toContain('rosco-circular');
+      expect(htmlConductor).toContain('rosco-circular');
+      const letrasPublico = (htmlPublico.match(/data-letra="/g) || []).length;
+      const letrasConductor = (htmlConductor.match(/data-letra="/g) || []).length;
+      expect(letrasPublico).toBe(letrasConductor);
+    });
+
+    it('marca la letra actual con la clase active', () => {
+      const items = itemsBase();
+      const estado = { ...estadoBase(), set_ronda_actual: { id: 's1', items }, fase: 'TURNO_ACTIVO', indice_actual: 3 };
+      const html = _renderRoscoPublico(estado);
+      const m = html.match(/data-index="3"[\s\S]*?<button[^>]*class="letter-btn rounded-full ([a-z]+)"/);
+      expect(m).not.toBeNull();
+      expect(m[1]).toBe('active');
     });
   });
 

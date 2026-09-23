@@ -11,7 +11,8 @@
 
 import { cargarItemsDeJuego } from '../games/_shared/index.js';
 import { crearTimer } from '../games/_shared/index.js';
-import { ALFABETO, ESTADO_LETRA, RoscoGameDefinition } from '../../games/rosco/RoscoGameDefinition.js';
+import { ESTADO_LETRA, RoscoGameDefinition } from '../../games/rosco/RoscoGameDefinition.js';
+import { renderRosco } from '../games/rosco/renderRosco.js';
 import { PictionaryGameDefinition } from '../../games/pictionary/PictionaryGameDefinition.js';
 import { AntiTriviaGameDefinition } from '../../games/anti-trivia/AntiTriviaGameDefinition.js';
 import { EnlacesGameDefinition } from '../../games/enlaces/EnlacesGameDefinition.js';
@@ -142,14 +143,13 @@ async function _renderContenido(container, app, codigo) {
   const esAntiTrivia = juegoActivo?.juego_codigo === 'ANTI_TRIVIA';
   const esEnlaces = juegoActivo?.juego_codigo === 'ENLACES';
   const itemsQPEP = esQPEP ? await cargarItemsDeJuego(app, juegoActivo) : null;
-  const itemsRosco = esRosco ? await cargarItemsDeJuego(app, juegoActivo) : null;
   const itemsHistoria = esHistoriaEnredada ? await cargarItemsDeJuego(app, juegoActivo) : null;
   const fase = juegoActivo?.estado_juego?.fase || '';
   const mostrarGaleria = !juegoActivo;
 
   let escenarioHTML;
   if (esRosco) {
-    escenarioHTML = _renderEscenarioRosco(juegoActivo, itemsRosco, fase, contexto);
+    escenarioHTML = _renderEscenarioRosco(juegoActivo, fase, contexto);
   } else if (esQPEP) {
     escenarioHTML = _renderEscenarioQPEP(juegoActivo, itemsQPEP, fase, contexto);
   } else if (esCancionIncompleta) {
@@ -450,66 +450,36 @@ function _renderEscenarioQPEP(juegoActivo, items, fase, contexto) {
    Escenario Rosco (público)
    ============================================================= */
 
-function _obtenerItemRosco(estadoJuego, items) {
-  if (!items || !estadoJuego?.rosco) return null;
-  const letraActual = estadoJuego.rosco[estadoJuego.indice_actual]?.letra;
+/**
+ * Obtiene el item (definición/respuesta) de la letra actual
+ * desde set_ronda_actual.items.
+ * @param {object} estadoJuego
+ * @returns {object|null}
+ */
+export function _obtenerItemRosco(estadoJuego) {
+  const letraActual = estadoJuego?.rosco?.[estadoJuego.indice_actual]?.letra;
   if (!letraActual) return null;
-  const ronda = estadoJuego.ronda_actual || 1;
-  return items.find((it) => it.letra === letraActual && it.ronda === ronda)
-    || items.find((it) => it.letra === letraActual)
-    || null;
+  const items = estadoJuego?.set_ronda_actual?.items || [];
+  return items.find((it) => it.letra === letraActual) || null;
 }
 
-function _renderRoscoPublico(estadoJuego) {
-  const rosco = estadoJuego.rosco || [];
-  const indiceActual = estadoJuego.indice_actual || 0;
+export function _renderRoscoPublico(estadoJuego) {
+  const itemActual = _obtenerItemRosco(estadoJuego);
+  const respuesta = itemActual?.respuesta || '';
+  const letraEstado = estadoJuego?.rosco?.[estadoJuego.indice_actual]?.estado;
+  const esResuelta = letraEstado === ESTADO_LETRA.CORRECTA
+    || letraEstado === ESTADO_LETRA.INCORRECTA;
 
-  const colores = {
-    [ESTADO_LETRA.PENDIENTE]: 'bg-surface-container-lowest border-on-surface',
-    [ESTADO_LETRA.CORRECTA]: 'bg-tertiary/20 border-tertiary',
-    [ESTADO_LETRA.INCORRECTA]: 'bg-error/20 border-error',
-    [ESTADO_LETRA.PASADA]: 'bg-comicYellow/30 border-comicYellow'
-  };
-
-  const lettersHTML = rosco.map((item, i) => {
-    const esActual = i === indiceActual;
-    const esResuelta = item.estado === ESTADO_LETRA.CORRECTA || item.estado === ESTADO_LETRA.INCORRECTA;
-    const claseFondo = colores[item.estado] || colores[ESTADO_LETRA.PENDIENTE];
-    const claseActual = esActual ? 'ring-4 ring-primary scale-110 z-10' : '';
-    const claseResuelta = esResuelta ? 'opacity-70' : '';
-
-    let icono = '';
-    if (item.estado === ESTADO_LETRA.CORRECTA) icono = '✓';
-    else if (item.estado === ESTADO_LETRA.INCORRECTA) icono = '✗';
-    else if (item.estado === ESTADO_LETRA.PASADA) icono = '→';
-
-    return `
-      <div data-letra="${item.letra}" data-index="${i}"
-        class="relative border-2.5 ${claseFondo} ${claseActual} ${claseResuelta} rounded-lg aspect-square flex flex-col items-center justify-center shadow-comic-sm transition-all">
-        <span class="font-display-hero text-xl text-on-surface">${item.letra}</span>
-        ${icono ? `<span class="absolute -top-1 -right-1 text-sm font-bold ${item.estado === ESTADO_LETRA.CORRECTA ? 'text-tertiary' : item.estado === ESTADO_LETRA.INCORRECTA ? 'text-error' : 'text-comicYellow'}">${icono}</span>` : ''}
-      </div>
-    `;
+  return renderRosco(estadoJuego, {
+    mostrarRespuesta: esResuelta && !!respuesta,
+    respuesta,
+    mostrarLeyenda: true,
+    mostrarAnillo: true,
+    tamañoLetra: 'lg'
   });
-
-  return `
-    <div class="grid grid-cols-6 gap-2 max-w-lg mx-auto">
-      ${lettersHTML.slice(0, 6).join('')}
-    </div>
-    <div class="grid grid-cols-6 gap-2 max-w-lg mx-auto mt-2">
-      ${lettersHTML.slice(6, 12).join('')}
-      <div class="col-span-6 flex items-center justify-center min-h-[4rem]">
-        <div id="rosco-centro" class="text-center"></div>
-      </div>
-      ${lettersHTML.slice(12, 18).join('')}
-    </div>
-    <div class="grid grid-cols-6 gap-2 max-w-lg mx-auto mt-2">
-      ${lettersHTML.slice(18, 27).join('')}
-    </div>
-  `;
 }
 
-function _renderEscenarioRosco(juegoActivo, items, fase, contexto) {
+function _renderEscenarioRosco(juegoActivo, fase, contexto) {
   const estadoJuego = juegoActivo?.estado_juego || {};
   const equipo1 = contexto?.equipos?.[0] || { nombre: 'Eq1' };
   const equipo2 = contexto?.equipos?.[1] || { nombre: 'Eq2' };
@@ -519,18 +489,9 @@ function _renderEscenarioRosco(juegoActivo, items, fase, contexto) {
   const pts1 = estadoJuego.puntos_equipo_1 || 0;
   const pts2 = estadoJuego.puntos_equipo_2 || 0;
 
-  const itemActual = _obtenerItemRosco(estadoJuego, items);
-  const definicion = itemActual?.definicion || '';
-  const respuesta = itemActual?.respuesta || '';
-
   const rosco = estadoJuego.rosco || [];
   const resueltas = rosco.filter((l) => l.estado === ESTADO_LETRA.CORRECTA || l.estado === ESTADO_LETRA.INCORRECTA).length;
   const total = rosco.length || 27;
-
-  const letraActual = rosco[estadoJuego.indice_actual]?.letra || '';
-  const esResuelta = rosco[estadoJuego.indice_actual]?.estado === ESTADO_LETRA.CORRECTA
-    || rosco[estadoJuego.indice_actual]?.estado === ESTADO_LETRA.INCORRECTA;
-  const mostrarRespuesta = esResuelta && respuesta;
 
   let tiempo1 = estadoJuego.tiempo_equipo_1 ?? 60;
   let tiempo2 = estadoJuego.tiempo_equipo_2 ?? 60;
@@ -594,14 +555,6 @@ function _renderEscenarioRosco(juegoActivo, items, fase, contexto) {
     inner = `
       <div class="bg-surface-container-lowest border-3 border-on-surface rounded-2xl p-6 shadow-comic-lg">
         ${_renderRoscoPublico(estadoJuego)}
-      </div>
-
-      <div class="mt-4 w-full max-w-lg">
-        <div class="bg-surface-container-lowest border-2.5 border-on-surface rounded-xl p-4 shadow-comic-sm text-center">
-          <p class="font-label-md uppercase text-on-surface-variant mb-1">Letra ${letraActual}</p>
-          <p class="font-display-hero text-2xl text-on-surface">${definicion || 'Sin definición'}</p>
-          ${mostrarRespuesta ? `<p class="font-headline-md text-tertiary mt-2">${respuesta}</p>` : ''}
-        </div>
       </div>
 
       <div class="grid grid-cols-2 gap-4 mt-4 w-full max-w-lg">
