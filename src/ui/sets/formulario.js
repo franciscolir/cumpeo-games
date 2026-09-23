@@ -7,6 +7,7 @@ import { Boton } from '../components/boton.js';
 import { Input } from '../components/input.js';
 import { renderEditorItemsQPEP } from '../games/que-piensa-el-publico/editor.js';
 import { renderEditorItemsTrivia } from '../games/trivia/editor.js';
+import { renderEditorItemsRosco } from '../games/rosco/editor.js';
 
 /**
  * Renderiza el formulario de set.
@@ -34,6 +35,7 @@ export async function renderFormularioSet(container, app, params = {}) {
   const juegoDelSet = esEdicion ? juegos.find((j) => j.id === set.juego_id) : null;
   const esQPEP = juegoDelSet?.codigo === 'QUE_PIENSA_EL_PUBLICO';
   const esTrivia = juegoDelSet?.codigo === 'TRIVIA';
+  const esRosco = juegoDelSet?.codigo === 'ROSCO';
 
   const nombre = set ? set.nombre : '';
   const descripcion = set ? (set.descripcion || '') : '';
@@ -89,7 +91,8 @@ export async function renderFormularioSet(container, app, params = {}) {
 
       ${esEdicion && esQPEP ? '<div id="editor-items-qpep"></div>' : ''}
       ${esEdicion && esTrivia ? '<div id="editor-items-trivia"></div>' : ''}
-      ${esEdicion && !esQPEP && !esTrivia ? '<p class="mt-8 font-body-sm text-on-surface-variant italic">Este juego aún no tiene editor de items.</p>' : ''}
+      ${esEdicion && esRosco ? '<div id="editor-items-rosco"></div>' : ''}
+      ${esEdicion && !esQPEP && !esTrivia && !esRosco ? '<p class="mt-8 font-body-sm text-on-surface-variant italic">Este juego aún no tiene editor de items.</p>' : ''}
     </main>
   `;
 
@@ -140,5 +143,7 @@ export async function renderFormularioSet(container, app, params = {}) {
     await renderEditorItemsQPEP(container, app, set.id);
   } else if (esEdicion && esTrivia) {
     await renderEditorItemsTrivia(container, app, set.id);
+  } else if (esEdicion && esRosco) {
+    await renderEditorItemsRosco(container, app, set.id, set);
   }
 }

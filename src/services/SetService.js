@@ -31,6 +31,15 @@ export class SetService {
   }
 
   /**
+   * Crea un set con sus items en una sola operación.
+   * @param {{ juego_id: string, nombre: string, descripcion?: string|null, items: object[], actionId: string }} payload
+   * @returns {Promise<object>} { ok, set_id, items_count } (Supabase) o Set (IndexedDB).
+   */
+  async crearSetCompleto(payload) {
+    return this.sets.crearSetCompleto(payload);
+  }
+
+  /**
    * Obtiene un set por ID.
    * @param {string} setId
    * @returns {Promise<object|undefined>}
