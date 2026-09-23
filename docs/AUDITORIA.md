@@ -31,6 +31,7 @@
 | 2026-09-23 | 7 | 7.2a | ✅ APROBADO | Modelo Memoricé: imagen_url requerido + es_predeterminado en sets. 107 tests. 1901 unit. | 83df5b8 |
 | 2026-09-23 | 7 | 7.2b | ✅ APROBADO | Storage helpers para imágenes de Memoricé. 15 tests. 1916 unit. | 5cba1fa |
 | 2026-09-23 | 7 | 7.2c | ✅ APROBADO | Editor de Memoricé (grilla N slots + imágenes). 40 tests. 1956 unit. | 353f1d0 |
+| 2026-09-23 | 7 | 7.2d | ✅ APROBADO | Resolver storageRef a URL en UI. 8 tests. 1964 unit. | 3ea02b9 |
 ---
 
 ## Correcciones pendientes
@@ -285,3 +286,7 @@ _(ninguna)_
 | 100 | Los tests e2e de Memoricé (`_helpers/memoria.js`, `validacion.spec.js`) crean items solo con `contenido`, sin `imagen_url`. Van a romper con el nuevo modelo. Actualizar en 7.2c (editor) o 7.2e (e2e). | Paso 7.2a (detectado) | Media |
 | 101 | El campo `imagen_url` de Memoricé guarda un storageRef (UUID), no una URL. La UI debe resolver a URL al renderizar. Debería llamarse `imagen_ref`. Renombrar en el futuro. | Paso 7.2c (detectado) | Media |
 | 102 | El editor de Memoricé guarda estado en `container.__memoriaEstado` para acceso desde tests. Práctica cuestionable. Considerar mocks o refactor. | Paso 7.2c (detectado) | Baja |
+| 103 | `shell-partida.js` no tiene unit tests (solo e2e). La resolución de storageRefs a URLs quedó cubierta solo por `node --check` + simetría con `shell-publica`. Considerar agregar tests. | Paso 7.2d (detectado) | Media |
+| 104 | `shell-publica.js` muta `contexto.urlsImagenes` en vez de pasar un 4to parámetro. Efecto secundario. Considerar refactor. | Paso 7.2d (detectado) | Baja |
+| 103 | `shell-partida.js` no tiene unit tests (solo e2e). La resolución de storageRefs a URLs quedó cubierta solo por `node --check` + simetría con `shell-publica`. Considerar agregar tests. | Paso 7.2d (detectado) | Media |
+| 104 | `shell-publica.js` muta `contexto.urlsImagenes` en vez de pasar un 4to parámetro. Efecto secundario. Considerar refactor. | Paso 7.2d (detectado) | Baja |
