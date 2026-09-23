@@ -81,6 +81,23 @@ function _limpiarGameUIs() {
   cleanupsGameUI = [];
 }
 
+async function _resolverUrlsImagenesMemoria(app, estadoJuego) {
+  const mapa = {};
+  const elementos = estadoJuego?.elementos || [];
+  const refs = [...new Set(
+    elementos
+      .map((el) => el?.imagen_url)
+      .filter((ref) => typeof ref === 'string' && ref !== '')
+  )];
+  for (const ref of refs) {
+    try {
+      const url = await app.storage.obtenerUrlPublica(ref);
+      if (url) mapa[ref] = url;
+    } catch (_) {}
+  }
+  return mapa;
+}
+
 /* =============================================================
    Render principal
    ============================================================= */
@@ -137,6 +154,10 @@ async function _renderContenido(container, app, partidaId) {
     ? await app.services.set.listarSetsActivosPorJuego(juegoActivo.juego_id)
     : null;
 
+  const urlsImagenes = codigoJuego === 'MEMORIA'
+    ? await _resolverUrlsImagenesMemoria(app, estadoJuego)
+    : {};
+
   const contextoGameUI = {
     partida,
     juegoEjecutado: juegoActivo,
@@ -145,7 +166,8 @@ async function _renderContenido(container, app, partidaId) {
     acVisible: false,
     stateVersion: juegoActivo ? juegoActivo.state_version : null,
     itemsDelJuego,
-    setsDisponibles
+    setsDisponibles,
+    urlsImagenes
   };
 
   const callbacks = {

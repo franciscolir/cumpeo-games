@@ -123,4 +123,20 @@ describe('Memoricé — UI pública', () => {
       expect(SHELL).toContain('memoria-timer-publico');
     });
   });
+
+  describe('resolución de storageRef → URL', () => {
+    it('resuelve refs antes de renderizar Memoricé', () => {
+      expect(SHELL).toContain('_resolverUrlsImagenesMemoria(app, juegoActivo?.estado_juego)');
+      expect(SHELL).toContain('contexto.urlsImagenes');
+    });
+
+    it('el helper extrae imagen_url únicos y llama a obtenerUrlPublica', () => {
+      expect(SHELL).toMatch(/function _resolverUrlsImagenesMemoria[\s\S]*?imagen_url/);
+      expect(SHELL).toMatch(/function _resolverUrlsImagenesMemoria[\s\S]*?obtenerUrlPublica/);
+    });
+
+    it('grilla usa mapa con fallback al ref crudo', () => {
+      expect(SHELL).toMatch(/function _renderEscenarioMemoria[\s\S]*?urlsImagenes\[el\.imagen_url\] \|\| el\.imagen_url/);
+    });
+  });
 });

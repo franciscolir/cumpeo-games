@@ -105,7 +105,7 @@ function _calcularColumnas(numElementos) {
   return Math.ceil(Math.sqrt(numElementos));
 }
 
-function _renderGrilla(elementos, elementosVolteados, elementosDescubiertos, esCambioTurno) {
+function _renderGrilla(elementos, elementosVolteados, elementosDescubiertos, esCambioTurno, urlsImagenes) {
   if (!elementos || elementos.length === 0) return '';
   const columnas = _calcularColumnas(elementos.length);
 
@@ -121,8 +121,9 @@ function _renderGrilla(elementos, elementosVolteados, elementosDescubiertos, esC
       claseFondo = 'bg-surface-container-lowest border-on-surface';
     }
 
-    const contenido = visible ? (el.imagen_url
-      ? `<img src="${el.imagen_url}" alt="${el.contenido || ''}" class="max-h-full max-w-full object-contain">`
+    const url = el.imagen_url ? (urlsImagenes?.[el.imagen_url] || el.imagen_url) : null;
+    const contenido = visible ? (url
+      ? `<img src="${url}" alt="${el.contenido || ''}" class="max-h-full max-w-full object-contain">`
       : `<span class="font-display-hero text-lg text-on-surface">${el.contenido || '?'}</span>`)
       : `<span class="font-display-hero text-2xl text-on-surface/60">?</span>`;
 
@@ -194,6 +195,7 @@ export const MemoriaGameUI = {
     const elementosDescubiertos = estadoJuego.elementos_descubiertos || [];
     const parejasEncontradas = estadoJuego.parejas_encontradas || 0;
     const totalParejas = elementos.length / 2;
+    const urlsImagenes = contexto?.urlsImagenes || {};
 
     let contenido = '';
 
@@ -210,7 +212,7 @@ export const MemoriaGameUI = {
         </div>
       `;
     } else if (fase === 'JUGANDO') {
-      const grillaHTML = _renderGrilla(elementos, elementosVolteados, elementosDescubiertos, false);
+      const grillaHTML = _renderGrilla(elementos, elementosVolteados, elementosDescubiertos, false, urlsImagenes);
       const segundos = _obtenerTiempoSeg(estadoJuego, contexto);
       const restanteMostrar = _timer?.estaActivo() ? _timer.restanteActual() : segundos;
 
@@ -256,7 +258,7 @@ export const MemoriaGameUI = {
       }
       return;
     } else if (fase === 'CAMBIO_TURNO') {
-      const grillaHTML = _renderGrilla(elementos, elementosVolteados, elementosDescubiertos, true);
+      const grillaHTML = _renderGrilla(elementos, elementosVolteados, elementosDescubiertos, true, urlsImagenes);
 
       contenido = `
         <div class="bg-surface-container-lowest border-2.5 border-on-surface rounded-2xl p-4 shadow-comic-lg">

@@ -105,6 +105,23 @@ function _limpiarSuscripciones() {
   }
 }
 
+async function _resolverUrlsImagenesMemoria(app, estadoJuego) {
+  const mapa = {};
+  const elementos = estadoJuego?.elementos || [];
+  const refs = [...new Set(
+    elementos
+      .map((el) => el?.imagen_url)
+      .filter((ref) => typeof ref === 'string' && ref !== '')
+  )];
+  for (const ref of refs) {
+    try {
+      const url = await app.storage.obtenerUrlPublica(ref);
+      if (url) mapa[ref] = url;
+    } catch (_) {}
+  }
+  return mapa;
+}
+
 /* =============================================================
    Render principal
    ============================================================= */
@@ -161,6 +178,7 @@ async function _renderContenido(container, app, codigo) {
   } else if (esTrivia) {
     escenarioHTML = _renderEscenarioTrivia(juegoActivo, fase, contexto);
   } else if (esMemoria) {
+    contexto.urlsImagenes = await _resolverUrlsImagenesMemoria(app, juegoActivo?.estado_juego);
     escenarioHTML = _renderEscenarioMemoria(juegoActivo, fase, contexto);
   } else if (esAntiTrivia) {
     escenarioHTML = _renderEscenarioAntiTrivia(juegoActivo, fase, contexto);
@@ -1501,6 +1519,7 @@ function _renderEscenarioTrivia(juegoActivo, fase, contexto) {
 
 function _renderEscenarioMemoria(juegoActivo, fase, contexto) {
   const estadoJuego = juegoActivo?.estado_juego || {};
+  const urlsImagenes = contexto?.urlsImagenes || {};
   const equipo1 = contexto?.equipos?.[0] || { nombre: 'Eq1' };
   const equipo2 = contexto?.equipos?.[1] || { nombre: 'Eq2' };
   const equipoActual = estadoJuego.equipo_actual || 1;
@@ -1527,9 +1546,10 @@ function _renderEscenarioMemoria(juegoActivo, fase, contexto) {
     const visible = estaVolteado || estaDescubierto;
 
     if (visible) {
-      const contenidoHTML = el.imagen_url
-        ? `<img src="${el.imagen_url}" alt="${el.contenido}" class="max-h-full max-w-full object-contain" />`
-        : `<p class="font-body-md text-on-surface text-center px-1">${el.contenido}</p>`;
+      const url = el.imagen_url ? (urlsImagenes[el.imagen_url] || el.imagen_url) : null;
+      const contenidoHTML = url
+        ? `<img src="${url}" alt="${el.contenido || ''}" class="max-h-full max-w-full object-contain" />`
+        : `<p class="font-body-md text-on-surface text-center px-1">${el.contenido || '?'}</p>`;
       const claseFondo = estaDescubierto
         ? 'bg-tertiary/20 border-tertiary'
         : 'bg-comicYellow/30 border-comicYellow';

@@ -284,6 +284,79 @@ describe('MemoriaGameUI', () => {
     });
   });
 
+  describe('resolución de storageRef → URL', () => {
+    function elementosConImagen() {
+      return [
+        { id_pareja: 'p1', contenido: '', imagen_url: 'ref-a', descubierto: false },
+        { id_pareja: 'p2', contenido: '', imagen_url: 'ref-b', descubierto: false },
+        { id_pareja: 'p1', contenido: '', imagen_url: 'ref-a', descubierto: false },
+        { id_pareja: 'p2', contenido: '', imagen_url: 'ref-b', descubierto: false }
+      ];
+    }
+
+    it('JUGANDO usa URL resuelta del mapa cuando está disponible', () => {
+      const estado = estadoBase({
+        fase: 'JUGANDO',
+        elementos: elementosConImagen(),
+        elementos_descubiertos: [0, 1, 2, 3]
+      });
+      const ctx = contextoBase({
+        urlsImagenes: { 'ref-a': 'https://cdn.example/a.png', 'ref-b': 'https://cdn.example/b.png' }
+      });
+      MemoriaGameUI.renderizarAreaJuego(estado, container, ctx, { onAccion: vi.fn() });
+      expect(container.innerHTML).toContain('src="https://cdn.example/a.png"');
+      expect(container.innerHTML).toContain('src="https://cdn.example/b.png"');
+    });
+
+    it('JUGANDO hace fallback al ref crudo si no está en el mapa', () => {
+      const estado = estadoBase({
+        fase: 'JUGANDO',
+        elementos: elementosConImagen(),
+        elementos_descubiertos: [0, 1, 2, 3]
+      });
+      const ctx = contextoBase({ urlsImagenes: {} });
+      MemoriaGameUI.renderizarAreaJuego(estado, container, ctx, { onAccion: vi.fn() });
+      expect(container.innerHTML).toContain('src="ref-a"');
+      expect(container.innerHTML).toContain('src="ref-b"');
+    });
+
+    it('JUGANDO sin urlsImagenes en contexto hace fallback al ref crudo', () => {
+      const estado = estadoBase({
+        fase: 'JUGANDO',
+        elementos: elementosConImagen(),
+        elementos_descubiertos: [0, 1, 2, 3]
+      });
+      MemoriaGameUI.renderizarAreaJuego(estado, container, contextoBase(), { onAccion: vi.fn() });
+      expect(container.innerHTML).toContain('src="ref-a"');
+      expect(container.innerHTML).toContain('src="ref-b"');
+    });
+
+    it('CAMBIO_TURNO usa URL resuelta del mapa', () => {
+      const estado = estadoBase({
+        fase: 'CAMBIO_TURNO',
+        elementos: elementosConImagen()
+      });
+      const ctx = contextoBase({
+        urlsImagenes: { 'ref-a': 'https://cdn.example/a.png', 'ref-b': 'https://cdn.example/b.png' }
+      });
+      MemoriaGameUI.renderizarAreaJuego(estado, container, ctx, { onAccion: vi.fn() });
+      expect(container.innerHTML).toContain('src="https://cdn.example/a.png"');
+      expect(container.innerHTML).toContain('src="https://cdn.example/b.png"');
+    });
+
+    it('elemento sin imagen_url renderiza texto, no img', () => {
+      const estado = estadoBase({
+        fase: 'JUGANDO',
+        elementos: elementosGrilla(),
+        elementos_descubiertos: [0]
+      });
+      const ctx = contextoBase({ urlsImagenes: { 'ref-x': 'https://cdn.example/x.png' } });
+      MemoriaGameUI.renderizarAreaJuego(estado, container, ctx, { onAccion: vi.fn() });
+      expect(container.innerHTML).toContain('>A<');
+      expect(container.innerHTML).not.toContain('src="ref-x"');
+    });
+  });
+
   describe('cleanup', () => {
     it('no falla', () => {
       expect(() => MemoriaGameUI.cleanup()).not.toThrow();
