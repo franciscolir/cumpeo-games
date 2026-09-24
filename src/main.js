@@ -14,6 +14,7 @@ import { renderListaCircuitos } from './ui/circuitos/lista.js';
 import { renderFormularioCircuito } from './ui/circuitos/formulario.js';
 import { renderListaSets } from './ui/sets/lista.js';
 import { renderFormularioSet } from './ui/sets/formulario.js';
+import { renderConfigJuego } from './ui/juegos/config.js';
 import { renderListaPartidas } from './ui/partidas/lista.js';
 import { renderNuevaPartida } from './ui/partidas/nueva.js';
 import { renderShellPartida } from './ui/partidas/shell-partida.js';
@@ -41,6 +42,7 @@ router.registrar('#/circuitos/:id', (c, a, p) => renderFormularioCircuito(c, a, 
 router.registrar('#/sets', renderListaSets);
 router.registrar('#/sets/nuevo', (c, a) => renderFormularioSet(c, a, {}));
 router.registrar('#/sets/:id', (c, a, p) => renderFormularioSet(c, a, p));
+router.registrar('#/juegos/:codigo/config', renderConfigJuego);
 router.registrar('#/partidas', renderListaPartidas);
 router.registrar('#/partidas/nueva', renderNuevaPartida);
 router.registrar('#/partidas/:id', renderShellPartida);

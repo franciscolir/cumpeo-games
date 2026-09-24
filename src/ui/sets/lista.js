@@ -51,6 +51,9 @@ export async function renderListaSets(container, app) {
     ? (juegos.find((j) => j.id === juegoId)?.nombre || 'Juego desconocido')
     : '';
 
+  const juegoActual = juegos.find((j) => j.id === juegoId);
+  const esPictionary = juegoActual?.codigo === 'PICTIONARY';
+
   const selectHTML = `
     <div class="mb-6">
       <label for="filtro-juego" class="font-label-md uppercase block mb-1">Filtrar por juego</label>
@@ -116,10 +119,15 @@ export async function renderListaSets(container, app) {
       ${selectHTML}
 
       ${juegoId ? `
-        <div class="mb-6">
+        <div class="mb-6 flex gap-3 flex-wrap">
           <a href="#/sets/nuevo?juego=${encodeURIComponent(juegoId)}">
             ${Boton({ texto: '+ Nuevo set' })}
           </a>
+          ${esPictionary ? `
+            <a href="#/juegos/PICTIONARY/config">
+              ${Boton({ texto: 'Configurar condiciones', variante: 'secondary' })}
+            </a>
+          ` : ''}
         </div>
       ` : ''}
 
