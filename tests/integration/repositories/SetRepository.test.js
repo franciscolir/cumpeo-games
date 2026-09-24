@@ -183,4 +183,101 @@ describeSiCredenciales('SetRepository (integración Supabase)', () => {
     expect(encontrado).toBeTruthy();
     expect(encontrado.submodo).toBe('PALABRAS');
   });
+
+  describe('crearSetCompleto con submodo (RPC)', () => {
+    function uniqueAction() {
+      return `act_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    }
+
+    it('crearSetCompleto con submodo GESTOS → persiste', async () => {
+      if (!juegoIdReal) return;
+
+      const res = await repo.crearSetCompleto({
+        juego_id: juegoIdReal,
+        nombre: uniqueId('SET_RPC_GESTOS'),
+        items: [{ contenido: { gesto: 'saludo' } }],
+        actionId: uniqueAction(),
+        submodo: 'GESTOS'
+      });
+
+      expect(res.ok).toBe(true);
+      expect(res.set_id).toBeTruthy();
+      setsCreados.push(res.set_id);
+
+      const obtenido = await repo.obtenerSet(res.set_id);
+      expect(obtenido.submodo).toBe('GESTOS');
+    });
+
+    it('crearSetCompleto con submodo null → persiste null', async () => {
+      if (!juegoIdReal) return;
+
+      const res = await repo.crearSetCompleto({
+        juego_id: juegoIdReal,
+        nombre: uniqueId('SET_RPC_NULL'),
+        items: [{ contenido: { x: 1 } }],
+        actionId: uniqueAction(),
+        submodo: null
+      });
+
+      expect(res.ok).toBe(true);
+      setsCreados.push(res.set_id);
+
+      const obtenido = await repo.obtenerSet(res.set_id);
+      expect(obtenido.submodo).toBeNull();
+    });
+
+    it('crearSetCompleto sin submodo → persiste null (default)', async () => {
+      if (!juegoIdReal) return;
+
+      const res = await repo.crearSetCompleto({
+        juego_id: juegoIdReal,
+        nombre: uniqueId('SET_RPC_DEF'),
+        items: [{ contenido: { x: 2 } }],
+        actionId: uniqueAction()
+      });
+
+      expect(res.ok).toBe(true);
+      setsCreados.push(res.set_id);
+
+      const obtenido = await repo.obtenerSet(res.set_id);
+      expect(obtenido.submodo).toBeNull();
+    });
+
+    it('crearSetCompleto con submodo PALABRAS y obtenerSet → devuelve submodo', async () => {
+      if (!juegoIdReal) return;
+
+      const res = await repo.crearSetCompleto({
+        juego_id: juegoIdReal,
+        nombre: uniqueId('SET_RPC_PAL'),
+        items: [{ contenido: { palabra: 'gato' } }],
+        actionId: uniqueAction(),
+        submodo: 'PALABRAS'
+      });
+
+      setsCreados.push(res.set_id);
+
+      const obtenido = await repo.obtenerSet(res.set_id);
+      expect(obtenido.submodo).toBe('PALABRAS');
+      expect(obtenido.nombre).toBeTruthy();
+    });
+
+    it('crearSetCompleto con submodo DIBUJO y listarSetsPorJuego → devuelve el set con submodo', async () => {
+      if (!juegoIdReal) return;
+
+      const res = await repo.crearSetCompleto({
+        juego_id: juegoIdReal,
+        nombre: uniqueId('SET_RPC_DIB'),
+        items: [{ contenido: { dibujo: 'casa' } }],
+        actionId: uniqueAction(),
+        submodo: 'DIBUJO'
+      });
+
+      setsCreados.push(res.set_id);
+
+      const lista = await repo.listarSetsPorJuego(juegoIdReal);
+      const encontrado = lista.find((s) => s.id === res.set_id);
+      expect(encontrado).toBeTruthy();
+      expect(encontrado.submodo).toBe('DIBUJO');
+    });
+  });
 });

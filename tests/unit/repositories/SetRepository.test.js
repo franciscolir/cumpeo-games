@@ -1,5 +1,5 @@
 import 'fake-indexeddb/auto';
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 import { LocalAdapter } from '../../../src/adapters/LocalAdapter.js';
 import { SetRepository } from '../../../src/repositories/SetRepository.js';
@@ -346,6 +346,50 @@ describe('SetRepository', () => {
       expect(porNombre['Palabras']).toBe('PALABRAS');
       expect(porNombre['Gestos']).toBe('GESTOS');
       expect(porNombre['Normal']).toBeNull();
+    });
+  });
+
+  describe('crearSetCompleto — modo Supabase (RPC)', () => {
+    function crearMockSupabase() {
+      return {
+        modo: 'supabase',
+        rpc: vi.fn().mockResolvedValue({ ok: true, set_id: 's1', items_count: 1 })
+      };
+    }
+
+    it('pasa p_submodo en la llamada al RPC', async () => {
+      const mock = crearMockSupabase();
+      const r = new SetRepository(mock);
+
+      await r.crearSetCompleto({
+        juego_id: 'j-pic',
+        nombre: 'Gestos',
+        items: [{ contenido: { gesto: 'saludo' } }],
+        actionId: 'act-sub-1',
+        submodo: 'GESTOS'
+      });
+
+      expect(mock.rpc).toHaveBeenCalledTimes(1);
+      const [nombre, params] = mock.rpc.mock.calls[0];
+      expect(nombre).toBe('crear_set_completo');
+      expect(params.p_submodo).toBe('GESTOS');
+      expect(params.p_action_id).toBe('act-sub-1');
+      expect(params.p_items).toHaveLength(1);
+    });
+
+    it('sin submodo pasa p_submodo: null', async () => {
+      const mock = crearMockSupabase();
+      const r = new SetRepository(mock);
+
+      await r.crearSetCompleto({
+        juego_id: 'j1',
+        nombre: 'Normal',
+        items: [{ contenido: { x: 1 } }],
+        actionId: 'act-sub-2'
+      });
+
+      const [, params] = mock.rpc.mock.calls[0];
+      expect(params.p_submodo).toBeNull();
     });
   });
 });

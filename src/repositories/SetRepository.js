@@ -129,7 +129,8 @@ export class SetRepository extends BaseRepository {
           orden: it.orden ?? i + 1,
           contenido: it.contenido ?? {}
         })),
-        p_action_id: actionId
+        p_action_id: actionId,
+        p_submodo: submodo
       });
     }
 
