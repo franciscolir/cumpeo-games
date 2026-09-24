@@ -355,7 +355,7 @@ una condición por banco.
 
 ### 5.5 Historia Enredada
 
-**Estado:** 🔜 7.8 (editor + config).
+**Estado:** ✅ 7.8a (editor). Pendiente 7.8b (config colores).
 
 **Estructura:** 1 set (Historias) + 1 configuración (Colores).
 
@@ -368,7 +368,7 @@ una condición por banco.
   "titulo": "string",
   "descripcion": "string",
   "guion": "string",
-  "ruidos": "string"
+  "dibujo": "storageRef"
 }
 ```
 
@@ -380,9 +380,9 @@ como "Resumen" y "Historia".
 **Validación:**
 
 - `titulo` no vacío.
-- `descripcion` no vacío (texto breve).
+- `descripcion` no vacía (texto breve).
 - `guion` no vacío (textarea).
-- `ruidos` opcional.
+- `dibujo` opcional (storageRef).
 
 **Set:** ilimitado.
 
@@ -690,7 +690,8 @@ juego son pocos).
 | 7.7c | UI + shell con submodos (shims eliminados) | ✅ | — |
 | 7.7d.1 | Pictionary: 4 editores de sets | ✅ | — |
 | 7.7d.2 | Pictionary: config bancos + D4 + D5 | ✅ | Bancos en `Juego.configuracion` |
-| 7.8 | Historia Enredada | 🔜 | Editor + config colores + D6 |
+| 7.8a | Historia Enredada: editor de historias | ✅ | Upload de imagen (`dibujo`) |
+| 7.8b | Historia Enredada: config colores + D6 | 🔜 | Colores en `Juego.configuracion` |
 | N/A | Canción Incompleta | Sin editor | — |
 
 **Ajustes D1 y D2:** cerrados como pasos cortos — D2 en 7.3a, D1 en 7.4a.
@@ -714,7 +715,7 @@ juego son pocos).
 | #113                      | ~~Agregar `Juego.configuracion` (IndexedDB v6 + Supabase 0017).~~ **Cerrada en 7.6a.** | ~~Alta~~ Cerrada |
 | #114                      | ~~Agregar `Set.submodo` (IndexedDB v6 + Supabase 0017).~~ **Cerrada en 7.6a.** | ~~Alta~~ Cerrada |
 | #115                      | ~~Pictionary: 4 editores + 1 editor de bancos.~~ **Cerrada. 4 editores + 1 editor de bancos (7.7d.1 + 7.7d.2).** | ~~Alta~~ Cerrada |
-| #116                      | Historia Enredada: editor de historias + editor de colores.       | Alta  |
+| #116                      | Historia Enredada: editor de historias + editor de colores. **7.8a hecho (editor de historias), 7.8b pendiente (colores).** | Alta  |
 | #117                      | ~~Trivia: rediseño de editor + checkboxes + fix deuda #108.~~ **Cerrada en 7.5** (radios, no checkboxes). | ~~Alta~~ Cerrada |
 | #118                      | ~~QPEP: simplificación de editor + fix deuda #108.~~ **Cerrada en 7.6** (rediseño + `[{id}]`). | ~~Media~~ Cerrada |
 | #120                      | ~~La RPC crear_set_completo no acepta submodo.~~ **Cerrada en 7.7a** (migración 0018). | ~~Media~~ Cerrada |

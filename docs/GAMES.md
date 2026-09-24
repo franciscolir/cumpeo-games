@@ -667,18 +667,17 @@ Juego narrativo y de interpretación por equipos. La app orquesta el flujo; el c
 
 ## Objetivo
 
-Cada equipo elige una historia, la actúa con guion físico y ruidos indicados, y gana por aplausos del público.
+Cada equipo elige una historia, la actúa con guion físico, y gana por aplausos del público.
 
 ## Set (estructura del item)
 
 Set obligatorio (`requiere_set: true`). Cada item representa una historia.
 
-Estructura sugerida:
-- `titulo`: string
-- `descripcion`: breve descripción para la card
-- `dibujo`: referencia a imagen de la card
-- `guion`: texto completo para imprimir y entregar a los jugadores
-- `ruidos`: descripción de ruidos del jugador 2 si aplica
+Estructura:
+- `titulo`: string (obligatorio)
+- `descripcion`: string (obligatorio, breve)
+- `guion`: string (obligatorio, texto completo)
+- `dibujo`: storageRef (opcional, imagen de la card en Storage)
 
 La historia completa no se muestra en la app. Se imprime y se entrega en papel.
 
@@ -704,11 +703,6 @@ La historia completa no se muestra en la app. Se imprime y se entrega en papel.
 9. Eq2 actúa su historia leyendo los papeles en voz alta.
 10. Conductor asigna puntos a Eq2 a discreción.
 11. La app NO registra los papeles. Todo físico.
-
-## Ruidos
-
-- Los ruidos del jugador 2 están indicados en la historia.
-- El jugador NO decide cuándo hacerlos. Siguen el guion.
 
 ## Puntuación
 
