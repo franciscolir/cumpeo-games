@@ -77,6 +77,7 @@ export async function renderListaSets(container, app) {
             <div>
               <p class="font-headline-sm">${s.nombre}</p>
               ${s.descripcion ? `<p class="font-body-sm text-on-surface-variant">${s.descripcion}</p>` : ''}
+              ${s.submodo ? `<p class="font-label-md text-xs text-on-surface-variant uppercase">Submodo: ${s.submodo}</p>` : ''}
               <p class="font-label-md text-xs text-on-surface-variant uppercase">
                 ${s.activo ? 'Activo' : 'Inactivo'} · v${s.version}
               </p>

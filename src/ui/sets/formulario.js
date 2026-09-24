@@ -11,6 +11,10 @@ import { renderEditorItemsRosco } from '../games/rosco/editor.js';
 import { renderEditorItemsMemoria } from '../games/memoria/editor.js';
 import { renderEditorItemsAntiTrivia } from '../games/anti-trivia/editor.js';
 import { renderEditorItemsEnlaces } from '../games/enlaces/editor.js';
+import { renderEditorItemsPictionaryPalabras } from '../games/pictionary/palabras/editor.js';
+import { renderEditorItemsPictionaryGestos } from '../games/pictionary/gestos/editor.js';
+import { renderEditorItemsPictionaryPreguntas } from '../games/pictionary/preguntas/editor.js';
+import { renderEditorItemsPictionaryDibujo } from '../games/pictionary/dibujo/editor.js';
 
 /**
  * Renderiza el formulario de set.
@@ -42,6 +46,9 @@ export async function renderFormularioSet(container, app, params = {}) {
   const esMemoria = juegoDelSet?.codigo === 'MEMORIA';
   const esAntiTrivia = juegoDelSet?.codigo === 'ANTI_TRIVIA';
   const esEnlaces = juegoDelSet?.codigo === 'ENLACES';
+  const esPictionary = juegoDelSet?.codigo === 'PICTIONARY';
+  const juegoPorIdDefault = juegos.find((j) => j.id === juegoIdDefault) || null;
+  const esPictionaryCreacion = !esEdicion && juegoPorIdDefault?.codigo === 'PICTIONARY';
 
   const nombre = set ? set.nombre : '';
   const descripcion = set ? (set.descripcion || '') : '';
@@ -79,6 +86,18 @@ export async function renderFormularioSet(container, app, params = {}) {
           </select>
         </div>
 
+        ${!esEdicion && esPictionaryCreacion ? `
+        <div class="mb-4">
+          <label for="submodo" class="font-label-md uppercase block mb-1">Submodo</label>
+          <select id="submodo" name="submodo" class="w-full font-body-md border-2.5 border-on-surface rounded-lg px-3 py-2 bg-surface-container-lowest focus:outline-none">
+            <option value="PALABRAS">Palabras</option>
+            <option value="GESTOS">Gestos</option>
+            <option value="PREGUNTAS">Preguntas sí/no</option>
+            <option value="DIBUJO">Dibujo</option>
+          </select>
+        </div>
+        ` : ''}
+
         ${Input({
           id: 'orden_catalogo',
           label: 'Orden en catálogo (opcional)',
@@ -101,7 +120,8 @@ export async function renderFormularioSet(container, app, params = {}) {
       ${esEdicion && esMemoria ? '<div id="editor-items-memoria"></div>' : ''}
       ${esEdicion && esAntiTrivia ? '<div id="editor-items-anti-trivia"></div>' : ''}
       ${esEdicion && esEnlaces ? '<div id="editor-items-enlaces"></div>' : ''}
-      ${esEdicion && !esQPEP && !esTrivia && !esRosco && !esMemoria && !esAntiTrivia && !esEnlaces ? '<p class="mt-8 font-body-sm text-on-surface-variant italic">Este juego aún no tiene editor de items.</p>' : ''}
+      ${esEdicion && esPictionary ? '<div id="editor-items-pictionary"></div>' : ''}
+      ${esEdicion && !esQPEP && !esTrivia && !esRosco && !esMemoria && !esAntiTrivia && !esEnlaces && !esPictionary ? '<p class="mt-8 font-body-sm text-on-surface-variant italic">Este juego aún no tiene editor de items.</p>' : ''}
     </main>
   `;
 
@@ -138,6 +158,10 @@ export async function renderFormularioSet(container, app, params = {}) {
         orden_catalogo: ordenVal !== '' ? Number(ordenVal) : null
       };
 
+      if (esPictionaryCreacion) {
+        payload.submodo = form.querySelector('#submodo').value;
+      }
+
       try {
         const creado = await app.services.set.crearSet(payload);
         window.location.hash = `#/sets?juego=${creado.juego_id}`;
@@ -160,5 +184,20 @@ export async function renderFormularioSet(container, app, params = {}) {
     await renderEditorItemsAntiTrivia(container, app, set.id);
   } else if (esEdicion && esEnlaces) {
     await renderEditorItemsEnlaces(container, app, set.id);
+  } else if (esEdicion && esPictionary) {
+    const submodo = (set.submodo || '').toUpperCase();
+    const mount = container.querySelector('#editor-items-pictionary');
+    if (mount) {
+      mount.outerHTML = `<div id="editor-items-pictionary-${submodo.toLowerCase()}"></div>`;
+    }
+    if (submodo === 'PALABRAS') {
+      await renderEditorItemsPictionaryPalabras(container, app, set.id);
+    } else if (submodo === 'GESTOS') {
+      await renderEditorItemsPictionaryGestos(container, app, set.id);
+    } else if (submodo === 'PREGUNTAS') {
+      await renderEditorItemsPictionaryPreguntas(container, app, set.id);
+    } else if (submodo === 'DIBUJO') {
+      await renderEditorItemsPictionaryDibujo(container, app, set.id);
+    }
   }
 }
