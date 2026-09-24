@@ -2,7 +2,7 @@
 
 **Versión:** 1.0
 **Última actualización:** 2026-09-18
-**Estado global:** Bloques 0, 1, 2, 3, 4, 5 cerrados · Bloque 6 pospuesto · Bloque 7 en progreso (23/24) · ★ MVP alcanzado ★
+**Estado global:** Bloques 0, 1, 2, 3, 4, 5 cerrados · Bloque 6 pospuesto · Bloque 7 cerrado (24/24) · ★ MVP alcanzado ★
 **Rama:** feature/vertical-slice
 
 ---
@@ -22,8 +22,8 @@
 | Métrica | Valor |
 |---------|-------|
 | Bloques totales | 8 (0 al 7) |
-| Bloques cerrados | 6 (Bloques 0, 1, 2, 3, 4, 5) |
-| Bloques en progreso | 1 (Bloque 7) |
+| Bloques cerrados | 7 (Bloques 0, 1, 2, 3, 4, 5, 7) |
+| Bloques en progreso | 0 |
 | Bloques pendientes | 1 (Bloque 6, opcional) |
 | MVP alcanzado | Sí (al cerrar Bloque 4, 2026-09-21) |
 | Fecha estimada MVP | Alcanzado |
@@ -40,7 +40,7 @@
 | 4 | "¿Qué piensa el público?" | ✅ CERRADO | 13/13 | 2e19767 | 2026-09-21 |
 | 5 | Juegos restantes | ✅ CERRADO | 11/11 | 9b7dfdc | 2026-09-23 |
 | 6 | Migración e2e a Supabase (opcional) | ⏸️ POSPUESTO | — | — | 2026-09-23 |
-| 7 | Formularios de sets por juego | 🔄 EN PROGRESO | 23/24 | — | — |
+| 7 | Formularios de sets por juego | ✅ CERRADO | 24/24 | c0d44de | 2026-09-24 |
 
 **★ MVP se alcanza al cerrar el Bloque 4 ★**
 **Decisión al cerrar Bloque 5 (2026-09-23):** POSPUESTO INDEFINIDAMENTE.
@@ -228,7 +228,7 @@ de implementarse.
 
 ---
 
-### Bloque 7 — Formularios de sets por juego 🔄 EN PROGRESO (23/24)
+### Bloque 7 — Formularios de sets por juego ✅ CERRADO (24/24)
 
 **Objetivo:** Crear formularios de sets dedicados por juego y rediseñar el rosco.
 
