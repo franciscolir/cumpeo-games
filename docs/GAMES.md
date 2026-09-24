@@ -856,7 +856,7 @@ equipo con más aciertos al final de N rondas.
 - 2 equipos (Eq1 y Eq2).
 - Cada ronda tiene 2 turnos: Eq1 primero, Eq2 después.
 - Cada turno: el equipo ordena una columna B de `pares_por_turno`
-  elementos (default 8).
+  elementos (default 8, máximo 10).
 - Cada equipo tiene SU PROPIO SET (pueden ser distintos).
 - Sets elegidos del almacén al inicio de cada turno.
 - N rondas configurables (default 1).
@@ -881,7 +881,7 @@ dificultad: 1 | 2 | 3 (opcional).
 Cada item del set es UN PAR correcto (concepto_a ↔ concepto_b).
 
 Validación del set
-Debe tener al menos pares_por_turno items (default 8).
+El set debe tener entre pares_por_turno y 10 items (máximo fijo).
 
 Cada item: concepto_a y concepto_b strings no vacíos.
 

@@ -35,6 +35,7 @@
 | 2026-09-23 | 7 | 7.2e | ✅ APROBADO | Sets predeterminados (Emojis/Íconos) + render `emoji:` + editor solo lectura. 22 tests nuevos. 1986 unit. | b576d22 |
 | 2026-09-23 | 7 | 7.3 | ✅ APROBADO | Editor de Anti-Trivia (lista + form con respuestas dinámicas). 45 tests. 2031 unit. | 31cfb0b |
 | 2026-09-24 | 7 | 7.4 | ✅ APROBADO | Editor de Enlaces: 306 líneas, 49 tests, validación de unicidad A/B, `reordenarItems` con `[{id}]`. Formulario integrado (5 cambios). 2080 unit. | 2d4f441 |
+| 2026-09-24 | 7 | 7.4a | ✅ APROBADO | Deuda #111: validación de máximo 10 en dominio y editor de Enlaces. +6 tests dominio, +6 tests editor. 2109 unit. | be6f30b |
 ---
 
 ## Correcciones pendientes
@@ -297,3 +298,4 @@ _(ninguna)_
 | 108 | `reordenarItems` en Trivia/QPEP (y quizás Rosco) pasa `items.map(i => i.id)` (array de strings) pero el contrato real es `Array<{id}>`. Bug latente. Anti-Trivia lo hace bien. Verificado en 7.3: solo Trivia (`trivia/editor.js:363`) y QPEP (`que-piensa-el-publico/editor.js:222`) lo llaman con strings; Rosco/Memoria no llaman. Corregir. | Paso 7.3 (detectado) | Media |
 | 109 | El editor de Anti-Trivia guarda estado en `container.__antiTriviaEstado`. Precedente de deuda #102. | Paso 7.3 (detectado) | Baja |
 | 110 | Divergencia entre validación de unicidad del editor de Enlaces (con `.trim()`) y del dominio (`EnlacesGameDefinition.validarContenidoSet`, comparación cruda). El editor es más estricto. A futuro, alinear el dominio. | Paso 7.4 (detectado) | Baja |
+| 111 | Enlaces: agregar validación de máximo 10 en editor y dominio. **Cerrada en 7.4a** (dominio + editor + 12 tests). | Paso 7.4 (detectado) / 7.4a | ~~Media~~ Cerrada |

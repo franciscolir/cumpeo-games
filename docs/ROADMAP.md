@@ -228,7 +228,7 @@ de implementarse.
 
 ---
 
-### Bloque 7 — Formularios de sets por juego 🔄 EN PROGRESO (12/16)
+### Bloque 7 — Formularios de sets por juego 🔄 EN PROGRESO (13/17)
 
 **Objetivo:** Crear formularios de sets dedicados por juego y rediseñar el rosco.
 
@@ -246,6 +246,7 @@ de implementarse.
 | 7.2e | Sets predeterminados (Emojis, Íconos) | ✅ APROBADO | b576d22 |
 | 7.3 | Anti-Trivia: editor | ✅ APROBADO | 31cfb0b |
 | 7.4 | Enlaces: editor | ✅ APROBADO | 2d4f441 |
+| 7.4a | Enlaces: validación máximo 10 (deuda #111) | ✅ APROBADO | be6f30b |
 | 7.5 | Trivia: editor | ⬜ PENDIENTE | — |
 | 7.6 | QPEP: editor simplificado | ⬜ PENDIENTE | — |
 | 7.7 | Pictionary: 4 editores + 2 bancos | ⬜ PENDIENTE | — |
@@ -297,6 +298,7 @@ de implementarse.
 | 7.10 | 2026-09-23 | 7.2e: sets predeterminados con emojis e íconos. 1986 unit. |
 | 7.11 | 2026-09-23 | 7.3: editor de Anti-Trivia (lista + respuestas dinámicas). 45 tests. 2031 unit. |
 | 7.12 | 2026-09-24 | 7.4: editor de Enlaces (49 tests, validación unicidad). 2080 unit. |
+| 7.13 | 2026-09-24 | 7.4a: validación máximo 10 en Enlaces (deuda #111). +12 tests, 2109 unit. |
 ---
 
 ## 5. Convenciones

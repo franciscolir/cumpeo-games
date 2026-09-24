@@ -176,7 +176,7 @@ Migrable a entidad si crece.
 | Historia Enredada — Historias | 🔜 | Set | `#/sets/:id` | 7.8 |
 | Historia Enredada — Colores | 🔜 | Config del juego | `#/juegos/historia-enredada/config` | 7.8 |
 | Anti-Trivia | ✅ | Set | `#/sets/:id` | ✅ 7.3 + D2 en 7.3a |
-| Enlaces | ✅ | Set | `#/sets/:id` | ✅ 7.4 + ajuste D1 |
+| Enlaces | ✅ | Set | `#/sets/:id` | ✅ 7.4 + D1 (7.4a) |
 | Trivia | 🔜 | Set | `#/sets/:id` | 7.5 |
 | ¿Qué Dice el Público? (QPEP) | 🔜 | Set | `#/sets/:id` | 7.6 |
 
@@ -432,7 +432,7 @@ individual (1 | 2 | 3 | vacío). NO existe dificultad general del set.
 
 ### 5.7 Enlaces
 
-**Estado:** ✅ Implementado (7.4). Requiere ajuste por D1.
+**Estado:** ✅ Implementado (7.4) + D1 (7.4a).
 
 **Set:** mínimo `pares_por_turno` (default 8), máximo 10.
 
@@ -455,8 +455,10 @@ individual (1 | 2 | 3 | vacío). NO existe dificultad general del set.
 - `concepto_b` único.
 - `dificultad` opcional.
 
-**Cambio requerido (D1):** el editor 7.4 agrega la validación de máximo 10.
-`EnlacesGameDefinition.validarContenidoSet` agrega la misma validación.
+**D1 (implementado en 7.4a):** el editor bloquea agregar el 11º par
+(`editandoId === null && items.length >= 10`); NO bloquea editar.
+`EnlacesGameDefinition.validarContenidoSet` lanza
+`items no puede tener más de 10 items (máximo 10)`.
 
 ---
 
@@ -662,15 +664,14 @@ juego son pocos).
 | 7.1a–d | Rosco | ✅ | — |
 | 7.2a–e | Memoria | ✅ | — |
 | 7.3 | Anti-Trivia | ✅ | D2 (dificultad individual) cerrada en 7.3a |
-| 7.4 | Enlaces | ✅ | Ajuste D1 (máximo 10) |
+| 7.4 | Enlaces | ✅ | D1 (máximo 10) cerrada en 7.4a |
 | 7.5 | Trivia | 🔜 | Rediseño + D3 + deuda #108 |
 | 7.6 | QPEP | 🔜 | Simplificación + deuda #108 |
 | 7.7 | Pictionary | 🔜 | 4 editores + config bancos + D4 + D5 |
 | 7.8 | Historia Enredada | 🔜 | Editor + config colores + D6 |
 | N/A | Canción Incompleta | Sin editor | — |
 
-**Ajustes D1 y D2:** pueden hacerse como pasos cortos (7.4a, 7.3a) o
-incluirse dentro de 7.5/7.6. Decidir al planificar cada paso.
+**Ajustes D1 y D2:** cerrados como pasos cortos — D2 en 7.3a, D1 en 7.4a.
 
 ---
 
@@ -686,7 +687,7 @@ incluirse dentro de 7.5/7.6. Decidir al planificar cada paso.
 
 | **#DescripciónPrioridad** |                                                                   |       |
 | ------------------------- | ----------------------------------------------------------------- | ----- |
-| #111                      | Enlaces: agregar validación de máximo 10 en editor y dominio.     | Media |
+| #111                      | ~~Enlaces: agregar validación de máximo 10 en editor y dominio.~~ **Cerrada en 7.4a.** | ~~Media~~ Cerrada |
 | #112                      | ~~Anti-Trivia: agregar `dificultad` individual al item y al editor.~~ **Cerrada en 7.3a.** | ~~Media~~ Cerrada |
 | #113                      | Agregar `Juego.configuracion` (IndexedDB v6 + Supabase 0010).     | Alta  |
 | #114                      | Agregar `Set.submodo` (IndexedDB v6 + Supabase 0010).             | Alta  |
