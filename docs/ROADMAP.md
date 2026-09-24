@@ -274,7 +274,7 @@ Fuente: `docs/PANTALLAS.md` §8 (plan de 11 pasos, gaps #1–#11).
 | 8.0 | Modal componente compartido | ✅ APROBADO | c59f41c |
 | 8.1 | `pausado_at` + ajustes_globales | ✅ APROBADO | 1193983 |
 | 8.2 | Barra superior unificada (conductor) | 🕓 IMPLEMENTADO (sin commit) | PENDIENTE |
-| 8.3 | Modal de pausa + contador + auto-transición | ⬜ | — |
+| 8.3 | Modal de pausa + contador (sin auto-transición: deuda #123 → 8.4) | 🕓 IMPLEMENTADO (sin commit) | PENDIENTE |
 | 8.4 | Botón MODO ESPERA + estado UI | ⬜ | — |
 | 8.5 | Panel conductor unificado | ⬜ | — |
 | 8.6 | AJUSTES global (UI) | ⬜ | — |
@@ -343,6 +343,7 @@ Fuente: `docs/PANTALLAS.md` §8 (plan de 11 pasos, gaps #1–#11).
 | 8.0 | 2026-09-24 | Componente Modal compartido. Rosco + Memoria migrados. 2633 unit / 82 archivos. |
 | 8.1 | 2026-09-24 | pausado_at + ajustes_globales + AjustesGlobalesRepository/Service. Migración IndexedDB v7 + Supabase 0019. 2651 unit / 85 archivos. |
 | 8.2 | 2026-09-24 | Barra superior con `#shell-timer` (`_renderShellTimer`) en shell-partida. 3 e2e nuevos (2651 unit / 85 archivos + 3 e2e). Sin commit (pendiente auditoría). Hallazgo: e2e Pictionary pre-rotos por `palabras_por_modo` ≠ `palabras_por_turno` en helper. |
+| 8.3 | 2026-09-24 | Modal de pausa `#modal-pausa` (`_abrirModalPausa`) montado en `document.body` (sobrevive re-renders del polling), contador `#pausa-contador` (desde `pausado_at`, `_formatearTiempo` compartido con `#shell-timer`), botón `#btn-pausa-reanudar` único, `cerrable: false`, limpieza de intervalo en REANUDAR / hashchange / re-entrada al shell. Correcciones D3–D6: `pausado_at` validado parseable (sin fallback), sin línea "Tiempo máximo" ni `services.ajustes` (D4), `_limpiarPausaModal()` en handler `#btn-reanudar` (D5, defensivo — deuda #124), hashchange limpia siempre (D6). 6 e2e (test 7/D5 descartado — deuda #124) — 2651 unit / 85 archivos + 6 e2e. Sin commit (pendiente auditoría). Deudas: #123 auto-transición a MODO ESPERA (depende de 8.4), #124 `#btn-reanudar` nunca se renderiza. |
 ---
 
 ## 5. Convenciones

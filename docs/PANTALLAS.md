@@ -313,7 +313,10 @@ text
 
 ### 3.4 Modal de pausa (TO-BE)
 
-**Estado actual:** ❌ no existe.
+**Estado actual:** 🕓 **parcial — implementado en 8.3.** El modal
+`#modal-pausa` se abre al presionar `PAUSE` (tras `pausarJuego` OK),
+muestra el contador y el límite, y ofrece `REANUDAR`. **Quedan pendientes**
+(el botón `MODO ESPERA` y la auto-transición): ver §3.5 y deuda #123.
 
 **Contenido conceptual:**
 ┌───────────────────────────────┐
@@ -330,20 +333,26 @@ text
 
 **Comportamiento:**
 
-- Se abre al presionar `PAUSE`.
-- Muestra un contador de tiempo de pausa (desde `pausado_at`, agregado en 8.1).
-- Botón `REANUDAR`: cierra el modal, transiciona `PAUSADO → EN_CURSO`.
-- Botón `MODO ESPERA`: cierra el modal, transiciona a `MODO ESPERA`.
-- Si el contador alcanza el **tiempo máximo configurado**:
+- ✅ Se abre al presionar `PAUSE` (8.3: `#btn-pausar` → `pausarJuego` →
+  `_abrirModalPausa`; montado en `document.body`, `cerrable: false`).
+- ✅ Muestra un contador de tiempo de pausa (8.3: `#pausa-contador`,
+  desde `pausado_at` de 8.1, `pausado_at` validado presente y parseable,
+  `setInterval` 1s). ~~Línea "Tiempo máximo: MM:SS"~~ eliminada en D4.
+- ✅ Botón `REANUDAR` (8.3: `#btn-pausa-reanudar`): cierra el modal,
+  transiciona `PAUSADO → EN_CURSO`.
+- ⬜ Botón `MODO ESPERA`: cierra el modal, transiciona a `MODO ESPERA`. (8.4)
+- ⬜ Si el contador alcanza el **tiempo máximo configurado**:
   - Cierra el modal.
   - Detiene el contador.
   - Transiciona a `MODO ESPERA`.
   - **No finaliza el juego.**
   - **No reinicia el juego.**
+  (Deuda #123 — depende de 8.4.)
 
 **Reutilización:** ~~el proyecto no tiene componente `Modal` compartido.~~
 **Componente `Modal` creado en `src/ui/components/modal.js` (8.0).
-Rosco y Memoria migrados al componente.**
+Rosco y Memoria migrados al componente. El modal de pausa lo reutiliza
+desde 8.3.**
 
 ### 3.5 Modo espera (TO-BE)
 
@@ -607,7 +616,7 @@ existentes (`comenzarPartida`, `pausarJuego`, `reanudarJuego`,
 | 8.0 | `Modal` componente compartido | Botón, título, contenido, acciones | Media | 1 |
 | 8.1 | `pausado_at` en `JuegoEjecutado` + ajustes generales | Migración v7 + Supabase 0019 + AjustesGlobales | Alta | 2, 3 |
 | 8.2 | Barra superior unificada (conductor) | TIME en el shell (`#shell-timer`); SCORE/ESTADO quedan donde están hasta 8.5 | Media | 11 (parcial) |
-| 8.3 | Modal de pausa + contador + auto-transición | Usa Modal de 8.0 + `pausado_at` de 8.1 | Media | 1, 2, 3 |
+| 8.3 | Modal de pausa + contador | Modal de 8.0 en `document.body` (`#modal-pausa`, `cerrable: false`) + contador desde `pausado_at` de 8.1 + límite de ajustes; `REANUDAR` opera. Auto-transición y `MODO ESPERA` → 8.4 (deuda #123) | Media | 1, 2, 3 (parcial: botón/estado MODO ESPERA en 8.4) |
 | 8.4 | Botón `MODO ESPERA` + estado UI | Estado UI + botón | Media | 4 |
 | 8.5 | Panel conductor unificado (conductor) | Shell unifica START/PAUSE, FINISH/NEXT, A/B, CORRECTO/ERROR/SIGUIENTE | Alta | 9, 10 |
 | 8.6 | `AJUSTES` global | Modal/pantalla nueva | Media | 5 |
