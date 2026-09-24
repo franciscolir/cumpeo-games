@@ -639,22 +639,29 @@ futuro, alinear el dominio.
 
 ### IndexedDB
 
-**Versión 6:**
+**Versión 6 (no-op estructural):**
 
-- Store `juegos`: agregar campo `configuracion` (no requiere índice).
-- Store `sets`: agregar campo `submodo` (no requiere índice).
+Solo se sube `DB_VERSION` de 5 a 6. **No hay cambios estructurales** en
+IndexedDB (no se agregan stores ni índices).
 
-Los registros existentes quedan con `configuracion = {}` y `submodo = null`.
+Los campos `juegos.configuracion` y `sets.submodo` se agregan al crear
+los registros nuevos. Los registros existentes quedan sin ellos, y los
+repos los tratan como `{}` y `null` respectivamente.
 
 ### Supabase
 
-**Migración `0010_juego_configuracion.sql`:**
+**Migración `0017_juego_configuracion.sql`:**
 
 ```sql
-ALTER TABLE juegos ADD COLUMN configuracion JSONB DEFAULT '{}'::jsonb;
-ALTER TABLE sets ADD COLUMN submodo TEXT NULL;
+ALTER TABLE juegos
+  ADD COLUMN IF NOT EXISTS configuracion JSONB NOT NULL DEFAULT '{}'::jsonb;
+
+ALTER TABLE sets
+  ADD COLUMN IF NOT EXISTS submodo TEXT NULL;
 ```
 
+Ambos campos son **opcionales**: `configuracion` default `{}`, `submodo`
+default `NULL`.
 
 **Sin índices adicionales.** `submodo` se filtra en memoria (los sets de un
 juego son pocos).
@@ -674,6 +681,7 @@ juego son pocos).
 | 7.4 | Enlaces | ✅ | D1 (máximo 10) cerrada en 7.4a |
 | 7.5 | Trivia | ✅ | Rediseño + deuda #108 |
 | 7.6 | QPEP | ✅ | Rediseño + deuda #108 |
+| 7.6a | Migración config + submodo | ✅ | Cerrada #113 y #114 |
 | 7.7 | Pictionary | 🔜 | 4 editores + config bancos + D4 + D5 |
 | 7.8 | Historia Enredada | 🔜 | Editor + config colores + D6 |
 | N/A | Canción Incompleta | Sin editor | — |
@@ -696,8 +704,8 @@ juego son pocos).
 | ------------------------- | ----------------------------------------------------------------- | ----- |
 | #111                      | ~~Enlaces: agregar validación de máximo 10 en editor y dominio.~~ **Cerrada en 7.4a.** | ~~Media~~ Cerrada |
 | #112                      | ~~Anti-Trivia: agregar `dificultad` individual al item y al editor.~~ **Cerrada en 7.3a.** | ~~Media~~ Cerrada |
-| #113                      | Agregar `Juego.configuracion` (IndexedDB v6 + Supabase 0010).     | Alta  |
-| #114                      | Agregar `Set.submodo` (IndexedDB v6 + Supabase 0010).             | Alta  |
+| #113                      | ~~Agregar `Juego.configuracion` (IndexedDB v6 + Supabase 0017).~~ **Cerrada en 7.6a.** | ~~Alta~~ Cerrada |
+| #114                      | ~~Agregar `Set.submodo` (IndexedDB v6 + Supabase 0017).~~ **Cerrada en 7.6a.** | ~~Alta~~ Cerrada |
 | #115                      | Pictionary: 4 editores + 1 editor de bancos.                      | Alta  |
 | #116                      | Historia Enredada: editor de historias + editor de colores.       | Alta  |
 | #117                      | ~~Trivia: rediseño de editor + checkboxes + fix deuda #108.~~ **Cerrada en 7.5** (radios, no checkboxes). | ~~Alta~~ Cerrada |
