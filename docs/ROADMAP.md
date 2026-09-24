@@ -275,7 +275,7 @@ Fuente: `docs/PANTALLAS.md` §8 (plan de 11 pasos, gaps #1–#11).
 | 8.1 | `pausado_at` + ajustes_globales | ✅ APROBADO | 1193983 |
 | 8.2 | Barra superior unificada (conductor) | 🕓 IMPLEMENTADO (sin commit) | PENDIENTE |
 | 8.3 | Modal de pausa + contador (sin auto-transición: deuda #123 → 8.4) | 🕓 IMPLEMENTADO (sin commit) | PENDIENTE |
-| 8.4 | Botón MODO ESPERA + estado UI | ⬜ | — |
+| 8.4 | Botón MODO ESPERA + estado UI + auto-transición (cierra #123 y #124) | 🕓 IMPLEMENTADO (sin commit) | PENDIENTE |
 | 8.5 | Panel conductor unificado | ⬜ | — |
 | 8.6 | AJUSTES global (UI) | ⬜ | — |
 | 8.7 | Refactor de los 9 GameUIs al panel unificado | ⬜ | — |
@@ -344,6 +344,7 @@ Fuente: `docs/PANTALLAS.md` §8 (plan de 11 pasos, gaps #1–#11).
 | 8.1 | 2026-09-24 | pausado_at + ajustes_globales + AjustesGlobalesRepository/Service. Migración IndexedDB v7 + Supabase 0019. 2651 unit / 85 archivos. |
 | 8.2 | 2026-09-24 | Barra superior con `#shell-timer` (`_renderShellTimer`) en shell-partida. 3 e2e nuevos (2651 unit / 85 archivos + 3 e2e). Sin commit (pendiente auditoría). Hallazgo: e2e Pictionary pre-rotos por `palabras_por_modo` ≠ `palabras_por_turno` en helper. |
 | 8.3 | 2026-09-24 | Modal de pausa `#modal-pausa` (`_abrirModalPausa`) montado en `document.body` (sobrevive re-renders del polling), contador `#pausa-contador` (desde `pausado_at`, `_formatearTiempo` compartido con `#shell-timer`), botón `#btn-pausa-reanudar` único, `cerrable: false`, limpieza de intervalo en REANUDAR / hashchange / re-entrada al shell. Correcciones D3–D6: `pausado_at` validado parseable (sin fallback), sin línea "Tiempo máximo" ni `services.ajustes` (D4), `_limpiarPausaModal()` en handler `#btn-reanudar` (D5, defensivo — deuda #124), hashchange limpia siempre (D6). 6 e2e (test 7/D5 descartado — deuda #124) — 2651 unit / 85 archivos + 6 e2e. Sin commit (pendiente auditoría). Deudas: #123 auto-transición a MODO ESPERA (depende de 8.4), #124 `#btn-reanudar` nunca se renderiza. |
+| 8.4 | 2026-09-24 | Modal de pausa ajustado a SOLO informativo (`#btn-pausa-reanudar` eliminado, acciones vacías). Topbar `relative z-[60]` + `id="shell-topbar"` (queda sobre el modal z-50 — contradicción C1 resuelta con el operador). `_renderTopBar`: `#btn-reanudar` condicionado a `juegoActivo?.estado === 'PAUSADO'` (**cierra #124**) + nuevo `#btn-modo-espera`. Estado UI local `_modoEsperaActivo` (flag, no persistido; reset en `renderShellPartida` — decisión D1 vs Parte 6 del prompt) + overlay `#modo-espera-overlay` (`absolute top-16 bottom-0 z-40`, cubre todo menos la barra, sin botón propio). Auto-transición en `pintarContador` al alcanzar `tiempo_max_pausa_seg` (guard `Number.isFinite(maxSeg) && !_modoEsperaActivo`) que cierra el modal y entra al overlay (**cierra #123**). Salida vía `#btn-reanudar` (sale del overlay + `_limpiarPausaModal` + `reanudarJuego`). Specs: pausa reducido a 5 e2e (test 2 eliminado, test 4 → `#btn-reanudar`), nuevo `shell-partida-modo-espera.spec.js` con 7 e2e — 2651 unit / 85 archivos + 12 e2e. Sin commit (decisión C2 — D7/BLOQUE ANULADO). Hallazgo: `uiRegistry cantidad===2` pre-existente (falla en HEAD limpio, verificado con `git stash`; recibió 9). |
 ---
 
 ## 5. Convenciones

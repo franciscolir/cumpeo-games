@@ -313,10 +313,13 @@ text
 
 ### 3.4 Modal de pausa (TO-BE)
 
-**Estado actual:** 🕓 **parcial — implementado en 8.3.** El modal
-`#modal-pausa` se abre al presionar `PAUSE` (tras `pausarJuego` OK),
-muestra el contador y el límite, y ofrece `REANUDAR`. **Quedan pendientes**
-(el botón `MODO ESPERA` y la auto-transición): ver §3.5 y deuda #123.
+**Estado actual:** ✅ **implementado en 8.3 + 8.4.** El modal
+`#modal-pausa` se abre al presionar `PAUSE` (tras `pausarJuego` OK) y
+es **SOLO informativo** (contador, sin botones — decisión aprobada en
+8.4). `REANUDAR` y `MODO ESPERA` viven en la barra superior
+(`#btn-reanudar` / `#btn-modo-espera`, 8.4). Al agotarse el tiempo
+máximo el modal se cierra solo → overlay (§3.5). Deudas #123 y #124
+cerradas en 8.4.
 
 **Contenido conceptual:**
 ┌───────────────────────────────┐
@@ -325,8 +328,9 @@ muestra el contador y el límite, y ofrece `REANUDAR`. **Quedan pendientes**
 │ Tiempo en pausa: │
 │ 01:24 │
 │ │
-│ [ REANUDAR ] │
-│ [ MODO ESPERA ] │
+│ (sin botones: REANUDAR / │
+│ MODO ESPERA están en la │
+│ barra superior) │
 └───────────────────────────────┘
 
 text
@@ -338,16 +342,21 @@ text
 - ✅ Muestra un contador de tiempo de pausa (8.3: `#pausa-contador`,
   desde `pausado_at` de 8.1, `pausado_at` validado presente y parseable,
   `setInterval` 1s). ~~Línea "Tiempo máximo: MM:SS"~~ eliminada en D4.
-- ✅ Botón `REANUDAR` (8.3: `#btn-pausa-reanudar`): cierra el modal,
-  transiciona `PAUSADO → EN_CURSO`.
-- ⬜ Botón `MODO ESPERA`: cierra el modal, transiciona a `MODO ESPERA`. (8.4)
-- ⬜ Si el contador alcanza el **tiempo máximo configurado**:
+- ✅ Botón `REANUDAR` (8.4: **en la barra superior** `#btn-reanudar`,
+  condicionado a `juegoActivo.estado === 'PAUSADO'`, topbar `z-[60]`
+  sobre el modal): cierra el modal, transiciona `PAUSADO → EN_CURSO`.
+  ~~`#btn-pausa-reanudar` dentro del modal~~ eliminado en 8.4.
+- ✅ Botón `MODO ESPERA` (8.4: **en la barra superior**
+  `#btn-modo-espera`): cierra el modal, transiciona a `MODO ESPERA`
+  (overlay, §3.5).
+- ✅ Si el contador alcanza el **tiempo máximo configurado** (8.4):
   - Cierra el modal.
   - Detiene el contador.
   - Transiciona a `MODO ESPERA`.
   - **No finaliza el juego.**
   - **No reinicia el juego.**
-  (Deuda #123 — depende de 8.4.)
+  (Deuda #123 cerrada en 8.4; guard `Number.isFinite(maxSeg) &&
+  !_modoEsperaActivo`.)
 
 **Reutilización:** ~~el proyecto no tiene componente `Modal` compartido.~~
 **Componente `Modal` creado en `src/ui/components/modal.js` (8.0).
@@ -356,7 +365,15 @@ desde 8.3.**
 
 ### 3.5 Modo espera (TO-BE)
 
-**Estado actual:** ❌ no existe como concepto.
+**Estado actual:** 🕓 **implementado en 8.4 (conductor).** Overlay
+`#modo-espera-overlay` en el shell conductor: flag de UI local
+`_modoEsperaActivo` (no persistido, se resetea al (re)entrar al shell),
+`absolute left-0 right-0 top-16 bottom-0 z-40` (cubre todo menos la
+barra superior), **sin botón propio**. Se entra por `#btn-modo-espera`
+o por auto-transición (§3.4); se sale por `#btn-reanudar` de la barra
+(`_salirModoEspera` → `reanudarJuego`). El estado de dominio del juego
+sigue siendo `PAUSADO` (no se persiste MODO ESPERA). Vista pública:
+pendiente (§4).
 
 **Comportamiento:**
 
@@ -594,7 +611,7 @@ existentes (`comenzarPartida`, `pausarJuego`, `reanudarJuego`,
 | 1 | ~~No hay componente `Modal` compartido~~ **✅ resuelto en 8.0** | Cada GameUI implementa modales inline | Media | Alta |
 | 2 | ~~No hay `pausado_at` en `JuegoEjecutado`~~ **✅ resuelto en 8.1** | No se puede medir tiempo de pausa | Media | Alta |
 | 3 | ~~No hay sistema de "ajustes generales"~~ **✅ resuelto en 8.1** (modelo; UI en 8.6) | No se puede configurar tiempo máx de pausa | Media | Alta |
-| 4 | No hay botón `MODO ESPERA` | El conductor no puede forzar el estado | Baja | Media |
+| 4 | ~~No hay botón `MODO ESPERA`~~ **✅ resuelto en 8.4** | El conductor no puede forzar el estado | Baja | Media |
 | 5 | No hay `AJUSTES` global | No hay punto de entrada a config general | Media | Media |
 | 6 | No hay `EXTRAS` UI | No se pueden usar herramientas auxiliares | Alta | Media |
 | 7 | No hay `AVATAR REACT` | Reservado, sin especificación | TBD | Baja |
@@ -617,7 +634,7 @@ existentes (`comenzarPartida`, `pausarJuego`, `reanudarJuego`,
 | 8.1 | `pausado_at` en `JuegoEjecutado` + ajustes generales | Migración v7 + Supabase 0019 + AjustesGlobales | Alta | 2, 3 |
 | 8.2 | Barra superior unificada (conductor) | TIME en el shell (`#shell-timer`); SCORE/ESTADO quedan donde están hasta 8.5 | Media | 11 (parcial) |
 | 8.3 | Modal de pausa + contador | Modal de 8.0 en `document.body` (`#modal-pausa`, `cerrable: false`) + contador desde `pausado_at` de 8.1 + límite de ajustes; `REANUDAR` opera. Auto-transición y `MODO ESPERA` → 8.4 (deuda #123) | Media | 1, 2, 3 (parcial: botón/estado MODO ESPERA en 8.4) |
-| 8.4 | Botón `MODO ESPERA` + estado UI | Estado UI + botón | Media | 4 |
+| 8.4 | Botón `MODO ESPERA` + estado UI | Flag UI `_modoEsperaActivo` + overlay `#modo-espera-overlay` (sin botones, no cubre la barra) + `#btn-modo-espera` en la barra; auto-transición cierra el modal → overlay; modal 8.3 queda SOLO informativo; `#btn-reanudar` condicionado a `juegoActivo.estado === 'PAUSADO'` (cierra #124) | Media | 4 |
 | 8.5 | Panel conductor unificado (conductor) | Shell unifica START/PAUSE, FINISH/NEXT, A/B, CORRECTO/ERROR/SIGUIENTE | Alta | 9, 10 |
 | 8.6 | `AJUSTES` global | Modal/pantalla nueva | Media | 5 |
 | 8.7 | Refactor de los 9 GameUIs al panel unificado | Refactor masivo | Muy alta | — |
