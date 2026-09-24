@@ -8,11 +8,13 @@
 import { Header, bindHeaderListeners } from '../components/header.js';
 import { Boton } from '../components/boton.js';
 import { Card } from '../components/card.js';
+import { montarModal, desmontarModal } from '../components/modal.js';
 import { nuevoActionId, fmtPuntos } from './utils.js';
 import { cargarItemsDeJuego } from '../games/_shared/index.js';
 
 let cleanupSuscripciones = null;
 let intervalId = null;
+let intervaloPausa = null;
 let cleanupsGameUI = [];
 
 /**
@@ -43,6 +45,7 @@ function _postProcesarPictionary(Def, estado) {
 export async function renderShellPartida(container, app, params) {
   _limpiarSuscripciones();
   _limpiarGameUIs();
+  _limpiarPausaModal();
   app.services.partida.detenerTodosLosHeartbeats();
 
   await _renderContenido(container, app, params.id);
@@ -1384,6 +1387,20 @@ function _renderTopBar(partida, tieneControl, app, partidaId) {
    ============================================================= */
 
 /**
+ * Formatea segundos como "SS" (<60) o "MM:SS" (>=60).
+ * @param {number} seg
+ * @returns {string}
+ */
+function _formatearTiempo(seg) {
+  const segundos = Math.max(0, Math.floor(seg));
+  const minutos = Math.floor(segundos / 60);
+  const resto = segundos % 60;
+  return minutos > 0
+    ? `${minutos}:${String(resto).padStart(2, '0')}`
+    : String(resto);
+}
+
+/**
  * Renderiza el timer unificado de la barra superior (#shell-timer).
  * Solo se muestra si el estado del juego expone `tiempo_restante_seg`
  * (los juegos sin timer, p. ej. Historia Enredada, no lo renderizan).
@@ -1395,12 +1412,7 @@ function _renderShellTimer(estadoJuego) {
   const seg = estadoJuego?.tiempo_restante_seg;
   if (typeof seg !== 'number' || !Number.isFinite(seg) || seg < 0) return '';
 
-  const segundos = Math.floor(seg);
-  const minutos = Math.floor(segundos / 60);
-  const resto = segundos % 60;
-  const texto = minutos > 0
-    ? `${minutos}:${String(resto).padStart(2, '0')}`
-    : String(resto);
+  const texto = _formatearTiempo(seg);
 
   return `<div id="shell-timer" class="border-b-2.5 border-on-surface bg-surface-container-lowest h-10 px-4 flex items-center shrink-0"><span class="font-display-hero text-xl text-primary">${texto}</span></div>`;
 }
@@ -1570,6 +1582,93 @@ function _bindModeracion(container, app, partidaId) {
 }
 
 /* =============================================================
+   Modal de pausa (step 8.3)
+   ============================================================= */
+
+/**
+ * Limpia el intervalo del contador de pausa, desmonta #modal-pausa
+ * y remueve el listener de hashchange. Idempotente.
+ * @returns {void}
+ */
+function _limpiarPausaModal() {
+  if (intervaloPausa !== null) {
+    clearInterval(intervaloPausa);
+    intervaloPausa = null;
+  }
+  desmontarModal(document.body, 'modal-pausa');
+  window.removeEventListener('hashchange', _onHashChangePausa);
+}
+
+/**
+ * Al navegar (hashchange) con el modal abierto, limpia intervalo + modal
+ * (evita huérfanos por navegación).
+ * @returns {void}
+ */
+function _onHashChangePausa() {
+  _limpiarPausaModal();
+}
+
+/**
+ * Abre el modal "JUEGO EN PAUSA" con contador (desde juego.pausado_at)
+ * y límite de ajustes. El modal se monta en document.body (sobrevive a
+ * los re-renders del shell) y solo se cierra con REANUDAR (cerrable:false).
+ * @param {HTMLElement} container
+ * @param {object} app
+ * @param {string} partidaId
+ * @returns {Promise<void>}
+ */
+async function _abrirModalPausa(container, app, partidaId) {
+  try {
+    const contexto = await app.services.partida.obtenerContextoEspera(partidaId);
+    const juegoEnPausa = (contexto.juegos || []).find((j) => {
+      if (j.estado !== 'PAUSADO' || !j.pausado_at) return false;
+      const t = new Date(j.pausado_at).getTime();
+      return Number.isFinite(t);
+    });
+    if (!juegoEnPausa) return;
+
+    const inicioPausa = new Date(juegoEnPausa.pausado_at).getTime();
+
+    _limpiarPausaModal();
+
+    montarModal(document.body, {
+      id: 'modal-pausa',
+      titulo: 'JUEGO EN PAUSA',
+      contenido: `
+        <p id="pausa-contador" class="font-display-hero text-3xl text-primary"></p>
+      `,
+      acciones: [{ texto: 'REANUDAR', variante: 'primary', id: 'btn-pausa-reanudar' }],
+      cerrable: false
+    });
+
+    const pintarContador = () => {
+      const transcurrido = Math.max(0, Math.floor((Date.now() - inicioPausa) / 1000));
+      const el = document.body.querySelector('#pausa-contador');
+      if (el) el.textContent = _formatearTiempo(transcurrido);
+    };
+    pintarContador();
+    intervaloPausa = setInterval(pintarContador, 1000);
+
+    window.addEventListener('hashchange', _onHashChangePausa);
+
+    const btnReanudar = document.body.querySelector('#btn-pausa-reanudar');
+    if (btnReanudar) {
+      btnReanudar.addEventListener('click', async () => {
+        _limpiarPausaModal();
+        try {
+          await app.services.partida.reanudarJuego(
+            partidaId, juegoEnPausa.id, app.session.sessionId, nuevoActionId()
+          );
+          await _renderContenido(container, app, partidaId);
+        } catch (err) { window.alert(`Error: ${err.message}`); }
+      });
+    }
+  } catch (err) {
+    window.alert(`Error: ${err.message}`);
+  }
+}
+
+/* =============================================================
    Acciones
    ============================================================= */
 
@@ -1603,6 +1702,7 @@ function _bindAcciones(container, app, partidaId, juegoActivo) {
       try {
         await app.services.partida.pausarJuego(partidaId, juegoActivo.id, sessionId, nuevoActionId());
         await _renderContenido(container, app, partidaId);
+        await _abrirModalPausa(container, app, partidaId);
       } catch (err) { window.alert(`Error: ${err.message}`); }
     });
   }
@@ -1611,6 +1711,7 @@ function _bindAcciones(container, app, partidaId, juegoActivo) {
   if (btnReanudar) {
     btnReanudar.addEventListener('click', async () => {
       try {
+        _limpiarPausaModal();
         await app.services.partida.reanudarJuego(partidaId, juegoActivo.id, sessionId, nuevoActionId());
         await _renderContenido(container, app, partidaId);
       } catch (err) { window.alert(`Error: ${err.message}`); }
