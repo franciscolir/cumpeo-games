@@ -555,66 +555,79 @@ El público muestra:
 
 ## Concepto
 
-Juego de adivinanza con 4 modos de representación: palabras
-prohibidas, gestos, dibujo y preguntas sí/no.
+Juego de adivinanza con 4 submodos de representación: PALABRAS,
+GESTOS, PREGUNTAS y DIBUJO.
 
 ## Objetivo
 
 El equipo debe adivinar un concepto mientras un compañero lo
-representa según el modo activo.
+representa según el submodo activo.
 
-## Modos
+## Submodos
 
-| # | Modo | Descripción |
-|---|------|-------------|
-| 1 | Palabras prohibidas | La TV muestra el concepto y una lista de palabras prohibidas. El adivinador mira la pantalla. |
-| 2 | Gestos | Igual lógica que el modo 1, pero sin palabras en pantalla. El representante usa gestos. |
-| 3 | Dibujo | Pizarra física. No hay canvas en la app. El representante dibuja. |
-| 4 | Preguntas sí/no | El adivinador está de espaldas y pregunta sí/no. El compañero responde solo sí o no. Sin límite de preguntas. |
+Orden fijo: `PALABRAS → GESTOS → PREGUNTAS → DIBUJO`.
+
+| # | Submodo | Descripción |
+|---|---------|-------------|
+| 1 | PALABRAS | La TV muestra el concepto y una lista de palabras prohibidas. El adivinador mira la pantalla. |
+| 2 | GESTOS | Igual lógica que PALABRAS, pero sin palabras en pantalla. El representante usa gestos. |
+| 3 | PREGUNTAS | El adivinador está de espaldas y pregunta sí/no. El compañero responde solo sí o no. Sin límite de preguntas. |
+| 4 | DIBUJO | Pizarra física. No hay canvas en la app. El representante dibuja. |
 
 ## Set
 
 Obligatorio (`requiere_set: true`).
 
-Un solo set con items etiquetados por modo.
+**4 sets independientes, uno por submodo** (`Set.submodo`).
+El conductor elige el submodo y el set al inicio de cada turno.
 
-### Estructura del item
+### Estructura del item por submodo
+
+**PALABRAS** (con prohibidas):
 
 ```json
 {
-  "modo": 1,
   "concepto": "PERRO",
   "prohibidas": ["mascota", "guau", "mejor amigo", "firulais"],
   "dificultad": 1
 }
 ```
 
--   `modo`: 1 | 2 | 3 | 4.
+**GESTOS / PREGUNTAS / DIBUJO** (sin prohibidas):
+
+```json
+{
+  "concepto": "NADAR",
+  "dificultad": 1
+}
+```
+
 -   `concepto`: palabra o frase a adivinar.
--   `prohibidas`: array de palabras no permitidas. Solo obligatorio en
-    modo 1. En modos 2, 3 y 4 puede estar vacío u omitirse.
+-   `prohibidas`: array de palabras no permitidas. **Solo en PALABRAS**
+    (array no vacío). En GESTOS/PREGUNTAS/DIBUJO debe estar ausente o vacío.
 -   `dificultad`: 1 | 2 | 3 (opcional).
 
 ### Validación del set
 
--   Cada modo debe tener al menos N items, donde N = rondas ×
-    palabras_por_modo.
--   Modo 1: `prohibidas` debe ser array no vacío.
--   Modos 2, 3 y 4: `prohibidas` puede estar vacío u omitirse.
+-   `items.length >= palabras_por_turno` (default 1).
+-   PALABRAS: `prohibidas` debe ser array no vacío.
+-   GESTOS / PREGUNTAS / DIBUJO: `prohibidas` ausente o vacío.
+-   El submodo se pasa como 3er parámetro a `validarContenidoSet`.
+-   **Los sets viejos con `item.modo` no son compatibles. Se recomienda recrearlos.**
 
-## Turnos y orden de modos
+## Turnos
 
--   Un turno comprende los 4 modos en orden fijo: 1 → 2 → 3 → 4.
--   Los equipos alternan turnos.
--   Cada turno completo (4 modos) equivale a 1 ronda.
--   Rondas por partida: configurable.
--   El adivinador es el mismo en los 4 modos de un turno. El sistema
-    no identifica quién adivina.
+-   **1 turno = 1 submodo = 1 set.** El conductor elige submodo y set al
+    inicio de cada turno.
+-   **1 ronda = 4 submodos × 2 equipos = 8 turnos.**
+-   El submodo se avanza solo cuando **ambos** equipos jugaron ese submodo.
+-   Orden de submodos fijo: PALABRAS → GESTOS → PREGUNTAS → DIBUJO.
+-   Equipos alternan: Eq1 juega un submodo, luego Eq2 el **mismo** submodo.
 
 ## Timer
 
 -   Un solo `segundos_por_modo` configurable.
--   `palabras_por_modo`: configurable, default 1.
+-   `palabras_por_turno`: configurable, default 1.
 
 ## Validación
 
@@ -631,17 +644,17 @@ Un solo set con items etiquetados por modo.
 
 ## Fases
 
-`INICIO_RONDA`, `SELECCIONANDO_MODO`, `MOSTRANDO_PALABRA`,
-`ADIVINANDO`, `ESPERA_VALIDACION`, `CAMBIO_MODO`, `FIN_DE_RONDA`,
-`FIN_DE_JUEGO`.
+`INICIO_RONDA`, `SELECCIONANDO_SUBMODO`, `SELECCIONANDO_SET`,
+`MOSTRANDO_PALABRA`, `ADIVINANDO`, `ESPERA_VALIDACION`,
+`CAMBIO_TURNO`, `FIN_DE_RONDA`, `FIN_DE_JUEGO`.
 
 ## Público
 
 El público puede ver:
 
--   el modo activo;
--   el concepto (según el modo);
--   las palabras prohibidas (modo 1);
+-   el submodo activo;
+-   el concepto (según el submodo);
+-   las palabras prohibidas (PALABRAS);
 -   el progreso del turno;
 -   la puntuación.
 

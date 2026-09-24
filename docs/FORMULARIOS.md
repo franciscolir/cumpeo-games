@@ -254,11 +254,14 @@ El conductor elige la canción a discreción; el reproductor es externo.
 
 ### 5.4 Pictionary
 
-**Estado:** 🔜 7.7 (4 editores + config de bancos).
+**Estado:** 🔜 7.7 (4 editores + config de bancos). GameDefinition con
+submodos en ✅ 7.7b.
 
 **Estructura:** 4 sets (uno por submodo) + 1 configuración de bancos.
 
 **Submodo:** `'PALABRAS' | 'GESTOS' | 'PREGUNTAS' | 'DIBUJO'` (en `Set.submodo`).
+
+**4 editores** (uno por submodo) + **1 editor de bancos** (config del juego).
 
 #### 5.4.1 Pictionary — Palabras
 
@@ -683,6 +686,7 @@ juego son pocos).
 | 7.6 | QPEP | ✅ | Rediseño + deuda #108 |
 | 7.6a | Migración config + submodo | ✅ | Cerrada #113 y #114 |
 | 7.7a | RPC con submodo | ✅ | Cerrada #120 |
+| 7.7b | GameDefinition con submodos | ✅ | — |
 | 7.7 | Pictionary | 🔜 | 4 editores + config bancos + D4 + D5 |
 | 7.8 | Historia Enredada | 🔜 | Editor + config colores + D6 |
 | N/A | Canción Incompleta | Sin editor | — |
@@ -707,7 +711,7 @@ juego son pocos).
 | #112                      | ~~Anti-Trivia: agregar `dificultad` individual al item y al editor.~~ **Cerrada en 7.3a.** | ~~Media~~ Cerrada |
 | #113                      | ~~Agregar `Juego.configuracion` (IndexedDB v6 + Supabase 0017).~~ **Cerrada en 7.6a.** | ~~Alta~~ Cerrada |
 | #114                      | ~~Agregar `Set.submodo` (IndexedDB v6 + Supabase 0017).~~ **Cerrada en 7.6a.** | ~~Alta~~ Cerrada |
-| #115                      | Pictionary: 4 editores + 1 editor de bancos.                      | Alta  |
+| #115                      | Pictionary: 4 editores + 1 editor de bancos. **En curso (7.7b+).** | Alta  |
 | #116                      | Historia Enredada: editor de historias + editor de colores.       | Alta  |
 | #117                      | ~~Trivia: rediseño de editor + checkboxes + fix deuda #108.~~ **Cerrada en 7.5** (radios, no checkboxes). | ~~Alta~~ Cerrada |
 | #118                      | ~~QPEP: simplificación de editor + fix deuda #108.~~ **Cerrada en 7.6** (rediseño + `[{id}]`). | ~~Media~~ Cerrada |
