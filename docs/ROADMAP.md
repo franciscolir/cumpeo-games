@@ -228,7 +228,7 @@ de implementarse.
 
 ---
 
-### Bloque 7 — Formularios de sets por juego 🔄 EN PROGRESO (16/18)
+### Bloque 7 — Formularios de sets por juego 🔄 EN PROGRESO (17/19)
 
 **Objetivo:** Crear formularios de sets dedicados por juego y rediseñar el rosco.
 
@@ -250,6 +250,7 @@ de implementarse.
 | 7.5 | Trivia: editor (rediseño + deuda #108) | ✅ APROBADO | b31965d |
 | 7.6 | QPEP: editor simplificado | ✅ APROBADO | 185d85c |
 | 7.6a | Config juego + submodo set (deudas #113/#114) | ✅ APROBADO | 7077163 |
+| 7.7a | RPC crear_set_completo con submodo (deuda #120) | ✅ APROBADO | 0d31604 |
 | 7.7 | Pictionary: 4 editores + 2 bancos | ⬜ PENDIENTE | — |
 | 7.8 | Historia Enredada: historias + colores | ⬜ PENDIENTE | — |
 
@@ -303,6 +304,7 @@ de implementarse.
 | 7.14 | 2026-09-24 | 7.5: rediseño del editor de Trivia + fix deuda #108. 62 tests nuevos, 2171 unit. |
 | 7.15 | 2026-09-24 | 7.6: rediseño del editor de QPEP + fix deuda #108. 42 tests nuevos, 2213 unit. |
 | 7.16 | 2026-09-24 | 7.6a: Juego.configuracion + Set.submodo (deudas #113/#114). Migración 0017. |
+| 7.17 | 2026-09-24 | 7.7a: RPC crear_set_completo con submodo (deuda #120). Migración 0018. |
 ---
 
 ## 5. Convenciones

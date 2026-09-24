@@ -682,6 +682,7 @@ juego son pocos).
 | 7.5 | Trivia | ✅ | Rediseño + deuda #108 |
 | 7.6 | QPEP | ✅ | Rediseño + deuda #108 |
 | 7.6a | Migración config + submodo | ✅ | Cerrada #113 y #114 |
+| 7.7a | RPC con submodo | ✅ | Cerrada #120 |
 | 7.7 | Pictionary | 🔜 | 4 editores + config bancos + D4 + D5 |
 | 7.8 | Historia Enredada | 🔜 | Editor + config colores + D6 |
 | N/A | Canción Incompleta | Sin editor | — |
@@ -710,6 +711,7 @@ juego son pocos).
 | #116                      | Historia Enredada: editor de historias + editor de colores.       | Alta  |
 | #117                      | ~~Trivia: rediseño de editor + checkboxes + fix deuda #108.~~ **Cerrada en 7.5** (radios, no checkboxes). | ~~Alta~~ Cerrada |
 | #118                      | ~~QPEP: simplificación de editor + fix deuda #108.~~ **Cerrada en 7.6** (rediseño + `[{id}]`). | ~~Media~~ Cerrada |
+| #120                      | ~~La RPC crear_set_completo no acepta submodo.~~ **Cerrada en 7.7a** (migración 0018). | ~~Media~~ Cerrada |
 
 **Deuda #108:** `trivia/editor.js` corregido en 7.5 y
 `que-piensa-el-publico/editor.js` corregido en 7.6
