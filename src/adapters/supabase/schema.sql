@@ -201,7 +201,7 @@ CREATE TABLE juego_ejecutados (
   estado text NOT NULL CHECK (estado IN ('PENDIENTE', 'EN_CURSO', 'PAUSADO', 'FINALIZADO', 'NO_JUGADO')),
   state_version integer NOT NULL DEFAULT 1,
   timer_actual integer,
-  paused_at timestamptz,
+  pausado_at timestamptz,
   estado_juego jsonb NOT NULL DEFAULT '{}'::jsonb,
   resultado jsonb,
   finish_reason text,

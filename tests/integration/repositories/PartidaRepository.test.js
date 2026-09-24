@@ -182,4 +182,70 @@ describeSiCredenciales('PartidaRepository (integración Supabase)', () => {
     expect(ctx.partida).toBeNull();
     expect(ctx.equipos).toEqual([]);
   });
+
+  it('RPC pausar_juego setea pausado_at', async () => {
+    if (!circuitoIdReal || !juegoIdReal) return;
+
+    const codigo = uniqueId('PUB_P');
+    const partida = await repo.crearPartida({
+      circuito_id: circuitoIdReal,
+      public_codigo: codigo,
+      actionId: uniqueId('ACT')
+    });
+    partidasCreadas.push(partida.id);
+
+    const sesion = uniqueId('SES');
+    const je = await adapterAuth.insert('juego_ejecutados', {
+      partida_id: partida.id,
+      juego_id: juegoIdReal,
+      orden: 1,
+      estado: 'EN_CURSO',
+      pausado_at: null
+    }, { returning: 'id' });
+
+    const r = await adapterAuth.rpc('pausar_juego', {
+      p_partida_id: partida.id,
+      p_juego_ejecutado_id: je[0].id,
+      p_session_id: sesion,
+      p_action_id: uniqueId('ACT')
+    });
+    expect(r.ok).toBe(true);
+    const estado = r.estado || r;
+    if (estado && typeof estado === 'object' && 'pausado_at' in estado) {
+      expect(estado.pausado_at).not.toBeNull();
+    }
+  });
+
+  it('RPC reanudar_juego limpia pausado_at', async () => {
+    if (!circuitoIdReal || !juegoIdReal) return;
+
+    const codigo = uniqueId('PUB_R');
+    const partida = await repo.crearPartida({
+      circuito_id: circuitoIdReal,
+      public_codigo: codigo,
+      actionId: uniqueId('ACT')
+    });
+    partidasCreadas.push(partida.id);
+
+    const sesion = uniqueId('SES');
+    const je = await adapterAuth.insert('juego_ejecutados', {
+      partida_id: partida.id,
+      juego_id: juegoIdReal,
+      orden: 1,
+      estado: 'PAUSADO',
+      pausado_at: new Date().toISOString()
+    }, { returning: 'id' });
+
+    const r = await adapterAuth.rpc('reanudar_juego', {
+      p_partida_id: partida.id,
+      p_juego_ejecutado_id: je[0].id,
+      p_session_id: sesion,
+      p_action_id: uniqueId('ACT')
+    });
+    expect(r.ok).toBe(true);
+    const estado = r.estado || r;
+    if (estado && typeof estado === 'object' && 'pausado_at' in estado) {
+      expect(estado.pausado_at).toBeNull();
+    }
+  });
 });

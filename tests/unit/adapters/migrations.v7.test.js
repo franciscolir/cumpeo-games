@@ -13,18 +13,21 @@ function borrarBase() {
   });
 }
 
-function crearDBv5() {
+function crearDBv6() {
   return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, 5);
+    const req = indexedDB.open(DB_NAME, 6);
     req.onupgradeneeded = (event) => {
       const db = event.target.result;
       for (const def of STORES) {
-        const store = db.createObjectStore(def.nombre, {
-          keyPath: def.keyPath,
-          autoIncrement: false
-        });
-        for (const idx of def.indexes) {
-          store.createIndex(idx.name, idx.keyPath, { unique: idx.unique });
+        if (def.nombre === 'ajustes_globales') continue;
+        if (!db.objectStoreNames.contains(def.nombre)) {
+          const store = db.createObjectStore(def.nombre, {
+            keyPath: def.keyPath,
+            autoIncrement: false
+          });
+          for (const idx of def.indexes) {
+            store.createIndex(idx.name, idx.keyPath, { unique: idx.unique });
+          }
         }
       }
     };
@@ -33,7 +36,7 @@ function crearDBv5() {
   });
 }
 
-function abrirDBv6() {
+function abrirDBv7() {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
     req.onupgradeneeded = (event) => {
@@ -49,7 +52,7 @@ function abrirDBv6() {
   });
 }
 
-describe('Migracion V6 — configuracion + submodo', () => {
+describe('Migracion V7 — ajustes_globales', () => {
   let db;
 
   beforeEach(async () => {
@@ -61,32 +64,39 @@ describe('Migracion V6 — configuracion + submodo', () => {
     await borrarBase();
   });
 
-  it('DB_VERSION del schema es 7 (incluye v6 y v7)', () => {
+  it('DB_VERSION del schema es 7', () => {
     expect(DB_VERSION).toBe(7);
   });
 
-  it('migra de v5 a v6 sin romper (no-op)', async () => {
-    db = await crearDBv5();
+  it('migra de v6 a v7 y crea el store ajustes_globales', async () => {
+    db = await crearDBv6();
     db.close();
 
-    db = await abrirDBv6();
+    db = await abrirDBv7();
 
     expect(db.version).toBe(7);
+    expect(db.objectStoreNames.contains('ajustes_globales')).toBe(true);
     expect(db.objectStoreNames.contains('juegos')).toBe(true);
-    expect(db.objectStoreNames.contains('sets')).toBe(true);
     expect(db.objectStoreNames.contains('respuestas_encuesta')).toBe(true);
+  });
+
+  it('migracionV7 es idempotente (no falla si el store ya existe)', async () => {
+    db = await crearDBv6();
+    db.close();
+
+    db = await abrirDBv7();
+    db.close();
+
+    db = await abrirDBv7();
+
+    expect(db.version).toBe(7);
     expect(db.objectStoreNames.contains('ajustes_globales')).toBe(true);
   });
 
-  it('es idempotente: aplicar v6 dos veces no rompe', async () => {
-    db = await crearDBv5();
-    db.close();
-
-    db = await abrirDBv6();
-    db.close();
-
-    db = await abrirDBv6();
-
-    expect(db.version).toBe(7);
+  it('el store ajustes_globales usa keyPath id sin índices', async () => {
+    const def = STORES.find((s) => s.nombre === 'ajustes_globales');
+    expect(def).toBeDefined();
+    expect(def.keyPath).toBe('id');
+    expect(def.indexes).toEqual([]);
   });
 });

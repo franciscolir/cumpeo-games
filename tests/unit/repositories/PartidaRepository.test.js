@@ -535,21 +535,41 @@ describe('PartidaRepository', () => {
      ============================================================= */
 
   describe('pausar / reanudar', () => {
-    it('pausar pone paused_at', async () => {
+    it('pausar pone pausado_at', async () => {
       const { partida, juegos } = await escenarioPartidaEnCurso();
       await repo.iniciarJuego(partida.id, juegos[0].id, SESION, nuevoActionId());
       const r = await repo.pausarJuego(partida.id, juegos[0].id, SESION, nuevoActionId());
       expect(r.estado).toBe('PAUSADO');
-      expect(r.paused_at).not.toBeNull();
+      expect(r.pausado_at).not.toBeNull();
     });
 
-    it('reanudar limpia paused_at', async () => {
+    it('reanudar limpia pausado_at', async () => {
       const { partida, juegos } = await escenarioPartidaEnCurso();
       await repo.iniciarJuego(partida.id, juegos[0].id, SESION, nuevoActionId());
       await repo.pausarJuego(partida.id, juegos[0].id, SESION, nuevoActionId());
       const r = await repo.reanudarJuego(partida.id, juegos[0].id, SESION, nuevoActionId());
       expect(r.estado).toBe('EN_CURSO');
-      expect(r.paused_at).toBeNull();
+      expect(r.pausado_at).toBeNull();
+    });
+
+    it('pausar setea pausado_at con un timestamp', async () => {
+      const { partida, juegos } = await escenarioPartidaEnCurso();
+      await repo.iniciarJuego(partida.id, juegos[0].id, SESION, nuevoActionId());
+      const antes = Date.now();
+      const r = await repo.pausarJuego(partida.id, juegos[0].id, SESION, nuevoActionId());
+      expect(typeof r.pausado_at).toBe('string');
+      expect(Number.isNaN(Date.parse(r.pausado_at))).toBe(false);
+      expect(Date.parse(r.pausado_at)).toBeGreaterThanOrEqual(antes - 1000);
+    });
+
+    it('reanudar limpia pausado_at a null', async () => {
+      const { partida, juegos } = await escenarioPartidaEnCurso();
+      await repo.iniciarJuego(partida.id, juegos[0].id, SESION, nuevoActionId());
+      const pausado = await repo.pausarJuego(partida.id, juegos[0].id, SESION, nuevoActionId());
+      expect(pausado.pausado_at).not.toBeNull();
+      const r = await repo.reanudarJuego(partida.id, juegos[0].id, SESION, nuevoActionId());
+      expect(r.estado).toBe('EN_CURSO');
+      expect(r.pausado_at).toBeNull();
     });
 
     it('pausar rechaza si la Partida no está EN_CURSO', async () => {
@@ -949,7 +969,7 @@ describe('PartidaRepository', () => {
       );
 
       expect(pausado.estado).toBe('FINALIZADO');
-      expect(pausado.paused_at).toBeNull();
+      expect(pausado.pausado_at).toBeNull();
       expect(pausado.resultado).not.toBeNull();
       expect(pausado.finish_reason).toBe('PARTIDA_EXPIRADA');
     });

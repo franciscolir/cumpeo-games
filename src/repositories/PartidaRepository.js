@@ -445,7 +445,7 @@ export class PartidaRepository extends BaseRepository {
               estado: 'PENDIENTE',
               state_version: 1,
               timer_actual: null,
-              paused_at: null,
+              pausado_at: null,
               estado_juego: {},
               resultado: null,
               finish_reason: null,
@@ -832,7 +832,7 @@ export class PartidaRepository extends BaseRepository {
       partidaId, juegoEjecutadoId, sessionId, actionId,
       TIPO_ACCION.PAUSAR_JUEGO,
       'EN_CURSO', 'PAUSADO',
-      (je, ts) => ({ ...je, paused_at: ts })
+      (je, ts) => ({ ...je, pausado_at: ts })
     );
   }
 
@@ -854,7 +854,7 @@ export class PartidaRepository extends BaseRepository {
       partidaId, juegoEjecutadoId, sessionId, actionId,
       TIPO_ACCION.REANUDAR_JUEGO,
       'PAUSADO', 'EN_CURSO',
-      (je) => ({ ...je, paused_at: null })
+      (je) => ({ ...je, pausado_at: null })
     );
   }
 
@@ -1059,7 +1059,7 @@ export class PartidaRepository extends BaseRepository {
               },
               finish_reason: finishReason ?? null,
               finished_at: ts,
-              paused_at: null,
+              pausado_at: null,
               state_version: je.state_version + 1
             };
 
@@ -1343,7 +1343,7 @@ export class PartidaRepository extends BaseRepository {
                       ? 'PARTIDA_DESCARTADA'
                       : 'PARTIDA_FINALIZADA',
                   finished_at: ahoraActual,
-                  paused_at: null,
+                  pausado_at: null,
                   state_version: juego.state_version + 1
                 };
 
@@ -1359,7 +1359,7 @@ export class PartidaRepository extends BaseRepository {
                       ? 'PARTIDA_DESCARTADA'
                       : 'PARTIDA_FINALIZADA',
                   finished_at: ahoraActual,
-                  paused_at: null,
+                  pausado_at: null,
                   state_version: juego.state_version + 1
                 };
 
@@ -1421,7 +1421,7 @@ export class PartidaRepository extends BaseRepository {
             resultado: juego.resultado ?? { puntos_equipo_1: 0, puntos_equipo_2: 0 },
             finish_reason: 'PARTIDA_EXPIRADA',
             finished_at: ahoraActual,
-            paused_at: null,
+            pausado_at: null,
             state_version: juego.state_version + 1
           };
           await this.adapter.update(STORE_JUEGOS_EJECUTADOS, {
@@ -1435,7 +1435,7 @@ export class PartidaRepository extends BaseRepository {
             resultado: null,
             finish_reason: 'PARTIDA_EXPIRADA',
             finished_at: ahoraActual,
-            paused_at: null,
+            pausado_at: null,
             state_version: juego.state_version + 1
           };
           await this.adapter.update(STORE_JUEGOS_EJECUTADOS, {
@@ -1533,7 +1533,7 @@ export class PartidaRepository extends BaseRepository {
                   },
                   finish_reason: 'PARTIDA_EXPIRADA',
                   finished_at: ahoraActual,
-                  paused_at: null,
+                  pausado_at: null,
                   state_version:
                     juego.state_version + 1
                 };
@@ -1549,7 +1549,7 @@ export class PartidaRepository extends BaseRepository {
                   resultado: null,
                   finish_reason: 'PARTIDA_EXPIRADA',
                   finished_at: ahoraActual,
-                  paused_at: null,
+                  pausado_at: null,
                   state_version:
                     juego.state_version + 1
                 };

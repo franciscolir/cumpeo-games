@@ -8,6 +8,7 @@ import {
   CircuitoService,
   SetService,
   JuegoService,
+  AjustesGlobalesService,
   GameDefinitionRegistry
 } from '../services/index.js';
 
@@ -44,6 +45,7 @@ export async function bootstrap(adapter, { usuarioId = null } = {}) {
     circuito: new CircuitoService(adapter),
     set: new SetService(adapter),
     juego: new JuegoService(adapter),
+    ajustes: new AjustesGlobalesService(adapter),
     registry: new GameDefinitionRegistry()
   };
 

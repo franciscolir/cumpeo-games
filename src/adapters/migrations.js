@@ -12,6 +12,7 @@ export function aplicarMigraciones(db, oldVersion, upgradeTx) {
   if (oldVersion < 4) migracionV4(db, upgradeTx);
   if (oldVersion < 5) migracionV5(db);
   if (oldVersion < 6) migracionV6(db);
+  if (oldVersion < 7) migracionV7(db);
 }
 
 function migracionV1(db) {
@@ -143,4 +144,20 @@ function migracionV5(db) {
 function migracionV6(db) {
   // No-op: los nuevos campos se agregan al crear registros.
   // Los existentes se tratan como {} y null en los repos.
+}
+
+/* =============================================================
+   V7 — Ajustes globales.
+   Crea el store `ajustes_globales` (fila singleton).
+   ============================================================= */
+function migracionV7(db) {
+  if (db.objectStoreNames.contains('ajustes_globales')) return;
+  const definicion = STORES.find((s) => s.nombre === 'ajustes_globales');
+  const store = db.createObjectStore(definicion.nombre, {
+    keyPath: definicion.keyPath,
+    autoIncrement: false
+  });
+  for (const idx of definicion.indexes) {
+    store.createIndex(idx.name, idx.keyPath, { unique: idx.unique });
+  }
 }
