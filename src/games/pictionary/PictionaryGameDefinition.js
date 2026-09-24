@@ -3,10 +3,17 @@
 
    Implementa el contrato GameDefinition (ver GameDefinitionRegistry).
 
-   Pictionary es un juego de adivinanza con 4 modos de representación:
-   palabras prohibidas, gestos, dibujo y preguntas sí/no.
-   Orden fijo 1→2→3→4, alternando equipos.
+   Pictionary usa 4 submodos de representación en orden fijo:
+   PALABRAS → GESTOS → PREGUNTAS → DIBUJO.
+   Cada turno = 1 submodo = 1 set. 1 ronda = 4 submodos × 2 equipos.
+
    ============================================================= */
+
+// =============================================================
+// DEPRECATED — shims de compatibilidad con la UI y el shell viejos.
+// Se eliminan en 7.7c (rewrite de UI + shell).
+// NO usar en código nuevo. Usar la API de submodos.
+// =============================================================
 
 import { ValidacionError } from '../../repositories/errors.js';
 
@@ -14,15 +21,19 @@ import { ValidacionError } from '../../repositories/errors.js';
    Constantes
    ============================================================= */
 
+export const SUBMODOS = Object.freeze(['PALABRAS', 'GESTOS', 'PREGUNTAS', 'DIBUJO']);
+
+/** @deprecated Usar SUBMODOS. Se elimina en 7.7c. */
 export const MODOS = Object.freeze([1, 2, 3, 4]);
 
 export const FASES = Object.freeze([
   'INICIO_RONDA',
-  'SELECCIONANDO_MODO',
+  'SELECCIONANDO_SUBMODO',
+  'SELECCIONANDO_SET',
   'MOSTRANDO_PALABRA',
   'ADIVINANDO',
   'ESPERA_VALIDACION',
-  'CAMBIO_MODO',
+  'CAMBIO_TURNO',
   'FIN_DE_RONDA',
   'FIN_DE_JUEGO'
 ]);
@@ -32,6 +43,22 @@ export const ESTADO_TURNO = Object.freeze({
   CORRECTO: 'correcto',
   INCORRECTO: 'incorrecto',
   PASADO: 'pasado'
+});
+
+/** @deprecated Mapeo legacy item.modo / estado.modo_actual. Se elimina en 7.7c. */
+const MODO_LEGACY_POR_SUBMODO = Object.freeze({
+  PALABRAS: 1,
+  GESTOS: 2,
+  DIBUJO: 3,
+  PREGUNTAS: 4
+});
+
+/** @deprecated Mapeo legacy item.modo → submodo. Se elimina en 7.7c. */
+const SUBMODO_POR_MODO_LEGACY = Object.freeze({
+  1: 'PALABRAS',
+  2: 'GESTOS',
+  3: 'DIBUJO',
+  4: 'PREGUNTAS'
 });
 
 /* =============================================================
@@ -46,13 +73,19 @@ function esEnteroMayorQue(valor, minimo) {
   return Number.isInteger(valor) && valor >= minimo;
 }
 
-function shuffleArray(arr) {
-  const copy = [...arr];
-  for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
-  }
-  return copy;
+function indiceSubmodo(submodo) {
+  return SUBMODOS.indexOf(submodo);
+}
+
+function limpiarTurno(estado) {
+  return {
+    ...estado,
+    set_actual: null,
+    palabra_actual: null,
+    prohibidas_actuales: [],
+    palabra_actual_index: 0,
+    palabras_del_turno: 0
+  };
 }
 
 /* =============================================================
@@ -70,7 +103,7 @@ export const PictionaryGameDefinition = {
 
   defaultConfig: Object.freeze({
     rondas: 1,
-    palabras_por_modo: 1,
+    palabras_por_turno: 1,
     segundos_por_modo: 60,
     puntos_por_acierto: 10,
     penalizacion_por_error: 0,
@@ -93,8 +126,8 @@ export const PictionaryGameDefinition = {
       throw new ValidacionError('rondas debe ser un entero >= 1');
     }
 
-    if (!esEnteroMayorQue(config.palabras_por_modo, 1)) {
-      throw new ValidacionError('palabras_por_modo debe ser un entero >= 1');
+    if (!esEnteroMayorQue(config.palabras_por_turno, 1)) {
+      throw new ValidacionError('palabras_por_turno debe ser un entero >= 1');
     }
 
     if (!esEnteroMayorQue(config.segundos_por_modo, 1)) {
@@ -127,14 +160,26 @@ export const PictionaryGameDefinition = {
   /**
    * Valida que un set tenga la estructura correcta para Pictionary.
    * @param {object} contenido - { items: [...] }
-   * @param {object} config - configuración con rondas y palabras_por_modo
+   * @param {object} config - configuración con palabras_por_turno
+   * @param {string} [submodo] - 'PALABRAS' | 'GESTOS' | 'PREGUNTAS' | 'DIBUJO'
+   *   DEPRECATED: si es undefined, se deriva del primer item (item.modo).
+   *   Se elimina el fallback en 7.7c.
    * @returns {{ ok: boolean, errores: string[] }}
    */
-  validarContenidoSet(contenido, config) {
+  validarContenidoSet(contenido, config, submodo) {
     const errores = [];
-    const rondas = config?.rondas || 1;
-    const palabrasPorModo = config?.palabras_por_modo || 1;
-    const itemsRequeridos = rondas * palabrasPorModo;
+
+    let sub = submodo;
+    if (sub === undefined) {
+      const primer = contenido?.items?.[0];
+      if (primer && typeof primer === 'object' && primer.modo !== undefined) {
+        sub = SUBMODO_POR_MODO_LEGACY[primer.modo];
+      }
+    }
+
+    if (!SUBMODOS.includes(sub)) {
+      return { ok: false, errores: ['submodo inválido'] };
+    }
 
     if (!contenido || typeof contenido !== 'object') {
       return { ok: false, errores: ['El contenido debe ser un objeto'] };
@@ -148,7 +193,13 @@ export const PictionaryGameDefinition = {
       return { ok: false, errores: ['items no puede estar vacío'] };
     }
 
-    const itemsPorModo = { 1: [], 2: [], 3: [], 4: [] };
+    const palabrasPorTurno = config?.palabras_por_turno || 1;
+
+    if (contenido.items.length < palabrasPorTurno) {
+      errores.push(
+        `items tiene ${contenido.items.length}, se necesitan al menos ${palabrasPorTurno}`
+      );
+    }
 
     for (let i = 0; i < contenido.items.length; i++) {
       const item = contenido.items[i];
@@ -158,34 +209,30 @@ export const PictionaryGameDefinition = {
         continue;
       }
 
-      if (!MODOS.includes(item.modo)) {
-        errores.push(`items[${i}].modo debe ser 1, 2, 3 o 4`);
-        continue;
-      }
-
       if (typeof item.concepto !== 'string' || item.concepto.trim() === '') {
         errores.push(`items[${i}].concepto debe ser un string no vacío`);
         continue;
       }
 
-      if (item.modo === 1) {
-        if (!Array.isArray(item.prohibidas) || item.prohibidas.length === 0) {
-          errores.push(`items[${i}].prohibidas debe ser un array no vacío para modo 1`);
+      const tieneProhibidas =
+        Array.isArray(item.prohibidas) && item.prohibidas.length > 0;
+
+      if (sub === 'PALABRAS') {
+        if (!tieneProhibidas) {
+          errores.push(`items[${i}].prohibidas debe ser un array no vacío`);
+          continue;
+        }
+      } else {
+        if (item.prohibidas !== undefined && item.prohibidas.length !== 0) {
+          errores.push(`items[${i}].prohibidas debe estar ausente o vacío para ${sub}`);
           continue;
         }
       }
 
-      itemsPorModo[item.modo].push(item);
-    }
-
-    for (const modo of MODOS) {
-      const items = itemsPorModo[modo];
-      if (items.length === 0) {
-        errores.push(`Modo ${modo} no tiene items`);
-      } else if (items.length < itemsRequeridos) {
-        errores.push(
-          `Modo ${modo} tiene ${items.length} item(s), se necesitan al menos ${itemsRequeridos}`
-        );
+      if (item.dificultad !== undefined) {
+        if (!Number.isInteger(item.dificultad) || ![1, 2, 3].includes(item.dificultad)) {
+          errores.push(`items[${i}].dificultad debe ser un entero 1, 2 o 3`);
+        }
       }
     }
 
@@ -203,10 +250,12 @@ export const PictionaryGameDefinition = {
    */
   estadoInicial(config) {
     const cfg = config || this.defaultConfig;
+    const submodo = 'PALABRAS';
     return {
       ronda_actual: 1,
       total_rondas: cfg.rondas || 1,
-      modo_actual: 1,
+      submodo_actual: submodo,
+      set_actual: null,
       equipo_actual: 1,
       palabra_actual_index: 0,
       palabras_del_turno: 0,
@@ -219,54 +268,102 @@ export const PictionaryGameDefinition = {
       tiempo_restante_seg: cfg.segundos_por_modo || 60,
       turno_activo: false,
       palabra_actual: null,
-      prohibidas_actuales: []
+      prohibidas_actuales: [],
+      // DEPRECATED — compatibilidad UI/shell viejos (7.7c).
+      modo_actual: MODO_LEGACY_POR_SUBMODO[submodo]
     };
   },
 
   /* =============================================================
-     Reducers puros
+     Reducers puros — API de submodos
      ============================================================= */
 
   /**
-   * Selecciona el modo actual. INICIO_RONDA → MOSTRANDO_PALABRA.
+   * SELECCIONANDO_SUBMODO → SELECCIONANDO_SET.
    * @param {object} estado
+   * @param {string} submodo
    * @returns {object} Nuevo estado
+   * @throws {ValidacionError}
    */
-  seleccionarModo(estado) {
-    if (estado.fase !== 'INICIO_RONDA') return { ...estado };
+  seleccionarSubmodo(estado, submodo) {
+    if (estado.fase !== 'SELECCIONANDO_SUBMODO') return { ...estado };
+    if (!SUBMODOS.includes(submodo)) {
+      throw new ValidacionError('submodo inválido');
+    }
     return {
       ...estado,
+      submodo_actual: submodo,
+      modo_actual: MODO_LEGACY_POR_SUBMODO[submodo],
+      fase: 'SELECCIONANDO_SET'
+    };
+  },
+
+  /**
+   * SELECCIONANDO_SET → MOSTRANDO_PALABRA.
+   * @param {object} estado
+   * @param {object} set - { submodo, items: [...] }
+   * @returns {object} Nuevo estado
+   * @throws {ValidacionError}
+   */
+  seleccionarSet(estado, set) {
+    if (estado.fase !== 'SELECCIONANDO_SET') return { ...estado };
+    if (!set || typeof set !== 'object' || !Array.isArray(set.items) || set.items.length === 0) {
+      throw new ValidacionError('set debe ser un objeto con items no vacío');
+    }
+    if (set.submodo !== estado.submodo_actual) {
+      throw new ValidacionError('set.submodo debe coincidir con submodo_actual');
+    }
+    return {
+      ...estado,
+      set_actual: set,
+      palabra_actual_index: 0,
+      palabras_del_turno: 0,
       fase: 'MOSTRANDO_PALABRA'
     };
   },
 
   /**
-   * Muestra una palabra aleatoria del modo actual del set.
+   * MOSTRANDO_PALABRA — carga palabra_actual desde set_actual.
+   * DEPRECATED: si viene contenidoSet, se usa como set_actual
+   * (con filtro legacy por modo_actual si el set es mixto).
+   * Se elimina el 2do argumento en 7.7c.
    * @param {object} estado
-   * @param {object} contenidoSet - { items: [...] }
-   * @returns {object} Nuevo estado con palabra_actual y prohibidas_actuales
+   * @param {object} [contenidoSet]
+   * @returns {object} Nuevo estado
    */
   mostrarPalabra(estado, contenidoSet) {
     if (estado.fase !== 'MOSTRANDO_PALABRA') return { ...estado };
 
-    const items = contenidoSet?.items || [];
-    const modoActual = estado.modo_actual;
+    let set = estado.set_actual;
+
+    if (contenidoSet) {
+      const items = Array.isArray(contenidoSet.items) ? contenidoSet.items : [];
+      const modoLegacy = estado.modo_actual;
+      let itemsSet = items;
+      if (modoLegacy !== undefined && modoLegacy !== null) {
+        const filtrados = items.filter((item) => item && item.modo === modoLegacy);
+        if (filtrados.length > 0) itemsSet = filtrados;
+      }
+      set = { ...contenidoSet, items: itemsSet };
+    }
+
+    if (!set || !Array.isArray(set.items) || set.items.length === 0) {
+      return { ...estado };
+    }
+
     const index = estado.palabra_actual_index || 0;
-
-    const itemsDelModo = items.filter((item) => item.modo === modoActual);
-    if (itemsDelModo.length === 0) return { ...estado };
-
-    const palabra = itemsDelModo[index % itemsDelModo.length];
+    const item = set.items[index % set.items.length];
 
     return {
       ...estado,
-      palabra_actual: palabra,
-      prohibidas_actuales: palabra?.prohibidas || []
+      set_actual: set,
+      palabra_actual: item,
+      prohibidas_actuales: item?.prohibidas || []
     };
   },
 
   /**
-   * Inicia el tiempo. MOSTRANDO_PALABRA → ADIVINANDO.
+   * MOSTRANDO_PALABRA → ADIVINANDO.
    * @param {object} estado
    * @returns {object} Nuevo estado
    */
@@ -281,7 +378,7 @@ export const PictionaryGameDefinition = {
   },
 
   /**
-   * Detiene el tiempo y pasa a espera de validación.
+   * ADIVINANDO → ESPERA_VALIDACION.
    * @param {object} estado
    * @param {number} segundosRestantes
    * @returns {object}
@@ -299,7 +396,7 @@ export const PictionaryGameDefinition = {
   },
 
   /**
-   * Aplica acierto. Suma puntos y avanza.
+   * ESPERA_VALIDACION — suma puntos por acierto y avanza.
    * @param {object} estado
    * @param {object} config
    * @returns {object} Nuevo estado
@@ -316,11 +413,11 @@ export const PictionaryGameDefinition = {
       [keyPuntos]: (estado[keyPuntos] || 0) + puntos
     };
 
-    return this.avanzarTurno(nuevoEstado);
+    return this.avanzarTurno(nuevoEstado, config);
   },
 
   /**
-   * Aplica error. Penaliza y avanza.
+   * ESPERA_VALIDACION — penaliza por error y avanza.
    * @param {object} estado
    * @param {object} config
    * @returns {object} Nuevo estado
@@ -337,11 +434,11 @@ export const PictionaryGameDefinition = {
       [keyPuntos]: Math.max(0, (estado[keyPuntos] || 0) - penalizacion)
     };
 
-    return this.avanzarTurno(nuevoEstado);
+    return this.avanzarTurno(nuevoEstado, config);
   },
 
   /**
-   * Aplica pasar. Penaliza si corresponde y avanza.
+   * ESPERA_VALIDACION — penaliza por pasar y avanza.
    * @param {object} estado
    * @param {object} config
    * @returns {object} Nuevo estado
@@ -358,11 +455,11 @@ export const PictionaryGameDefinition = {
       [keyPuntos]: Math.max(0, (estado[keyPuntos] || 0) - penalizacion)
     };
 
-    return this.avanzarTurno(nuevoEstado);
+    return this.avanzarTurno(nuevoEstado, config);
   },
 
   /**
-   * Aplica bonus manual a un equipo.
+   * Bonus manual a un equipo. No cambia de fase.
    * @param {object} estado
    * @param {object} config
    * @param {number} equipo - 1 o 2
@@ -381,7 +478,7 @@ export const PictionaryGameDefinition = {
   },
 
   /**
-   * Aplica time up. Error automático y avanza.
+   * Time up: penalización por error y queda en ESPERA_VALIDACION.
    * @param {object} estado
    * @param {object} config
    * @returns {object} Nuevo estado o null si ya terminó
@@ -401,7 +498,7 @@ export const PictionaryGameDefinition = {
     const equipo = estado.equipo_actual;
     const keyPuntos = `puntos_equipo_${equipo}`;
 
-    const nuevoEstado = {
+    return {
       ...estado,
       [keyPuntos]: Math.max(0, (estado[keyPuntos] || 0) - penalizacion),
       timer_corriendo: false,
@@ -409,35 +506,34 @@ export const PictionaryGameDefinition = {
       fase: 'ESPERA_VALIDACION',
       turno_activo: false
     };
-
-    return this.avanzarTurno(nuevoEstado);
   },
 
   /**
-   * Avanza al siguiente turno (palabra, modo o equipo).
+   * Incrementa palabras_del_turno; si no quedan, llama a cambiarTurno.
    * @param {object} estado
+   * @param {object} [config]
    * @returns {object} Nuevo estado
    */
-  avanzarTurno(estado) {
-    const palabrasPorModo = estado.palabras_por_modo_config || 1;
-    const siguientePalabraIndex = (estado.palabra_actual_index || 0) + 1;
+  avanzarTurno(estado, config) {
+    const palabrasPorTurno =
+      config?.palabras_por_turno || estado.palabras_por_turno_config || 1;
+    const siguienteIndex = (estado.palabra_actual_index || 0) + 1;
     const palabrasDelTurno = (estado.palabras_del_turno || 0) + 1;
 
-    if (palabrasDelTurno < palabrasPorModo) {
+    if (palabrasDelTurno < palabrasPorTurno) {
       return {
         ...estado,
-        palabra_actual_index: siguientePalabraIndex,
+        palabra_actual_index: siguienteIndex,
         palabras_del_turno: palabrasDelTurno,
-        fase: 'INICIO_RONDA',
+        fase: 'MOSTRANDO_PALABRA',
         timer_corriendo: false,
-        tiempo_restante_seg: estado.tiempo_restante_seg,
         turno_activo: false,
         palabra_actual: null,
         prohibidas_actuales: []
       };
     }
 
-    return this.avanzarModo({
+    return this.cambiarTurno({
       ...estado,
       palabra_actual_index: 0,
       palabras_del_turno: 0
@@ -445,76 +541,56 @@ export const PictionaryGameDefinition = {
   },
 
   /**
-   * Avanza al siguiente modo o cambia de equipo.
-   * @param {object} estado
-   * @returns {object} Nuevo estado
-   */
-  avanzarModo(estado) {
-    const modoActual = estado.modo_actual || 1;
-    const equipo = estado.equipo_actual;
-
-    const base = {
-      ...estado,
-      fase: 'INICIO_RONDA',
-      timer_corriendo: false,
-      tiempo_restante_seg: estado.tiempo_restante_seg,
-      turno_activo: false,
-      palabra_actual: null,
-      prohibidas_actuales: []
-    };
-
-    if (modoActual < 4) {
-      return { ...base, modo_actual: modoActual + 1 };
-    }
-
-    if (equipo === 1) {
-      return { ...base, equipo_actual: 2, modo_actual: 1 };
-    }
-
-    return this.cambiarTurno(estado);
-  },
-
-  /**
-   * Cambia de turno. Alterna equipo 1↔2 o avanza ronda.
+   * Eq1 → Eq2 (mismo submodo) o Eq2 → Eq1 (siguiente submodo).
+   * Tras DIBUJO de Eq2 → FIN_DE_RONDA.
    * @param {object} estado
    * @returns {object} Nuevo estado
    */
   cambiarTurno(estado) {
-    const ronda = estado.ronda_actual || 1;
-    const totalRondas = estado.total_rondas || 1;
-
-    const keyTurnos = `turnos_completados_equipo_${estado.equipo_actual}`;
+    const equipo = estado.equipo_actual;
+    const keyTurnos = `turnos_completados_equipo_${equipo}`;
     const turnosCompletados = (estado[keyTurnos] || 0) + 1;
 
-    const nuevoEstado = {
+    const base = limpiarTurno({
       ...estado,
-      [keyTurnos]: turnosCompletados
-    };
+      [keyTurnos]: turnosCompletados,
+      timer_corriendo: false,
+      turno_activo: false
+    });
 
-    if (ronda >= totalRondas) {
+    if (equipo === 1) {
       return {
-        ...nuevoEstado,
-        fase: 'FIN_DE_JUEGO',
-        timer_corriendo: false,
-        turno_activo: false
+        ...base,
+        equipo_actual: 2,
+        fase: 'INICIO_RONDA'
       };
     }
 
+    const idx = indiceSubmodo(estado.submodo_actual);
+    const eraUltimo = idx === SUBMODOS.length - 1;
+
+    if (eraUltimo) {
+      return {
+        ...base,
+        equipo_actual: 1,
+        submodo_actual: SUBMODOS[0],
+        modo_actual: MODO_LEGACY_POR_SUBMODO[SUBMODOS[0]],
+        fase: 'FIN_DE_RONDA'
+      };
+    }
+
+    const siguiente = SUBMODOS[idx + 1];
     return {
-      ...nuevoEstado,
-      ronda_actual: ronda + 1,
-      modo_actual: 1,
+      ...base,
       equipo_actual: 1,
-      fase: 'FIN_DE_RONDA',
-      timer_corriendo: false,
-      turno_activo: false,
-      palabra_actual: null,
-      prohibidas_actuales: []
+      submodo_actual: siguiente,
+      modo_actual: MODO_LEGACY_POR_SUBMODO[siguiente],
+      fase: 'INICIO_RONDA'
     };
   },
 
   /**
-   * Inicia la siguiente ronda desde FIN_DE_RONDA.
+   * FIN_DE_RONDA → INICIO_RONDA o FIN_DE_JUEGO.
    * @param {object} estado
    * @param {object} config
    * @returns {object}
@@ -522,20 +598,27 @@ export const PictionaryGameDefinition = {
   iniciarSiguienteRonda(estado, config) {
     if (estado.fase !== 'FIN_DE_RONDA') return { ...estado };
     const cfg = config || this.defaultConfig;
-    return {
+
+    if ((estado.ronda_actual || 1) >= (estado.total_rondas || 1)) {
+      return {
+        ...estado,
+        fase: 'FIN_DE_JUEGO',
+        timer_corriendo: false,
+        turno_activo: false
+      };
+    }
+
+    return limpiarTurno({
       ...estado,
       ronda_actual: (estado.ronda_actual || 1) + 1,
-      modo_actual: 1,
+      submodo_actual: SUBMODOS[0],
+      modo_actual: MODO_LEGACY_POR_SUBMODO[SUBMODOS[0]],
       equipo_actual: 1,
-      palabra_actual_index: 0,
-      palabras_del_turno: 0,
       fase: 'INICIO_RONDA',
       timer_corriendo: false,
       tiempo_restante_seg: cfg.segundos_por_modo || 60,
-      turno_activo: false,
-      palabra_actual: null,
-      prohibidas_actuales: []
-    };
+      turno_activo: false
+    });
   },
 
   /* =============================================================
@@ -555,7 +638,7 @@ export const PictionaryGameDefinition = {
   },
 
   /**
-   * Calcula el resultado final con desempate.
+   * Calcula el resultado final con desempate por turnos.
    * @param {object} estadoJuego
    * @returns {{ puntos_equipo_1: number, puntos_equipo_2: number, ganador: number|null }}
    */
@@ -610,8 +693,8 @@ export const PictionaryGameDefinition = {
       throw new ValidacionError('total_rondas debe ser un entero >= 1');
     }
 
-    if (!MODOS.includes(estado.modo_actual)) {
-      throw new ValidacionError('modo_actual debe ser 1, 2, 3 o 4');
+    if (!SUBMODOS.includes(estado.submodo_actual)) {
+      throw new ValidacionError('submodo_actual inválido');
     }
 
     if (estado.equipo_actual !== 1 && estado.equipo_actual !== 2) {
@@ -639,5 +722,29 @@ export const PictionaryGameDefinition = {
     }
 
     return true;
+  },
+
+  /* =============================================================
+     DEPRECATED — shims para UI/shell viejos (eliminar en 7.7c)
+     ============================================================= */
+
+  /**
+   * @deprecated Usar seleccionarSubmodo + seleccionarSet.
+   * INICIO_RONDA → MOSTRANDO_PALABRA (salta selección).
+   * @param {object} estado
+   * @returns {object}
+   */
+  seleccionarModo(estado) {
+    if (estado.fase !== 'INICIO_RONDA') return { ...estado };
+    return { ...estado, fase: 'MOSTRANDO_PALABRA' };
+  },
+
+  /**
+   * @deprecated Usar cambiarTurno / avanzarTurno con API de submodos.
+   * @param {object} estado
+   * @returns {object}
+   */
+  avanzarModo(estado) {
+    return this.avanzarTurno(estado);
   }
 };

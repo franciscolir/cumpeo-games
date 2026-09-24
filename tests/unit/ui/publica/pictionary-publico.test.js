@@ -42,11 +42,11 @@ describe('Pictionary Público — lógica de rendering', () => {
   });
 
   describe('fases', () => {
-    it('FASES contiene las 8 fases', () => {
+    it('FASES contiene las 9 fases', () => {
       expect(FASES).toEqual([
-        'INICIO_RONDA', 'SELECCIONANDO_MODO', 'MOSTRANDO_PALABRA',
-        'ADIVINANDO', 'ESPERA_VALIDACION', 'CAMBIO_MODO',
-        'FIN_DE_RONDA', 'FIN_DE_JUEGO'
+        'INICIO_RONDA', 'SELECCIONANDO_SUBMODO', 'SELECCIONANDO_SET',
+        'MOSTRANDO_PALABRA', 'ADIVINANDO', 'ESPERA_VALIDACION',
+        'CAMBIO_TURNO', 'FIN_DE_RONDA', 'FIN_DE_JUEGO'
       ]);
     });
 
