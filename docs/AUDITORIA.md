@@ -70,8 +70,6 @@
 | 2026-09-21 | 5 | 5.3d | ❌ RECHAZADO | Canción Incompleta: tests no eran e2e (Vitest + fake-indexeddb). Reemplazados en 5.3f. | 496cc5a |
 | 2026-09-21 | 5 | 5.3e | ✅ APROBADO | Canción Incompleta: FIN_DE_RONDA + timer toggle. Timer público quedó pendiente. | 8f608ee |
 | 2026-09-21 | 5 | 5.3f | ✅ APROBADO | Canción Incompleta: fix helper e2e + timer público + 23 tests UI + 9 e2e reales. | a9d76d5 |
-| 2026-09-21 | 5 | 5.4-pre | ✅ APROBADO | Cierre documental de mecánica de Pictionary. Decisiones: estructura del item del set, orden fijo de modos, bonus manual. | — |
-| 2026-09-21 | 5 | 5.4a | ✅ APROBADO | Pictionary GameDefinition + reducers + 74 tests unitarios. Archivos: PictionaryGameDefinition.js, tests, registro.js. | ef53390 |
 | 2026-09-22 | 5 | 5.4-e | ✅ APROBADO | Fix juego_nombre en obtenerContextoEspera (bug #67). Pictionary 11/11. | 3eb742d |
 | 2026-09-22 | 5 | 5.4-pre | ✅ APROBADO | Pictionary: cierre documental de mecánica. | d076f9e |
 | 2026-09-22 | 5 | 5.4-rosco-fix-v2 | ✅ APROBADO | Retry lazy en Rosco (bug #59). Rosco 18/18. | 699204b |
@@ -171,7 +169,6 @@ _(ninguna)_
 | 2 | `expirarPartida` en Supabase no es atómico | H7.8 | Media |
 | 3 | MASTER pendiente de integrar secciones del Bloque 0 | Bloque 0 | Alta |
 | 4 | `validarNoVacio` lanza `Error` genérico en vez de `ValidacionError` | Paso 1.5 (detectado) | Baja |
-| 5 | ~~`crearStorageAdapter` no se invoca en bootstrap ni en repos.~~ **RESUELTA en paso 2.4b.1 (547f005)** | Paso 1.6 (detectado) | Resuelta |
 | 6 | Tests de control en `partidas.spec.js` son laxos (`if (await btn.isVisible())`) | Paso 2.3a | Media |
 | 7 | Tests de control apuntan a `#/partidas-viejo/` (consola vieja) en vez del shell nuevo | Paso 2.3a | Media |
 | 8 | `indexeddb-smoke.spec.js` cambió de propósito (17 stores → 0 stores) | Paso 2.3a | Baja |
@@ -180,8 +177,6 @@ _(ninguna)_
 | 11 | `playwright.config.js` sin config para CI | Paso 2.3a | Baja |
 | 12 | Test `lista de sets sin filtro muestra mensaje` es flaky en corrida completa | Paso 2.3c (detectado) | Media |
 | 13 | Flaky general en e2e ("Failed to fetch" en varios tests) | Paso 2.4a (detectado) | Media |
-| 14 | ~~Migración 0010 no se aplicó a Supabase Cloud.~~ **RESUELTA en paso 2.4b.2** | Paso 2.4b.2 | Resuelta |
-| 16 | Faltaban GRANTs en fotos_publicas y mensajes_publicos. **RESUELTA en paso 2.4b.2 (3f6d575)** | Paso 2.4b.2 | Resuelta |
 | 17 | Test e2e de TriviaGameUI solo verifica registro, no renderización completa. | Paso 2.5 | Baja |
 | 18 | Condición del `if` en `TriviaGameUI.renderizarAreaJuego` difícil de leer. | Paso 2.5 | Baja |
 | 19 | `Boton` recibe `clase` y `id` redundantes en TriviaGameUI. | Paso 2.5 | Baja |
@@ -247,6 +242,7 @@ _(ninguna)_
 | 121 | Fallback para sets de Pictionary sin `submodo` en el dispatch de `formulario.js`. Sets viejos con submodo null/undefined caen en editor vacío. | Paso 7.7d.1 (detectado) | Baja |
 | 122 | e2e Pictionary rotos: `tests/e2e/pictionary/_helpers/pictionary.js` pasa `palabras_por_modo` pero `PictionaryGameDefinition.validarConfiguracion` exige `palabras_por_turno`. Botón "Iniciar juego" inoperante por alerta silenciosa. Verificado pre-existente con `git stash` en `38ba384`. | Paso 8.2 (detectado) | Media |
 | 125 | e2e `shell-partida.spec.js` "uiRegistry tiene QuePiensaElPublicoGameUI registrado" falla: espera `cantidad() === 2` pero hay 9 GameUIs registradas (registro creció con los juegos, el test no se actualizó). Pre-existente: falla igual en HEAD limpio, verificado con `git stash` en 8.4 (28/29 en la regresión de shell/timer). | Paso 8.4 (detectado) | Media |
+| 126 | El agente commiteó cc26d52 (8.4a) sin aprobación previa del operador. Violación de regla 5 de CONTINUIDAD.md ("El agente externo no commitea"). Verificar siempre que el agente NO commitee: la evidencia debe incluir `git log` mostrando HEAD sin cambios. | Paso 8.4a (detectado) | Media |
 
 ---
 
@@ -254,6 +250,9 @@ _(ninguna)_
 
 | # | Descripción | Origen | Prioridad |
 |---|-------------|--------|-----------|
+| 5 | ~~`crearStorageAdapter` no se invoca en bootstrap ni en repos.~~ **RESUELTA en paso 2.4b.1 (547f005)** | Paso 1.6 (detectado) | Resuelta |
+| 14 | ~~Migración 0010 no se aplicó a Supabase Cloud.~~ **RESUELTA en paso 2.4b.2** | Paso 2.4b.2 | Resuelta |
+| 16 | Faltaban GRANTs en fotos_publicas y mensajes_publicos. **RESUELTA en paso 2.4b.2 (3f6d575)** | Paso 2.4b.2 | Resuelta |
 | 57 | La validación de Rosco requiere N items por letra para N rondas. Si el set no cumple, el conductor no puede iniciar el juego. UX a definir. | Paso 5.1d (detectado) / 5.2a (cerrada) | Cerrada |
 | 60 | El registro de juegos requiere tocar tests/unit/app/bootstrap.test.js y tests/unit/app/seed.test.js cada vez que se agrega un juego nuevo. Acoplamiento entre registro y tests de bootstrap/seed. Revisar para que la lista de juegos registrados se derive dinámicamente. | Paso 5.2d (detectado) | Cerrada (5.3f) |
 | 67 | `PartidaRepository.obtenerContextoEspera` no mapeaba `juego_nombre`, causando que la UI pública mostrara `PICTIONARY` (código crudo) en lugar de `Pictionary`. | Paso 5.4-e (detectado) | Cerrada (5.4-e) |
@@ -275,26 +274,34 @@ _(ninguna)_
 <!--
 REPORTE DE RECONSTRUCCIÓN
 =========================
-Historial: 116 filas en output (extraídas del input: 117; duplicadas exactas eliminadas: 1)
+Historial: 114 filas en output (extraídas del input: 116; duplicados (bloque|paso) eliminados: 2 — regla C2)
 Cierres de bloque: 5 filas (bloques: 1, 2, 3, 4, 5)
 Nota: la fila de cierre del bloque 7 ("| 2026-09-24 | 7 | CIERRE | ✅ CERRADO | ... | 97aaa8d |", 6 columnas) no matchea el patrón de cierre (4 col) y queda en Historial con paso="CIERRE" (sin pérdida de texto).
-Deudas activas: 80 filas
-Deudas cerradas: 17 filas (clasificadas por campo Prioridad: 16; solo por Descripción sin "Cerrada" en Prioridad: 1 → #106)
+Deudas activas: 78 filas (incluye #126; sin #126 serían 77)
+Deudas cerradas: 20 filas (clasificadas por campo Prioridad: 19; solo por Descripción sin match en Prioridad: 1 → #106)
 Reorganizaciones: 2 filas preservadas en sección propia (no son historial ni cierres)
-Total deudas finales (activas + cerradas): 97 = detectadas 98 (AUDITORIA 91 + importadas nuevas 7) - eliminadas 1 (#119 por D5)
-Duplicados eliminados: 3
-  - historial: línea 165: 2026-09-19|4|4.3b
+Total deudas finales (activas + cerradas): 98 = detectadas 98 (AUDITORIA 98 + importadas nuevas 0) - eliminadas 1 (#119 por D5)
+Duplicados eliminados: 11
+  - historial: 5|5.4-pre: 2→1, conservada 2026-09-22 commit "d076f9e" (1. única con commit); descartadas: 2026-09-21/commit "—"
+  - historial: 5|5.4a: 2→1, conservada 2026-09-22 commit "ef53390" (2. más reciente entre las que tienen commit); descartadas: 2026-09-21/commit "ef53390"
   - importación: #111: ya existía en AUDITORIA (más completa) → importada descartada
-  - importación: #120: fila importada MÁS LARGA reemplaza la de AUDITORIA
-Deudas importadas de FORMULARIOS.md §11: 9 filas → #111, #112, #113, #114, #115, #116, #117, #118, #120 (Origen asignado: "FORMULARIOS.md §11"); deduplicadas contra AUDITORIA: #111, #120; nuevas en AUDITORIA: #112, #113, #114, #115, #116, #117, #118
+  - importación: #112: ya existía en AUDITORIA (más completa) → importada descartada
+  - importación: #113: ya existía en AUDITORIA (más completa) → importada descartada
+  - importación: #114: ya existía en AUDITORIA (más completa) → importada descartada
+  - importación: #115: ya existía en AUDITORIA (más completa) → importada descartada
+  - importación: #116: ya existía en AUDITORIA (más completa) → importada descartada
+  - importación: #117: ya existía en AUDITORIA (más completa) → importada descartada
+  - importación: #118: ya existía en AUDITORIA (más completa) → importada descartada
+  - importación: #120: ya existía en AUDITORIA (más completa) → importada descartada
+Deudas importadas de FORMULARIOS.md §11: 9 filas → #111, #112, #113, #114, #115, #116, #117, #118, #120 (Origen asignado: "FORMULARIOS.md §11"); deduplicadas contra AUDITORIA: #111, #112, #113, #114, #115, #116, #117, #118, #120; nuevas en AUDITORIA: ninguna (el input ya las contiene)
 Huecos en numeración de deuda (27): [15,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,63,64,65,66,72,73,81,94]
 Filas no clasificadas: 0
-Warnings: 4
-  - (bloque|paso) repetido con fechas distintas (NO deduplicado, clave = fecha+bloque+paso): 5|5.4-pre → 2026-09-22, 2026-09-21
-  - (bloque|paso) repetido con fechas distintas (NO deduplicado, clave = fecha+bloque+paso): 5|5.4a → 2026-09-22, 2026-09-21
-VERIFICACIÓN CONTEO (TAREA 2.3)
-  INPUT: filas con fecha = 117 (historial) + 5 (cierres) + 2 (reorganizaciones) = 124 (esperado: 124)
-  INPUT: deudas filas = 91 únicas (sin dups internos); headers de tabla descartados = 8; separadores = 9
-  OUTPUT: hist 116 + cierres 5 + reorgs 2 = 123 filas con fecha (= 124 - 1 dup exacto = 123)
-  OUTPUT: deudas activas 80 + cerradas 17 = 97
+Warnings: 0
+VERIFICACIÓN CONTEO (C3: wc -l y grep -c "^|")
+  INPUT  (docs/AUDITORIA.md antes del reemplazo): wc -l = 301; grep -c "^|" = 233
+  INPUT  filas con fecha = 116 (historial) + 5 (cierres) + 2 (reorganizaciones) = 123
+  INPUT  deudas filas = 98 únicas (sin dups internos)
+  OUTPUT (docs/AUDITORIA.md tras copia): wc -l = 307; grep -c "^|" = 231
+  OUTPUT filas con fecha = hist 114 + cierres 5 + reorgs 2 = 121 (= input 123 - 2 dup (bloque|paso) = 121)
+  OUTPUT deudas = activas 78 + cerradas 20 = 98 (incluye #126; sin #126: 77 + 20 = 97)
 -->
