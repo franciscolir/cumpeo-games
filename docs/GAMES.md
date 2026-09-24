@@ -139,10 +139,25 @@ La definición funcional recuperada todavía no fija:
 -   puntuación;
 -   tiempo;
 -   condición de victoria;
--   desempate;
--   estructura del Set.
+-   desempate.
 
 Estos puntos deben definirse antes de implementar la lógica.
+
+## Set (estructura del item)
+
+```json
+{
+  "pregunta": "string",
+  "opcion_a": "string",
+  "opcion_b": "string",
+  "tiempo_seg": 30,
+  "puntos_acierto": 10
+}
+```
+
+- `pregunta`, `opcion_a`, `opcion_b`: requeridos, no vacíos.
+- `tiempo_seg` y `puntos_acierto`: opcionales (el editor no los expone).
+- No hay respuesta correcta.
 
 ## Estado específico que deberá contemplarse
 

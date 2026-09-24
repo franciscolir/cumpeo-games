@@ -178,7 +178,7 @@ Migrable a entidad si crece.
 | Anti-Trivia | ✅ | Set | `#/sets/:id` | ✅ 7.3 + D2 en 7.3a |
 | Enlaces | ✅ | Set | `#/sets/:id` | ✅ 7.4 + D1 (7.4a) |
 | Trivia | ✅ | Set | `#/sets/:id` | ✅ 7.5 |
-| ¿Qué Dice el Público? (QPEP) | 🔜 | Set | `#/sets/:id` | 7.6 |
+| ¿Qué Dice el Público? (QPEP) | ✅ | Set | `#/sets/:id` | ✅ 7.6 |
 
 ---
 
@@ -506,30 +506,35 @@ individual (1 | 2 | 3 | vacío). NO existe dificultad general del set.
 
 ### 5.9 ¿Qué Dice el Público? (QPEP)
 
-**Estado:** 🔜 7.6 (editor simplificado).
+**Estado:** ✅ Implementado en 7.6 (rediseño al patrón nuevo + deuda #108).
 
 **Set:** solo nombre. Sin descripción, sin dificultad.
 
 **Item:**
 
 ```json
-{ "pregunta": "string", "respuesta_a": "string", "respuesta_b": "string" }
+{ "pregunta": "string", "opcion_a": "string", "opcion_b": "string" }
 ```
 
+El dominio sigue aceptando opcionales `tiempo_seg` y `puntos_acierto`;
+el editor NO los expone.
 
 **Validación:**
 
 - `pregunta` no vacía.
-- `respuesta_a` y `respuesta_b` no vacías.
+- `opcion_a` y `opcion_b` no vacías.
 - **NO existe respuesta correcta.**
 - **NO agregar checkbox de respuesta correcta.**
 
 **Set:** ilimitado.
 
-**Cambio requerido (7.6):**
+**UI del editor (7.6):**
 
-- Simplificar el editor (sin descripción, sin dificultad).
-- Corregir deuda #108 si aplica.
+- Patrón nuevo: `innerHTML` + `container.__qpepEstado` (sin closures).
+- Ids renombrados a `*-qpep` (`item-pregunta-qpep`, `item-opcion-a-qpep`, …).
+- Sin inputs de `tiempo_seg` ni `puntos_acierto`.
+- Contenido guardado: solo `{ pregunta, opcion_a, opcion_b }`.
+- `reordenarItems` con `[{ id }]` (deuda #108 corregida).
 
 ---
 
@@ -668,7 +673,7 @@ juego son pocos).
 | 7.3 | Anti-Trivia | ✅ | D2 (dificultad individual) cerrada en 7.3a |
 | 7.4 | Enlaces | ✅ | D1 (máximo 10) cerrada en 7.4a |
 | 7.5 | Trivia | ✅ | Rediseño + deuda #108 |
-| 7.6 | QPEP | 🔜 | Simplificación + deuda #108 |
+| 7.6 | QPEP | ✅ | Rediseño + deuda #108 |
 | 7.7 | Pictionary | 🔜 | 4 editores + config bancos + D4 + D5 |
 | 7.8 | Historia Enredada | 🔜 | Editor + config colores + D6 |
 | N/A | Canción Incompleta | Sin editor | — |
@@ -696,11 +701,11 @@ juego son pocos).
 | #115                      | Pictionary: 4 editores + 1 editor de bancos.                      | Alta  |
 | #116                      | Historia Enredada: editor de historias + editor de colores.       | Alta  |
 | #117                      | ~~Trivia: rediseño de editor + checkboxes + fix deuda #108.~~ **Cerrada en 7.5** (radios, no checkboxes). | ~~Alta~~ Cerrada |
-| #118                      | QPEP: simplificación de editor + fix deuda #108.                  | Media |
+| #118                      | ~~QPEP: simplificación de editor + fix deuda #108.~~ **Cerrada en 7.6** (rediseño + `[{id}]`). | ~~Media~~ Cerrada |
 
-**Deuda #108** (parcial → 7.5): `trivia/editor.js` corregido en 7.5
-(`reordenarItems` con `[{id}]`). Queda pendiente en
-`que-piensa-el-publico/editor.js:222` (7.6).
+**Deuda #108:** `trivia/editor.js` corregido en 7.5 y
+`que-piensa-el-publico/editor.js` corregido en 7.6
+(`reordenarItems` con `[{id}]` en ambos). **Cerrada totalmente.**
 
 **Deuda #110** (vigente): divergencia de `.trim()` entre editor y dominio de
 Enlaces. No bloquea.

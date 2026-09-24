@@ -228,7 +228,7 @@ de implementarse.
 
 ---
 
-### Bloque 7 — Formularios de sets por juego 🔄 EN PROGRESO (14/17)
+### Bloque 7 — Formularios de sets por juego 🔄 EN PROGRESO (15/17)
 
 **Objetivo:** Crear formularios de sets dedicados por juego y rediseñar el rosco.
 
@@ -248,7 +248,7 @@ de implementarse.
 | 7.4 | Enlaces: editor | ✅ APROBADO | 2d4f441 |
 | 7.4a | Enlaces: validación máximo 10 (deuda #111) | ✅ APROBADO | be6f30b |
 | 7.5 | Trivia: editor (rediseño + deuda #108) | ✅ APROBADO | b31965d |
-| 7.6 | QPEP: editor simplificado | ⬜ PENDIENTE | — |
+| 7.6 | QPEP: editor simplificado | ✅ APROBADO | 185d85c |
 | 7.7 | Pictionary: 4 editores + 2 bancos | ⬜ PENDIENTE | — |
 | 7.8 | Historia Enredada: historias + colores | ⬜ PENDIENTE | — |
 
@@ -300,6 +300,7 @@ de implementarse.
 | 7.12 | 2026-09-24 | 7.4: editor de Enlaces (49 tests, validación unicidad). 2080 unit. |
 | 7.13 | 2026-09-24 | 7.4a: validación máximo 10 en Enlaces (deuda #111). +12 tests, 2109 unit. |
 | 7.14 | 2026-09-24 | 7.5: rediseño del editor de Trivia + fix deuda #108. 62 tests nuevos, 2171 unit. |
+| 7.15 | 2026-09-24 | 7.6: rediseño del editor de QPEP + fix deuda #108. 42 tests nuevos, 2213 unit. |
 ---
 
 ## 5. Convenciones
