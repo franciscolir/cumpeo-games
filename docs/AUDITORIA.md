@@ -37,6 +37,8 @@
 | 2026-09-24 | 7 | 7.4 | ✅ APROBADO | Editor de Enlaces: 306 líneas, 49 tests, validación de unicidad A/B, `reordenarItems` con `[{id}]`. Formulario integrado (5 cambios). 2080 unit. | 2d4f441 |
 | 2026-09-24 | 7 | 7.4a | ✅ APROBADO | Deuda #111: validación de máximo 10 en dominio y editor de Enlaces. +6 tests dominio, +6 tests editor. 2109 unit. | be6f30b |
 | 2026-09-24 | 7 | CIERRE | ✅ CERRADO | Bloque 7 completo 24/24. 2600 unit. 9 juegos con formularios. Migraciones 0017 y 0018 aplicadas. | 97aaa8d |
+| 2026-09-24 | 8 | 8.0 | ✅ APROBADO | Componente Modal compartido. Rosco + Memoria migrados. 2633 unit / 82 archivos. | c59f41c |
+| 2026-09-24 | 8 | 8.1 | ✅ APROBADO | pausado_at + ajustes_globales. Migración 0019. 2651 unit / 85 archivos. | 1193983 |
 ---
 
 ## Correcciones pendientes

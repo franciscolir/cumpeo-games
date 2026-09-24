@@ -2,7 +2,7 @@
 
 **Versión:** 1.0
 **Última actualización:** 2026-09-18
-**Estado global:** Bloques 0, 1, 2, 3, 4, 5 cerrados · Bloque 6 pospuesto · Bloque 7 cerrado (24/24) · ★ MVP alcanzado ★
+**Estado global:** Bloques 0, 1, 2, 3, 4, 5 cerrados · Bloque 6 pospuesto · Bloque 7 cerrado (24/24) · Bloque 8 en progreso (1/11) · ★ MVP alcanzado ★
 **Rama:** feature/vertical-slice
 
 ---
@@ -21,9 +21,9 @@
 
 | Métrica | Valor |
 |---------|-------|
-| Bloques totales | 8 (0 al 7) |
+| Bloques totales | 9 (0 al 8) |
 | Bloques cerrados | 7 (Bloques 0, 1, 2, 3, 4, 5, 7) |
-| Bloques en progreso | 0 |
+| Bloques en progreso | 1 (Bloque 8 — Rediseño del shell) |
 | Bloques pendientes | 1 (Bloque 6, opcional) |
 | MVP alcanzado | Sí (al cerrar Bloque 4, 2026-09-21) |
 | Fecha estimada MVP | Alcanzado |
@@ -41,6 +41,7 @@
 | 5 | Juegos restantes | ✅ CERRADO | 11/11 | 9b7dfdc | 2026-09-23 |
 | 6 | Migración e2e a Supabase (opcional) | ⏸️ POSPUESTO | — | — | 2026-09-23 |
 | 7 | Formularios de sets por juego | ✅ CERRADO | 24/24 | c0d44de | 2026-09-24 |
+| 8 | Rediseño del shell | 🔜 EN PROGRESO | 1/11 | — | 2026-09-24 |
 
 **★ MVP se alcanza al cerrar el Bloque 4 ★**
 **Decisión al cerrar Bloque 5 (2026-09-23):** POSPUESTO INDEFINIDAMENTE.
@@ -258,6 +259,30 @@ de implementarse.
 | 7.8a | Historia Enredada: editor de historias con imagen | ✅ APROBADO | 781e12d |
 | 7.8b | Historia Enredada: editor de colores (config) | ✅ APROBADO | 9fc38cf |
 
+---
+
+### Bloque 8 — Rediseño del shell 🔜 EN PROGRESO (1/11)
+
+**Objetivo:** Rediseñar el shell de partida (conductor y pública): Modal
+compartido, `pausado_at`, ajustes globales, barra superior unificada,
+modal de pausa, panel conductor unificado.
+
+Fuente: `docs/PANTALLAS.md` §8 (plan de 11 pasos, gaps #1–#11).
+
+| # | Paso | Estado | Commit |
+|---|------|--------|--------|
+| 8.0 | Modal componente compartido | ✅ APROBADO | c59f41c |
+| 8.1 | `pausado_at` + ajustes_globales | ✅ APROBADO | 1193983 |
+| 8.2 | Barra superior unificada (conductor) | 🔜 PRÓXIMO | — |
+| 8.3 | Modal de pausa + contador + auto-transición | ⬜ | — |
+| 8.4 | Botón MODO ESPERA + estado UI | ⬜ | — |
+| 8.5 | Panel conductor unificado | ⬜ | — |
+| 8.6 | AJUSTES global (UI) | ⬜ | — |
+| 8.7 | Refactor de los 9 GameUIs al panel unificado | ⬜ | — |
+| 8.8 | Zona inferior (placeholder) | ⬜ | — |
+| 8.9 | EXTRAS UI | ⬜ | — |
+| 8.10 | Barra superior unificada (pública) | ⬜ | — |
+
 ## 4. Historial de actualizaciones
 
 | Versión | Fecha | Cambio |
@@ -315,6 +340,8 @@ de implementarse.
 | 7.21 | 2026-09-24 | 7.7d.2: editor de bancos de condiciones de Pictionary + ruta config + botón Configurar condiciones. 2479 unit. |
 | 7.22 | 2026-09-24 | 7.8a: editor de historias de Historia Enredada con upload de imagen (dibujo) + storage-helpers. 2568 unit. |
 | 7.23 | 2026-09-24 | 7.8b: editor de colores de Historia Enredada + dispatch config + botón Configurar colores. 2600 unit. |
+| 8.0 | 2026-09-24 | Componente Modal compartido. Rosco + Memoria migrados. 2633 unit / 82 archivos. |
+| 8.1 | 2026-09-24 | pausado_at + ajustes_globales + AjustesGlobalesRepository/Service. Migración IndexedDB v7 + Supabase 0019. 2651 unit / 85 archivos. |
 ---
 
 ## 5. Convenciones

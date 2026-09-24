@@ -2,9 +2,9 @@
 
 **Versión:** 3.0
 **Estado:** H4 · H5.1 · H6 · H7.1–H7.12 COMPLETOS · Bloques 0–5 y 7 COMPLETOS · Bloque 6 pospuesto · ~99% proyecto completo
-**Última actualización:** Post-commit `97aaa8d` (cierre Bloque 7)
-**HEAD:** `feature/vertical-slice` — `97aaa8d`
-**Tests:** 2600 unit (81 archivos) + ~215 e2e + ~104 integration
+**Última actualización:** Post-commit `1193983` (8.1 pausado_at + ajustes_globales)
+**HEAD:** `feature/vertical-slice` — `1193983`
+**Tests:** 2651 unit (85 archivos) + ~215 e2e + ~107 integration
 **Audiencia:** Desarrollador único / equipo reducido
 **Propósito:** Guía única de referencia para construcción, consulta y auditoría del sistema.
 
@@ -88,7 +88,7 @@ Cliente (navegador)
 
 ## 3. Modelo Conceptual Cerrado
 
-### 3.1 Entidades (17)
+### 3.1 Entidades (18 — 17 de dominio + AjustesGlobales técnica)
 
 #### Catálogo (5)
 
@@ -124,13 +124,14 @@ Cliente (navegador)
 |---------|-----------|
 | **SetSnapshot** | Copia inmutable de una versión de Set. Compartible. |
 
-#### Técnica (3)
+#### Técnica (4)
 
 | Entidad | Propósito |
 |---------|-----------|
 | **AccionProcesada** | Registro de `action_id` ya procesados (idempotencia). |
 | **ControlPartida** | Lease de control de una partida. |
 | **EventoTecnico** | Log de diagnóstico append-only. |
+| **AjustesGlobales** | Fila singleton con ajustes globales (tiempo máx de pausa). |
 
 ### 3.2 Máquinas de estado
 
@@ -237,7 +238,7 @@ PENDIENTE -> EN_CURSO <-> PAUSADO -> FINALIZADO
 - **INV-059**: configuracion_congelada inmutable.
 - **INV-060**: state_version incrementa en cada modificación.
 - **INV-061**: timer_actual opcional.
-- **INV-062**: paused_at solo válido en PAUSADO.
+- **INV-062**: pausado_at solo válido en PAUSADO.
 - **INV-063**: resultado no-null si y solo si estado = FINALIZADO.
 - **INV-064**: finish_reason no-null en FINALIZADO y NO_JUGADO.
 - **INV-065**: NO_JUGADO -> started_at IS NULL.
@@ -373,6 +374,7 @@ PENDIENTE -> EN_CURSO <-> PAUSADO -> FINALIZADO
 ### 4.8.1 Finish reason de JuegoEjecutado
 
 - **INV-160**: JuegoEjecutado.finish_reason en { NORMAL, PARTIDA_DESCARTADA, PARTIDA_FINALIZADA, PARTIDA_EXPIRADA }. Es null en estados no terminales. NORMAL cuando el juego terminó por su cuenta. Los valores PARTIDA_* indican que el juego se cerró por arrastre de una acción sobre la Partida.
+- **INV-161**: JuegoEjecutado.pausado_at es null salvo cuando estado = PAUSADO (donde es no-null con el timestamp de inicio de pausa).
 
 
 ---
@@ -544,7 +546,7 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 | Bloques cerrados | 7 (Bloques 0–5, 7) |
 | Bloques pospuestos | 1 (Bloque 6 — migración e2e a Supabase) |
 | Juegos implementados | 9 (QPEP, Trivia, Rosco, Canción Incompleta, Pictionary, Historia Enredada, Memoricé, Anti-Trivia, Enlaces) |
-| Tests unit | 2600 (81 archivos) |
+| Tests unit | 2651 (85 archivos) |
 | Tests e2e | ~215 |
 | Tests integration | ~104 (contra Supabase Cloud) |
 | Commits totales (rama) | 130+ |
@@ -578,6 +580,7 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 | Bloque 5 — Juegos restantes | 9 juegos implementados end-to-end | Cerrado (9b7dfdc) |
 | Bloque 6 — Migración e2e a Supabase | Pospuesto indefinidamente (2026-09-23) |
 | Bloque 7 — Formularios de sets por juego | 24/24 pasos. Cierre `97aaa8d` |
+| Bloque 8 — Rediseño del shell | En progreso | 1/11 |
 
 ### 8.3 H4 — Servicios de dominio (CERRADA)
 

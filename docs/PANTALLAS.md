@@ -270,17 +270,17 @@ text
 
 #### AJUSTES
 
-- **Estado actual:** ❌ no existe. Los ajustes se hacen por set/juego en
-  `#/sets/:id` o `#/juegos/:codigo/config`.
+- **Estado actual:** modelo creado en 8.1 (`AjustesGlobales` singleton, store
+  `ajustes_globales`, tabla Supabase 0019). UI ❌ no existe (es 8.6).
+  Los ajustes de set/juego siguen en `#/sets/:id` o `#/juegos/:codigo/config`.
 - **TO-BE:** botón `AJUSTES` en el panel derecho que abre un modal.
   Dentro del modal:
   - **Configuración general de partida:**
-    - Tiempo máximo en pausa (default: 2 minutos).
+    - Tiempo máximo en pausa (default: 2 minutos, `tiempo_max_pausa_seg`).
   - **Configuración específica del juego activo** (opcional, si el juego
     lo requiere).
-- **Persistencia:** la config general se puede persistir en
-  `Partida.configuracion` (nuevo campo) o en una tabla `ajustes_globales`
-  (a decidir en el Bloque 8).
+- **Persistencia:** `AjustesGlobales` (singleton `id='default'`), fila única
+  en IndexedDB y en Supabase.
 
 #### Zona inferior
 
@@ -326,7 +326,7 @@ text
 **Comportamiento:**
 
 - Se abre al presionar `PAUSE`.
-- Muestra un contador de tiempo de pausa (desde `pausado_at`).
+- Muestra un contador de tiempo de pausa (desde `pausado_at`, agregado en 8.1).
 - Botón `REANUDAR`: cierra el modal, transiciona `PAUSADO → EN_CURSO`.
 - Botón `MODO ESPERA`: cierra el modal, transiciona a `MODO ESPERA`.
 - Si el contador alcanza el **tiempo máximo configurado**:
@@ -578,8 +578,8 @@ existentes (`comenzarPartida`, `pausarJuego`, `reanudarJuego`,
 | # | Gap | Impacto | Complejidad | Prioridad |
 |---|-----|---------|-------------|-----------|
 | 1 | ~~No hay componente `Modal` compartido~~ **✅ resuelto en 8.0** | Cada GameUI implementa modales inline | Media | Alta |
-| 2 | No hay `pausado_at` en `JuegoEjecutado` | No se puede medir tiempo de pausa | Media | Alta |
-| 3 | No hay sistema de "ajustes generales" | No se puede configurar tiempo máx de pausa | Media | Alta |
+| 2 | ~~No hay `pausado_at` en `JuegoEjecutado`~~ **✅ resuelto en 8.1** | No se puede medir tiempo de pausa | Media | Alta |
+| 3 | ~~No hay sistema de "ajustes generales"~~ **✅ resuelto en 8.1** (modelo; UI en 8.6) | No se puede configurar tiempo máx de pausa | Media | Alta |
 | 4 | No hay botón `MODO ESPERA` | El conductor no puede forzar el estado | Baja | Media |
 | 5 | No hay `AJUSTES` global | No hay punto de entrada a config general | Media | Media |
 | 6 | No hay `EXTRAS` UI | No se pueden usar herramientas auxiliares | Alta | Media |
@@ -600,7 +600,7 @@ existentes (`comenzarPartida`, `pausarJuego`, `reanudarJuego`,
 | # | Paso | Qué hace | Complejidad | Cierra gap |
 |---|------|----------|-------------|------------|
 | 8.0 | `Modal` componente compartido | Botón, título, contenido, acciones | Media | 1 |
-| 8.1 | `pausado_at` en `JuegoEjecutado` + ajustes generales | Migración v7 + Supabase 0019 | Alta | 2, 3 |
+| 8.1 | `pausado_at` en `JuegoEjecutado` + ajustes generales | Migración v7 + Supabase 0019 + AjustesGlobales | Alta | 2, 3 |
 | 8.2 | Barra superior unificada (conductor) | TIME + SCORE + ESTADO en el shell | Media | 11 |
 | 8.3 | Modal de pausa + contador + auto-transición | Usa Modal de 8.0 + `pausado_at` de 8.1 | Media | 1, 2, 3 |
 | 8.4 | Botón `MODO ESPERA` + estado UI | Estado UI + botón | Media | 4 |
