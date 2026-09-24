@@ -70,17 +70,6 @@ test('al presionar Pausar aparece el modal de pausa', async ({ page }) => {
   await expect(page.getByText('JUEGO EN PAUSA')).toBeVisible();
 });
 
-test('el modal contiene el botón REANUDAR', async ({ page }) => {
-  await page.goto('/');
-  await setupPartidaJuegoEnCurso(page);
-
-  await page.locator('#btn-pausar').click();
-
-  await expect(page.locator('#modal-pausa')).toBeVisible({ timeout: 15000 });
-  await expect(page.locator('#btn-pausa-reanudar')).toBeVisible();
-  await expect(page.locator('#btn-pausa-reanudar')).toHaveText('REANUDAR');
-});
-
 test('el contador de pausa tiene formato SS o MM:SS', async ({ page }) => {
   await page.goto('/');
   await setupPartidaJuegoEnCurso(page);
@@ -92,7 +81,7 @@ test('el contador de pausa tiene formato SS o MM:SS', async ({ page }) => {
   await expect(page.locator('#pausa-contador')).toHaveText(/^\d{1,2}(:\d{2})?$/);
 });
 
-test('REANUDAR cierra el modal y el juego vuelve a EN_CURSO', async ({ page }) => {
+test('REANUDAR de la barra cierra el modal y el juego vuelve a EN_CURSO', async ({ page }) => {
   const id = await (async () => {
     await page.goto('/');
     return await setupPartidaJuegoEnCurso(page);
@@ -101,7 +90,7 @@ test('REANUDAR cierra el modal y el juego vuelve a EN_CURSO', async ({ page }) =
   await page.locator('#btn-pausar').click();
   await expect(page.locator('#modal-pausa')).toBeVisible({ timeout: 15000 });
 
-  await page.locator('#btn-pausa-reanudar').click();
+  await page.locator('#btn-reanudar').click();
 
   await expect(page.locator('#modal-pausa')).toHaveCount(0, { timeout: 15000 });
 
@@ -119,7 +108,7 @@ test('click fuera del modal NO lo cierra', async ({ page }) => {
   await page.locator('#btn-pausar').click();
   await expect(page.locator('#modal-pausa')).toBeVisible({ timeout: 15000 });
 
-  await page.locator('#modal-pausa').click({ position: { x: 5, y: 5 } });
+  await page.locator('#modal-pausa').click({ position: { x: 5, y: 120 } });
   await expect(page.locator('#modal-pausa')).toBeVisible();
 });
 

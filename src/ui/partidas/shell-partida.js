@@ -15,6 +15,7 @@ import { cargarItemsDeJuego } from '../games/_shared/index.js';
 let cleanupSuscripciones = null;
 let intervalId = null;
 let intervaloPausa = null;
+let _modoEsperaActivo = false;
 let cleanupsGameUI = [];
 
 /**
@@ -46,6 +47,7 @@ export async function renderShellPartida(container, app, params) {
   _limpiarSuscripciones();
   _limpiarGameUIs();
   _limpiarPausaModal();
+  _modoEsperaActivo = false;
   app.services.partida.detenerTodosLosHeartbeats();
 
   await _renderContenido(container, app, params.id);
@@ -1276,8 +1278,9 @@ async function _renderContenido(container, app, partidaId) {
   }
 
   container.innerHTML = `
-    <div class="min-h-screen flex flex-col">
-      ${_renderTopBar(partida, tieneControl, app, partidaId)}
+    <div class="min-h-screen flex flex-col relative">
+      ${_renderTopBar(partida, juegoActivo, tieneControl, app, partidaId)}
+      ${_modoEsperaActivo ? _renderOverlayModoEspera() : ''}
       ${_renderShellTimer(estadoJuego)}
       ${_renderHeroScoreboard(partida, juegoActivo, equipos)}
       <div id="shell-game-container" class="flex-1 min-h-0 overflow-hidden p-4">
@@ -1321,7 +1324,7 @@ async function _renderContenido(container, app, partidaId) {
    Top Bar
    ============================================================= */
 
-function _renderTopBar(partida, tieneControl, app, partidaId) {
+function _renderTopBar(partida, juegoActivo, tieneControl, app, partidaId) {
   const estadoColor = {
     CONFIGURANDO: 'text-on-surface-variant',
     EN_CURSO: 'text-tertiary',
@@ -1343,8 +1346,12 @@ function _renderTopBar(partida, tieneControl, app, partidaId) {
     ? Boton({ texto: 'Pausar', variante: 'ghost', id: 'btn-pausar' })
     : '';
 
-  const btnReanudar = tieneControl && partida.estado === 'PAUSADO'
+  const btnReanudar = tieneControl && juegoActivo?.estado === 'PAUSADO'
     ? Boton({ texto: 'Reanudar', variante: 'ghost', id: 'btn-reanudar' })
+    : '';
+
+  const btnModoEspera = tieneControl && juegoActivo?.estado === 'PAUSADO'
+    ? Boton({ texto: 'Modo espera', variante: 'secondary', id: 'btn-modo-espera' })
     : '';
 
   const btnDescartar = tieneControl && partida.estado === 'EN_CURSO'
@@ -1362,7 +1369,7 @@ function _renderTopBar(partida, tieneControl, app, partidaId) {
     : '';
 
   return `
-    <div class="h-16 border-b-2.5 border-on-surface bg-surface-container-lowest flex items-center justify-between px-4 gap-4 flex-wrap shrink-0">
+    <div id="shell-topbar" class="relative z-[60] h-16 border-b-2.5 border-on-surface bg-surface-container-lowest flex items-center justify-between px-4 gap-4 flex-wrap shrink-0">
       <div class="flex items-center gap-4">
         <span class="font-display-hero text-2xl text-primary uppercase -rotate-1">CUMPEO</span>
         <span class="font-body-md text-on-surface-variant hidden sm:inline">Partida: ${partida.circuito_nombre || 'Sin nombre'}</span>
@@ -1374,6 +1381,7 @@ function _renderTopBar(partida, tieneControl, app, partidaId) {
         ${btnComenzar}
         ${btnPausar}
         ${btnReanudar}
+        ${btnModoEspera}
         ${btnDescartar}
         ${btnFin}
         ${btnPublica}
@@ -1609,9 +1617,11 @@ function _onHashChangePausa() {
 }
 
 /**
- * Abre el modal "JUEGO EN PAUSA" con contador (desde juego.pausado_at)
- * y límite de ajustes. El modal se monta en document.body (sobrevive a
- * los re-renders del shell) y solo se cierra con REANUDAR (cerrable:false).
+ * Abre el modal "JUEGO EN PAUSA" (solo informativo: título + contador,
+ * sin botones — D3 de 8.4; toda acción se maneja desde la barra superior).
+ * El modal se monta en document.body (sobrevive a los re-renders del
+ * polling). Si el contador alcanza `tiempo_max_pausa_seg`, cierra el
+ * modal y entra al overlay MODO ESPERA automáticamente (D5, deuda #123).
  * @param {HTMLElement} container
  * @param {object} app
  * @param {string} partidaId
@@ -1628,6 +1638,7 @@ async function _abrirModalPausa(container, app, partidaId) {
     if (!juegoEnPausa) return;
 
     const inicioPausa = new Date(juegoEnPausa.pausado_at).getTime();
+    const maxSeg = await app.services.ajustes.obtenerTiempoMaxPausaSeg();
 
     _limpiarPausaModal();
 
@@ -1637,12 +1648,18 @@ async function _abrirModalPausa(container, app, partidaId) {
       contenido: `
         <p id="pausa-contador" class="font-display-hero text-3xl text-primary"></p>
       `,
-      acciones: [{ texto: 'REANUDAR', variante: 'primary', id: 'btn-pausa-reanudar' }],
+      acciones: [],
       cerrable: false
     });
 
     const pintarContador = () => {
       const transcurrido = Math.max(0, Math.floor((Date.now() - inicioPausa) / 1000));
+      if (Number.isFinite(maxSeg) && transcurrido >= maxSeg && !_modoEsperaActivo) {
+        _limpiarPausaModal();
+        _entrarModoEspera(container, app, partidaId)
+          .catch((err) => window.alert(`Error: ${err.message}`));
+        return;
+      }
       const el = document.body.querySelector('#pausa-contador');
       if (el) el.textContent = _formatearTiempo(transcurrido);
     };
@@ -1650,22 +1667,52 @@ async function _abrirModalPausa(container, app, partidaId) {
     intervaloPausa = setInterval(pintarContador, 1000);
 
     window.addEventListener('hashchange', _onHashChangePausa);
-
-    const btnReanudar = document.body.querySelector('#btn-pausa-reanudar');
-    if (btnReanudar) {
-      btnReanudar.addEventListener('click', async () => {
-        _limpiarPausaModal();
-        try {
-          await app.services.partida.reanudarJuego(
-            partidaId, juegoEnPausa.id, app.session.sessionId, nuevoActionId()
-          );
-          await _renderContenido(container, app, partidaId);
-        } catch (err) { window.alert(`Error: ${err.message}`); }
-      });
-    }
   } catch (err) {
     window.alert(`Error: ${err.message}`);
   }
+}
+
+/* =============================================================
+   Modo espera (step 8.4)
+   ============================================================= */
+
+/**
+ * Overlay MODO ESPERA (estado UI local, no persistido — D1/D2).
+ * Cubre todo excepto la barra superior (D4). Sin botón propio (D4).
+ * Se renderiza dentro del template del shell (persiste ante re-renders
+ * del polling mientras `_modoEsperaActivo` sea true).
+ * @returns {string} HTML del overlay
+ */
+function _renderOverlayModoEspera() {
+  return `
+    <div id="modo-espera-overlay" class="absolute left-0 right-0 top-16 bottom-0 z-40 bg-black/50 flex items-center justify-center">
+      <p class="font-display-hero text-4xl text-white uppercase -rotate-2">MODO ESPERA</p>
+    </div>
+  `;
+}
+
+/**
+ * Entra al overlay MODO ESPERA: setea la flag local, limpia el modal
+ * de pausa (por si está abierto) y re-renderiza el shell.
+ * NO llama a reanudarJuego (D2: el dominio sigue PAUSADO).
+ * @param {HTMLElement} container
+ * @param {object} app
+ * @param {string} partidaId
+ * @returns {Promise<void>}
+ */
+async function _entrarModoEspera(container, app, partidaId) {
+  _modoEsperaActivo = true;
+  _limpiarPausaModal();
+  await _renderContenido(container, app, partidaId);
+}
+
+/**
+ * Sale del overlay MODO ESPERA (flag local). NO llama a reanudarJuego
+ * (eso lo hace el handler de #btn-reanudar).
+ * @returns {void}
+ */
+function _salirModoEspera() {
+  _modoEsperaActivo = false;
 }
 
 /* =============================================================
@@ -1711,9 +1758,20 @@ function _bindAcciones(container, app, partidaId, juegoActivo) {
   if (btnReanudar) {
     btnReanudar.addEventListener('click', async () => {
       try {
+        _salirModoEspera();
         _limpiarPausaModal();
         await app.services.partida.reanudarJuego(partidaId, juegoActivo.id, sessionId, nuevoActionId());
         await _renderContenido(container, app, partidaId);
+      } catch (err) { window.alert(`Error: ${err.message}`); }
+    });
+  }
+
+  const btnModoEspera = container.querySelector('#btn-modo-espera');
+  if (btnModoEspera) {
+    btnModoEspera.addEventListener('click', async () => {
+      try {
+        _limpiarPausaModal();
+        await _entrarModoEspera(container, app, partidaId);
       } catch (err) { window.alert(`Error: ${err.message}`); }
     });
   }
