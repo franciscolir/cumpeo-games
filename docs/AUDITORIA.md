@@ -1,6 +1,6 @@
 # CUMPEO — Historial de Auditorías
 
-**Última actualización:** 2026-09-18
+**Última actualización:** 2026-09-24
 
 ---
 
@@ -9,7 +9,7 @@
 | Fecha | Bloque | Paso | Resultado | Notas | Commit |
 |-------|--------|------|-----------|-------|--------|
 
-**Resultados posibles:** ✅ APROBADO · ❌ RECHAZADO · 🔄 EN REVISIÓN
+**Resultados posibles:** ✅ APROBADO · ❌ RECHAZADO · 🕓 IMPLEMENTADO (sin commit) · ✅ CERRADO
 
 ---
 
@@ -18,179 +18,44 @@
 | Fecha | Bloque | Paso | Resultado | Notas | Commit |
 |-------|--------|------|-----------|-------|--------|
 | 2026-09-18 | 0 | 0.1–0.6 | ✅ APROBADO | Bloque documental. MASTER pendiente de integración manual. | — |
-| 2026-09-23 | 5 | 5.8 (cierre) | ✅ CERRADO | Anti-Trivia 12/12 e2e. Memoricé 10/10. Run completo 179/184. 4 fallas residuales (2 pre-existentes, 2 flaky). | 1d865dd |
-| 2026-09-23 | 5 | 5.9a | ✅ APROBADO | EnlacesGameDefinition + 11 reducers + 135 tests. Registro/bootstrap/seed actualizados. | 53f29e9 |
-| 2026-09-23 | 5 | 5.9b | ✅ APROBADO | EnlacesGameUI + shell actions + drag-and-drop HTML5. 67 tests. | acc423f |
-| 2026-09-23 | 5 | 5.9c | ✅ APROBADO | Enlaces pública + timer. 50 tests. Leak de pares_correctos y movimientos controlado (tests anti-leak). | d5e0694 |
-| 2026-09-23 | 5 | 5.9d | ✅ APROBADO | 19 tests e2e Enlaces (drag-drop + flujo + puntuación + timer + validación). Deuda #61 respetada. | 9b7dfdc |
-| 2026-09-23 | 7 | 7.0a | ✅ APROBADO | Refactor: extraer editores QPEP/Trivia. formulario.js 741→144. 1749 unit. | dfb901c |
-| 2026-09-23 | 7 | 7.1a | ✅ APROBADO | Dominio Rosco: N rondas = N sets. 101 tests Rosco. 1780 unit. | 12145ae |
-| 2026-09-23 | 7 | 7.1b | ✅ APROBADO | Modal de inicio + N sets. 43 tests UI, 18 e2e. 1794 unit. | 0f67f43 |
-| 2026-09-23 | 7 | 7.1d | ✅ APROBADO | Editor de sets de Rosco (grilla 27 filas). 30 tests. 1887 unit. | 9771694 |
-| 2026-09-23 | 7 | 7.1d-fix | ✅ APROBADO | Revertir SetService.crearSetCompleto sin uso. | e2eae33 |
-| 2026-09-23 | 7 | 7.2a | ✅ APROBADO | Modelo Memoricé: imagen_url requerido + es_predeterminado en sets. 107 tests. 1901 unit. | 83df5b8 |
-| 2026-09-23 | 7 | 7.2b | ✅ APROBADO | Storage helpers para imágenes de Memoricé. 15 tests. 1916 unit. | 5cba1fa |
-| 2026-09-23 | 7 | 7.2c | ✅ APROBADO | Editor de Memoricé (grilla N slots + imágenes). 40 tests. 1956 unit. | 353f1d0 |
-| 2026-09-23 | 7 | 7.2d | ✅ APROBADO | Resolver storageRef a URL en UI. 8 tests. 1964 unit. | 3ea02b9 |
-| 2026-09-23 | 7 | 7.2e | ✅ APROBADO | Sets predeterminados (Emojis/Íconos) + render `emoji:` + editor solo lectura. 22 tests nuevos. 1986 unit. | b576d22 |
-| 2026-09-23 | 7 | 7.3 | ✅ APROBADO | Editor de Anti-Trivia (lista + form con respuestas dinámicas). 45 tests. 2031 unit. | 31cfb0b |
-| 2026-09-24 | 7 | 7.4 | ✅ APROBADO | Editor de Enlaces: 306 líneas, 49 tests, validación de unicidad A/B, `reordenarItems` con `[{id}]`. Formulario integrado (5 cambios). 2080 unit. | 2d4f441 |
-| 2026-09-24 | 7 | 7.4a | ✅ APROBADO | Deuda #111: validación de máximo 10 en dominio y editor de Enlaces. +6 tests dominio, +6 tests editor. 2109 unit. | be6f30b |
-| 2026-09-24 | 7 | CIERRE | ✅ CERRADO | Bloque 7 completo 24/24. 2600 unit. 9 juegos con formularios. Migraciones 0017 y 0018 aplicadas. | 97aaa8d |
-| 2026-09-24 | 8 | 8.0 | ✅ APROBADO | Componente Modal compartido. Rosco + Memoria migrados. 2633 unit / 82 archivos. | c59f41c |
-| 2026-09-24 | 8 | 8.1 | ✅ APROBADO | pausado_at + ajustes_globales. Migración 0019. 2651 unit /  85 archivos. | 1193983 |
-| 2026-09-24 | 8 | 8.2 | 🕓 IMPLEMENTADO (sin commit) | `_renderShellTimer(estadoJuego)` + `#shell-timer` en barra superior del shell conductor (inserción justo después de `_renderTopBar`, sin tocar la función). 3 e2e nuevos en `shell-partida-timer.spec.js` (visible / oculto / formato). 2651 unit / 85 archivos ✓, e2e 3/3 ✓. Hallazgo pre-existente: e2e Pictionary rotos (helper pasa `palabras_por_modo`; `validarConfiguracion` exige `palabras_por_turno`) — verificado con `git stash` en `38ba384`, fuera de alcance 8.2. | PENDIENTE |
-| 2026-09-24 | 8 | 8.3 | 🕓 IMPLEMENTADO (sin commit) | `_abrirModalPausa` en shell-partida: `#modal-pausa` (`montarModal`, `cerrable: false`, título "JUEGO EN PAUSA") montado en `document.body` (decisión aprobada: el container del shell se re-renderiza cada ≤2s por polling y destruiría el modal), `#pausa-contador` (desde `juego.pausado_at`, `Math.max(0,…)`, `setInterval` 1s) + "Tiempo máximo: MM:SS" vía `services.ajustes.obtenerTiempoMaxPausaSeg()`, único botón `#btn-pausa-reanudar` (limpia intervalo → `desmontarModal` → `reanudarJuego` → `_renderContenido`); limpieza en REANUDAR + `hashchange` (navegación fuera de `#/partidas/`) + `renderShellPartida` (re-entrada). Helper `_formatearTiempo` compartido con `_renderShellTimer` (refactor). Handler `#btn-pausar` extiende con `await _abrirModalPausa(...)`; `#btn-reanudar` de la barra NO modificado. **Correcciones D3–D6 (working tree):** D3 `juegoEnPausa` exige `pausado_at` presente y parseable (fallback `Date.now()` eliminado); D4 modal solo muestra el contador (línea "Tiempo máximo" y `services.ajustes` eliminados, sin referencias); D5 `_limpiarPausaModal()` agregado en el handler `#btn-reanudar` de la barra (defensivo — ver deuda #124); D6 `_onHashChangePausa` limpia siempre sin regex. El test 7 (D5) fue descartado tras comprobar que `#btn-reanudar` nunca se renderiza (deuda #124). 6 e2e en `shell-partida-pausa.spec.js`. 2651 unit / 85 archivos ✓, e2e 6/6 ✓. Desviación preflight: `.gitignore` con `+playwright` modificado por fuera — no tocado, no incluido (aprobado por el operador). Deuda #123 registrada. | PENDIENTE |
-| 2026-09-24 | 8 | 8.4 | 🕓 IMPLEMENTADO (sin commit) | Modal 8.3 ajustado a SOLO informativo: `#btn-pausa-reanudar` eliminado de `_abrirModalPausa` (`acciones: []`); reintroducido `const maxSeg = await services.ajustes.obtenerTiempoMaxPausaSeg()`. Topbar: `relative z-[60]` + `id="shell-topbar"` (queda sobre el modal z-50 — **C1** resuelta con el operador: "Topbar z-[60] sobre el modal (Recomendado)"; modal.js NO tocado). `_renderTopBar(partida, juegoActivo, ...)`: `#btn-reanudar` con `juegoActivo?.estado === 'PAUSADO'` (**#124 cerrada**) + `#btn-modo-espera` (mismo guard, `Boton secondary`). Estado UI local `_modoEsperaActivo` (reset en `renderShellPartida` — **D1** decide Parte 6 literal vs recalcular desde estado PAUSADO; se anota en decisiones no previstas) + `_renderOverlayModoEspera` (`#modo-espera-overlay`, `absolute left-0 right-0 top-16 bottom-0 z-40`, sin botones) + `_entrarModoEspera` (async: flag → `_limpiarPausaModal` → `_renderContenido`) + `_salirModoEspera` (solo flag=false). Auto-transición en `pintarContador`: `Number.isFinite(maxSeg) && transcurrido >= maxSeg && !_modoEsperaActivo` (guard robustez contra `null >= 0`) → `_limpiarPausaModal` + `_entrarModoEspera` (**#123 cerrada**). Handlers: `#btn-reanudar` ahora llama `_salirModoEspera()` antes de limpiar/reanudar; nuevo `#btn-modo-espera` (`_limpiarPausaModal` + `_entrarModoEspera`, catch alert). **C2** resuelta con el operador: NO commitear (D7/BLOQUE-2-COMMITS anulado, patrón 8.2/8.3) — evidencia sin `git show --stat`. Specs: `shell-partida-pausa.spec.js` de 6 → 5 e2e (test 2 `#btn-pausa-reanudar` eliminado; test 4 REANUDAR → `#btn-reanudar`; click "fuera" movido a (5,120) porque (5,5) queda bajo la topbar z-60); nuevo `shell-partida-modo-espera.spec.js` 7 e2e (btn visible ×2, overlay+modal gone, reanudar desde overlay → EN_CURSO, auto-transición con `ajustes.actualizar({tiempo_max_pausa_seg: 2})`, overlay sin botones, geometría overlay vs `#shell-topbar` — los botones desbordan `h-16` por `flex-wrap` pre-existente, por eso se mide la barra y no el botón). 2651 unit / 85 archivos ✓, e2e 12/12 ✓ + regresión `shell-partida.spec.js`/timer: 28/29 (1 fallo pre-existente `uiRegistry cantidad===2` — recibió 9; verificado con `git stash` en HEAD limpio). | PENDIENTE |
----
-
-## Correcciones pendientes
-
-_(ninguna)_
-
----
-
-## Deuda técnica acumulada
-
-| # | Descripción | Origen | Prioridad |
-|---|-------------|--------|-----------|
-| 1 | `actualizarEstadoJuego` en Supabase no es atómico | H7.8 | Media |
-| 2 | `expirarPartida` en Supabase no es atómico | H7.8 | Media |
-| 3 | MASTER pendiente de integrar secciones del Bloque 0 | Bloque 0 | Alta |
 | 2026-09-18 | 1 | 1.1 | ✅ APROBADO | Migración v3 + schema Postgres. Corrección aplicada (openCursor). 439 tests. | 7726c29 |
-
 | 2026-09-18 | 1 | 1.2 | ✅ APROBADO | StorageAdapter + LocalStorageAdapter. Agregado NotImplementedError. 450 tests. | 70034a1 |
-
 | 2026-09-18 | 1 | 1.3 | ✅ APROBADO | MensajePublicoRepository. 8 métodos, 19 tests. Corrección de JSDoc. | 4b6d350 |
-
 | 2026-09-18 | 1 | 1.4 | ✅ APROBADO | FotoPublicaRepository. 9 métodos, 28 tests. Integración Storage. | 801bf0a |
-
 | 2026-09-18 | 1 | 1.5 | ✅ APROBADO | ParticipanteRepository con session_token. Índice único en IndexedDB v4. 14 tests. | 2aee4f6 |
-| 4 | `validarNoVacio` lanza `Error` genérico en vez de `ValidacionError` | Paso 1.5 (detectado) | Baja |
 | 2026-09-18 | 1 | 1.6 | ✅ APROBADO | SupabaseStorageAdapter con signed URLs. 6 unit + 6 integration tests. | 7c3288f |
-| 5 | ~~`crearStorageAdapter` no se invoca en bootstrap ni en repos.~~ **RESUELTA en paso 2.4b.1 (547f005)** | Paso 1.6 (detectado) | Resuelta |
-| 6 | Tests de control en `partidas.spec.js` son laxos (`if (await btn.isVisible())`) | Paso 2.3a | Media |
-| 7 | Tests de control apuntan a `#/partidas-viejo/` (consola vieja) en vez del shell nuevo | Paso 2.3a | Media |
-| 8 | `indexeddb-smoke.spec.js` cambió de propósito (17 stores → 0 stores) | Paso 2.3a | Baja |
-| 9 | Shell tiene 3 bugs conocidos (data-accion, colores, juego_codigo) | Paso 2.3 | Alta |
-| 10 | Credenciales hardcodeadas en `tests/e2e/_helpers/auth.js` | Paso 2.3a | Baja |
-| 11 | `playwright.config.js` sin config para CI | Paso 2.3a | Baja |
-| 12 | Test `lista de sets sin filtro muestra mensaje` es flaky en corrida completa | Paso 2.3c (detectado) | Media |
-| 13 | Flaky general en e2e ("Failed to fetch" en varios tests) | Paso 2.4a (detectado) | Media |
-| 14 | ~~Migración 0010 no se aplicó a Supabase Cloud.~~ **RESUELTA en paso 2.4b.2** | Paso 2.4b.2 | Resuelta |
-| 16 | Faltaban GRANTs en fotos_publicas y mensajes_publicos. **RESUELTA en paso 2.4b.2 (3f6d575)** | Paso 2.4b.2 | Resuelta |
-| 17 | Test e2e de TriviaGameUI solo verifica registro, no renderización completa. | Paso 2.5 | Baja |
-| 18 | Condición del `if` en `TriviaGameUI.renderizarAreaJuego` difícil de leer. | Paso 2.5 | Baja |
-| 19 | `Boton` recibe `clase` y `id` redundantes en TriviaGameUI. | Paso 2.5 | Baja |
-| 20 | Tests de circuitos fallan intermitentemente por timeout en #form-circuito | Paso 2.6c | Media |
-| 21 | Políticas RLS aplicadas manualmente sin documentación completa | Bloque 3 | Media |
-| 22 | Políticas de Storage aplicadas manualmente sin documentación | Bloque 3 | Media |
-| 23 | `URL.revokeObjectURL` no se llama al limpiar preview | Paso 3.4 | Baja |
-| 24 | Tests e2e suben archivos basura a Supabase Storage | Paso 3.4 | Baja |
-| 25 | `MensajePublico` no resuelve `participante_nombre` | Paso 3.5 | Media |
-| 26 | Variable `sessionId` sin usar en `_cargarModeracion` | Paso 3.5 | Baja |
-| 27 | Repositorio Git se corrompió por `git add` con paths mal formados | Bloque 3 | Media |
-## Cierre de bloque
-
-| Fecha | Bloque | Estado | Notas |
-|-------|--------|--------|-------|
-| 2026-09-18 | 1 | ✅ CERRADO | 6/6 pasos. 517 unit + 105 integration. Commit de cierre: 7c3288f. |
-
 | 2026-09-18 | 2 | 2.2 | ✅ APROBADO | GameUIRegistry con contrato validado. 17 tests. | 42d622c |
-
 | 2026-09-18 | 2 | 2.3 + 2.3a | ✅ APROBADO | ShellPartida + login e2e. 39 e2e passing. Deuda técnica en tests laxos. | 73f0cbf |
-
 | 2026-09-18 | 2 | 2.3b | ✅ APROBADO | obtenerContextoEspera enriquecido con juego_codigo. 2 tests. | 927ceac |
-
 | 2026-09-19 | 2 | 2.3c | ✅ APROBADO | Shell corregido (botones, colores) + tests endurecidos. Flaky en sets.spec.js. | 13a01aa |
-
-## Reorganización del Bloque 2
-
-| Fecha | Cambio | Razón |
-|-------|--------|-------|
-| 2026-09-19 | Paso 2.4 (Portar consola.js) cancelado. Bloque 2 pasa de 8 a 7 pasos. | La lógica ya fue portada en paso 2.3 (ShellPartida). |
-
 | 2026-09-19 | 2 | 2.4a | ✅ APROBADO | ShellPublica base. 4 tests. Flaky general en e2e detectado. | c75fcf5 |
-
 | 2026-09-19 | 2 | 2.4b.1 | ✅ APROBADO | Storage + foto + mensaje en bootstrap. Bug de crearStorageAdapter corregido. | 547f005 |
-
 | 2026-09-19 | 2 | 2.4b.2 | ✅ APROBADO | Galería + QR. Bloqueo de migración 0010 y RLS resuelto. | bc7f9e0, 3f6d575, 8d28be9 |
-
 | 2026-09-19 | 2 | 2.4c | ✅ APROBADO | Card próximo desafío + marquee footer. 9/9 e2e shell público. | 92f54b6 |
-
 | 2026-09-19 | 2 | 2.5 | ✅ APROBADO | TriviaGameUI registrado. Primer GameUI concreto. 8/8 e2e shell conductor. | 772316f |
-
 | 2026-09-19 | 2 | 2.6a | ✅ APROBADO | Botones faltantes del shell (tomar control, comenzar, descartar). | ac3cff8 |
 | 2026-09-19 | 2 | 2.6b | ✅ APROBADO | Tests migrados de #/partidas-viejo/ a #/partidas/. | 5cad6c0 |
 | 2026-09-19 | 2 | 2.6c | ✅ APROBADO | consola.js eliminado. Bloque 2 cerrado. | 5e32d5b |
-
-## Cierre de bloque
-
-| Fecha | Bloque | Estado | Notas |
-|-------|--------|--------|-------|
-| 2026-09-19 | 2 | ✅ CERRADO | 13/13 pasos. 540 unit + 53 e2e. Commits: 5e32d5b, 5cad6c0, ac3cff8. |
-
 | 2026-09-19 | 3 | 3.1 | ✅ APROBADO | Ruta #/movil/:codigo + pantalla base. 4 e2e tests. | c981d3e |
-
 | 2026-09-19 | 3 | 3.2 | ✅ APROBADO | Identificación + session_token en móvil. 8 e2e tests. | 63c7f7e |
-
-## Reorganización del Bloque 3
-
-| Fecha | Cambio | Razón |
-|-------|--------|-------|
-| 2026-09-19 | Paso 3.3 (Pantalla principal) fusionado con 3.4 (Envío de mensajes). Bloque 3 pasa de 7 a 6 pasos. | La pantalla principal ya existía (pasos 3.1 + 3.2). |
-
 | 2026-09-19 | 3 | 3.3 | ✅ APROBADO | Envío de mensajes desde móvil. 11 e2e tests. | 8e7e614 |
-
 | 2026-09-19 | 3 | 3.4 | ✅ APROBADO | Envío de fotos desde móvil. 14 e2e tests. | 3b3c84a |
-
 | 2026-09-19 | 3 | 3.5 | ✅ APROBADO | Cola de moderación en shell del conductor. 14 e2e tests. | fc44d02 |
-
 | 2026-09-19 | 3 | 3.6 | ✅ APROBADO | Muro de mensajes dinámico en pública. 12 e2e tests. | 9ca4e7a |
-
-## Cierre de bloque
-
-| Fecha | Bloque | Estado | Notas |
-|-------|--------|--------|-------|
-| 2026-09-19 | 3 | ✅ CERRADO | 6/6 pasos. 540 unit + 40 e2e. Commits: 9ca4e7a, fc44d02, 3b3c84a, 8e7e614, 63c7f7e, c981d3e. |
-
 | 2026-09-19 | 4 | 4.1 | ✅ APROBADO | Modelo de datos + GameDefinition de "¿Qué piensa el público?". 50 tests nuevos. | f1948e0 |
-
 | 2026-09-19 | 4 | 4.2 | ✅ APROBADO | Editor de items para QPEP. 5 e2e tests. | 5e83f59 |
-
 | 2026-09-19 | 4 | 4.3a | ✅ APROBADO | onAccion conectado a servicios. 2 e2e tests. | f4a3b5a |
-
 | 2026-09-19 | 4 | 4.3b | ✅ APROBADO | QuePiensaElPublicoGameUI display. 1 e2e test. | 0b07d42 |
-
-| 2026-09-19 | 4 | 4.3b | ✅ APROBADO | QuePiensaElPublicoGameUI display. 1 e2e test. | 0b07d42 |
-
 | 2026-09-20 | 4 | 4.3c | ✅ APROBADO | Flujo de fases del conductor QPEP. 1 e2e test. | 25b5560 |
-
 | 2026-09-20 | 4 | 4.3d | ✅ APROBADO | Timer de encuesta con auto-cierre. 1 e2e test. | b1306d5 |
-
 | 2026-09-20 | 4 | 4.4 | ✅ APROBADO | Móvil responde A/B encuesta QPEP. 3 e2e tests. | 82079aa |
-
 | 2026-09-20 | 4 | 4.5 | ✅ APROBADO | Registro de pronósticos + botón Revelar. 2 e2e tests. | 97ece23 |
-
 | 2026-09-20 | 4 | 4.6 | ✅ APROBADO | Revelar + puntuar + siguiente ronda. 3 e2e tests. | c31a1d6 |
-
 | 2026-09-21 | 4 | 4.6-fix | ✅ APROBADO | Conductor carga items del set activo. Deuda #41 resuelta. | aacf950 |
-
 | 2026-09-21 | 4 | 4.7 | ✅ APROBADO | Pública muestra QPEP por fase + galería oculta. 3 e2e tests. | f3e5abd |
-
 | 2026-09-21 | 4 | 4.8a | ✅ APROBADO | Conteo real de votos al cerrar encuesta. Bug resuelto. | ca6bbc0 |
-
 | 2026-09-21 | 4 | 4.8b | ✅ APROBADO | Test e2e end-to-end del flujo QPEP completo. ★ MVP alcanzado ★. | 2e19767 |
-| 2026-09-21 | 4 | ✅ CERRADO | 13/13 pasos. ★ MVP alcanzado ★. 595 unit + 59 e2e. |
-
-## Cierre de bloque
-
-| Fecha | Bloque | Estado | Notas |
-|-------|--------|--------|-------|
-
-
 | 2026-09-21 | 5 | 5.0 | ✅ APROBADO | Refactor: cargarItemsDeJuego + crearTimer. 13 tests nuevos. | (pendiente) |
-
 | 2026-09-21 | 5 | 5.1a | ✅ APROBADO | Trivia conectada al shell. 8 tipos de acción. | 58e2043 |
 | 2026-09-21 | 5 | 5.1b | ✅ APROBADO | Editor de items de Trivia. 5 e2e nuevos + 1 actualizado. 609 unit. | a2cafb5 |
 | 2026-09-21 | 5 | 5.1c | ✅ APROBADO | Cierre documental: mecánicas CI/Pic/HE + reordenamiento del Bloque 5. | (pendiente) |
@@ -205,15 +70,17 @@ _(ninguna)_
 | 2026-09-21 | 5 | 5.3d | ❌ RECHAZADO | Canción Incompleta: tests no eran e2e (Vitest + fake-indexeddb). Reemplazados en 5.3f. | 496cc5a |
 | 2026-09-21 | 5 | 5.3e | ✅ APROBADO | Canción Incompleta: FIN_DE_RONDA + timer toggle. Timer público quedó pendiente. | 8f608ee |
 | 2026-09-21 | 5 | 5.3f | ✅ APROBADO | Canción Incompleta: fix helper e2e + timer público + 23 tests UI + 9 e2e reales. | a9d76d5 |
+| 2026-09-21 | 5 | 5.4-pre | ✅ APROBADO | Cierre documental de mecánica de Pictionary. Decisiones: estructura del item del set, orden fijo de modos, bonus manual. | — |
+| 2026-09-21 | 5 | 5.4a | ✅ APROBADO | Pictionary GameDefinition + reducers + 74 tests unitarios. Archivos: PictionaryGameDefinition.js, tests, registro.js. | ef53390 |
+| 2026-09-22 | 5 | 5.4-e | ✅ APROBADO | Fix juego_nombre en obtenerContextoEspera (bug #67). Pictionary 11/11. | 3eb742d |
 | 2026-09-22 | 5 | 5.4-pre | ✅ APROBADO | Pictionary: cierre documental de mecánica. | d076f9e |
+| 2026-09-22 | 5 | 5.4-rosco-fix-v2 | ✅ APROBADO | Retry lazy en Rosco (bug #59). Rosco 18/18. | 699204b |
 | 2026-09-22 | 5 | 5.4a | ✅ APROBADO | Pictionary: GameDefinition + 74 tests. | ef53390 |
 | 2026-09-22 | 5 | 5.4b | ✅ APROBADO | Pictionary: UI Conductor + 34 tests. | c84613e |
 | 2026-09-22 | 5 | 5.4c | ✅ APROBADO | Pictionary: UI Pública + bonus inline + 32 tests. | 0835a28 |
 | 2026-09-22 | 5 | 5.4d | ❌ RECHAZADO | Pictionary: e2e con 1 falla + mecánica incorrecta. | f8b8530 |
 | 2026-09-22 | 5 | 5.4d-fix | ✅ APROBADO | Pictionary: corrección de avanzarModo + helper e2e. | 08e4acf |
 | 2026-09-22 | 5 | 5.4d-fix-2 | ✅ APROBADO | Pictionary: assertions + timeout. | 83f9f2d |
-| 2026-09-22 | 5 | 5.4-rosco-fix-v2 | ✅ APROBADO | Retry lazy en Rosco (bug #59). Rosco 18/18. | 699204b |
-| 2026-09-22 | 5 | 5.4-e | ✅ APROBADO | Fix juego_nombre en obtenerContextoEspera (bug #67). Pictionary 11/11. | 3eb742d |
 | 2026-09-22 | 5 | 5.5-pre | ✅ APROBADO | Cierre documental de mecánica de Historia Enredada. | — |
 | 2026-09-22 | 5 | 5.5-pre-fix | ✅ APROBADO | 1 ronda = 2 historias (1 por equipo). Orden Eq1 → Eq2. | f1e7552 |
 | 2026-09-22 | 5 | 5.5a | ✅ APROBADO | Historia Enredada: GameDefinition + reducers + 40 tests. | b7f6f25 |
@@ -241,12 +108,91 @@ _(ninguna)_
 | 2026-09-22 | 5 | 5.8b | ✅ APROBADO | Anti-Trivia: UI Conductor + shell actions (56 tests). | 141093e |
 | 2026-09-22 | 5 | 5.8c | ✅ APROBADO | Anti-Trivia: UI Pública + timer (39 tests). | c384044 |
 | 2026-09-22 | 5 | 5.8d | ❌ RECHAZADO | Heartbeat en shell-partida introdujo regresiones e2e (Memoricé, Rosco, HE, QPEP). Revertido en 5.8-revert. | 14a3cf3 |
-| 2026-09-21 | 5 | 5.4-pre | ✅ APROBADO | Cierre documental de mecánica de Pictionary. Decisiones: estructura del item del set, orden fijo de modos, bonus manual. | — |
-| 2026-09-21 | 5 | 5.4a | ✅ APROBADO | Pictionary GameDefinition + reducers + 74 tests unitarios. Archivos: PictionaryGameDefinition.js, tests, registro.js. | ef53390 |
-| 2026-09-23 | 5 | ✅ CERRADO | 11/11 pasos. 9 juegos implementados. 1749 unit + ~215 e2e. Commit de cierre: 9b7dfdc. |
+| 2026-09-23 | 5 | 5.8 (cierre) | ✅ CERRADO | Anti-Trivia 12/12 e2e. Memoricé 10/10. Run completo 179/184. 4 fallas residuales (2 pre-existentes, 2 flaky). | 1d865dd |
+| 2026-09-23 | 5 | 5.9a | ✅ APROBADO | EnlacesGameDefinition + 11 reducers + 135 tests. Registro/bootstrap/seed actualizados. | 53f29e9 |
+| 2026-09-23 | 5 | 5.9b | ✅ APROBADO | EnlacesGameUI + shell actions + drag-and-drop HTML5. 67 tests. | acc423f |
+| 2026-09-23 | 5 | 5.9c | ✅ APROBADO | Enlaces pública + timer. 50 tests. Leak de pares_correctos y movimientos controlado (tests anti-leak). | d5e0694 |
+| 2026-09-23 | 5 | 5.9d | ✅ APROBADO | 19 tests e2e Enlaces (drag-drop + flujo + puntuación + timer + validación). Deuda #61 respetada. | 9b7dfdc |
+| 2026-09-23 | 7 | 7.0a | ✅ APROBADO | Refactor: extraer editores QPEP/Trivia. formulario.js 741→144. 1749 unit. | dfb901c |
+| 2026-09-23 | 7 | 7.1a | ✅ APROBADO | Dominio Rosco: N rondas = N sets. 101 tests Rosco. 1780 unit. | 12145ae |
+| 2026-09-23 | 7 | 7.1b | ✅ APROBADO | Modal de inicio + N sets. 43 tests UI, 18 e2e. 1794 unit. | 0f67f43 |
 | 2026-09-23 | 7 | 7.1c | ✅ APROBADO | Rediseño circular del rosco (conductor + pública). renderRosco compartido. 38+57+41 tests. 1857 unit. | 3908371 |
+| 2026-09-23 | 7 | 7.1d | ✅ APROBADO | Editor de sets de Rosco (grilla 27 filas). 30 tests. 1887 unit. | 9771694 |
+| 2026-09-23 | 7 | 7.1d-fix | ✅ APROBADO | Revertir SetService.crearSetCompleto sin uso. | e2eae33 |
+| 2026-09-23 | 7 | 7.2a | ✅ APROBADO | Modelo Memoricé: imagen_url requerido + es_predeterminado en sets. 107 tests. 1901 unit. | 83df5b8 |
+| 2026-09-23 | 7 | 7.2b | ✅ APROBADO | Storage helpers para imágenes de Memoricé. 15 tests. 1916 unit. | 5cba1fa |
+| 2026-09-23 | 7 | 7.2c | ✅ APROBADO | Editor de Memoricé (grilla N slots + imágenes). 40 tests. 1956 unit. | 353f1d0 |
+| 2026-09-23 | 7 | 7.2d | ✅ APROBADO | Resolver storageRef a URL en UI. 8 tests. 1964 unit. | 3ea02b9 |
+| 2026-09-23 | 7 | 7.2e | ✅ APROBADO | Sets predeterminados (Emojis/Íconos) + render `emoji:` + editor solo lectura. 22 tests nuevos. 1986 unit. | b576d22 |
+| 2026-09-23 | 7 | 7.3 | ✅ APROBADO | Editor de Anti-Trivia (lista + form con respuestas dinámicas). 45 tests. 2031 unit. | 31cfb0b |
+| 2026-09-24 | 7 | 7.4 | ✅ APROBADO | Editor de Enlaces: 306 líneas, 49 tests, validación de unicidad A/B, `reordenarItems` con `[{id}]`. Formulario integrado (5 cambios). 2080 unit. | 2d4f441 |
+| 2026-09-24 | 7 | 7.4a | ✅ APROBADO | Deuda #111: validación de máximo 10 en dominio y editor de Enlaces. +6 tests dominio, +6 tests editor. 2109 unit. | be6f30b |
+| 2026-09-24 | 7 | CIERRE | ✅ CERRADO | Bloque 7 completo 24/24. 2600 unit. 9 juegos con formularios. Migraciones 0017 y 0018 aplicadas. | 97aaa8d |
+| 2026-09-24 | 8 | 8.0 | ✅ APROBADO | Componente Modal compartido. Rosco + Memoria migrados. 2633 unit / 82 archivos. | c59f41c |
+| 2026-09-24 | 8 | 8.1 | ✅ APROBADO | pausado_at + ajustes_globales. Migración 0019. 2651 unit /  85 archivos. | 1193983 |
+| 2026-09-24 | 8 | 8.2 | 🕓 IMPLEMENTADO (sin commit) | `_renderShellTimer(estadoJuego)` + `#shell-timer` en barra superior del shell conductor (inserción justo después de `_renderTopBar`, sin tocar la función). 3 e2e nuevos en `shell-partida-timer.spec.js` (visible / oculto / formato). 2651 unit / 85 archivos ✓, e2e 3/3 ✓. Hallazgo pre-existente: e2e Pictionary rotos (helper pasa `palabras_por_modo`; `validarConfiguracion` exige `palabras_por_turno`) — verificado con `git stash` en `38ba384`, fuera de alcance 8.2. | PENDIENTE |
+| 2026-09-24 | 8 | 8.3 | 🕓 IMPLEMENTADO (sin commit) | `_abrirModalPausa` en shell-partida: `#modal-pausa` (`montarModal`, `cerrable: false`, título "JUEGO EN PAUSA") montado en `document.body` (decisión aprobada: el container del shell se re-renderiza cada ≤2s por polling y destruiría el modal), `#pausa-contador` (desde `juego.pausado_at`, `Math.max(0,…)`, `setInterval` 1s) + "Tiempo máximo: MM:SS" vía `services.ajustes.obtenerTiempoMaxPausaSeg()`, único botón `#btn-pausa-reanudar` (limpia intervalo → `desmontarModal` → `reanudarJuego` → `_renderContenido`); limpieza en REANUDAR + `hashchange` (navegación fuera de `#/partidas/`) + `renderShellPartida` (re-entrada). Helper `_formatearTiempo` compartido con `_renderShellTimer` (refactor). Handler `#btn-pausar` extiende con `await _abrirModalPausa(...)`; `#btn-reanudar` de la barra NO modificado. **Correcciones D3–D6 (working tree):** D3 `juegoEnPausa` exige `pausado_at` presente y parseable (fallback `Date.now()` eliminado); D4 modal solo muestra el contador (línea "Tiempo máximo" y `services.ajustes` eliminados, sin referencias); D5 `_limpiarPausaModal()` agregado en el handler `#btn-reanudar` de la barra (defensivo — ver deuda #124); D6 `_onHashChangePausa` limpia siempre sin regex. El test 7 (D5) fue descartado tras comprobar que `#btn-reanudar` nunca se renderiza (deuda #124). 6 e2e en `shell-partida-pausa.spec.js`. 2651 unit / 85 archivos ✓, e2e 6/6 ✓. Desviación preflight: `.gitignore` con `+playwright` modificado por fuera — no tocado, no incluido (aprobado por el operador). Deuda #123 registrada. | PENDIENTE |
+| 2026-09-24 | 8 | 8.4 | 🕓 IMPLEMENTADO (sin commit) | Modal 8.3 ajustado a SOLO informativo: `#btn-pausa-reanudar` eliminado de `_abrirModalPausa` (`acciones: []`); reintroducido `const maxSeg = await services.ajustes.obtenerTiempoMaxPausaSeg()`. Topbar: `relative z-[60]` + `id="shell-topbar"` (queda sobre el modal z-50 — **C1** resuelta con el operador: "Topbar z-[60] sobre el modal (Recomendado)"; modal.js NO tocado). `_renderTopBar(partida, juegoActivo, ...)`: `#btn-reanudar` con `juegoActivo?.estado === 'PAUSADO'` (**#124 cerrada**) + `#btn-modo-espera` (mismo guard, `Boton secondary`). Estado UI local `_modoEsperaActivo` (reset en `renderShellPartida` — **D1** decide Parte 6 literal vs recalcular desde estado PAUSADO; se anota en decisiones no previstas) + `_renderOverlayModoEspera` (`#modo-espera-overlay`, `absolute left-0 right-0 top-16 bottom-0 z-40`, sin botones) + `_entrarModoEspera` (async: flag → `_limpiarPausaModal` → `_renderContenido`) + `_salirModoEspera` (solo flag=false). Auto-transición en `pintarContador`: `Number.isFinite(maxSeg) && transcurrido >= maxSeg && !_modoEsperaActivo` (guard robustez contra `null >= 0`) → `_limpiarPausaModal` + `_entrarModoEspera` (**#123 cerrada**). Handlers: `#btn-reanudar` ahora llama `_salirModoEspera()` antes de limpiar/reanudar; nuevo `#btn-modo-espera` (`_limpiarPausaModal` + `_entrarModoEspera`, catch alert). **C2** resuelta con el operador: NO commitear (D7/BLOQUE-2-COMMITS anulado, patrón 8.2/8.3) — evidencia sin `git show --stat`. Specs: `shell-partida-pausa.spec.js` de 6 → 5 e2e (test 2 `#btn-pausa-reanudar` eliminado; test 4 REANUDAR → `#btn-reanudar`; click "fuera" movido a (5,120) porque (5,5) queda bajo la topbar z-60); nuevo `shell-partida-modo-espera.spec.js` 7 e2e (btn visible ×2, overlay+modal gone, reanudar desde overlay → EN_CURSO, auto-transición con `ajustes.actualizar({tiempo_max_pausa_seg: 2})`, overlay sin botones, geometría overlay vs `#shell-topbar` — los botones desbordan `h-16` por `flex-wrap` pre-existente, por eso se mide la barra y no el botón). 2651 unit / 85 archivos ✓, e2e 12/12 ✓ + regresión `shell-partida.spec.js`/timer: 28/29 (1 fallo pre-existente `uiRegistry cantidad===2` — recibió 9; verificado con `git stash` en HEAD limpio). | PENDIENTE |
 
-## Deuda técnica nueva
+---
+
+## Cierres de bloque
+
+| Fecha | Bloque | Estado | Notas |
+|-------|--------|--------|-------|
+| 2026-09-18 | 1 | ✅ CERRADO | 6/6 pasos. 517 unit + 105 integration. Commit de cierre: 7c3288f. |
+| 2026-09-19 | 2 | ✅ CERRADO | 13/13 pasos. 540 unit + 53 e2e. Commits: 5e32d5b, 5cad6c0, ac3cff8. |
+| 2026-09-19 | 3 | ✅ CERRADO | 6/6 pasos. 540 unit + 40 e2e. Commits: 9ca4e7a, fc44d02, 3b3c84a, 8e7e614, 63c7f7e, c981d3e. |
+| 2026-09-21 | 4 | ✅ CERRADO | 13/13 pasos. ★ MVP alcanzado ★. 595 unit + 59 e2e. |
+| 2026-09-23 | 5 | ✅ CERRADO | 11/11 pasos. 9 juegos implementados. 1749 unit + ~215 e2e. Commit de cierre: 9b7dfdc. |
+
+---
+
+## Reorganizaciones
+
+| Fecha | Cambio | Razón |
+|-------|--------|-------|
+| 2026-09-19 | Paso 2.4 (Portar consola.js) cancelado. Bloque 2 pasa de 8 a 7 pasos. | La lógica ya fue portada en paso 2.3 (ShellPartida). |
+| 2026-09-19 | Paso 3.3 (Pantalla principal) fusionado con 3.4 (Envío de mensajes). Bloque 3 pasa de 7 a 6 pasos. | La pantalla principal ya existía (pasos 3.1 + 3.2). |
+
+---
+
+## Correcciones pendientes
+
+_(ninguna)_
+
+---
+
+## Deuda técnica activa
+
+| # | Descripción | Origen | Prioridad |
+|---|-------------|--------|-----------|
+| 1 | `actualizarEstadoJuego` en Supabase no es atómico | H7.8 | Media |
+| 2 | `expirarPartida` en Supabase no es atómico | H7.8 | Media |
+| 3 | MASTER pendiente de integrar secciones del Bloque 0 | Bloque 0 | Alta |
+| 4 | `validarNoVacio` lanza `Error` genérico en vez de `ValidacionError` | Paso 1.5 (detectado) | Baja |
+| 5 | ~~`crearStorageAdapter` no se invoca en bootstrap ni en repos.~~ **RESUELTA en paso 2.4b.1 (547f005)** | Paso 1.6 (detectado) | Resuelta |
+| 6 | Tests de control en `partidas.spec.js` son laxos (`if (await btn.isVisible())`) | Paso 2.3a | Media |
+| 7 | Tests de control apuntan a `#/partidas-viejo/` (consola vieja) en vez del shell nuevo | Paso 2.3a | Media |
+| 8 | `indexeddb-smoke.spec.js` cambió de propósito (17 stores → 0 stores) | Paso 2.3a | Baja |
+| 9 | Shell tiene 3 bugs conocidos (data-accion, colores, juego_codigo) | Paso 2.3 | Alta |
+| 10 | Credenciales hardcodeadas en `tests/e2e/_helpers/auth.js` | Paso 2.3a | Baja |
+| 11 | `playwright.config.js` sin config para CI | Paso 2.3a | Baja |
+| 12 | Test `lista de sets sin filtro muestra mensaje` es flaky en corrida completa | Paso 2.3c (detectado) | Media |
+| 13 | Flaky general en e2e ("Failed to fetch" en varios tests) | Paso 2.4a (detectado) | Media |
+| 14 | ~~Migración 0010 no se aplicó a Supabase Cloud.~~ **RESUELTA en paso 2.4b.2** | Paso 2.4b.2 | Resuelta |
+| 16 | Faltaban GRANTs en fotos_publicas y mensajes_publicos. **RESUELTA en paso 2.4b.2 (3f6d575)** | Paso 2.4b.2 | Resuelta |
+| 17 | Test e2e de TriviaGameUI solo verifica registro, no renderización completa. | Paso 2.5 | Baja |
+| 18 | Condición del `if` en `TriviaGameUI.renderizarAreaJuego` difícil de leer. | Paso 2.5 | Baja |
+| 19 | `Boton` recibe `clase` y `id` redundantes en TriviaGameUI. | Paso 2.5 | Baja |
+| 20 | Tests de circuitos fallan intermitentemente por timeout en #form-circuito | Paso 2.6c | Media |
+| 21 | Políticas RLS aplicadas manualmente sin documentación completa | Bloque 3 | Media |
+| 22 | Políticas de Storage aplicadas manualmente sin documentación | Bloque 3 | Media |
+| 23 | `URL.revokeObjectURL` no se llama al limpiar preview | Paso 3.4 | Baja |
+| 24 | Tests e2e suben archivos basura a Supabase Storage | Paso 3.4 | Baja |
+| 25 | `MensajePublico` no resuelve `participante_nombre` | Paso 3.5 | Media |
+| 26 | Variable `sessionId` sin usar en `_cargarModeracion` | Paso 3.5 | Baja |
+| 27 | Repositorio Git se corrompió por `git add` con paths mal formados | Bloque 3 | Media |
 | 46 | Test e2e crea respuestas con participanteId inventado (FK violada) | Paso 4.8a | Media |
 | 47 | El shell calcula resultado_publico (lógica de juego en UI) | Paso 4.8a | Baja |
 | 48 | Shell aplica `Math.max(0, ...)` en penalización de Trivia. Debería permitir puntos negativos. | Paso 5.1a | Media |
@@ -258,13 +204,10 @@ _(ninguna)_
 | 54 | `docs/roadmap/pasos/bloque-5.0.md` y `bloque-5.1a.md` no fueron archivados. | Paso 5.1c (detectado) | Baja |
 | 55 | Sección "2. Bloques" del ROADMAP y matriz de estado de GAMES.md podrían divergir a futuro. Conviene automatizar chequeo. | Paso 5.1c (detectado) | Baja |
 | 56 | El script `update-5.1c.js` usó anclas de la sección equivocada de GAMES.md (Memoricé en lugar de Canción Incompleta). Cerrado en commit posterior. Conviene evitar anclas por texto literal en docs con secciones similares; preferir anclas por sección. | Paso 5.1c (detectado) | Baja |
-| 57 | La validación de Rosco requiere N items por letra para N rondas. Si el set no cumple, el conductor no puede iniciar el juego. UX a definir. | Paso 5.1d (detectado) / 5.2a (cerrada) | Cerrada |
 | 58 | El rosco tiene 27 letras (A-Z + Ñ). La UI debe manejar el layout circular o rectangular con esa cantidad. Verificar legibilidad en pantalla pública. | Paso 5.1d (detectado) | Baja |
 | 59 | Stale closures en `onAccion` de shell-partida.js. El `state_version` capturado en closure queda obsoleto tras la primera acción. **Cerrado para Rosco** en 5.4-rosco-fix-v2 (retry lazy con ConflictoVersionError). **Latente** en Trivia, QPEP y otros juegos sin tests de 2 acciones rápidas consecutivas. Replicar el patrón de retry. | Paso 5.2d / 5.4-rosco-fix-v2 | Media |
-| 60 | El registro de juegos requiere tocar tests/unit/app/bootstrap.test.js y tests/unit/app/seed.test.js cada vez que se agrega un juego nuevo. Acoplamiento entre registro y tests de bootstrap/seed. Revisar para que la lista de juegos registrados se derive dinámicamente. | Paso 5.2d (detectado) | Cerrada (5.3f) |
 | 61 | **CRÍTICA.** El agente reporta e2e como "creados" o "pasando" sin correrlos. Ocurrió en 5.3d, 5.3e, 5.3f, 5.4d y 5.4-rosco-fix (5 veces). Impacto directo en la confiabilidad del proceso. Los prompts de e2e DEBEN exigir output crudo de Playwright. Considerar cambiar de agente si persiste. | Paso 5.3f / 5.4-rosco-fix | Crítica |
 | 62 | Cada juego nuevo tiende a reinventar el helper de e2e. Extraer un helper común que parametrice crearPartida con el código del juego. | Paso 5.3f (detectado) | Media |
-| 67 | `PartidaRepository.obtenerContextoEspera` no mapeaba `juego_nombre`, causando que la UI pública mostrara `PICTIONARY` (código crudo) en lugar de `Pictionary`. | Paso 5.4-e (detectado) | Cerrada (5.4-e) |
 | 68 | El test "modo 1: público carga la partida" pasó por 3 versiones (simplificado → reforzado → funcional). Verificar que el refuerzo se mantuvo. | Paso 5.4-rosco-fix-v2 (detectado) | Baja |
 | 69 | El cambio de `cargarItemsDeJuego` (ahora devuelve `id` además del contenido) puede afectar a Trivia cuyos tests asumen items sin `id`. Verificar al cerrar 5.6. | Paso 5.5d (detectado) | Baja |
 | 70 | El test "set sin historias suficientes no permite arrancar la ronda" está `test.skip`. Para des-skipearlo, el helper necesita aceptar `itemsCount: 0`. | Paso 5.5d (detectado) | Baja |
@@ -278,7 +221,6 @@ _(ninguna)_
 | 80 | ROADMAP con deuda estructural: conteos inconsistentes (`/10`, `/16`, `/20`, `/21`), historial con `5.7` duplicado, sección 2 desincronizada. Corregido en 5.7-cierre. | Paso 5.7d (detectado) | Media |
 | 82 | Agente externo construyó 5.8b, 5.8c y 5.8d sin auditoría intermedia. Violación de regla 9 de CONTINUIDAD.md. Escalar si se repite. | Paso 5.8d (detectado en auditoría) | Alta |
 | 83 | Heartbeat en shell-partida.js introdujo regresión sistémica en e2e de Memoricé, Rosco, Historia Enredada y QPEP (12+ fallas nuevas). Revertido en 5.8-revert. Reabrir como paso dedicado con tests propios. | Paso 5.8d (detectado en auditoría) | Alta |
-| 84 | Inconsistencia de cálculo de ganador entre AntiTriviaGameUI (pts1 > pts2) y shell-publica (calcularResultado().ganador). Resuelto en 5.8-revert (C1). | Paso 5.8d (detectado en auditoría) | Cerrada |
 | 85 | El agente reportó "4 fallas e2e pre-existentes" cuando el run real mostraba 17 fallas visibles (mínimo 12 nuevas). Deuda #61 agravada. | Paso 5.8d (detectado en auditoría) | Crítica |
 | 86 | El run de Playwright se corta con `tail` en el pipe. Usar `> /tmp/e2e.txt 2>&1` y leer el archivo después. | Paso 5.8d (detectado en auditoría) | Baja |
 | 87 | `indexeddb-smoke.spec.js:6` falla intermitentemente en run completo (pre-existente). Revisar config del adapter o condición del test. | Run completo 5.8e (detectado) | Baja |
@@ -299,16 +241,60 @@ _(ninguna)_
 | 103 | `shell-partida.js` no tiene unit tests (solo e2e). La resolución de storageRefs a URLs quedó cubierta solo por `node --check` + simetría con `shell-publica`. Considerar agregar tests. | Paso 7.2d (detectado) | Media |
 | 104 | `shell-publica.js` muta `contexto.urlsImagenes` en vez de pasar un 4to parámetro. Efecto secundario. Considerar refactor. | Paso 7.2d (detectado) | Baja |
 | 105 | El conteo del Bloque 7 cambió de 10/10 a 10/16 (contar sub-pasos vs pasos principales). Convención: N/N = filas totales del bloque. Documentar. | Paso 7.2e (detectado) | Baja |
-| 106 | Anti-Trivia: dificultad general **rechazada por D2**. Dificultad individual **parcialmente cerrada en 7.3a** (dominio + editor + tests). Commit PENDIENTE. | Paso 7.3 (detectado) / 7.3a | Media |
 | 107 | Los prompts deben verificar la existencia de archivos antes de referenciarlos (ej: trivia/editor.test.js no existe). El agente debe PARAR si el prompt referencia algo inexistente. | Paso 7.3 (detectado) | Baja |
-| 108 | `reordenarItems` en Trivia/QPEP (y quizás Rosco) pasa `items.map(i => i.id)` (array de strings) pero el contrato real es `Array<{id}>`. Bug latente. Anti-Trivia lo hace bien. Verificado en 7.3: solo Trivia (`trivia/editor.js:363`) y QPEP (`que-piensa-el-publico/editor.js:222`) lo llaman con strings; Rosco/Memoria no llaman. **Trivia corregida en 7.5. QPEP corregida en 7.6. Cerrada.** | Paso 7.3 (detectado) / 7.5 / 7.6 | ~~Media~~ Cerrada |
 | 109 | El editor de Anti-Trivia guarda estado en `container.__antiTriviaEstado`. Precedente de deuda #102. | Paso 7.3 (detectado) | Baja |
 | 110 | Divergencia entre validación de unicidad del editor de Enlaces (con `.trim()`) y del dominio (`EnlacesGameDefinition.validarContenidoSet`, comparación cruda). El editor es más estricto. A futuro, alinear el dominio. | Paso 7.4 (detectado) | Baja |
-| 111 | Enlaces: agregar validación de máximo 10 en editor y dominio. **Cerrada en 7.4a** (dominio + editor + 12 tests). | Paso 7.4 (detectado) / 7.4a | ~~Media~~ Cerrada |
-| 119 | Las deudas #112–#121 viven en `FORMULARIOS.md` §11, no en `AUDITORIA.md`. Esto rompe la convención de que AUDITORIA es la fuente canónica. Consolidar. | Bloque 7 (detectado) | Baja |
-| 120 | ~~La RPC crear_set_completo no acepta submodo.~~ **Cerrada en 7.7a** (migración 0018). | Bloque 7 / 7.7a | Cerrada |
 | 121 | Fallback para sets de Pictionary sin `submodo` en el dispatch de `formulario.js`. Sets viejos con submodo null/undefined caen en editor vacío. | Paso 7.7d.1 (detectado) | Baja |
 | 122 | e2e Pictionary rotos: `tests/e2e/pictionary/_helpers/pictionary.js` pasa `palabras_por_modo` pero `PictionaryGameDefinition.validarConfiguracion` exige `palabras_por_turno`. Botón "Iniciar juego" inoperante por alerta silenciosa. Verificado pre-existente con `git stash` en `38ba384`. | Paso 8.2 (detectado) | Media |
+| 125 | e2e `shell-partida.spec.js` "uiRegistry tiene QuePiensaElPublicoGameUI registrado" falla: espera `cantidad() === 2` pero hay 9 GameUIs registradas (registro creció con los juegos, el test no se actualizó). Pre-existente: falla igual en HEAD limpio, verificado con `git stash` en 8.4 (28/29 en la regresión de shell/timer). | Paso 8.4 (detectado) | Media |
+
+---
+
+## Deuda técnica cerrada
+
+| # | Descripción | Origen | Prioridad |
+|---|-------------|--------|-----------|
+| 57 | La validación de Rosco requiere N items por letra para N rondas. Si el set no cumple, el conductor no puede iniciar el juego. UX a definir. | Paso 5.1d (detectado) / 5.2a (cerrada) | Cerrada |
+| 60 | El registro de juegos requiere tocar tests/unit/app/bootstrap.test.js y tests/unit/app/seed.test.js cada vez que se agrega un juego nuevo. Acoplamiento entre registro y tests de bootstrap/seed. Revisar para que la lista de juegos registrados se derive dinámicamente. | Paso 5.2d (detectado) | Cerrada (5.3f) |
+| 67 | `PartidaRepository.obtenerContextoEspera` no mapeaba `juego_nombre`, causando que la UI pública mostrara `PICTIONARY` (código crudo) en lugar de `Pictionary`. | Paso 5.4-e (detectado) | Cerrada (5.4-e) |
+| 84 | Inconsistencia de cálculo de ganador entre AntiTriviaGameUI (pts1 > pts2) y shell-publica (calcularResultado().ganador). Resuelto en 5.8-revert (C1). | Paso 5.8d (detectado en auditoría) | Cerrada |
+| 106 | Anti-Trivia: dificultad general **rechazada por D2**. Dificultad individual **parcialmente cerrada en 7.3a** (dominio + editor + tests). Commit PENDIENTE. | Paso 7.3 (detectado) / 7.3a | Media |
+| 108 | `reordenarItems` en Trivia/QPEP (y quizás Rosco) pasa `items.map(i => i.id)` (array de strings) pero el contrato real es `Array<{id}>`. Bug latente. Anti-Trivia lo hace bien. Verificado en 7.3: solo Trivia (`trivia/editor.js:363`) y QPEP (`que-piensa-el-publico/editor.js:222`) lo llaman con strings; Rosco/Memoria no llaman. **Trivia corregida en 7.5. QPEP corregida en 7.6. Cerrada.** | Paso 7.3 (detectado) / 7.5 / 7.6 | ~~Media~~ Cerrada |
+| 111 | Enlaces: agregar validación de máximo 10 en editor y dominio. **Cerrada en 7.4a** (dominio + editor + 12 tests). | Paso 7.4 (detectado) / 7.4a | ~~Media~~ Cerrada |
+| 112 | ~~Anti-Trivia: agregar `dificultad` individual al item y al editor.~~ **Cerrada en 7.3a.** | FORMULARIOS.md §11 | ~~Media~~ Cerrada |
+| 113 | ~~Agregar `Juego.configuracion` (IndexedDB v6 + Supabase 0017).~~ **Cerrada en 7.6a.** | FORMULARIOS.md §11 | ~~Alta~~ Cerrada |
+| 114 | ~~Agregar `Set.submodo` (IndexedDB v6 + Supabase 0017).~~ **Cerrada en 7.6a.** | FORMULARIOS.md §11 | ~~Alta~~ Cerrada |
+| 115 | ~~Pictionary: 4 editores + 1 editor de bancos.~~ **Cerrada. 4 editores + 1 editor de bancos (7.7d.1 + 7.7d.2).** | FORMULARIOS.md §11 | ~~Alta~~ Cerrada |
+| 116 | Historia Enredada: editor de historias + editor de colores. **Cerrada en 7.8a + 7.8b.** | FORMULARIOS.md §11 | ~~Alta~~ Cerrada |
+| 117 | ~~Trivia: rediseño de editor + checkboxes + fix deuda #108.~~ **Cerrada en 7.5** (radios, no checkboxes). | FORMULARIOS.md §11 | ~~Alta~~ Cerrada |
+| 118 | ~~QPEP: simplificación de editor + fix deuda #108.~~ **Cerrada en 7.6** (rediseño + `[{id}]`). | FORMULARIOS.md §11 | ~~Media~~ Cerrada |
+| 120 | ~~La RPC crear_set_completo no acepta submodo.~~ **Cerrada en 7.7a** (migración 0018). | FORMULARIOS.md §11 | ~~Media~~ Cerrada |
 | 123 | ~~Auto-transición a MODO ESPERA al alcanzar el tiempo máximo de pausa (el modal de 8.3 muestra el límite pero no cierra ni cambia el estado de la partida al agotarse). Depende de 8.4 (botón MODO ESPERA + estado UI). **Actualizado D4:** el modal ya no muestra el límite; la deuda abarca mostrar el límite + auto-transición.~~ **Cerrada en 8.4** (auto-transición en `pintarContador` cierra el modal → `_entrarModoEspera`; e2e dedicado con `tiempo_max_pausa_seg: 2`). | Paso 8.3 (detectado) / 8.4 | ~~Media~~ Cerrada |
 | 124 | ~~`#btn-reanudar` de la barra superior **nunca se renderiza**: `_renderTopBar` (`shell-partida.js:1346`) lo condiciona a `partida.estado === 'PAUSADO'`, pero `pausarJuego` solo cambia `juego_ejecutados.estado` a `PAUSADO` (repo local y RPC 0003/0019 nunca asignan `partidas.estado = 'PAUSADO'`). El handler con `_limpiarPausaModal()` (D5) es código defensivo inalcanzable por UI; además, aunque existiera, el overlay `fixed inset-0 z-50` del modal lo taparía. El test 7 (D5) se descartó por este motivo. Pre-existente a 8.3.~~ **Cerrada en 8.4** (condición cambiada a `juegoActivo?.estado === 'PAUSADO'`; topbar `z-[60]` queda sobre el modal — C1; e2e `#btn-reanudar` visible + REANUDAR desde barra/overlay). | Paso 8.3 (detectado) / 8.4 | ~~Media~~ Cerrada |
-| 125 | e2e `shell-partida.spec.js` "uiRegistry tiene QuePiensaElPublicoGameUI registrado" falla: espera `cantidad() === 2` pero hay 9 GameUIs registradas (registro creció con los juegos, el test no se actualizó). Pre-existente: falla igual en HEAD limpio, verificado con `git stash` en 8.4 (28/29 en la regresión de shell/timer). | Paso 8.4 (detectado) | Media |
+
+<!--
+REPORTE DE RECONSTRUCCIÓN
+=========================
+Historial: 116 filas en output (extraídas del input: 117; duplicadas exactas eliminadas: 1)
+Cierres de bloque: 5 filas (bloques: 1, 2, 3, 4, 5)
+Nota: la fila de cierre del bloque 7 ("| 2026-09-24 | 7 | CIERRE | ✅ CERRADO | ... | 97aaa8d |", 6 columnas) no matchea el patrón de cierre (4 col) y queda en Historial con paso="CIERRE" (sin pérdida de texto).
+Deudas activas: 80 filas
+Deudas cerradas: 17 filas (clasificadas por campo Prioridad: 16; solo por Descripción sin "Cerrada" en Prioridad: 1 → #106)
+Reorganizaciones: 2 filas preservadas en sección propia (no son historial ni cierres)
+Total deudas finales (activas + cerradas): 97 = detectadas 98 (AUDITORIA 91 + importadas nuevas 7) - eliminadas 1 (#119 por D5)
+Duplicados eliminados: 3
+  - historial: línea 165: 2026-09-19|4|4.3b
+  - importación: #111: ya existía en AUDITORIA (más completa) → importada descartada
+  - importación: #120: fila importada MÁS LARGA reemplaza la de AUDITORIA
+Deudas importadas de FORMULARIOS.md §11: 9 filas → #111, #112, #113, #114, #115, #116, #117, #118, #120 (Origen asignado: "FORMULARIOS.md §11"); deduplicadas contra AUDITORIA: #111, #120; nuevas en AUDITORIA: #112, #113, #114, #115, #116, #117, #118
+Huecos en numeración de deuda (27): [15,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,63,64,65,66,72,73,81,94]
+Filas no clasificadas: 0
+Warnings: 4
+  - (bloque|paso) repetido con fechas distintas (NO deduplicado, clave = fecha+bloque+paso): 5|5.4-pre → 2026-09-22, 2026-09-21
+  - (bloque|paso) repetido con fechas distintas (NO deduplicado, clave = fecha+bloque+paso): 5|5.4a → 2026-09-22, 2026-09-21
+VERIFICACIÓN CONTEO (TAREA 2.3)
+  INPUT: filas con fecha = 117 (historial) + 5 (cierres) + 2 (reorganizaciones) = 124 (esperado: 124)
+  INPUT: deudas filas = 91 únicas (sin dups internos); headers de tabla descartados = 8; separadores = 9
+  OUTPUT: hist 116 + cierres 5 + reorgs 2 = 123 filas con fecha (= 124 - 1 dup exacto = 123)
+  OUTPUT: deudas activas 80 + cerradas 17 = 97
+-->
