@@ -683,11 +683,11 @@ function _limpiarTimerCancionIncompletaPublico() {
    Escenario Pictionary (público)
    ============================================================= */
 
-const _NOMBRE_MODOS_PIC = {
-  1: 'Palabras prohibidas',
-  2: 'Gestos',
-  3: 'Dibujo',
-  4: 'Preguntas sí/no'
+const _NOMBRE_SUBMODOS_PIC = {
+  PALABRAS: 'Palabras prohibidas',
+  GESTOS: 'Gestos',
+  PREGUNTAS: 'Preguntas sí/no',
+  DIBUJO: 'Dibujo'
 };
 
 function _renderEscenarioPictionary(juegoActivo, fase, contexto) {
@@ -697,7 +697,7 @@ function _renderEscenarioPictionary(juegoActivo, fase, contexto) {
   const equipoActual = estadoJuego.equipo_actual || 1;
   const ronda = estadoJuego.ronda_actual || 1;
   const totalRondas = estadoJuego.total_rondas || 1;
-  const modo = estadoJuego.modo_actual || 1;
+  const submodo = estadoJuego.submodo_actual || 'PALABRAS';
   const pts1 = estadoJuego.puntos_equipo_1 || 0;
   const pts2 = estadoJuego.puntos_equipo_2 || 0;
 
@@ -709,17 +709,17 @@ function _renderEscenarioPictionary(juegoActivo, fase, contexto) {
   const equipoActivoNombre = equipoActual === 1 ? equipo1.nombre : equipo2.nombre;
   const equipoActivoColor = equipoActual === 1 ? 'border-[#00D2FF] bg-[#00D2FF]/15' : 'border-[#FF3344] bg-[#FF3344]/15';
 
-  let indicadorModo = '';
-  if (modo === 2) {
-    indicadorModo = '<p class="font-body-md text-on-surface-variant italic mt-2">El representante usa gestos.</p>';
-  } else if (modo === 3) {
-    indicadorModo = '<p class="font-body-md text-on-surface-variant italic mt-2">Dibujando en pizarra física.</p>';
-  } else if (modo === 4) {
-    indicadorModo = '<p class="font-body-md text-on-surface-variant italic mt-2">Adivinador de espaldas. Solo sí/no.</p>';
+  let indicadorSubmodo = '';
+  if (submodo === 'GESTOS') {
+    indicadorSubmodo = '<p class="font-body-md text-on-surface-variant italic mt-2">El representante usa gestos.</p>';
+  } else if (submodo === 'PREGUNTAS') {
+    indicadorSubmodo = '<p class="font-body-md text-on-surface-variant italic mt-2">Adivinador de espaldas. Solo sí/no.</p>';
+  } else if (submodo === 'DIBUJO') {
+    indicadorSubmodo = '<p class="font-body-md text-on-surface-variant italic mt-2">Dibujando en pizarra física.</p>';
   }
 
   let prohibidasHTML = '';
-  if (modo === 1 && prohibidas.length > 0) {
+  if (submodo === 'PALABRAS' && prohibidas.length > 0) {
     prohibidasHTML = `
       <div class="mt-3">
         <p class="font-label-md uppercase text-on-surface-variant mb-1">Palabras prohibidas</p>
@@ -736,7 +736,18 @@ function _renderEscenarioPictionary(juegoActivo, fase, contexto) {
     inner = `
       <p class="font-display-hero text-5xl text-primary uppercase mb-2">¡A JUGAR!</p>
       <p class="font-headline-md uppercase text-on-surface">Pictionary</p>
-      ${fase === 'INICIO_RONDA' ? '<p class="font-body-md text-on-surface-variant mt-2">Esperando inicio del modo…</p>' : ''}
+      ${fase === 'INICIO_RONDA' ? '<p class="font-body-md text-on-surface-variant mt-2">Esperando selección de submodo…</p>' : ''}
+    `;
+  } else if (fase === 'SELECCIONANDO_SUBMODO') {
+    inner = `
+      <p class="font-display-hero text-5xl text-primary uppercase mb-2">¡A JUGAR!</p>
+      <p class="font-headline-md uppercase text-on-surface">Pictionary</p>
+      <p class="font-body-md text-on-surface-variant mt-2">El conductor elige el submodo…</p>
+    `;
+  } else if (fase === 'SELECCIONANDO_SET') {
+    inner = `
+      <p class="font-display-hero text-4xl text-primary uppercase mb-2">Submodo: ${_NOMBRE_SUBMODOS_PIC[submodo] || submodo}</p>
+      <p class="font-body-md text-on-surface-variant mt-2">El conductor elige el set…</p>
     `;
   } else if (fase === 'MOSTRANDO_PALABRA' || fase === 'ADIVINANDO' || fase === 'ESPERA_VALIDACION') {
     const mostrarTimer = fase === 'ADIVINANDO' && timerCorriendo;
@@ -744,7 +755,7 @@ function _renderEscenarioPictionary(juegoActivo, fase, contexto) {
 
     inner = `
       <div class="text-center">
-        <p class="font-label-md uppercase text-on-surface-variant mb-1">Modo ${modo} — ${_NOMBRE_MODOS_PIC[modo] || '?'}</p>
+        <p class="font-label-md uppercase text-on-surface-variant mb-1">Submodo — ${_NOMBRE_SUBMODOS_PIC[submodo] || submodo}</p>
         <p class="font-label-md uppercase text-on-surface-variant">Ronda ${ronda} / ${totalRondas} · ${equipoActivoNombre}</p>
       </div>
       <div class="bg-surface-container-lowest border-3 border-on-surface rounded-2xl p-6 shadow-comic-lg text-center mt-4">
@@ -753,7 +764,7 @@ function _renderEscenarioPictionary(juegoActivo, fase, contexto) {
           : '<p class="font-body-md text-on-surface-variant italic">Esperando palabra…</p>'
         }
         ${prohibidasHTML}
-        ${indicadorModo}
+        ${indicadorSubmodo}
         <div class="mt-4">
           <p id="pic-pub-timer" class="font-display-hero text-3xl ${timerClase}">${mostrarTimer ? '' : tiempoRestante + 's'}</p>
         </div>
@@ -769,10 +780,10 @@ function _renderEscenarioPictionary(juegoActivo, fase, contexto) {
         </div>
       </div>
     `;
-  } else if (fase === 'CAMBIO_MODO') {
+  } else if (fase === 'CAMBIO_TURNO') {
     inner = `
-      <p class="font-display-hero text-4xl text-primary uppercase mb-4">Cambio de modo</p>
-      <p class="font-headline-md uppercase text-on-surface">Siguiente: ${_NOMBRE_MODOS_PIC[modo] || modo}</p>
+      <p class="font-display-hero text-4xl text-primary uppercase mb-4">Cambio de turno</p>
+      <p class="font-headline-md uppercase text-on-surface">Siguiente: ${_NOMBRE_SUBMODOS_PIC[submodo] || submodo}</p>
       <p class="font-body-md text-on-surface-variant mt-2">Equipo: ${equipoActivoNombre}</p>
     `;
   } else if (fase === 'FIN_DE_RONDA') {
@@ -845,9 +856,9 @@ function _iniciarTimerPictionaryPublico(estadoJuego, container) {
 
   const juegoId = estadoJuego?.juego_id || '';
   const ronda = estadoJuego?.ronda_actual || 1;
-  const modo = estadoJuego?.modo_actual || 1;
+  const submodo = estadoJuego?.submodo_actual || 'PALABRAS';
   const equipo = estadoJuego?.equipo_actual || 1;
-  const key = `${juegoId}:r${ronda}:m${modo}:eq${equipo}`;
+  const key = `${juegoId}:r${ronda}:s${submodo}:eq${equipo}`;
 
   _picTimer = crearTimer({
     duracionSeg: tiempoRestante,

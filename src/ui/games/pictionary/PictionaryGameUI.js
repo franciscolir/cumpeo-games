@@ -2,25 +2,37 @@
    PictionaryGameUI — GameUI concreto para el juego Pictionary.
 
    Renderiza:
-   - Área de juego: concepto actual, palabras prohibidas (modo 1),
-     indicadores por modo, timer, marcador, fase/ronda/modo
+   - Área de juego: concepto actual, palabras prohibidas (PALABRAS),
+     indicadores por submodo, timer, marcador, fase/ronda/submodo
    - Panel conductor: botones de control según fase + bonus siempre visible
    ============================================================= */
 
 import { Boton } from '../../components/boton.js';
 import { crearTimer } from '../_shared/index.js';
-import { MODOS } from '../../../games/pictionary/PictionaryGameDefinition.js';
+import { SUBMODOS } from '../../../games/pictionary/PictionaryGameDefinition.js';
 
 let _timer = null;
 let _latestCallbacks = null;
 let _latestEstadoJuego = null;
 let _latestContexto = null;
 
-const NOMBRE_MODOS = {
-  1: 'Palabras prohibidas',
-  2: 'Gestos',
-  3: 'Dibujo',
-  4: 'Preguntas sí/no'
+const NOMBRE_SUBMODOS = {
+  PALABRAS: 'Palabras prohibidas',
+  GESTOS: 'Gestos',
+  PREGUNTAS: 'Preguntas sí/no',
+  DIBUJO: 'Dibujo'
+};
+
+const NOMBRE_FASES = {
+  INICIO_RONDA: 'Inicio de ronda',
+  SELECCIONANDO_SUBMODO: 'Seleccionando submodo',
+  SELECCIONANDO_SET: 'Seleccionando set',
+  MOSTRANDO_PALABRA: 'Mostrando palabra',
+  ADIVINANDO: 'Adivinando',
+  ESPERA_VALIDACION: 'Esperando validación',
+  CAMBIO_TURNO: 'Cambio de turno',
+  FIN_DE_RONDA: 'Fin de ronda',
+  FIN_DE_JUEGO: 'Fin de juego'
 };
 
 /* =============================================================
@@ -44,9 +56,9 @@ function _iniciarTimer(estadoJuego, contexto, callbacks, container) {
 
   const juegoId = contexto.juegoEjecutado?.id || '';
   const ronda = estadoJuego.ronda_actual || 1;
-  const modo = estadoJuego.modo_actual || 1;
+  const submodo = estadoJuego.submodo_actual || 'PALABRAS';
   const equipo = estadoJuego.equipo_actual || 1;
-  const key = `${juegoId}:r${ronda}:m${modo}:eq${equipo}:${Date.now()}`;
+  const key = `${juegoId}:r${ronda}:s${submodo}:eq${equipo}:${Date.now()}`;
   const segundos = estadoJuego.tiempo_restante_seg ?? _obtenerSegundosPorModo(contexto);
 
   _timer?.cancelar();
@@ -104,7 +116,7 @@ export const PictionaryGameUI = {
     const equipo2 = contexto.equipos?.[1] || { nombre: 'Eq2' };
     const ronda = estadoJuego.ronda_actual || 1;
     const totalRondas = estadoJuego.total_rondas || 1;
-    const modo = estadoJuego.modo_actual || 1;
+    const submodo = estadoJuego.submodo_actual || 'PALABRAS';
     const equipoActual = estadoJuego.equipo_actual || 1;
     const pts1 = estadoJuego.puntos_equipo_1 || 0;
     const pts2 = estadoJuego.puntos_equipo_2 || 0;
@@ -114,15 +126,17 @@ export const PictionaryGameUI = {
     const mostrarTimer = fase === 'ADIVINANDO' && estadoJuego.timer_corriendo;
     const tiempoRestante = estadoJuego.tiempo_restante_seg ?? _obtenerSegundosPorModo(contexto);
 
-    let indicadorModo = '';
-    if (modo === 3) {
-      indicadorModo = '<p class="font-body-sm text-on-surface-variant italic mt-2">Pizarra física. Dibujar en pizarra externa.</p>';
-    } else if (modo === 4) {
-      indicadorModo = '<p class="font-body-sm text-on-surface-variant italic mt-2">Adivinador de espaldas. Solo sí/no.</p>';
+    let indicadorSubmodo = '';
+    if (submodo === 'GESTOS') {
+      indicadorSubmodo = '<p class="font-body-sm text-on-surface-variant italic mt-2">El representante usa gestos. Sin palabras en pantalla.</p>';
+    } else if (submodo === 'PREGUNTAS') {
+      indicadorSubmodo = '<p class="font-body-sm text-on-surface-variant italic mt-2">Adivinador de espaldas. Solo sí/no.</p>';
+    } else if (submodo === 'DIBUJO') {
+      indicadorSubmodo = '<p class="font-body-sm text-on-surface-variant italic mt-2">Pizarra física. Dibujar en pizarra externa.</p>';
     }
 
     let prohibidasHTML = '';
-    if (modo === 1 && prohibidas.length > 0) {
+    if (submodo === 'PALABRAS' && prohibidas.length > 0) {
       prohibidasHTML = `
         <div class="mt-3">
           <p class="font-label-md uppercase text-on-surface-variant mb-1">Palabras prohibidas</p>
@@ -138,7 +152,7 @@ export const PictionaryGameUI = {
         <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
           <span class="font-label-md uppercase text-on-surface-variant">Ronda ${ronda} / ${totalRondas}</span>
           <span class="inline-block bg-secondary-container text-on-secondary-container font-label-sm uppercase px-2 py-1 rounded-md">${fase.replace(/_/g, ' ')}</span>
-          <span class="font-label-md uppercase text-on-surface-variant">Modo ${modo} — ${NOMBRE_MODOS[modo] || '?'}</span>
+          <span class="font-label-md uppercase text-on-surface-variant">Submodo — ${NOMBRE_SUBMODOS[submodo] || submodo}</span>
           <span class="font-label-md uppercase text-on-surface-variant">Equipo ${equipoActual}</span>
         </div>
 
@@ -148,7 +162,7 @@ export const PictionaryGameUI = {
             : '<p class="font-body-md text-on-surface-variant italic">Esperando palabra...</p>'
           }
           ${prohibidasHTML}
-          ${indicadorModo}
+          ${indicadorSubmodo}
           <div class="mt-4">
             <p class="font-label-md uppercase text-on-surface-variant">Timer</p>
             <p id="pic-timer" class="font-display-hero text-3xl ${mostrarTimer ? 'text-tertiary' : 'text-on-surface-variant'}">${mostrarTimer ? '' : tiempoRestante + 's'}</p>
@@ -187,8 +201,6 @@ export const PictionaryGameUI = {
     const equipo1 = contexto.equipos?.[0] || { nombre: 'Eq1' };
     const equipo2 = contexto.equipos?.[1] || { nombre: 'Eq2' };
     const equipoActual = estadoJuego?.equipo_actual || 1;
-    const nombreEquipoActual = equipoActual === 1 ? equipo1.nombre : equipo2.nombre;
-    const modo = estadoJuego?.modo_actual || 1;
     const config = contexto.juegoEjecutado?.configuracion_congelada || {};
     const bonusPuntos = config.bonus_puntos || 0;
 
@@ -196,12 +208,46 @@ export const PictionaryGameUI = {
 
     switch (fase) {
       case 'INICIO_RONDA':
+      case 'CAMBIO_TURNO':
         botonesHTML = `
           <div class="flex flex-wrap gap-2">
-            ${Boton({ texto: `Iniciar modo — ${NOMBRE_MODOS[modo] || modo}`, variante: 'primary', id: 'btn-pic-iniciar-modo' })}
+            <p class="font-body-sm text-on-surface-variant">Preparando turno…</p>
           </div>
         `;
         break;
+
+      case 'SELECCIONANDO_SUBMODO': {
+        botonesHTML = `
+          <p class="font-label-md uppercase text-on-surface-variant mb-2">Elegí el submodo de representación</p>
+          <div class="flex flex-wrap gap-2">
+            ${SUBMODOS.map((sub) => Boton({
+              texto: NOMBRE_SUBMODOS[sub] || sub,
+              variante: estadoJuego?.submodo_actual === sub ? 'primary' : 'secondary',
+              id: `btn-pic-submodo-${sub}`
+            })).join('')}
+          </div>
+        `;
+        break;
+      }
+
+      case 'SELECCIONANDO_SET': {
+        const sets = (contexto?.setsDisponibles || [])
+          .filter((s) => !s.submodo || s.submodo === (estadoJuego?.submodo_actual || 'PALABRAS'));
+        if (sets.length === 0) {
+          botonesHTML = `<p class="font-body-sm text-error">No hay sets disponibles para este submodo.</p>`;
+        } else {
+          botonesHTML = `
+            <p class="font-label-md uppercase text-on-surface-variant mb-2">Elegí un set — ${NOMBRE_SUBMODOS[estadoJuego?.submodo_actual] || estadoJuego?.submodo_actual || ''}</p>
+            <div class="flex flex-wrap gap-2 items-end">
+              <select id="pic-set-select" class="border-2 border-on-surface rounded-lg px-3 py-2 bg-surface-container-lowest text-sm">
+                ${sets.map((s) => `<option value="${s.id}">${s.nombre || s.id}</option>`).join('')}
+              </select>
+              ${Boton({ texto: 'Elegir set', variante: 'primary', id: 'btn-pic-elegir-set' })}
+            </div>
+          `;
+        }
+        break;
+      }
 
       case 'MOSTRANDO_PALABRA':
         botonesHTML = `
@@ -224,22 +270,10 @@ export const PictionaryGameUI = {
       case 'ESPERA_VALIDACION':
         botonesHTML = `
           <div class="flex flex-wrap gap-2">
-            ${Boton({ texto: 'Siguiente modo', variante: 'primary', id: 'btn-pic-siguiente-modo' })}
+            ${Boton({ texto: 'Siguiente turno', variante: 'primary', id: 'btn-pic-siguiente-turno' })}
           </div>
         `;
         break;
-
-      case 'CAMBIO_MODO': {
-        const nuevoEquipo = equipoActual === 1 ? 2 : 1;
-        const nombreNuevo = nuevoEquipo === 1 ? equipo1.nombre : equipo2.nombre;
-        botonesHTML = `
-          <div class="flex flex-col gap-3 items-center">
-            <p class="font-headline-md uppercase text-on-surface">Cambio a ${nombreNuevo}</p>
-            ${Boton({ texto: `Iniciar modo — ${NOMBRE_MODOS[modo] || modo}`, variante: 'primary', id: 'btn-pic-siguiente-equipo' })}
-          </div>
-        `;
-        break;
-      }
 
       case 'FIN_DE_RONDA': {
         const totalRondas = config.rondas || 1;
@@ -287,7 +321,7 @@ export const PictionaryGameUI = {
 
     container.innerHTML = `
       <div class="flex flex-col gap-4">
-        <p class="font-label-md uppercase text-on-surface-variant">Panel Pictionary — ${fase ? fase.replace(/_/g, ' ') : 'Sin fase'}</p>
+        <p class="font-label-md uppercase text-on-surface-variant">Panel Pictionary — ${fase ? NOMBRE_FASES[fase] || fase.replace(/_/g, ' ') : 'Sin fase'}</p>
         ${iniciarJuegoHTML}
         ${botonesHTML}
         ${bonusHTML}
@@ -301,15 +335,20 @@ export const PictionaryGameUI = {
       });
     }
 
-    if (fase === 'INICIO_RONDA') {
-      container.querySelector('#btn-pic-iniciar-modo')?.addEventListener('click', () => {
-        callbacks.onAccion('iniciar-modo-pictionary');
-      });
+    if (fase === 'SELECCIONANDO_SUBMODO') {
+      for (const sub of SUBMODOS) {
+        container.querySelector(`#btn-pic-submodo-${sub}`)?.addEventListener('click', () => {
+          callbacks.onAccion('elegir-submodo-pictionary', { submodo: sub });
+        });
+      }
     }
 
-    if (fase === 'CAMBIO_MODO') {
-      container.querySelector('#btn-pic-siguiente-equipo')?.addEventListener('click', () => {
-        callbacks.onAccion('siguiente-equipo-pictionary');
+    if (fase === 'SELECCIONANDO_SET') {
+      container.querySelector('#btn-pic-elegir-set')?.addEventListener('click', () => {
+        const select = container.querySelector('#pic-set-select');
+        const set_id = select?.value;
+        if (!set_id) return;
+        callbacks.onAccion('elegir-set-pictionary', { set_id });
       });
     }
 
@@ -335,8 +374,8 @@ export const PictionaryGameUI = {
     }
 
     if (fase === 'ESPERA_VALIDACION') {
-      container.querySelector('#btn-pic-siguiente-modo')?.addEventListener('click', () => {
-        callbacks.onAccion('siguiente-modo-pictionary');
+      container.querySelector('#btn-pic-siguiente-turno')?.addEventListener('click', () => {
+        callbacks.onAccion('siguiente-turno-pictionary');
       });
     }
 

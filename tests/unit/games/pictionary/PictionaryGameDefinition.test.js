@@ -3,7 +3,6 @@ import { describe, it, expect } from 'vitest';
 import {
   PictionaryGameDefinition,
   SUBMODOS,
-  MODOS,
   FASES,
   ESTADO_TURNO
 } from '../../../../src/games/pictionary/PictionaryGameDefinition.js';
@@ -66,16 +65,6 @@ describe('SUBMODOS', () => {
 
   it('es readonly (frozen)', () => {
     expect(() => { SUBMODOS.push('X'); }).toThrow();
-  });
-});
-
-describe('MODOS (deprecated)', () => {
-  it('contiene [1, 2, 3, 4] para compat', () => {
-    expect(MODOS).toEqual([1, 2, 3, 4]);
-  });
-
-  it('es readonly (frozen)', () => {
-    expect(() => { MODOS.push(5); }).toThrow();
   });
 });
 
@@ -272,7 +261,7 @@ describe('validarContenidoSet', () => {
     expect(r.errores).toContain('submodo inválido');
   });
 
-  it('sin submodo y sin modo en items → submodo inválido', () => {
+  it('sin submodo → submodo inválido', () => {
     const r = PictionaryGameDefinition.validarContenidoSet(
       { items: [{ concepto: 'X' }] }, config
     );
@@ -384,17 +373,11 @@ describe('validarContenidoSet', () => {
     expect(r.ok).toBe(true);
   });
 
-  it('no accede a item.modo en la validación de submodo', () => {
-    const items = itemsParaSubmodo('PALABRAS');
-    items[0].modo = 99;
-    const r = PictionaryGameDefinition.validarContenidoSet({ items }, config, 'PALABRAS');
-    expect(r.ok).toBe(true);
-  });
-
-  it('DEPRECATED: deriva submodo del primer item.modo (1 → PALABRAS)', () => {
+  it('item.modo no sustituye al submodo requerido', () => {
     const items = [{ modo: 1, concepto: 'X', prohibidas: ['a'] }];
     const r = PictionaryGameDefinition.validarContenidoSet({ items }, config);
-    expect(r.ok).toBe(true);
+    expect(r.ok).toBe(false);
+    expect(r.errores).toContain('submodo inválido');
   });
 });
 
@@ -466,6 +449,10 @@ describe('estadoInicial', () => {
 
   it('tiene prohibidas_actuales: []', () => {
     expect(estadoInicial().prohibidas_actuales).toEqual([]);
+  });
+
+  it('no expone modo_actual (eliminado en 7.7c)', () => {
+    expect(estadoInicial().modo_actual).toBeUndefined();
   });
 });
 
@@ -572,7 +559,7 @@ describe('mostrarPalabra', () => {
 
   it('fase incorrecta → sin cambios', () => {
     const estado = estadoEn('INICIO_RONDA');
-    const nuevo = PictionaryGameDefinition.mostrarPalabra(estado, setPara('GESTOS'));
+    const nuevo = PictionaryGameDefinition.mostrarPalabra(estado);
     expect(nuevo.fase).toBe('INICIO_RONDA');
   });
 });
@@ -1019,37 +1006,5 @@ describe('Flujo completo — 1 ronda = 4 submodos × 2 equipos', () => {
     expect(estado.submodo_actual).toBe('PALABRAS');
     expect(estado.equipo_actual).toBe(1);
     expect(PictionaryGameDefinition.validarEstadoJuego(estado)).toBe(true);
-  });
-});
-
-/* =============================================================
-   Grupo 18 — Shims deprecated (temporales hasta 7.7c)
-   ============================================================= */
-
-describe('Shims deprecated (hasta 7.7c)', () => {
-  it('seleccionarModo: INICIO_RONDA → MOSTRANDO_PALABRA', () => {
-    const estado = estadoInicial();
-    const nuevo = PictionaryGameDefinition.seleccionarModo(estado);
-    expect(nuevo.fase).toBe('MOSTRANDO_PALABRA');
-  });
-
-  it('avanzarModo delega a avanzarTurno', () => {
-    const config = configuracionValida({ palabras_por_turno: 1 });
-    const estado = estadoEn('ESPERA_VALIDACION', { equipo_actual: 1 });
-    const nuevo = PictionaryGameDefinition.avanzarModo(estado, config);
-    expect(nuevo.equipo_actual).toBe(2);
-  });
-
-  it('mostrarPalabra con contenidoSet (compat vieja)', () => {
-    const contenido = {
-      items: [
-        { modo: 1, concepto: 'A', prohibidas: ['x'] },
-        { modo: 2, concepto: 'B' }
-      ]
-    };
-    const estado = estadoEn('MOSTRANDO_PALABRA', { modo_actual: 2 });
-    const nuevo = PictionaryGameDefinition.mostrarPalabra(estado, contenido);
-    expect(nuevo.palabra_actual.concepto).toBe('B');
-    expect(nuevo.prohibidas_actuales).toEqual([]);
   });
 });

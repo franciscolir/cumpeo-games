@@ -9,12 +9,6 @@
 
    ============================================================= */
 
-// =============================================================
-// DEPRECATED — shims de compatibilidad con la UI y el shell viejos.
-// Se eliminan en 7.7c (rewrite de UI + shell).
-// NO usar en código nuevo. Usar la API de submodos.
-// =============================================================
-
 import { ValidacionError } from '../../repositories/errors.js';
 
 /* =============================================================
@@ -22,9 +16,6 @@ import { ValidacionError } from '../../repositories/errors.js';
    ============================================================= */
 
 export const SUBMODOS = Object.freeze(['PALABRAS', 'GESTOS', 'PREGUNTAS', 'DIBUJO']);
-
-/** @deprecated Usar SUBMODOS. Se elimina en 7.7c. */
-export const MODOS = Object.freeze([1, 2, 3, 4]);
 
 export const FASES = Object.freeze([
   'INICIO_RONDA',
@@ -43,22 +34,6 @@ export const ESTADO_TURNO = Object.freeze({
   CORRECTO: 'correcto',
   INCORRECTO: 'incorrecto',
   PASADO: 'pasado'
-});
-
-/** @deprecated Mapeo legacy item.modo / estado.modo_actual. Se elimina en 7.7c. */
-const MODO_LEGACY_POR_SUBMODO = Object.freeze({
-  PALABRAS: 1,
-  GESTOS: 2,
-  DIBUJO: 3,
-  PREGUNTAS: 4
-});
-
-/** @deprecated Mapeo legacy item.modo → submodo. Se elimina en 7.7c. */
-const SUBMODO_POR_MODO_LEGACY = Object.freeze({
-  1: 'PALABRAS',
-  2: 'GESTOS',
-  3: 'DIBUJO',
-  4: 'PREGUNTAS'
 });
 
 /* =============================================================
@@ -161,22 +136,13 @@ export const PictionaryGameDefinition = {
    * Valida que un set tenga la estructura correcta para Pictionary.
    * @param {object} contenido - { items: [...] }
    * @param {object} config - configuración con palabras_por_turno
-   * @param {string} [submodo] - 'PALABRAS' | 'GESTOS' | 'PREGUNTAS' | 'DIBUJO'
-   *   DEPRECATED: si es undefined, se deriva del primer item (item.modo).
-   *   Se elimina el fallback en 7.7c.
+   * @param {string} submodo - 'PALABRAS' | 'GESTOS' | 'PREGUNTAS' | 'DIBUJO' (requerido)
    * @returns {{ ok: boolean, errores: string[] }}
    */
   validarContenidoSet(contenido, config, submodo) {
     const errores = [];
 
-    let sub = submodo;
-    if (sub === undefined) {
-      const primer = contenido?.items?.[0];
-      if (primer && typeof primer === 'object' && primer.modo !== undefined) {
-        sub = SUBMODO_POR_MODO_LEGACY[primer.modo];
-      }
-    }
-
+    const sub = submodo;
     if (!SUBMODOS.includes(sub)) {
       return { ok: false, errores: ['submodo inválido'] };
     }
@@ -268,9 +234,7 @@ export const PictionaryGameDefinition = {
       tiempo_restante_seg: cfg.segundos_por_modo || 60,
       turno_activo: false,
       palabra_actual: null,
-      prohibidas_actuales: [],
-      // DEPRECATED — compatibilidad UI/shell viejos (7.7c).
-      modo_actual: MODO_LEGACY_POR_SUBMODO[submodo]
+      prohibidas_actuales: []
     };
   },
 
@@ -293,7 +257,6 @@ export const PictionaryGameDefinition = {
     return {
       ...estado,
       submodo_actual: submodo,
-      modo_actual: MODO_LEGACY_POR_SUBMODO[submodo],
       fase: 'SELECCIONANDO_SET'
     };
   },
@@ -324,28 +287,13 @@ export const PictionaryGameDefinition = {
 
   /**
    * MOSTRANDO_PALABRA — carga palabra_actual desde set_actual.
-   * DEPRECATED: si viene contenidoSet, se usa como set_actual
-   * (con filtro legacy por modo_actual si el set es mixto).
-   * Se elimina el 2do argumento en 7.7c.
    * @param {object} estado
-   * @param {object} [contenidoSet]
    * @returns {object} Nuevo estado
    */
-  mostrarPalabra(estado, contenidoSet) {
+  mostrarPalabra(estado) {
     if (estado.fase !== 'MOSTRANDO_PALABRA') return { ...estado };
 
-    let set = estado.set_actual;
-
-    if (contenidoSet) {
-      const items = Array.isArray(contenidoSet.items) ? contenidoSet.items : [];
-      const modoLegacy = estado.modo_actual;
-      let itemsSet = items;
-      if (modoLegacy !== undefined && modoLegacy !== null) {
-        const filtrados = items.filter((item) => item && item.modo === modoLegacy);
-        if (filtrados.length > 0) itemsSet = filtrados;
-      }
-      set = { ...contenidoSet, items: itemsSet };
-    }
+    const set = estado.set_actual;
 
     if (!set || !Array.isArray(set.items) || set.items.length === 0) {
       return { ...estado };
@@ -574,7 +522,6 @@ export const PictionaryGameDefinition = {
         ...base,
         equipo_actual: 1,
         submodo_actual: SUBMODOS[0],
-        modo_actual: MODO_LEGACY_POR_SUBMODO[SUBMODOS[0]],
         fase: 'FIN_DE_RONDA'
       };
     }
@@ -584,7 +531,6 @@ export const PictionaryGameDefinition = {
       ...base,
       equipo_actual: 1,
       submodo_actual: siguiente,
-      modo_actual: MODO_LEGACY_POR_SUBMODO[siguiente],
       fase: 'INICIO_RONDA'
     };
   },
@@ -612,7 +558,6 @@ export const PictionaryGameDefinition = {
       ...estado,
       ronda_actual: (estado.ronda_actual || 1) + 1,
       submodo_actual: SUBMODOS[0],
-      modo_actual: MODO_LEGACY_POR_SUBMODO[SUBMODOS[0]],
       equipo_actual: 1,
       fase: 'INICIO_RONDA',
       timer_corriendo: false,
@@ -722,29 +667,5 @@ export const PictionaryGameDefinition = {
     }
 
     return true;
-  },
-
-  /* =============================================================
-     DEPRECATED — shims para UI/shell viejos (eliminar en 7.7c)
-     ============================================================= */
-
-  /**
-   * @deprecated Usar seleccionarSubmodo + seleccionarSet.
-   * INICIO_RONDA → MOSTRANDO_PALABRA (salta selección).
-   * @param {object} estado
-   * @returns {object}
-   */
-  seleccionarModo(estado) {
-    if (estado.fase !== 'INICIO_RONDA') return { ...estado };
-    return { ...estado, fase: 'MOSTRANDO_PALABRA' };
-  },
-
-  /**
-   * @deprecated Usar cambiarTurno / avanzarTurno con API de submodos.
-   * @param {object} estado
-   * @returns {object}
-   */
-  avanzarModo(estado) {
-    return this.avanzarTurno(estado);
   }
 };

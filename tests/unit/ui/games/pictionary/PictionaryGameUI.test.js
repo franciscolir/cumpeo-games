@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { PictionaryGameUI } from '../../../../../src/ui/games/pictionary/PictionaryGameUI.js';
-import { PictionaryGameDefinition } from '../../../../../src/games/pictionary/PictionaryGameDefinition.js';
+import { PictionaryGameDefinition, SUBMODOS, FASES } from '../../../../../src/games/pictionary/PictionaryGameDefinition.js';
 
 function crearContainer() {
   return { innerHTML: '', querySelector: vi.fn(() => null), querySelectorAll: vi.fn(() => []) };
 }
 
-function contextoBase() {
+function contextoBase(overrides = {}) {
   return {
     partida: { id: 'p1', estado: 'EN_CURSO' },
     juegoEjecutado: {
@@ -14,7 +14,7 @@ function contextoBase() {
       juego_codigo: 'PICTIONARY',
       configuracion_congelada: {
         rondas: 2,
-        palabras_por_modo: 1,
+        palabras_por_turno: 1,
         segundos_por_modo: 60,
         puntos_por_acierto: 10,
         penalizacion_por_error: 5,
@@ -24,20 +24,41 @@ function contextoBase() {
     },
     equipos: [{ nombre: 'Alfa', puntaje: 0 }, { nombre: 'Beta', puntaje: 0 }],
     puedeControlar: true,
-    itemsDelJuego: []
+    setsDisponibles: [
+      { id: 'set-p1', nombre: 'Banco Palabras A', submodo: 'PALABRAS' },
+      { id: 'set-g1', nombre: 'Banco Gestos A', submodo: 'GESTOS' },
+      { id: 'set-d1', nombre: 'Banco Dibujo A', submodo: 'DIBUJO' },
+      { id: 'set-q1', nombre: 'Banco Preguntas A', submodo: 'PREGUNTAS' }
+    ],
+    ...overrides
   };
 }
 
-function estadoBase(overrides = {}) {
-  return PictionaryGameDefinition.estadoInicial({
+function configBase(overrides = {}) {
+  return {
     rondas: 2,
-    palabras_por_modo: 1,
+    palabras_por_turno: 1,
     segundos_por_modo: 60,
     puntos_por_acierto: 10,
     penalizacion_por_error: 5,
     penalizacion_por_pasar: 3,
     bonus_puntos: 15,
     ...overrides
+  };
+}
+
+function estadoBase(overrides = {}) {
+  return PictionaryGameDefinition.estadoInicial(configBase(), overrides);
+}
+
+function estadoEn(fase, overrides = {}) {
+  return { ...estadoBase(), fase, ...overrides };
+}
+
+function mockBoton(container, id) {
+  container.querySelector = vi.fn((sel) => {
+    if (sel === `#${id}`) return { addEventListener: vi.fn((_, fn) => fn()) };
+    return null;
   });
 }
 
@@ -73,139 +94,163 @@ describe('PictionaryGameUI', () => {
     });
   });
 
-  describe('renderizarAreaJuego — con fase', () => {
-    it('muestra header con ronda, fase, modo y equipo', () => {
-      const estado = { ...estadoBase(), fase: 'INICIO_RONDA', ronda_actual: 2, total_rondas: 3, modo_actual: 2, equipo_actual: 1 };
+  describe('renderizarAreaJuego — header', () => {
+    it('muestra header con ronda, fase, submodo y equipo', () => {
+      const estado = estadoEn('INICIO_RONDA', { ronda_actual: 2, total_rondas: 3, submodo_actual: 'GESTOS', equipo_actual: 1 });
       PictionaryGameUI.renderizarAreaJuego(estado, container, contextoBase(), { onAccion: vi.fn() });
       expect(container.innerHTML).toContain('Ronda 2 / 3');
       expect(container.innerHTML).toContain('INICIO RONDA');
-      expect(container.innerHTML).toContain('Modo 2');
+      expect(container.innerHTML).toContain('Gestos');
       expect(container.innerHTML).toContain('Equipo 1');
     });
 
     it('muestra marcador de ambos equipos', () => {
-      const estado = { ...estadoBase(), puntos_equipo_1: 25, puntos_equipo_2: 15, fase: 'ADIVINANDO' };
+      const estado = estadoEn('ADIVINANDO', { puntos_equipo_1: 25, puntos_equipo_2: 15 });
       PictionaryGameUI.renderizarAreaJuego(estado, container, contextoBase(), { onAccion: vi.fn() });
       expect(container.innerHTML).toContain('25');
       expect(container.innerHTML).toContain('15');
     });
 
     it('muestra concepto cuando palabra_actual existe', () => {
-      const estado = {
-        ...estadoBase(),
-        fase: 'MOSTRANDO_PALABRA',
-        palabra_actual: { concepto: 'PERRO', modo: 1, prohibidas: ['mascota', 'guau'] }
-      };
+      const estado = estadoEn('MOSTRANDO_PALABRA', {
+        palabra_actual: { concepto: 'PERRO', prohibidas: ['mascota', 'guau'] }
+      });
       PictionaryGameUI.renderizarAreaJuego(estado, container, contextoBase(), { onAccion: vi.fn() });
       expect(container.innerHTML).toContain('PERRO');
     });
 
     it('muestra placeholder cuando no hay concepto', () => {
-      const estado = { ...estadoBase(), fase: 'MOSTRANDO_PALABRA', palabra_actual: null };
+      const estado = estadoEn('MOSTRANDO_PALABRA', { palabra_actual: null });
       PictionaryGameUI.renderizarAreaJuego(estado, container, contextoBase(), { onAccion: vi.fn() });
       expect(container.innerHTML).toContain('Esperando palabra');
     });
   });
 
-  describe('renderizarAreaJuego — modo 1 muestra prohibidas', () => {
-    it('muestra lista de palabras prohibidas en modo 1', () => {
-      const estado = {
-        ...estadoBase(),
-        fase: 'ADIVINANDO',
-        modo_actual: 1,
-        palabra_actual: { concepto: 'GATO', modo: 1, prohibidas: ['felino', 'miau'] },
+  describe('renderizarAreaJuego — PALABRAS muestra prohibidas', () => {
+    it('muestra lista de palabras prohibidas en PALABRAS', () => {
+      const estado = estadoEn('ADIVINANDO', {
+        submodo_actual: 'PALABRAS',
+        palabra_actual: { concepto: 'GATO', prohibidas: ['felino', 'miau'] },
         prohibidas_actuales: ['felino', 'miau']
-      };
+      });
       PictionaryGameUI.renderizarAreaJuego(estado, container, contextoBase(), { onAccion: vi.fn() });
       expect(container.innerHTML).toContain('Palabras prohibidas');
       expect(container.innerHTML).toContain('felino');
       expect(container.innerHTML).toContain('miau');
     });
 
-    it('no muestra prohibidas en modo 2', () => {
-      const estado = {
-        ...estadoBase(),
-        fase: 'ADIVINANDO',
-        modo_actual: 2,
-        palabra_actual: { concepto: 'GATO', modo: 2 },
+    it('no muestra prohibidas en GESTOS', () => {
+      const estado = estadoEn('ADIVINANDO', {
+        submodo_actual: 'GESTOS',
+        palabra_actual: { concepto: 'GATO' },
         prohibidas_actuales: []
-      };
+      });
       PictionaryGameUI.renderizarAreaJuego(estado, container, contextoBase(), { onAccion: vi.fn() });
       expect(container.innerHTML).not.toContain('Palabras prohibidas');
     });
   });
 
-  describe('renderizarAreaJuego — indicadores por modo', () => {
-    it('modo 3 muestra indicación de pizarra', () => {
-      const estado = { ...estadoBase(), fase: 'INICIO_RONDA', modo_actual: 3 };
+  describe('renderizarAreaJuego — indicadores por submodo', () => {
+    it('DIBUJO muestra indicación de pizarra', () => {
+      const estado = estadoEn('INICIO_RONDA', { submodo_actual: 'DIBUJO' });
       PictionaryGameUI.renderizarAreaJuego(estado, container, contextoBase(), { onAccion: vi.fn() });
       expect(container.innerHTML).toContain('Pizarra física');
     });
 
-    it('modo 4 muestra indicación de espaldas', () => {
-      const estado = { ...estadoBase(), fase: 'INICIO_RONDA', modo_actual: 4 };
+    it('PREGUNTAS muestra indicación de espaldas', () => {
+      const estado = estadoEn('INICIO_RONDA', { submodo_actual: 'PREGUNTAS' });
       PictionaryGameUI.renderizarAreaJuego(estado, container, contextoBase(), { onAccion: vi.fn() });
       expect(container.innerHTML).toContain('Adivinador de espaldas');
+    });
+
+    it('GESTOS muestra indicación de gestos', () => {
+      const estado = estadoEn('INICIO_RONDA', { submodo_actual: 'GESTOS' });
+      PictionaryGameUI.renderizarAreaJuego(estado, container, contextoBase(), { onAccion: vi.fn() });
+      expect(container.innerHTML).toContain('usa gestos');
     });
   });
 
   describe('renderizarPanelConductor — botones por fase', () => {
     it('sin fase: muestra Iniciar juego', () => {
-      const callbacks = { onAccion: vi.fn() };
-      PictionaryGameUI.renderizarPanelConductor({}, container, contextoBase(), callbacks);
+      PictionaryGameUI.renderizarPanelConductor({}, container, contextoBase(), { onAccion: vi.fn() });
       expect(container.innerHTML).toContain('btn-pic-iniciar-juego');
     });
 
-    it('INICIO_RONDA: muestra Iniciar modo', () => {
-      const estado = { ...estadoBase(), fase: 'INICIO_RONDA', modo_actual: 1 };
+    it('INICIO_RONDA: sin botones de control (auto-avanza)', () => {
+      const estado = estadoEn('INICIO_RONDA');
       PictionaryGameUI.renderizarPanelConductor(estado, container, contextoBase(), { onAccion: vi.fn() });
-      expect(container.innerHTML).toContain('btn-pic-iniciar-modo');
+      expect(container.innerHTML).not.toContain('btn-pic-submodo');
+      expect(container.innerHTML).not.toContain('btn-pic-iniciar-tiempo');
+      expect(container.innerHTML).toContain('Preparando turno');
+    });
+
+    it('SELECCIONANDO_SUBMODO: muestra los 4 botones de submodo', () => {
+      const estado = estadoEn('SELECCIONANDO_SUBMODO');
+      PictionaryGameUI.renderizarPanelConductor(estado, container, contextoBase(), { onAccion: vi.fn() });
+      for (const sub of SUBMODOS) {
+        expect(container.innerHTML).toContain(`btn-pic-submodo-${sub}`);
+      }
+    });
+
+    it('SELECCIONANDO_SET: muestra select y botón Elegir set', () => {
+      const estado = estadoEn('SELECCIONANDO_SET', { submodo_actual: 'PALABRAS' });
+      PictionaryGameUI.renderizarPanelConductor(estado, container, contextoBase(), { onAccion: vi.fn() });
+      expect(container.innerHTML).toContain('pic-set-select');
+      expect(container.innerHTML).toContain('btn-pic-elegir-set');
+      expect(container.innerHTML).toContain('set-p1');
+    });
+
+    it('SELECCIONANDO_SET sin sets: muestra error', () => {
+      const estado = estadoEn('SELECCIONANDO_SET', { submodo_actual: 'PALABRAS' });
+      PictionaryGameUI.renderizarPanelConductor(estado, container, contextoBase({ setsDisponibles: [] }), { onAccion: vi.fn() });
+      expect(container.innerHTML).toContain('No hay sets disponibles');
     });
 
     it('MOSTRANDO_PALABRA: muestra Iniciar tiempo', () => {
-      const estado = { ...estadoBase(), fase: 'MOSTRANDO_PALABRA' };
+      const estado = estadoEn('MOSTRANDO_PALABRA');
       PictionaryGameUI.renderizarPanelConductor(estado, container, contextoBase(), { onAccion: vi.fn() });
       expect(container.innerHTML).toContain('btn-pic-iniciar-tiempo');
     });
 
     it('ADIVINANDO: muestra Correcto, Incorrecto, Pasar palabra', () => {
-      const estado = { ...estadoBase(), fase: 'ADIVINANDO' };
+      const estado = estadoEn('ADIVINANDO');
       PictionaryGameUI.renderizarPanelConductor(estado, container, contextoBase(), { onAccion: vi.fn() });
       expect(container.innerHTML).toContain('btn-pic-acierto');
       expect(container.innerHTML).toContain('btn-pic-error');
       expect(container.innerHTML).toContain('btn-pic-pasar');
     });
 
-    it('ESPERA_VALIDACION: muestra Siguiente modo', () => {
-      const estado = { ...estadoBase(), fase: 'ESPERA_VALIDACION' };
+    it('ESPERA_VALIDACION: muestra Siguiente turno', () => {
+      const estado = estadoEn('ESPERA_VALIDACION');
       PictionaryGameUI.renderizarPanelConductor(estado, container, contextoBase(), { onAccion: vi.fn() });
-      expect(container.innerHTML).toContain('btn-pic-siguiente-modo');
+      expect(container.innerHTML).toContain('btn-pic-siguiente-turno');
     });
 
-    it('CAMBIO_MODO: muestra Siguiente equipo', () => {
-      const estado = { ...estadoBase(), fase: 'CAMBIO_MODO', equipo_actual: 1 };
+    it('CAMBIO_TURNO: sin botones de control (auto-avanza)', () => {
+      const estado = estadoEn('CAMBIO_TURNO', { equipo_actual: 1 });
       PictionaryGameUI.renderizarPanelConductor(estado, container, contextoBase(), { onAccion: vi.fn() });
-      expect(container.innerHTML).toContain('btn-pic-siguiente-equipo');
-      expect(container.innerHTML).toContain('Beta');
+      expect(container.innerHTML).not.toContain('btn-pic-siguiente-turno');
+      expect(container.innerHTML).toContain('Preparando turno');
     });
 
-    it('FIN_DE_RONDA: muestra siguiente ronda o finalizar', () => {
-      const estado = { ...estadoBase(), fase: 'FIN_DE_RONDA', ronda_actual: 1, total_rondas: 2 };
-      PictionaryGameUI.renderizarPanelConductor(estado, container, contextoBase(), { onAccion: vi.fn() });
+    it('FIN_DE_RONDA: muestra siguiente ronda', () => {
+      const estado = estadoEn('FIN_DE_RONDA', { ronda_actual: 1, total_rondas: 2 });
+      PictionaryGameUI.renderizarPanelConductor(estado, container, contextoBase({ juegoEjecutado: { id: 'j1', configuracion_congelada: { rondas: 2 } } }), { onAccion: vi.fn() });
       expect(container.innerHTML).toContain('btn-pic-siguiente-ronda');
     });
 
     it('FIN_DE_JUEGO: no muestra botones de control', () => {
-      const estado = { ...estadoBase(), fase: 'FIN_DE_JUEGO' };
+      const estado = estadoEn('FIN_DE_JUEGO');
       PictionaryGameUI.renderizarPanelConductor(estado, container, contextoBase(), { onAccion: vi.fn() });
       expect(container.innerHTML).not.toContain('btn-pic-acierto');
-      expect(container.innerHTML).not.toContain('btn-pic-iniciar-modo');
+      expect(container.innerHTML).not.toContain('btn-pic-submodo');
+      expect(container.innerHTML).not.toContain('btn-pic-iniciar-tiempo');
     });
   });
 
   describe('renderizarPanelConductor — botón Bonus siempre visible', () => {
-    it('muestra botón Bonus Eq1 y Bonus Eq2 en INICIO_RONDA', () => {
-      const estado = { ...estadoBase(), fase: 'INICIO_RONDA' };
+    it('muestra botón Bonus Eq1 y Bonus Eq2 en SELECCIONANDO_SUBMODO', () => {
+      const estado = estadoEn('SELECCIONANDO_SUBMODO');
       PictionaryGameUI.renderizarPanelConductor(estado, container, contextoBase(), { onAccion: vi.fn() });
       expect(container.innerHTML).toContain('btn-pic-bonus-eq1');
       expect(container.innerHTML).toContain('btn-pic-bonus-eq2');
@@ -213,22 +258,15 @@ describe('PictionaryGameUI', () => {
     });
 
     it('muestra input numérico para bonus Eq1 y Eq2', () => {
-      const estado = { ...estadoBase(), fase: 'INICIO_RONDA' };
+      const estado = estadoEn('ADIVINANDO');
       PictionaryGameUI.renderizarPanelConductor(estado, container, contextoBase(), { onAccion: vi.fn() });
       expect(container.innerHTML).toContain('pic-bonus-input-eq1');
       expect(container.innerHTML).toContain('pic-bonus-input-eq2');
       expect(container.innerHTML).toContain('type="number"');
     });
 
-    it('muestra botón Bonus en ADIVINANDO', () => {
-      const estado = { ...estadoBase(), fase: 'ADIVINANDO' };
-      PictionaryGameUI.renderizarPanelConductor(estado, container, contextoBase(), { onAccion: vi.fn() });
-      expect(container.innerHTML).toContain('btn-pic-bonus-eq1');
-      expect(container.innerHTML).toContain('btn-pic-bonus-eq2');
-    });
-
     it('muestra botón Bonus en FIN_DE_JUEGO', () => {
-      const estado = { ...estadoBase(), fase: 'FIN_DE_JUEGO' };
+      const estado = estadoEn('FIN_DE_JUEGO');
       PictionaryGameUI.renderizarPanelConductor(estado, container, contextoBase(), { onAccion: vi.fn() });
       expect(container.innerHTML).toContain('btn-pic-bonus-eq1');
       expect(container.innerHTML).toContain('btn-pic-bonus-eq2');
@@ -236,7 +274,7 @@ describe('PictionaryGameUI', () => {
 
     it('bonus con valor válido emite aplicar-bonus-pictionary', () => {
       const callbacks = { onAccion: vi.fn() };
-      const estado = { ...estadoBase(), fase: 'INICIO_RONDA' };
+      const estado = estadoEn('SELECCIONANDO_SUBMODO');
       const inputEl = { value: '20', trim: () => '20' };
       const btnEl = { addEventListener: vi.fn((_, fn) => fn()) };
       const errorEl = { classList: { remove: vi.fn(), add: vi.fn() }, textContent: '' };
@@ -252,7 +290,7 @@ describe('PictionaryGameUI', () => {
 
     it('bonus con valor inválido muestra error inline', () => {
       const callbacks = { onAccion: vi.fn() };
-      const estado = { ...estadoBase(), fase: 'INICIO_RONDA' };
+      const estado = estadoEn('SELECCIONANDO_SUBMODO');
       const inputEl = { value: 'abc', trim: () => 'abc' };
       const btnEl = { addEventListener: vi.fn((_, fn) => fn()) };
       const errorEl = { classList: { remove: vi.fn(), add: vi.fn() }, textContent: '' };
@@ -269,7 +307,7 @@ describe('PictionaryGameUI', () => {
 
     it('bonus input se limpia después de aplicar', () => {
       const callbacks = { onAccion: vi.fn() };
-      const estado = { ...estadoBase(), fase: 'INICIO_RONDA' };
+      const estado = estadoEn('SELECCIONANDO_SUBMODO');
       const inputEl = { value: '25', trim: () => '25' };
       const btnEl = { addEventListener: vi.fn((_, fn) => fn()) };
       const errorEl = { classList: { remove: vi.fn(), add: vi.fn() }, textContent: '' };
@@ -287,100 +325,110 @@ describe('PictionaryGameUI', () => {
   describe('renderizarPanelConductor — emisión de acciones', () => {
     it('Iniciar juego emite iniciar-juego-pictionary', () => {
       const callbacks = { onAccion: vi.fn() };
-      container.querySelector = vi.fn((sel) => {
-        if (sel === '#btn-pic-iniciar-juego') return { addEventListener: vi.fn((_, fn) => fn()) };
-        return null;
-      });
+      mockBoton(container, 'btn-pic-iniciar-juego');
       PictionaryGameUI.renderizarPanelConductor({}, container, contextoBase(), callbacks);
       expect(callbacks.onAccion).toHaveBeenCalledWith('iniciar-juego-pictionary');
     });
 
-    it('Iniciar modo emite iniciar-modo-pictionary', () => {
+    it('cada botón de submodo emite elegir-submodo-pictionary con su submodo', () => {
+      for (const sub of SUBMODOS) {
+        const callbacks = { onAccion: vi.fn() };
+        const c = { innerHTML: '', querySelector: vi.fn((sel) => (sel === `#btn-pic-submodo-${sub}` ? { addEventListener: vi.fn((_, fn) => fn()) } : null)), querySelectorAll: vi.fn(() => []) };
+        PictionaryGameUI.renderizarPanelConductor(estadoEn('SELECCIONANDO_SUBMODO'), c, contextoBase(), callbacks);
+        expect(callbacks.onAccion).toHaveBeenCalledWith('elegir-submodo-pictionary', { submodo: sub });
+      }
+    });
+
+    it('Elegir set emite elegir-set-pictionary con set_id del select', () => {
       const callbacks = { onAccion: vi.fn() };
-      const estado = { ...estadoBase(), fase: 'INICIO_RONDA', modo_actual: 1 };
+      const selectEl = { value: 'set-p1' };
+      const btnEl = { addEventListener: vi.fn((_, fn) => fn()) };
       container.querySelector = vi.fn((sel) => {
-        if (sel === '#btn-pic-iniciar-modo') return { addEventListener: vi.fn((_, fn) => fn()) };
+        if (sel === '#pic-set-select') return selectEl;
+        if (sel === '#btn-pic-elegir-set') return btnEl;
         return null;
       });
-      PictionaryGameUI.renderizarPanelConductor(estado, container, contextoBase(), callbacks);
-      expect(callbacks.onAccion).toHaveBeenCalledWith('iniciar-modo-pictionary');
+      PictionaryGameUI.renderizarPanelConductor(estadoEn('SELECCIONANDO_SET', { submodo_actual: 'PALABRAS' }), container, contextoBase(), callbacks);
+      expect(callbacks.onAccion).toHaveBeenCalledWith('elegir-set-pictionary', { set_id: 'set-p1' });
+    });
+
+    it('Elegir set sin selección no emite', () => {
+      const callbacks = { onAccion: vi.fn() };
+      const selectEl = { value: '' };
+      const btnEl = { addEventListener: vi.fn((_, fn) => fn()) };
+      container.querySelector = vi.fn((sel) => {
+        if (sel === '#pic-set-select') return selectEl;
+        if (sel === '#btn-pic-elegir-set') return btnEl;
+        return null;
+      });
+      PictionaryGameUI.renderizarPanelConductor(estadoEn('SELECCIONANDO_SET'), container, contextoBase(), callbacks);
+      expect(callbacks.onAccion).not.toHaveBeenCalled();
     });
 
     it('Iniciar tiempo emite iniciar-tiempo-pictionary', () => {
       const callbacks = { onAccion: vi.fn() };
-      const estado = { ...estadoBase(), fase: 'MOSTRANDO_PALABRA' };
-      container.querySelector = vi.fn((sel) => {
-        if (sel === '#btn-pic-iniciar-tiempo') return { addEventListener: vi.fn((_, fn) => fn()) };
-        return null;
-      });
-      PictionaryGameUI.renderizarPanelConductor(estado, container, contextoBase(), callbacks);
+      mockBoton(container, 'btn-pic-iniciar-tiempo');
+      PictionaryGameUI.renderizarPanelConductor(estadoEn('MOSTRANDO_PALABRA'), container, contextoBase(), callbacks);
       expect(callbacks.onAccion).toHaveBeenCalledWith('iniciar-tiempo-pictionary');
     });
 
     it('Correcto emite marcar-acierto-pictionary', () => {
       const callbacks = { onAccion: vi.fn() };
-      const estado = { ...estadoBase(), fase: 'ADIVINANDO' };
-      container.querySelector = vi.fn((sel) => {
-        if (sel === '#btn-pic-acierto') return { addEventListener: vi.fn((_, fn) => fn()) };
-        return null;
-      });
-      PictionaryGameUI.renderizarPanelConductor(estado, container, contextoBase(), callbacks);
+      mockBoton(container, 'btn-pic-acierto');
+      PictionaryGameUI.renderizarPanelConductor(estadoEn('ADIVINANDO'), container, contextoBase(), callbacks);
       expect(callbacks.onAccion).toHaveBeenCalledWith('marcar-acierto-pictionary');
     });
 
     it('Incorrecto emite marcar-error-pictionary', () => {
       const callbacks = { onAccion: vi.fn() };
-      const estado = { ...estadoBase(), fase: 'ADIVINANDO' };
-      container.querySelector = vi.fn((sel) => {
-        if (sel === '#btn-pic-error') return { addEventListener: vi.fn((_, fn) => fn()) };
-        return null;
-      });
-      PictionaryGameUI.renderizarPanelConductor(estado, container, contextoBase(), callbacks);
+      mockBoton(container, 'btn-pic-error');
+      PictionaryGameUI.renderizarPanelConductor(estadoEn('ADIVINANDO'), container, contextoBase(), callbacks);
       expect(callbacks.onAccion).toHaveBeenCalledWith('marcar-error-pictionary');
     });
 
     it('Pasar palabra emite pasar-palabra-pictionary', () => {
       const callbacks = { onAccion: vi.fn() };
-      const estado = { ...estadoBase(), fase: 'ADIVINANDO' };
-      container.querySelector = vi.fn((sel) => {
-        if (sel === '#btn-pic-pasar') return { addEventListener: vi.fn((_, fn) => fn()) };
-        return null;
-      });
-      PictionaryGameUI.renderizarPanelConductor(estado, container, contextoBase(), callbacks);
+      mockBoton(container, 'btn-pic-pasar');
+      PictionaryGameUI.renderizarPanelConductor(estadoEn('ADIVINANDO'), container, contextoBase(), callbacks);
       expect(callbacks.onAccion).toHaveBeenCalledWith('pasar-palabra-pictionary');
     });
 
-    it('Siguiente modo emite siguiente-modo-pictionary', () => {
+    it('Siguiente turno emite siguiente-turno-pictionary', () => {
       const callbacks = { onAccion: vi.fn() };
-      const estado = { ...estadoBase(), fase: 'ESPERA_VALIDACION' };
-      container.querySelector = vi.fn((sel) => {
-        if (sel === '#btn-pic-siguiente-modo') return { addEventListener: vi.fn((_, fn) => fn()) };
-        return null;
-      });
-      PictionaryGameUI.renderizarPanelConductor(estado, container, contextoBase(), callbacks);
-      expect(callbacks.onAccion).toHaveBeenCalledWith('siguiente-modo-pictionary');
-    });
-
-    it('Siguiente equipo emite siguiente-equipo-pictionary', () => {
-      const callbacks = { onAccion: vi.fn() };
-      const estado = { ...estadoBase(), fase: 'CAMBIO_MODO', equipo_actual: 1 };
-      container.querySelector = vi.fn((sel) => {
-        if (sel === '#btn-pic-siguiente-equipo') return { addEventListener: vi.fn((_, fn) => fn()) };
-        return null;
-      });
-      PictionaryGameUI.renderizarPanelConductor(estado, container, contextoBase(), callbacks);
-      expect(callbacks.onAccion).toHaveBeenCalledWith('siguiente-equipo-pictionary');
+      mockBoton(container, 'btn-pic-siguiente-turno');
+      PictionaryGameUI.renderizarPanelConductor(estadoEn('ESPERA_VALIDACION'), container, contextoBase(), callbacks);
+      expect(callbacks.onAccion).toHaveBeenCalledWith('siguiente-turno-pictionary');
     });
 
     it('Siguiente ronda emite siguiente-ronda-pictionary', () => {
       const callbacks = { onAccion: vi.fn() };
-      const estado = { ...estadoBase(), fase: 'FIN_DE_RONDA', ronda_actual: 1, total_rondas: 2 };
-      container.querySelector = vi.fn((sel) => {
-        if (sel === '#btn-pic-siguiente-ronda') return { addEventListener: vi.fn((_, fn) => fn()) };
-        return null;
-      });
-      PictionaryGameUI.renderizarPanelConductor(estado, container, contextoBase(), callbacks);
+      mockBoton(container, 'btn-pic-siguiente-ronda');
+      PictionaryGameUI.renderizarPanelConductor(estadoEn('FIN_DE_RONDA', { ronda_actual: 1, total_rondas: 2 }), container, contextoBase({ juegoEjecutado: { id: 'j1', configuracion_congelada: { rondas: 2 } } }), callbacks);
       expect(callbacks.onAccion).toHaveBeenCalledWith('siguiente-ronda-pictionary');
+    });
+
+    it('no emite acciones viejas iniciar-modo / siguiente-modo / siguiente-equipo', () => {
+      const callbacks = { onAccion: vi.fn() };
+      PictionaryGameUI.renderizarPanelConductor(estadoEn('INICIO_RONDA'), container, contextoBase(), callbacks);
+      PictionaryGameUI.renderizarPanelConductor(estadoEn('ESPERA_VALIDACION'), container, contextoBase(), callbacks);
+      PictionaryGameUI.renderizarPanelConductor(estadoEn('CAMBIO_TURNO'), container, contextoBase(), callbacks);
+      const tipos = callbacks.onAccion.mock.calls.map((c) => c[0]);
+      expect(tipos).not.toContain('iniciar-modo-pictionary');
+      expect(tipos).not.toContain('siguiente-modo-pictionary');
+      expect(tipos).not.toContain('siguiente-equipo-pictionary');
+    });
+  });
+
+  describe('sin dependencia de MODOS legacy', () => {
+    it('FASES exportadas son las 9 de submodos', () => {
+      expect(FASES).toHaveLength(9);
+      expect(FASES).toContain('SELECCIONANDO_SUBMODO');
+      expect(FASES).toContain('SELECCIONANDO_SET');
+    });
+
+    it('estado inicial no tiene modo_actual', () => {
+      expect(estadoBase().modo_actual).toBeUndefined();
+      expect(estadoBase().submodo_actual).toBe('PALABRAS');
     });
   });
 
