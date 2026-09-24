@@ -163,4 +163,78 @@ describe('JuegoRepository', () => {
       ).rejects.toBeTruthy();
     });
   });
+
+  describe('configuracion', () => {
+    it('crearJuego sin configuracion → configuracion = {}', async () => {
+      const j = await repo.crearJuego({ codigo: 'TRIVIA', nombre: 'Trivia' });
+      expect(j.configuracion).toEqual({});
+    });
+
+    it('crearJuego con configuracion → persiste el JSON', async () => {
+      const j = await repo.crearJuego({
+        codigo: 'PIC',
+        nombre: 'Pictionary',
+        configuracion: { bancos: [{ nombre: 'Condiciones', items: ['Bajo la mesa'] }] }
+      });
+      expect(j.configuracion.bancos).toHaveLength(1);
+      expect(j.configuracion.bancos[0].nombre).toBe('Condiciones');
+    });
+
+    it('obtenerConfiguracion devuelve {} si no tiene', async () => {
+      const j = await repo.crearJuego({ codigo: 'TRIVIA', nombre: 'Trivia' });
+      const cfg = await repo.obtenerConfiguracion(j.id);
+      expect(cfg).toEqual({});
+    });
+
+    it('obtenerConfiguracion devuelve el JSON si tiene', async () => {
+      const j = await repo.crearJuego({
+        codigo: 'HE',
+        nombre: 'Historia',
+        configuracion: { colores: [{ color: 'AZUL', pregunta: 'Nombre' }] }
+      });
+      const cfg = await repo.obtenerConfiguracion(j.id);
+      expect(cfg.colores[0].color).toBe('AZUL');
+    });
+
+    it('obtenerConfiguracion devuelve null si el juego no existe', async () => {
+      const cfg = await repo.obtenerConfiguracion('nope');
+      expect(cfg).toBeNull();
+    });
+
+    it('actualizarConfiguracion cambia el valor', async () => {
+      const j = await repo.crearJuego({ codigo: 'TRIVIA', nombre: 'Trivia' });
+      const up = await repo.actualizarConfiguracion(j.id, { tiempo: 30 });
+      expect(up.configuracion).toEqual({ tiempo: 30 });
+
+      const cfg = await repo.obtenerConfiguracion(j.id);
+      expect(cfg).toEqual({ tiempo: 30 });
+    });
+
+    it('actualizarConfiguracion lanza si no es objeto', async () => {
+      const j = await repo.crearJuego({ codigo: 'TRIVIA', nombre: 'Trivia' });
+      await expect(repo.actualizarConfiguracion(j.id, 'texto')).rejects.toThrow(/objeto/);
+      await expect(repo.actualizarConfiguracion(j.id, [1, 2])).rejects.toThrow(/objeto/);
+      await expect(repo.actualizarConfiguracion(j.id, null)).rejects.toThrow(/objeto/);
+    });
+
+    it('actualizarConfiguracion lanza si el juego no existe', async () => {
+      await expect(repo.actualizarConfiguracion('nope', {})).rejects.toThrow(/no encontrado/);
+    });
+
+    it('actualizarJuego acepta configuracion en la whitelist', async () => {
+      const j = await repo.crearJuego({ codigo: 'TRIVIA', nombre: 'Trivia' });
+      const up = await repo.actualizarJuego(j.id, { configuracion: { a: 1 } });
+      expect(up.configuracion).toEqual({ a: 1 });
+    });
+
+    it('actualizarJuego rechaza configuracion que no sea objeto', async () => {
+      const j = await repo.crearJuego({ codigo: 'TRIVIA', nombre: 'Trivia' });
+      await expect(
+        repo.actualizarJuego(j.id, { configuracion: 'texto' })
+      ).rejects.toThrow(/objeto/);
+      await expect(
+        repo.actualizarJuego(j.id, { configuracion: [1] })
+      ).rejects.toThrow(/objeto/);
+    });
+  });
 });

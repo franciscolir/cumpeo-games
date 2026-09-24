@@ -81,4 +81,23 @@ export class JuegoService {
   async desactivarJuego(juegoId) {
     return this.juegos.desactivarJuego(juegoId);
   }
+
+  /**
+   * Obtiene la configuración de un juego.
+   * @param {string} juegoId
+   * @returns {Promise<object|null>} {} si no tiene, null si el juego no existe.
+   */
+  async obtenerConfiguracion(juegoId) {
+    return this.juegos.obtenerConfiguracion(juegoId);
+  }
+
+  /**
+   * Actualiza la configuración de un juego (JSON libre).
+   * @param {string} juegoId
+   * @param {object} config
+   * @returns {Promise<object>} Juego actualizado.
+   */
+  async actualizarConfiguracion(juegoId, config) {
+    return this.juegos.actualizarConfiguracion(juegoId, config);
+  }
 }

@@ -94,4 +94,42 @@ describeSiCredenciales('JuegoRepository (integración Supabase)', () => {
     const obtenido = await repo.obtenerJuego(creado.id);
     expect(obtenido).toBeNull();
   });
+
+  it('crearJuego con configuracion → persiste y se lee', async () => {
+    const codigo = uniqueId('JR_CFG');
+    const creado = await repo.crearJuego({
+      codigo,
+      nombre: 'Con Config',
+      configuracion: { tiempo: 30, opciones: ['a', 'b'] }
+    });
+    creados.push(creado.id);
+
+    const obtenido = await repo.obtenerJuego(creado.id);
+    expect(obtenido.configuracion).toEqual({ tiempo: 30, opciones: ['a', 'b'] });
+  });
+
+  it('actualizarConfiguracion → persiste', async () => {
+    const codigo = uniqueId('JR_CFG_UP');
+    const creado = await repo.crearJuego({ codigo, nombre: 'Cfg Update' });
+    creados.push(creado.id);
+
+    const up = await repo.actualizarConfiguracion(creado.id, { colores: [{ color: 'ROJO' }] });
+    expect(up.configuracion.colores[0].color).toBe('ROJO');
+
+    const recargado = await repo.obtenerJuego(creado.id);
+    expect(recargado.configuracion.colores[0].color).toBe('ROJO');
+  });
+
+  it('obtenerConfiguracion → devuelve el JSON', async () => {
+    const codigo = uniqueId('JR_CFG_GET');
+    const creado = await repo.crearJuego({
+      codigo,
+      nombre: 'Cfg Get',
+      configuracion: { bancos: ['cond1'] }
+    });
+    creados.push(creado.id);
+
+    const cfg = await repo.obtenerConfiguracion(creado.id);
+    expect(cfg).toEqual({ bancos: ['cond1'] });
+  });
 });

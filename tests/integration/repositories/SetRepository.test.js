@@ -151,4 +151,36 @@ describeSiCredenciales('SetRepository (integración Supabase)', () => {
     const obtenido = await repo.obtenerSet(set.id);
     expect(obtenido).toBeNull();
   });
+
+  it('crearSet con submodo → persiste', async () => {
+    if (!juegoIdReal) return;
+
+    const set = await repo.crearSet({
+      juego_id: juegoIdReal,
+      nombre: uniqueId('SET_SUBMODO'),
+      submodo: 'GESTOS'
+    });
+    setsCreados.push(set.id);
+
+    expect(set.submodo).toBe('GESTOS');
+
+    const obtenido = await repo.obtenerSet(set.id);
+    expect(obtenido.submodo).toBe('GESTOS');
+  });
+
+  it('listar sets devuelve submodo', async () => {
+    if (!juegoIdReal) return;
+
+    const set = await repo.crearSet({
+      juego_id: juegoIdReal,
+      nombre: uniqueId('SET_LISTA_SUB'),
+      submodo: 'PALABRAS'
+    });
+    setsCreados.push(set.id);
+
+    const lista = await repo.listarSetsPorJuego(juegoIdReal);
+    const encontrado = lista.find((s) => s.id === set.id);
+    expect(encontrado).toBeTruthy();
+    expect(encontrado.submodo).toBe('PALABRAS');
+  });
 });

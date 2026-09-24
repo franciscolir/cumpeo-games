@@ -55,7 +55,8 @@ export class SetRepository extends BaseRepository {
     nombre,
     descripcion = null,
     orden_catalogo = null,
-    es_predeterminado = false
+    es_predeterminado = false,
+    submodo = null
   }) {
     validarNoVacio(juego_id, 'juego_id');
     validarNoVacio(nombre, 'nombre');
@@ -70,6 +71,7 @@ export class SetRepository extends BaseRepository {
         orden_catalogo,
         activo: true,
         es_predeterminado,
+        submodo,
         created_at: ahora(),
         updated_at: ahora()
       };
@@ -87,6 +89,7 @@ export class SetRepository extends BaseRepository {
       orden_catalogo,
       activo: true,
       es_predeterminado,
+      submodo,
       created_at: ts,
       updated_at: ts
     };
@@ -109,7 +112,7 @@ export class SetRepository extends BaseRepository {
    * @param {string} params.actionId - ID de acción para idempotencia.
    * @returns {Promise<object>} { ok, set_id, items_count }
    */
-  async crearSetCompleto({ juego_id, nombre, descripcion = null, items, actionId }) {
+  async crearSetCompleto({ juego_id, nombre, descripcion = null, items, actionId, submodo = null }) {
     validarNoVacio(juego_id, 'juego_id');
     validarNoVacio(nombre, 'nombre');
     if (!Array.isArray(items) || items.length === 0) {
@@ -130,7 +133,7 @@ export class SetRepository extends BaseRepository {
       });
     }
 
-    return this.crearSet({ juego_id, nombre, descripcion });
+    return this.crearSet({ juego_id, nombre, descripcion, submodo });
   }
 
   /**
@@ -192,11 +195,18 @@ export class SetRepository extends BaseRepository {
   async actualizarSet(setId, cambios) {
     validarNoVacio(setId, 'setId');
 
+    if (Object.prototype.hasOwnProperty.call(cambios, 'submodo')) {
+      const sm = cambios.submodo;
+      if (sm !== null && typeof sm !== 'string') {
+        throw new ValidacionError('submodo debe ser string o null', { campo: 'submodo' });
+      }
+    }
+
     if (this.modo === 'supabase') {
       const actual = await this.obtener(setId);
       if (!actual) throw new NoEncontradoError('Set', setId);
 
-      const permitidos = ['nombre', 'descripcion', 'orden_catalogo'];
+      const permitidos = ['nombre', 'descripcion', 'orden_catalogo', 'submodo'];
       const actualizado = { ...actual };
       let cambioContenido = false;
 
@@ -239,7 +249,7 @@ export class SetRepository extends BaseRepository {
           return;
         }
 
-        const permitidos = ['nombre', 'descripcion', 'orden_catalogo'];
+        const permitidos = ['nombre', 'descripcion', 'orden_catalogo', 'submodo'];
         const actualizado = { ...actual };
         let cambioContenido = false;
 

@@ -287,4 +287,65 @@ describe('SetRepository', () => {
       expect(vDespues).toBe(vAntes + 1);
     });
   });
+
+  describe('submodo', () => {
+    it('crearSet sin submodo → submodo = null', async () => {
+      const s = await repo.crearSet({ juego_id: 'j1', nombre: 'A' });
+      expect(s.submodo).toBeNull();
+    });
+
+    it('crearSet con submodo GESTOS → persiste', async () => {
+      const s = await repo.crearSet({
+        juego_id: 'j-pic',
+        nombre: 'Gestos',
+        submodo: 'GESTOS'
+      });
+      expect(s.submodo).toBe('GESTOS');
+
+      const recargado = await repo.obtenerSet(s.id);
+      expect(recargado.submodo).toBe('GESTOS');
+    });
+
+    it('crearSetCompleto con submodo → persiste (modo IndexedDB)', async () => {
+      const s = await repo.crearSetCompleto({
+        juego_id: 'j-pic',
+        nombre: 'Palabras',
+        items: [{ contenido: { palabra: 'gato' } }],
+        actionId: 'act-1',
+        submodo: 'PALABRAS'
+      });
+      expect(s.submodo).toBe('PALABRAS');
+    });
+
+    it('actualizarSet con submodo → persiste', async () => {
+      const s = await repo.crearSet({ juego_id: 'j-pic', nombre: 'Dibujo' });
+      expect(s.submodo).toBeNull();
+
+      const up = await repo.actualizarSet(s.id, { submodo: 'DIBUJO' });
+      expect(up.submodo).toBe('DIBUJO');
+
+      const recargado = await repo.obtenerSet(s.id);
+      expect(recargado.submodo).toBe('DIBUJO');
+    });
+
+    it('actualizarSet rechaza submodo no-string (excepto null)', async () => {
+      const s = await repo.crearSet({ juego_id: 'j1', nombre: 'A' });
+      await expect(repo.actualizarSet(s.id, { submodo: 123 })).rejects.toThrow(/string o null/);
+      await expect(repo.actualizarSet(s.id, { submodo: {} })).rejects.toThrow(/string o null/);
+      await expect(repo.actualizarSet(s.id, { submodo: null })).resolves.toBeTruthy();
+    });
+
+    it('listar sets devuelve submodo', async () => {
+      await repo.crearSet({ juego_id: 'j-pic', nombre: 'Palabras', submodo: 'PALABRAS' });
+      await repo.crearSet({ juego_id: 'j-pic', nombre: 'Gestos', submodo: 'GESTOS' });
+      await repo.crearSet({ juego_id: 'j-pic', nombre: 'Normal' });
+
+      const lista = await repo.listarSetsPorJuego('j-pic');
+      expect(lista).toHaveLength(3);
+      const porNombre = Object.fromEntries(lista.map((s) => [s.nombre, s.submodo]));
+      expect(porNombre['Palabras']).toBe('PALABRAS');
+      expect(porNombre['Gestos']).toBe('GESTOS');
+      expect(porNombre['Normal']).toBeNull();
+    });
+  });
 });

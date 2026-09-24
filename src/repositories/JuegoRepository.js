@@ -46,7 +46,14 @@ export class JuegoRepository extends BaseRepository {
     return filtrados.sort((a, b) => this._comparar(a, b));
   }
 
-  async crearJuego({ codigo, nombre, descripcion = null, requiere_set = false, orden_catalogo = null }) {
+  async crearJuego({
+    codigo,
+    nombre,
+    descripcion = null,
+    requiere_set = false,
+    orden_catalogo = null,
+    configuracion = {}
+  }) {
     validarNoVacio(codigo, 'codigo');
     validarNoVacio(nombre, 'nombre');
 
@@ -58,6 +65,7 @@ export class JuegoRepository extends BaseRepository {
       descripcion,
       requiere_set: Boolean(requiere_set),
       orden_catalogo,
+      configuracion,
       activo: true,
       created_at: ts,
       updated_at: ts
@@ -109,7 +117,14 @@ export class JuegoRepository extends BaseRepository {
     const actual = await this.obtener(juegoId);
     if (!actual) throw new NoEncontradoError('Juego', juegoId);
 
-    const permitidos = ['nombre', 'descripcion', 'orden_catalogo'];
+    if (Object.prototype.hasOwnProperty.call(cambios, 'configuracion')) {
+      const cfg = cambios.configuracion;
+      if (cfg !== null && (typeof cfg !== 'object' || Array.isArray(cfg))) {
+        throw new ValidacionError('configuracion debe ser un objeto', { campo: 'configuracion' });
+      }
+    }
+
+    const permitidos = ['nombre', 'descripcion', 'orden_catalogo', 'configuracion'];
     const actualizado = { ...actual };
 
     for (const campo of permitidos) {
@@ -131,6 +146,34 @@ export class JuegoRepository extends BaseRepository {
     if (actualizado.nombre != null) validarNoVacio(actualizado.nombre, 'nombre');
 
     actualizado.updated_at = ahora();
+
+    if (this.modo === 'supabase') {
+      await this.actualizarRegistro(actualizado);
+      return actualizado;
+    }
+
+    await this.adapter.tx([STORE], 'readwrite', (tx) => {
+      this.insertarOActualizar(tx, actualizado);
+    });
+
+    return actualizado;
+  }
+
+  async obtenerConfiguracion(juegoId) {
+    const juego = await this.obtener(juegoId);
+    if (!juego) return null;
+    return juego.configuracion || {};
+  }
+
+  async actualizarConfiguracion(juegoId, config) {
+    if (!config || typeof config !== 'object' || Array.isArray(config)) {
+      throw new ValidacionError('configuracion debe ser un objeto', { campo: 'configuracion' });
+    }
+
+    const juego = await this.obtener(juegoId);
+    if (!juego) throw new NoEncontradoError('Juego', juegoId);
+
+    const actualizado = { ...juego, configuracion: config, updated_at: ahora() };
 
     if (this.modo === 'supabase') {
       await this.actualizarRegistro(actualizado);
