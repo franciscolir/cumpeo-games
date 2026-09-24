@@ -760,18 +760,22 @@ equipo con mayor puntaje total.
 {
   "pregunta": "string",
   "respuestas_correctas": ["string", "string"],
-  "categoria": "string"
+  "categoria": "string",
+  "dificultad": 1
 }
 ```
 
 - `pregunta`: string no vacío.
 - `respuestas_correctas`: array no vacío de strings (las respuestas correctas a evitar).
 - `categoria`: string opcional.
+- `dificultad`: 1 | 2 | 3 (opcional). `null` se trata como ausente.
 
 ## Validación del set
 
 - Debe tener al menos `preguntas_por_turno` items (default 5).
 - Cada item: `pregunta` no vacía, `respuestas_correctas` array no vacío.
+- Si `dificultad` está presente (distinta de `undefined` y `null`): debe ser
+  un entero en 1..3. Mensaje: `items[i].dificultad debe ser 1, 2 o 3 si está presente`.
 
 ## Configuración
 

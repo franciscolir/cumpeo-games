@@ -175,7 +175,7 @@ Migrable a entidad si crece.
 | Pictionary — Bancos | 🔜 | Config del juego | `#/juegos/pictionary/config` | 7.7 |
 | Historia Enredada — Historias | 🔜 | Set | `#/sets/:id` | 7.8 |
 | Historia Enredada — Colores | 🔜 | Config del juego | `#/juegos/historia-enredada/config` | 7.8 |
-| Anti-Trivia | ✅ | Set | `#/sets/:id` | ✅ 7.3 + ajuste D2 |
+| Anti-Trivia | ✅ | Set | `#/sets/:id` | ✅ 7.3 + D2 en 7.3a |
 | Enlaces | ✅ | Set | `#/sets/:id` | ✅ 7.4 + ajuste D1 |
 | Trivia | 🔜 | Set | `#/sets/:id` | 7.5 |
 | ¿Qué Dice el Público? (QPEP) | 🔜 | Set | `#/sets/:id` | 7.6 |
@@ -402,18 +402,11 @@ como "Resumen" y "Historia".
 
 ### 5.6 Anti-Trivia
 
-**Estado:** ✅ Implementado (7.3). Requiere ajuste por D2.
+**Estado:** ✅ Implementado (7.3) + D2 (7.3a).
 
 **Set:** lista ilimitada de preguntas.
 
-**Item (actual):**
-
-```json
-{ "pregunta": "string", "respuestas_correctas": ["..."], "categoria": "string" }
-```
-
-
-**Item (con D2):**
+**Item:**
 
 ```json
 {
@@ -429,9 +422,11 @@ como "Resumen" y "Historia".
 
 - `pregunta` no vacía.
 - `respuestas_correctas` array no vacío.
-- `dificultad` opcional, `∈ {1, 2, 3}`.
+- `dificultad` opcional, `∈ {1, 2, 3}`. `null` se trata como ausente.
 
-**Cambio requerido (D2):** el editor 7.3 agrega el campo `dificultad`.
+**D2 (implementado en 7.3a):** el editor expone un select de dificultad
+individual (1 | 2 | 3 | vacío). NO existe dificultad general del set.
+`AntiTriviaGameDefinition.validarContenidoSet` valida el campo si está presente.
 
 ---
 
@@ -666,7 +661,7 @@ juego son pocos).
 | 7.0a | Refactor editores QPEP/Trivia | ✅ | — |
 | 7.1a–d | Rosco | ✅ | — |
 | 7.2a–e | Memoria | ✅ | — |
-| 7.3 | Anti-Trivia | ✅ | Ajuste D2 (dificultad individual) |
+| 7.3 | Anti-Trivia | ✅ | D2 (dificultad individual) cerrada en 7.3a |
 | 7.4 | Enlaces | ✅ | Ajuste D1 (máximo 10) |
 | 7.5 | Trivia | 🔜 | Rediseño + D3 + deuda #108 |
 | 7.6 | QPEP | 🔜 | Simplificación + deuda #108 |
@@ -683,7 +678,8 @@ incluirse dentro de 7.5/7.6. Decidir al planificar cada paso.
 
 ### Cerradas por este documento
 
-- **#106** (parcial): dificultad individual de Anti-Trivia. La parte de
+- **#106** (parcial → 7.3a): dificultad individual de Anti-Trivia
+  **cerrada en 7.3a** (dominio + editor + tests). La parte de
   dificultad general queda **rechazada por decisión** (D2).
 
 ### Nuevas
@@ -691,7 +687,7 @@ incluirse dentro de 7.5/7.6. Decidir al planificar cada paso.
 | **#DescripciónPrioridad** |                                                                   |       |
 | ------------------------- | ----------------------------------------------------------------- | ----- |
 | #111                      | Enlaces: agregar validación de máximo 10 en editor y dominio.     | Media |
-| #112                      | Anti-Trivia: agregar `dificultad` individual al item y al editor. | Media |
+| #112                      | ~~Anti-Trivia: agregar `dificultad` individual al item y al editor.~~ **Cerrada en 7.3a.** | ~~Media~~ Cerrada |
 | #113                      | Agregar `Juego.configuracion` (IndexedDB v6 + Supabase 0010).     | Alta  |
 | #114                      | Agregar `Set.submodo` (IndexedDB v6 + Supabase 0010).             | Alta  |
 | #115                      | Pictionary: 4 editores + 1 editor de bancos.                      | Alta  |

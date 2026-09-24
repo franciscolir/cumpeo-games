@@ -292,7 +292,7 @@ _(ninguna)_
 | 103 | `shell-partida.js` no tiene unit tests (solo e2e). La resolución de storageRefs a URLs quedó cubierta solo por `node --check` + simetría con `shell-publica`. Considerar agregar tests. | Paso 7.2d (detectado) | Media |
 | 104 | `shell-publica.js` muta `contexto.urlsImagenes` en vez de pasar un 4to parámetro. Efecto secundario. Considerar refactor. | Paso 7.2d (detectado) | Baja |
 | 105 | El conteo del Bloque 7 cambió de 10/10 a 10/16 (contar sub-pasos vs pasos principales). Convención: N/N = filas totales del bloque. Documentar. | Paso 7.2e (detectado) | Baja |
-| 106 | Anti-Trivia no tiene dificultad general ni individual (el prompt de formularios la pide). Ignorado en 7.3. Considerar agregar en un paso futuro. | Paso 7.3 (detectado) | Media |
+| 106 | Anti-Trivia: dificultad general **rechazada por D2**. Dificultad individual **parcialmente cerrada en 7.3a** (dominio + editor + tests). Commit PENDIENTE. | Paso 7.3 (detectado) / 7.3a | Media |
 | 107 | Los prompts deben verificar la existencia de archivos antes de referenciarlos (ej: trivia/editor.test.js no existe). El agente debe PARAR si el prompt referencia algo inexistente. | Paso 7.3 (detectado) | Baja |
 | 108 | `reordenarItems` en Trivia/QPEP (y quizás Rosco) pasa `items.map(i => i.id)` (array de strings) pero el contrato real es `Array<{id}>`. Bug latente. Anti-Trivia lo hace bien. Verificado en 7.3: solo Trivia (`trivia/editor.js:363`) y QPEP (`que-piensa-el-publico/editor.js:222`) lo llaman con strings; Rosco/Memoria no llaman. Corregir. | Paso 7.3 (detectado) | Media |
 | 109 | El editor de Anti-Trivia guarda estado en `container.__antiTriviaEstado`. Precedente de deuda #102. | Paso 7.3 (detectado) | Baja |
