@@ -273,7 +273,7 @@ Fuente: `docs/PANTALLAS.md` §8 (plan de 11 pasos, gaps #1–#11).
 |---|------|--------|--------|
 | 8.0 | Modal componente compartido | ✅ APROBADO | c59f41c |
 | 8.1 | `pausado_at` + ajustes_globales | ✅ APROBADO | 1193983 |
-| 8.2 | Barra superior unificada (conductor) | 🔜 PRÓXIMO | — |
+| 8.2 | Barra superior unificada (conductor) | 🕓 IMPLEMENTADO (sin commit) | PENDIENTE |
 | 8.3 | Modal de pausa + contador + auto-transición | ⬜ | — |
 | 8.4 | Botón MODO ESPERA + estado UI | ⬜ | — |
 | 8.5 | Panel conductor unificado | ⬜ | — |
@@ -342,6 +342,7 @@ Fuente: `docs/PANTALLAS.md` §8 (plan de 11 pasos, gaps #1–#11).
 | 7.23 | 2026-09-24 | 7.8b: editor de colores de Historia Enredada + dispatch config + botón Configurar colores. 2600 unit. |
 | 8.0 | 2026-09-24 | Componente Modal compartido. Rosco + Memoria migrados. 2633 unit / 82 archivos. |
 | 8.1 | 2026-09-24 | pausado_at + ajustes_globales + AjustesGlobalesRepository/Service. Migración IndexedDB v7 + Supabase 0019. 2651 unit / 85 archivos. |
+| 8.2 | 2026-09-24 | Barra superior con `#shell-timer` (`_renderShellTimer`) en shell-partida. 3 e2e nuevos (2651 unit / 85 archivos + 3 e2e). Sin commit (pendiente auditoría). Hallazgo: e2e Pictionary pre-rotos por `palabras_por_modo` ≠ `palabras_por_turno` en helper. |
 ---
 
 ## 5. Convenciones

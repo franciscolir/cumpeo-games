@@ -190,8 +190,13 @@ text
 
 #### TIME
 
-- **Estado actual:** cada GameUI renderiza su propio timer (`#pic-timer`,
-  `#ci-timer-publico`, `#rosco-pub-timer-eq1`, etc.).
+- **Estado actual:** el shell conductor renderiza un único `#shell-timer`
+  en la franja superior (**8.2**, `_renderShellTimer(estadoJuego)`), que
+  muestra `estadoJuego.tiempo_restante_seg` (formato `SS` o `MM:SS`) o no
+  se renderiza si el juego no expone tiempo (p. ej. Historia Enredada).
+  Cada GameUI aún renderiza además su propio timer (`#pic-timer`,
+  `#ci-timer-publico`, `#rosco-pub-timer-eq1`, etc.): duplicación
+  transitoria hasta 8.7.
 - **TO-BE:** un único `#shell-timer` en la barra superior, gestionado por
   el shell. Los GameUIs exponen el tiempo restante como parte del estado
   de juego (`tiempo_restante_seg` ya existe en varios).
@@ -587,7 +592,7 @@ existentes (`comenzarPartida`, `pausarJuego`, `reanudarJuego`,
 | 8 | No hay `SOUND BAR` | Reservado, sin especificación | TBD | Baja |
 | 9 | `CORRECTO / ERROR / SIGUIENTE` por juego, no unificados | Inconsistencia visual | Media | Media |
 | 10 | Selector A/B por juego, no unificado | Inconsistencia visual | Media | Media |
-| 11 | Barra superior fragmentada (cada GameUI renderiza su timer) | Inconsistencia visual | Media | Media |
+| 11 | ~~Barra superior fragmentada (cada GameUI renderiza su timer)~~ **⏳ parcialmente resuelto en 8.2** (shell con `#shell-timer`; timers de GameUI aún activos, duplicación hasta 8.7) | Inconsistencia visual | Media | Media |
 
 ---
 
@@ -601,7 +606,7 @@ existentes (`comenzarPartida`, `pausarJuego`, `reanudarJuego`,
 |---|------|----------|-------------|------------|
 | 8.0 | `Modal` componente compartido | Botón, título, contenido, acciones | Media | 1 |
 | 8.1 | `pausado_at` en `JuegoEjecutado` + ajustes generales | Migración v7 + Supabase 0019 + AjustesGlobales | Alta | 2, 3 |
-| 8.2 | Barra superior unificada (conductor) | TIME + SCORE + ESTADO en el shell | Media | 11 |
+| 8.2 | Barra superior unificada (conductor) | TIME en el shell (`#shell-timer`); SCORE/ESTADO quedan donde están hasta 8.5 | Media | 11 (parcial) |
 | 8.3 | Modal de pausa + contador + auto-transición | Usa Modal de 8.0 + `pausado_at` de 8.1 | Media | 1, 2, 3 |
 | 8.4 | Botón `MODO ESPERA` + estado UI | Estado UI + botón | Media | 4 |
 | 8.5 | Panel conductor unificado (conductor) | Shell unifica START/PAUSE, FINISH/NEXT, A/B, CORRECTO/ERROR/SIGUIENTE | Alta | 9, 10 |

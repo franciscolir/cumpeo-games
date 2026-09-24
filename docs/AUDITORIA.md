@@ -38,7 +38,8 @@
 | 2026-09-24 | 7 | 7.4a | ✅ APROBADO | Deuda #111: validación de máximo 10 en dominio y editor de Enlaces. +6 tests dominio, +6 tests editor. 2109 unit. | be6f30b |
 | 2026-09-24 | 7 | CIERRE | ✅ CERRADO | Bloque 7 completo 24/24. 2600 unit. 9 juegos con formularios. Migraciones 0017 y 0018 aplicadas. | 97aaa8d |
 | 2026-09-24 | 8 | 8.0 | ✅ APROBADO | Componente Modal compartido. Rosco + Memoria migrados. 2633 unit / 82 archivos. | c59f41c |
-| 2026-09-24 | 8 | 8.1 | ✅ APROBADO | pausado_at + ajustes_globales. Migración 0019. 2651 unit / 85 archivos. | 1193983 |
+| 2026-09-24 | 8 | 8.1 | ✅ APROBADO | pausado_at + ajustes_globales. Migración 0019. 2651 unit /  85 archivos. | 1193983 |
+| 2026-09-24 | 8 | 8.2 | 🕓 IMPLEMENTADO (sin commit) | `_renderShellTimer(estadoJuego)` + `#shell-timer` en barra superior del shell conductor (inserción justo después de `_renderTopBar`, sin tocar la función). 3 e2e nuevos en `shell-partida-timer.spec.js` (visible / oculto / formato). 2651 unit / 85 archivos ✓, e2e 3/3 ✓. Hallazgo pre-existente: e2e Pictionary rotos (helper pasa `palabras_por_modo`; `validarConfiguracion` exige `palabras_por_turno`) — verificado con `git stash` en `38ba384`, fuera de alcance 8.2. | PENDIENTE |
 ---
 
 ## Correcciones pendientes
@@ -305,3 +306,4 @@ _(ninguna)_
 | 119 | Las deudas #112–#121 viven en `FORMULARIOS.md` §11, no en `AUDITORIA.md`. Esto rompe la convención de que AUDITORIA es la fuente canónica. Consolidar. | Bloque 7 (detectado) | Baja |
 | 120 | ~~La RPC crear_set_completo no acepta submodo.~~ **Cerrada en 7.7a** (migración 0018). | Bloque 7 / 7.7a | Cerrada |
 | 121 | Fallback para sets de Pictionary sin `submodo` en el dispatch de `formulario.js`. Sets viejos con submodo null/undefined caen en editor vacío. | Paso 7.7d.1 (detectado) | Baja |
+| 122 | e2e Pictionary rotos: `tests/e2e/pictionary/_helpers/pictionary.js` pasa `palabras_por_modo` pero `PictionaryGameDefinition.validarConfiguracion` exige `palabras_por_turno`. Botón "Iniciar juego" inoperante por alerta silenciosa. Verificado pre-existente con `git stash` en `38ba384`. | Paso 8.2 (detectado) | Media |
