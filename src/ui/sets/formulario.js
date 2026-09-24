@@ -10,6 +10,7 @@ import { renderEditorItemsTrivia } from '../games/trivia/editor.js';
 import { renderEditorItemsRosco } from '../games/rosco/editor.js';
 import { renderEditorItemsMemoria } from '../games/memoria/editor.js';
 import { renderEditorItemsAntiTrivia } from '../games/anti-trivia/editor.js';
+import { renderEditorItemsEnlaces } from '../games/enlaces/editor.js';
 
 /**
  * Renderiza el formulario de set.
@@ -40,6 +41,7 @@ export async function renderFormularioSet(container, app, params = {}) {
   const esRosco = juegoDelSet?.codigo === 'ROSCO';
   const esMemoria = juegoDelSet?.codigo === 'MEMORIA';
   const esAntiTrivia = juegoDelSet?.codigo === 'ANTI_TRIVIA';
+  const esEnlaces = juegoDelSet?.codigo === 'ENLACES';
 
   const nombre = set ? set.nombre : '';
   const descripcion = set ? (set.descripcion || '') : '';
@@ -98,7 +100,8 @@ export async function renderFormularioSet(container, app, params = {}) {
       ${esEdicion && esRosco ? '<div id="editor-items-rosco"></div>' : ''}
       ${esEdicion && esMemoria ? '<div id="editor-items-memoria"></div>' : ''}
       ${esEdicion && esAntiTrivia ? '<div id="editor-items-anti-trivia"></div>' : ''}
-      ${esEdicion && !esQPEP && !esTrivia && !esRosco && !esMemoria && !esAntiTrivia ? '<p class="mt-8 font-body-sm text-on-surface-variant italic">Este juego aún no tiene editor de items.</p>' : ''}
+      ${esEdicion && esEnlaces ? '<div id="editor-items-enlaces"></div>' : ''}
+      ${esEdicion && !esQPEP && !esTrivia && !esRosco && !esMemoria && !esAntiTrivia && !esEnlaces ? '<p class="mt-8 font-body-sm text-on-surface-variant italic">Este juego aún no tiene editor de items.</p>' : ''}
     </main>
   `;
 
@@ -155,5 +158,7 @@ export async function renderFormularioSet(container, app, params = {}) {
     await renderEditorItemsMemoria(container, app, set.id, set);
   } else if (esEdicion && esAntiTrivia) {
     await renderEditorItemsAntiTrivia(container, app, set.id);
+  } else if (esEdicion && esEnlaces) {
+    await renderEditorItemsEnlaces(container, app, set.id);
   }
 }
