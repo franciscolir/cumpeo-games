@@ -60,9 +60,9 @@ function crearApp(items = []) {
 
 function itemsBase() {
   return [
-    { id: 'i1', orden: 1, contenido: { pregunta: '¿P1?', respuestas_correctas: ['A1', 'B1'], categoria: 'Cat1' } },
+    { id: 'i1', orden: 1, contenido: { pregunta: '¿P1?', respuestas_correctas: ['A1', 'B1'], categoria: 'Cat1', dificultad: 2 } },
     { id: 'i2', orden: 2, contenido: { pregunta: '¿P2?', respuestas_correctas: ['A2'] } },
-    { id: 'i3', orden: 3, contenido: { pregunta: '¿P3?', respuestas_correctas: ['A3', 'B3', 'C3'] } }
+    { id: 'i3', orden: 3, contenido: { pregunta: '¿P3?', respuestas_correctas: ['A3', 'B3', 'C3'], dificultad: 1 } }
   ];
 }
 
@@ -86,9 +86,10 @@ function inputRespuesta(container, i) {
   return container.querySelector(`[data-respuesta-idx="${i}"]`);
 }
 
-function llenarFormNuevo(container, { pregunta = '¿Nueva?', respuestas = ['R1'], categoria = '' } = {}) {
+function llenarFormNuevo(container, { pregunta = '¿Nueva?', respuestas = ['R1'], categoria = '', dificultad = '' } = {}) {
   container.querySelector('#item-pregunta-anti-trivia').value = pregunta;
   container.querySelector('#item-categoria-anti-trivia').value = categoria;
+  container.querySelector('#item-dificultad-anti-trivia').value = dificultad;
   container.__antiTriviaEstado.respuestas = [...respuestas];
   respuestas.forEach((r, i) => { inputRespuesta(container, i).value = r; });
 }
@@ -133,6 +134,7 @@ describe('renderEditorItemsAntiTrivia', () => {
       expect(container.innerHTML).toContain('id="lista-respuestas-anti-trivia"');
       expect(container.innerHTML).toContain('id="btn-agregar-respuesta-anti-trivia"');
       expect(container.innerHTML).toContain('id="item-categoria-anti-trivia"');
+      expect(container.innerHTML).toContain('id="item-dificultad-anti-trivia"');
       expect(container.innerHTML).toContain('id="btn-guardar-item-anti-trivia"');
     });
 
@@ -178,6 +180,20 @@ describe('renderEditorItemsAntiTrivia', () => {
       app = crearApp(itemsBase());
       await renderEditorItemsAntiTrivia(container, app, SET_ID);
       expect(listaHtml(container)).toContain('Categoría: Cat1');
+    });
+
+    it('muestra la dificultad cuando existe', async () => {
+      app = crearApp(itemsBase());
+      await renderEditorItemsAntiTrivia(container, app, SET_ID);
+      expect(listaHtml(container)).toContain('Dificultad: 2');
+      expect(listaHtml(container)).toContain('Dificultad: 1');
+    });
+
+    it('item sin categoría ni dificultad no muestra esos campos', async () => {
+      app = crearApp(itemsBase());
+      await renderEditorItemsAntiTrivia(container, app, SET_ID);
+      expect(listaHtml(container)).not.toContain('Categoría: undefined');
+      expect(listaHtml(container)).not.toContain('Dificultad: undefined');
     });
 
     it('renderiza 4 botones de acción por item', async () => {
@@ -341,15 +357,44 @@ describe('renderEditorItemsAntiTrivia', () => {
       expect(app.services.set.agregarItem.mock.calls[0][1].categoria).toBe('Geografía');
     });
 
+    it('dificultad vacía → no se incluye en el contenido', async () => {
+      await renderEditorItemsAntiTrivia(container, app, SET_ID);
+      llenarFormNuevo(container, { dificultad: '' });
+      await container.querySelector('#btn-guardar-item-anti-trivia').click();
+      expect(app.services.set.agregarItem.mock.calls[0][1]).not.toHaveProperty('dificultad');
+    });
+
+    it('dificultad 1 → se incluye como número 1', async () => {
+      await renderEditorItemsAntiTrivia(container, app, SET_ID);
+      llenarFormNuevo(container, { dificultad: '1' });
+      await container.querySelector('#btn-guardar-item-anti-trivia').click();
+      expect(app.services.set.agregarItem.mock.calls[0][1].dificultad).toBe(1);
+    });
+
+    it('dificultad 2 → se incluye como número 2', async () => {
+      await renderEditorItemsAntiTrivia(container, app, SET_ID);
+      llenarFormNuevo(container, { dificultad: '2' });
+      await container.querySelector('#btn-guardar-item-anti-trivia').click();
+      expect(app.services.set.agregarItem.mock.calls[0][1].dificultad).toBe(2);
+    });
+
+    it('dificultad 3 → se incluye como número 3', async () => {
+      await renderEditorItemsAntiTrivia(container, app, SET_ID);
+      llenarFormNuevo(container, { dificultad: '3' });
+      await container.querySelector('#btn-guardar-item-anti-trivia').click();
+      expect(app.services.set.agregarItem.mock.calls[0][1].dificultad).toBe(3);
+    });
+
     it('limpia el form tras guardar', async () => {
       await renderEditorItemsAntiTrivia(container, app, SET_ID);
-      llenarFormNuevo(container, { pregunta: '¿Q?', respuestas: ['R1', 'R2'], categoria: 'Cat' });
+      llenarFormNuevo(container, { pregunta: '¿Q?', respuestas: ['R1', 'R2'], categoria: 'Cat', dificultad: '3' });
       await container.querySelector('#btn-guardar-item-anti-trivia').click();
 
       expect(container.querySelector('#form-item-titulo-anti-trivia').textContent).toBe('Agregar pregunta');
       expect(container.querySelector('#btn-guardar-item-anti-trivia').textContent).toBe('Agregar');
       expect(container.querySelector('#item-pregunta-anti-trivia').value).toBe('');
       expect(container.querySelector('#item-categoria-anti-trivia').value).toBe('');
+      expect(container.querySelector('#item-dificultad-anti-trivia').value).toBe('');
       expect(container.querySelector('#btn-cancelar-edicion-anti-trivia').classList.contains('hidden')).toBe(true);
       expect(contar(respuestasHtml(container), /data-respuesta-idx=/g)).toBe(1);
     });
@@ -395,6 +440,16 @@ describe('renderEditorItemsAntiTrivia', () => {
       expect(container.querySelector('#item-categoria-anti-trivia').value).toBe('');
     });
 
+    it('carga la dificultad del item', async () => {
+      await btnItem(container, 'editar', 'i1').click();
+      expect(container.querySelector('#item-dificultad-anti-trivia').value).toBe('2');
+    });
+
+    it('item sin dificultad → select vacío', async () => {
+      await btnItem(container, 'editar', 'i2').click();
+      expect(container.querySelector('#item-dificultad-anti-trivia').value).toBe('');
+    });
+
     it('guardar tras editar llama actualizarItem con su id', async () => {
       await btnItem(container, 'editar', 'i1').click();
       await container.querySelector('#btn-guardar-item-anti-trivia').click();
@@ -402,7 +457,8 @@ describe('renderEditorItemsAntiTrivia', () => {
       expect(app.services.set.actualizarItem).toHaveBeenCalledWith('i1', {
         pregunta: '¿P1?',
         respuestas_correctas: ['A1', 'B1'],
-        categoria: 'Cat1'
+        categoria: 'Cat1',
+        dificultad: 2
       });
       expect(app.services.set.agregarItem).not.toHaveBeenCalled();
     });

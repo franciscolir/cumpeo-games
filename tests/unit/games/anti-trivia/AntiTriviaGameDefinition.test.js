@@ -245,6 +245,51 @@ describe('AntiTriviaGameDefinition', () => {
       const contenido = { items: [{ pregunta: 'Q', respuestas_correctas: ['  '] }] };
       expect(() => def.validarContenidoSet(contenido, config)).toThrow(ValidacionError);
     });
+
+    it('item con dificultad 1 → válido', () => {
+      const contenido = { items: [{ pregunta: 'Q', respuestas_correctas: ['A'], dificultad: 1 }] };
+      expect(def.validarContenidoSet(contenido, configuracionValida({ preguntas_por_turno: 1 }))).toBe(true);
+    });
+
+    it('item con dificultad 2 → válido', () => {
+      const contenido = { items: [{ pregunta: 'Q', respuestas_correctas: ['A'], dificultad: 2 }] };
+      expect(def.validarContenidoSet(contenido, configuracionValida({ preguntas_por_turno: 1 }))).toBe(true);
+    });
+
+    it('item con dificultad 3 → válido', () => {
+      const contenido = { items: [{ pregunta: 'Q', respuestas_correctas: ['A'], dificultad: 3 }] };
+      expect(def.validarContenidoSet(contenido, configuracionValida({ preguntas_por_turno: 1 }))).toBe(true);
+    });
+
+    it('item sin key dificultad → válido (opcional)', () => {
+      const contenido = { items: [{ pregunta: 'Q', respuestas_correctas: ['A'] }] };
+      expect(def.validarContenidoSet(contenido, configuracionValida({ preguntas_por_turno: 1 }))).toBe(true);
+    });
+
+    it('item con dificultad: null → válido (null tratado como ausente)', () => {
+      const contenido = { items: [{ pregunta: 'Q', respuestas_correctas: ['A'], dificultad: null }] };
+      expect(def.validarContenidoSet(contenido, configuracionValida({ preguntas_por_turno: 1 }))).toBe(true);
+    });
+
+    it('item con dificultad: 0 → error', () => {
+      const contenido = { items: [{ pregunta: "Pregunta 1", respuestas_correctas: ["a", "b"], dificultad: 0 }] };
+      expect(() => def.validarContenidoSet(contenido, config)).toThrow(ValidacionError);
+    });
+
+    it('item con dificultad: 4 → error', () => {
+      const contenido = { items: [{ pregunta: "Pregunta 1", respuestas_correctas: ["a", "b"], dificultad: 4 }] };
+      expect(() => def.validarContenidoSet(contenido, config)).toThrow(ValidacionError);
+    });
+
+    it('item con dificultad: 1.5 → error (no entero)', () => {
+      const contenido = { items: [{ pregunta: "Pregunta 1", respuestas_correctas: ["a", "b"], dificultad: 1.5 }] };
+      expect(() => def.validarContenidoSet(contenido, config)).toThrow(ValidacionError);
+    });
+
+    it('item con dificultad: "1" → error (string)', () => {
+      const contenido = { items: [{ pregunta: "Pregunta 1", respuestas_correctas: ["a", "b"], dificultad: "1" }] };
+      expect(() => def.validarContenidoSet(contenido, config)).toThrow(ValidacionError);
+    });
   });
 
   /* =============================================================

@@ -166,6 +166,12 @@ export const AntiTriviaGameDefinition = {
       if (item.categoria !== undefined && typeof item.categoria !== 'string') {
         throw new ValidacionError(`items[${i}].categoria debe ser un string`);
       }
+
+      if (item.dificultad !== undefined && item.dificultad !== null) {
+        if (!Number.isInteger(item.dificultad) || item.dificultad < 1 || item.dificultad > 3) {
+          throw new ValidacionError(`items[${i}].dificultad debe ser 1, 2 o 3 si está presente`);
+        }
+      }
     }
 
     return true;

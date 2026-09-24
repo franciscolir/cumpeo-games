@@ -5,6 +5,7 @@
    - input pregunta
    - lista dinámica de respuestas_correctas (+ / ×)
    - input categoría (opcional)
+   - select dificultad (opcional: 1 | 2 | 3)
 
    Estado en container.__antiTriviaEstado (precedente deuda #102).
    Pintado vía innerHTML + re-bind directo por atributos
@@ -31,6 +32,14 @@ function _renderEditorItemsAntiTrivia() {
 
         <input id="item-categoria-anti-trivia" type="text" placeholder="Categoría (opcional)"
           class="w-full font-body-md border-2.5 border-on-surface rounded-lg px-3 py-2 bg-background mb-3 focus:outline-none" />
+
+        <select id="item-dificultad-anti-trivia"
+          class="w-full font-body-md border-2.5 border-on-surface rounded-lg px-3 py-2 bg-background mb-3 focus:outline-none">
+          <option value="">Dificultad (opcional)</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+        </select>
 
         <div class="flex gap-2 mt-3">
           <button id="btn-guardar-item-anti-trivia" type="button"
@@ -114,6 +123,7 @@ function _limpiarFormItem(container) {
 
   container.querySelector('#item-pregunta-anti-trivia').value = '';
   container.querySelector('#item-categoria-anti-trivia').value = '';
+  container.querySelector('#item-dificultad-anti-trivia').value = '';
 
   estado.editandoId = null;
   estado.respuestas = [''];
@@ -138,6 +148,8 @@ function _cargarItemEnForm(container, item) {
 
   container.querySelector('#item-pregunta-anti-trivia').value = c.pregunta || '';
   container.querySelector('#item-categoria-anti-trivia').value = c.categoria || '';
+  container.querySelector('#item-dificultad-anti-trivia').value =
+    c.dificultad !== undefined && c.dificultad !== null ? String(c.dificultad) : '';
 
   estado.editandoId = item.id;
   estado.respuestas = respuestas;
@@ -182,6 +194,11 @@ function _validarItem(container) {
     contenido.categoria = categoria;
   }
 
+  const dificultad = container.querySelector('#item-dificultad-anti-trivia').value;
+  if (dificultad !== '') {
+    contenido.dificultad = Number(dificultad);
+  }
+
   errorEl.classList.add('hidden');
   errorEl.textContent = '';
 
@@ -211,6 +228,7 @@ async function _cargarItems(container, app, setId) {
           <p class="font-headline-sm">${c.pregunta || '(sin pregunta)'}</p>
           <p class="font-body-sm text-on-surface-variant">${respuestas.join(' | ')}</p>
           ${c.categoria ? `<p class="font-body-sm text-on-surface-variant">Categoría: ${c.categoria}</p>` : ''}
+          ${c.dificultad !== undefined && c.dificultad !== null ? `<p class="font-body-sm text-on-surface-variant">Dificultad: ${c.dificultad}</p>` : ''}
         </div>
         <div class="flex gap-1 shrink-0">
           <button data-accion="subir" data-id="${item.id}" title="Subir"
