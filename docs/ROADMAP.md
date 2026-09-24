@@ -2,7 +2,7 @@
 
 **Versión:** 1.0
 **Última actualización:** 2026-09-18
-**Estado global:** Bloques 0, 1, 2, 3, 4, 5 cerrados · Bloque 6 pospuesto · Bloque 7 en progreso (22/24) · ★ MVP alcanzado ★
+**Estado global:** Bloques 0, 1, 2, 3, 4, 5 cerrados · Bloque 6 pospuesto · Bloque 7 en progreso (23/24) · ★ MVP alcanzado ★
 **Rama:** feature/vertical-slice
 
 ---
@@ -40,7 +40,7 @@
 | 4 | "¿Qué piensa el público?" | ✅ CERRADO | 13/13 | 2e19767 | 2026-09-21 |
 | 5 | Juegos restantes | ✅ CERRADO | 11/11 | 9b7dfdc | 2026-09-23 |
 | 6 | Migración e2e a Supabase (opcional) | ⏸️ POSPUESTO | — | — | 2026-09-23 |
-| 7 | Formularios de sets por juego | 🔄 EN PROGRESO | 22/24 | — | — |
+| 7 | Formularios de sets por juego | 🔄 EN PROGRESO | 23/24 | — | — |
 
 **★ MVP se alcanza al cerrar el Bloque 4 ★**
 **Decisión al cerrar Bloque 5 (2026-09-23):** POSPUESTO INDEFINIDAMENTE.
@@ -228,7 +228,7 @@ de implementarse.
 
 ---
 
-### Bloque 7 — Formularios de sets por juego 🔄 EN PROGRESO (22/24)
+### Bloque 7 — Formularios de sets por juego 🔄 EN PROGRESO (23/24)
 
 **Objetivo:** Crear formularios de sets dedicados por juego y rediseñar el rosco.
 
@@ -256,7 +256,7 @@ de implementarse.
 | 7.7d.1 | Pictionary: 4 editores de sets por submodo | ✅ APROBADO | 61efd8a |
 | 7.7d.2 | Pictionary: config bancos + D4 + D5 | ✅ APROBADO | 7541dd4 |
 | 7.8a | Historia Enredada: editor de historias con imagen | ✅ APROBADO | 781e12d |
-| 7.8b | Historia Enredada: editor de colores (config) | ⬜ PENDIENTE | — |
+| 7.8b | Historia Enredada: editor de colores (config) | ✅ APROBADO | 9fc38cf |
 
 ## 4. Historial de actualizaciones
 
@@ -314,6 +314,7 @@ de implementarse.
 | 7.20 | 2026-09-24 | 7.7d.1: 4 editores de sets Pictionary (shared + palabras + 3 re-exports) + dispatch en formulario. 2436 unit. |
 | 7.21 | 2026-09-24 | 7.7d.2: editor de bancos de condiciones de Pictionary + ruta config + botón Configurar condiciones. 2479 unit. |
 | 7.22 | 2026-09-24 | 7.8a: editor de historias de Historia Enredada con upload de imagen (dibujo) + storage-helpers. 2568 unit. |
+| 7.23 | 2026-09-24 | 7.8b: editor de colores de Historia Enredada + dispatch config + botón Configurar colores. 2600 unit. |
 ---
 
 ## 5. Convenciones

@@ -61,7 +61,7 @@ La administración de contenido es una sección separada de la app.
 4. **Retrocompatibilidad.** Los sets existentes no se rompen.
 5. **Persistencia clara.** Cada dato sabe a qué entidad pertenece.
 6. **Separación contenido/ejecución.** Los sets se administran en `#/sets`.
-   La configuración de juego en `#/juegos/:codigo/configuracion`.
+   La configuración de juego en `#/juegos/:codigo/config`.
 7. **Un formulario por tipo de contenido.** No hay formularios genéricos que
    fuercen una estructura común.
 
@@ -126,7 +126,7 @@ El checkbox es solo una representación más clara para el usuario.
 ```
 
 
-- Editables desde `#/juegos/pictionary/configuracion`.
+- Editables desde `#/juegos/pictionary/config`.
 - Independientes entre sí (Gestos ≠ Dibujo).
 
 **Justificación:** es configuración, no contenido. No requiere entidad nueva.
@@ -146,7 +146,7 @@ Migrable a entidad si crece.
 ```
 
 
-- Editables desde `#/juegos/historia-enredada/configuracion`.
+- Editables desde `#/juegos/historia-enredada/config`.
 - Las historias (sets) no duplican las preguntas de colores.
 
 **Justificación:** mismo razonamiento que D5.
@@ -173,8 +173,8 @@ Migrable a entidad si crece.
 | Pictionary — Preguntas | 🔜 | Set con `submodo: PREGUNTAS` | `#/sets/:id` | 7.7 |
 | Pictionary — Dibujo | 🔜 | Set con `submodo: DIBUJO` | `#/sets/:id` | 7.7 |
 | Pictionary — Bancos | 🔜 | Config del juego | `#/juegos/pictionary/config` | 7.7 |
-| Historia Enredada — Historias | 🔜 | Set | `#/sets/:id` | 7.8 |
-| Historia Enredada — Colores | 🔜 | Config del juego | `#/juegos/historia-enredada/config` | 7.8 |
+| Historia Enredada — Historias | ✅ | Set | `#/sets/:id` | ✅ 7.8a |
+| Historia Enredada — Colores | ✅ | Config del juego | `#/juegos/HISTORIA_ENREDADA/config` | ✅ 7.8b |
 | Anti-Trivia | ✅ | Set | `#/sets/:id` | ✅ 7.3 + D2 en 7.3a |
 | Enlaces | ✅ | Set | `#/sets/:id` | ✅ 7.4 + D1 (7.4a) |
 | Trivia | ✅ | Set | `#/sets/:id` | ✅ 7.5 |
@@ -355,7 +355,7 @@ una condición por banco.
 
 ### 5.5 Historia Enredada
 
-**Estado:** ✅ 7.8a (editor). Pendiente 7.8b (config colores).
+**Estado:** ✅ 7.8a (editor de historias) + 7.8b (config colores).
 
 **Estructura:** 1 set (Historias) + 1 configuración (Colores).
 
@@ -399,7 +399,7 @@ como "Resumen" y "Historia".
 
 **UI:** lista editable de `{color, pregunta}`.
 
-**Validación:** al menos 1 color. `color` y `pregunta` no vacíos.
+**Validación:** `color` y `pregunta` no vacíos. Color único (case-sensitive). Array vacío permitido.
 
 ---
 
@@ -691,7 +691,7 @@ juego son pocos).
 | 7.7d.1 | Pictionary: 4 editores de sets | ✅ | — |
 | 7.7d.2 | Pictionary: config bancos + D4 + D5 | ✅ | Bancos en `Juego.configuracion` |
 | 7.8a | Historia Enredada: editor de historias | ✅ | Upload de imagen (`dibujo`) |
-| 7.8b | Historia Enredada: config colores + D6 | 🔜 | Colores en `Juego.configuracion` |
+| 7.8b | Historia Enredada: config colores + D6 | ✅ | Colores en `Juego.configuracion` |
 | N/A | Canción Incompleta | Sin editor | — |
 
 **Ajustes D1 y D2:** cerrados como pasos cortos — D2 en 7.3a, D1 en 7.4a.
@@ -715,7 +715,7 @@ juego son pocos).
 | #113                      | ~~Agregar `Juego.configuracion` (IndexedDB v6 + Supabase 0017).~~ **Cerrada en 7.6a.** | ~~Alta~~ Cerrada |
 | #114                      | ~~Agregar `Set.submodo` (IndexedDB v6 + Supabase 0017).~~ **Cerrada en 7.6a.** | ~~Alta~~ Cerrada |
 | #115                      | ~~Pictionary: 4 editores + 1 editor de bancos.~~ **Cerrada. 4 editores + 1 editor de bancos (7.7d.1 + 7.7d.2).** | ~~Alta~~ Cerrada |
-| #116                      | Historia Enredada: editor de historias + editor de colores. **7.8a hecho (editor de historias), 7.8b pendiente (colores).** | Alta  |
+| #116                      | Historia Enredada: editor de historias + editor de colores. **Cerrada en 7.8a + 7.8b.** | ~~Alta~~ Cerrada |
 | #117                      | ~~Trivia: rediseño de editor + checkboxes + fix deuda #108.~~ **Cerrada en 7.5** (radios, no checkboxes). | ~~Alta~~ Cerrada |
 | #118                      | ~~QPEP: simplificación de editor + fix deuda #108.~~ **Cerrada en 7.6** (rediseño + `[{id}]`). | ~~Media~~ Cerrada |
 | #120                      | ~~La RPC crear_set_completo no acepta submodo.~~ **Cerrada en 7.7a** (migración 0018). | ~~Media~~ Cerrada |
