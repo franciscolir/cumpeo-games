@@ -254,7 +254,7 @@ El conductor elige la canción a discreción; el reproductor es externo.
 
 ### 5.4 Pictionary
 
-**Estado:** ✅ 7.7d.1 (4 editores). Pendiente 7.7d.2 (bancos). GameDefinition con
+**Estado:** ✅ 7.7d.1 (4 editores) + 7.7d.2 (bancos). GameDefinition con
 submodos en ✅ 7.7b. UI + shell con submodos en ✅ 7.7c.
 
 **Estructura:** 4 sets (uno por submodo) + 1 configuración de bancos.
@@ -689,7 +689,7 @@ juego son pocos).
 | 7.7b | GameDefinition con submodos | ✅ | — |
 | 7.7c | UI + shell con submodos (shims eliminados) | ✅ | — |
 | 7.7d.1 | Pictionary: 4 editores de sets | ✅ | — |
-| 7.7d.2 | Pictionary: config bancos + D4 + D5 | 🔜 | Bancos en `Juego.configuracion` |
+| 7.7d.2 | Pictionary: config bancos + D4 + D5 | ✅ | Bancos en `Juego.configuracion` |
 | 7.8 | Historia Enredada | 🔜 | Editor + config colores + D6 |
 | N/A | Canción Incompleta | Sin editor | — |
 
@@ -713,7 +713,7 @@ juego son pocos).
 | #112                      | ~~Anti-Trivia: agregar `dificultad` individual al item y al editor.~~ **Cerrada en 7.3a.** | ~~Media~~ Cerrada |
 | #113                      | ~~Agregar `Juego.configuracion` (IndexedDB v6 + Supabase 0017).~~ **Cerrada en 7.6a.** | ~~Alta~~ Cerrada |
 | #114                      | ~~Agregar `Set.submodo` (IndexedDB v6 + Supabase 0017).~~ **Cerrada en 7.6a.** | ~~Alta~~ Cerrada |
-| #115                      | Pictionary: 4 editores + 1 editor de bancos. **En curso (7.7d.1 hecho, 7.7d.2 pendiente).** | Alta  |
+| #115                      | ~~Pictionary: 4 editores + 1 editor de bancos.~~ **Cerrada. 4 editores + 1 editor de bancos (7.7d.1 + 7.7d.2).** | ~~Alta~~ Cerrada |
 | #116                      | Historia Enredada: editor de historias + editor de colores.       | Alta  |
 | #117                      | ~~Trivia: rediseño de editor + checkboxes + fix deuda #108.~~ **Cerrada en 7.5** (radios, no checkboxes). | ~~Alta~~ Cerrada |
 | #118                      | ~~QPEP: simplificación de editor + fix deuda #108.~~ **Cerrada en 7.6** (rediseño + `[{id}]`). | ~~Media~~ Cerrada |
