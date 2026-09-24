@@ -1,10 +1,10 @@
 # CUMPEO — Documento Maestro de Construcción
 
-**Versión:** 2.9
-**Estado:** H4 · H5.1 · H6 · H7.1–H7.12 COMPLETOS · Bloques 0–5 COMPLETOS · ~99% proyecto completo
-**Última actualización:** Post-commit `9b7dfdc` (cierre Bloque 5)
-**HEAD:** `feature/vertical-slice` — `9b7dfdc`
-**Tests:** 433 unit + 35 e2e + 99 integration
+**Versión:** 3.0
+**Estado:** H4 · H5.1 · H6 · H7.1–H7.12 COMPLETOS · Bloques 0–5 y 7 COMPLETOS · Bloque 6 pospuesto · ~99% proyecto completo
+**Última actualización:** Post-commit `97aaa8d` (cierre Bloque 7)
+**HEAD:** `feature/vertical-slice` — `97aaa8d`
+**Tests:** 2600 unit (81 archivos) + ~215 e2e + ~104 integration
 **Audiencia:** Desarrollador único / equipo reducido
 **Propósito:** Guía única de referencia para construcción, consulta y auditoría del sistema.
 
@@ -541,12 +541,13 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 | Métrica | Valor |
 |---------|-------|
 | Progreso global | ~99% |
-| Bloques cerrados | 6 (Bloques 0–5) |
+| Bloques cerrados | 7 (Bloques 0–5, 7) |
+| Bloques pospuestos | 1 (Bloque 6 — migración e2e a Supabase) |
 | Juegos implementados | 9 (QPEP, Trivia, Rosco, Canción Incompleta, Pictionary, Historia Enredada, Memoricé, Anti-Trivia, Enlaces) |
-| Tests unit | 2080 (69 archivos) |
+| Tests unit | 2600 (81 archivos) |
 | Tests e2e | ~215 |
-| Tests integration | 99 (contra Supabase Cloud) |
-| Commits totales (rama) | 100+ |
+| Tests integration | ~104 (contra Supabase Cloud) |
+| Commits totales (rama) | 130+ |
 
 ### 8.2 Fases cerradas
 
@@ -575,6 +576,8 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 | Bloque 3 — Móvil + moderación | Ruta #/movil, mensajes, fotos, moderación | Cerrado (9ca4e7a) |
 | Bloque 4 — "¿Qué piensa el público?" | Primer juego completo. ★ MVP alcanzado ★ | Cerrado (2e19767) |
 | Bloque 5 — Juegos restantes | 9 juegos implementados end-to-end | Cerrado (9b7dfdc) |
+| Bloque 6 — Migración e2e a Supabase | Pospuesto indefinidamente (2026-09-23) |
+| Bloque 7 — Formularios de sets por juego | 24/24 pasos. Cierre `97aaa8d` |
 
 ### 8.3 H4 — Servicios de dominio (CERRADA)
 
@@ -1161,7 +1164,38 @@ Vista de solo lectura para el público. Cierra la fase H6.
 - 49 tests unit.
 - Integración en `formulario.js` (5 cambios).
 
-### 8.4 Commits clave
+### 8.4 Bloque 7 — Formularios de sets por juego (CERRADO 24/24)
+
+Bloque de formularios dedicados por juego. Cierra las deudas #106, #108,
+#111, #112, #113, #114, #115, #116, #117, #118, #120.
+
+**Pasos (24):**
+
+| # | Paso | Commit |
+|---|---|---|
+| 7.0a | Refactor editores QPEP/Trivia | `dfb901c` |
+| 7.1a–d | Rosco: dominio + modal + rediseño + editor | `12145ae`, `0f67f43`, `3908371`, `9771694` |
+| 7.2a–e | Memoria: modelo + storage + editor + URLs + predeterminados | `83df5b8`, `5cba1fa`, `353f1d0`, `3ea02b9`, `b576d22` |
+| 7.3 | Anti-Trivia: editor | `31cfb0b` |
+| 7.3a | Anti-Trivia: dificultad individual | `d729263` |
+| 7.4 | Enlaces: editor | `2d4f441` |
+| 7.4a | Enlaces: máximo 10 | `be6f30b` |
+| 7.5 | Trivia: rediseño + fix #108 | `b31965d` |
+| 7.6 | QPEP: rediseño + fix #108 | `185d85c` |
+| 7.6a | Juego.configuracion + Set.submodo (mig. 0017) | `7077163` |
+| 7.7a | RPC crear_set_completo con submodo (mig. 0018) | `0d31604` |
+| 7.7b | Pictionary: GameDefinition con submodos | `539ab0b` |
+| 7.7c | Pictionary: UI + shell con submodos | `47226d0` |
+| 7.7d.1 | Pictionary: 4 editores de sets | `61efd8a` |
+| 7.7d.2 | Pictionary: config bancos | `7541dd4` |
+| 7.8a | Historia Enredada: editor de historias con imagen | `781e12d` |
+| 7.8b | Historia Enredada: editor de colores | `9fc38cf` |
+
+**Migraciones Supabase aplicadas:** 0017 (config + submodo), 0018 (RPC con submodo).
+
+**Documento de referencia:** `docs/FORMULARIOS.md` (fuente de verdad de la administración de contenido).
+
+### 8.5 Commits clave
 
 ```
 2a825ab  feat: implement IndexedDB vertical slice and repositories
@@ -1222,7 +1256,7 @@ e06e480  feat(adapters): await Realtime subscription before returning cleanup
 25b3ec6  chore: remove accidentally committed .bak file
 ```
 
-### 8.5 Estructura del repositorio
+### 8.6 Estructura del repositorio
 /
 +-- docs/
 | +-- MASTER.md (este archivo)

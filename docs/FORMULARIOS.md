@@ -2,7 +2,9 @@
 # CUMPEO — Documento Maestro de Formularios
 
 **Versión:** 1.0
-**Estado:** Decisiones cerradas. Implementación en curso (Bloque 7).
+**Estado:** Documento cerrado con el Bloque 7 (2026-09-24). Las deudas
+#112–#121 fueron registradas aquí durante el desarrollo. Ver `AUDITORIA.md`
+para el historial canónico (deuda #119 pendiente de consolidación).
 **Última actualización:** 2026-09-24
 **Propósito:** Especificación única de la administración de contenido (sets y
 configuración) de todos los juegos. Es la fuente de verdad para los editores

@@ -36,6 +36,7 @@
 | 2026-09-23 | 7 | 7.3 | ✅ APROBADO | Editor de Anti-Trivia (lista + form con respuestas dinámicas). 45 tests. 2031 unit. | 31cfb0b |
 | 2026-09-24 | 7 | 7.4 | ✅ APROBADO | Editor de Enlaces: 306 líneas, 49 tests, validación de unicidad A/B, `reordenarItems` con `[{id}]`. Formulario integrado (5 cambios). 2080 unit. | 2d4f441 |
 | 2026-09-24 | 7 | 7.4a | ✅ APROBADO | Deuda #111: validación de máximo 10 en dominio y editor de Enlaces. +6 tests dominio, +6 tests editor. 2109 unit. | be6f30b |
+| 2026-09-24 | 7 | CIERRE | ✅ CERRADO | Bloque 7 completo 24/24. 2600 unit. 9 juegos con formularios. Migraciones 0017 y 0018 aplicadas. | 97aaa8d |
 ---
 
 ## Correcciones pendientes
@@ -299,3 +300,6 @@ _(ninguna)_
 | 109 | El editor de Anti-Trivia guarda estado en `container.__antiTriviaEstado`. Precedente de deuda #102. | Paso 7.3 (detectado) | Baja |
 | 110 | Divergencia entre validación de unicidad del editor de Enlaces (con `.trim()`) y del dominio (`EnlacesGameDefinition.validarContenidoSet`, comparación cruda). El editor es más estricto. A futuro, alinear el dominio. | Paso 7.4 (detectado) | Baja |
 | 111 | Enlaces: agregar validación de máximo 10 en editor y dominio. **Cerrada en 7.4a** (dominio + editor + 12 tests). | Paso 7.4 (detectado) / 7.4a | ~~Media~~ Cerrada |
+| 119 | Las deudas #112–#121 viven en `FORMULARIOS.md` §11, no en `AUDITORIA.md`. Esto rompe la convención de que AUDITORIA es la fuente canónica. Consolidar. | Bloque 7 (detectado) | Baja |
+| 120 | ~~La RPC crear_set_completo no acepta submodo.~~ **Cerrada en 7.7a** (migración 0018). | Bloque 7 / 7.7a | Cerrada |
+| 121 | Fallback para sets de Pictionary sin `submodo` en el dispatch de `formulario.js`. Sets viejos con submodo null/undefined caen en editor vacío. | Paso 7.7d.1 (detectado) | Baja |
