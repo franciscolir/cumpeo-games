@@ -1275,6 +1275,7 @@ async function _renderContenido(container, app, partidaId) {
   container.innerHTML = `
     <div class="min-h-screen flex flex-col">
       ${_renderTopBar(partida, tieneControl, app, partidaId)}
+      ${_renderShellTimer(estadoJuego)}
       ${_renderHeroScoreboard(partida, juegoActivo, equipos)}
       <div id="shell-game-container" class="flex-1 min-h-0 overflow-hidden p-4">
         ${gameUI ? '' : _renderPlaceholder('Este juego aún no tiene UI implementada')}
@@ -1376,6 +1377,32 @@ function _renderTopBar(partida, tieneControl, app, partidaId) {
       </div>
     </div>
   `;
+}
+
+/* =============================================================
+   Shell Timer
+   ============================================================= */
+
+/**
+ * Renderiza el timer unificado de la barra superior (#shell-timer).
+ * Solo se muestra si el estado del juego expone `tiempo_restante_seg`
+ * (los juegos sin timer, p. ej. Historia Enredada, no lo renderizan).
+ * No usa setInterval: el valor se refresca con los re-renders del shell.
+ * @param {object} estadoJuego
+ * @returns {string} HTML del timer o '' si el juego no tiene tiempo
+ */
+function _renderShellTimer(estadoJuego) {
+  const seg = estadoJuego?.tiempo_restante_seg;
+  if (typeof seg !== 'number' || !Number.isFinite(seg) || seg < 0) return '';
+
+  const segundos = Math.floor(seg);
+  const minutos = Math.floor(segundos / 60);
+  const resto = segundos % 60;
+  const texto = minutos > 0
+    ? `${minutos}:${String(resto).padStart(2, '0')}`
+    : String(resto);
+
+  return `<div id="shell-timer" class="border-b-2.5 border-on-surface bg-surface-container-lowest h-10 px-4 flex items-center shrink-0"><span class="font-display-hero text-xl text-primary">${texto}</span></div>`;
 }
 
 /* =============================================================
