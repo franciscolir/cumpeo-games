@@ -177,7 +177,7 @@ Migrable a entidad si crece.
 | Historia Enredada — Colores | 🔜 | Config del juego | `#/juegos/historia-enredada/config` | 7.8 |
 | Anti-Trivia | ✅ | Set | `#/sets/:id` | ✅ 7.3 + D2 en 7.3a |
 | Enlaces | ✅ | Set | `#/sets/:id` | ✅ 7.4 + D1 (7.4a) |
-| Trivia | 🔜 | Set | `#/sets/:id` | 7.5 |
+| Trivia | ✅ | Set | `#/sets/:id` | ✅ 7.5 |
 | ¿Qué Dice el Público? (QPEP) | 🔜 | Set | `#/sets/:id` | 7.6 |
 
 ---
@@ -464,7 +464,7 @@ individual (1 | 2 | 3 | vacío). NO existe dificultad general del set.
 
 ### 5.8 Trivia
 
-**Estado:** 🔜 7.5 (rediseño).
+**Estado:** ✅ Implementado en 7.5 (rediseño + deuda #108).
 
 **Set:** lista ilimitada.
 
@@ -483,22 +483,24 @@ individual (1 | 2 | 3 | vacío). NO existe dificultad general del set.
 **Validación:**
 
 - `pregunta` no vacía.
-- `opciones` array de 2 a 6 strings (mínimo 4 en el editor).
+- `opciones` array de 2 a 6 strings.
 - `respuesta_correcta_index` entero en rango.
-- `dificultad ∈ {1, 2, 3}`.
+- `dificultad ∈ {1, 2, 3}` (opcional, ya existe desde 5.1b).
 
 **UI del editor (D3):**
 
-- 4 inputs de alternativa (A, B, C, D).
-- 4 checkboxes (uno por alternativa).
-- Exactamente 1 marcado.
-- Al guardar: traducir a `respuesta_correcta_index`.
+- 2 a 6 inputs de alternativa (dinámicos, con "+ Agregar opción").
+- Radios (NO checkboxes) — uno por alternativa, `name="respuesta-correcta-trivia"`.
+- Exactamente 1 marcado. Mensaje sin marcado: `Elegí la respuesta correcta`.
+- Al guardar: `respuesta_correcta_index` directo del radio marcado.
+- Select de dificultad individual (Sin dificultad | 1 Fácil | 2 Media | 3 Difícil).
+- NO existe dificultad general del set (rechazada por consistencia con D2).
 
-**Cambio requerido (7.5):**
+**Rediseño (7.5):**
 
-- Rediseñar el editor al patrón nuevo (lista + form inline).
-- Agregar checkboxes.
-- Corregir deuda #108 (`reordenarItems` con `[{id}]`).
+- Editor al patrón nuevo (lista + form inline, innerHTML + re-bind,
+  estado en `container.__triviaEstado`).
+- Deuda #108 corregida: `reordenarItems` con `[{id}]`.
 
 ---
 
@@ -665,7 +667,7 @@ juego son pocos).
 | 7.2a–e | Memoria | ✅ | — |
 | 7.3 | Anti-Trivia | ✅ | D2 (dificultad individual) cerrada en 7.3a |
 | 7.4 | Enlaces | ✅ | D1 (máximo 10) cerrada en 7.4a |
-| 7.5 | Trivia | 🔜 | Rediseño + D3 + deuda #108 |
+| 7.5 | Trivia | ✅ | Rediseño + deuda #108 |
 | 7.6 | QPEP | 🔜 | Simplificación + deuda #108 |
 | 7.7 | Pictionary | 🔜 | 4 editores + config bancos + D4 + D5 |
 | 7.8 | Historia Enredada | 🔜 | Editor + config colores + D6 |
@@ -693,12 +695,12 @@ juego son pocos).
 | #114                      | Agregar `Set.submodo` (IndexedDB v6 + Supabase 0010).             | Alta  |
 | #115                      | Pictionary: 4 editores + 1 editor de bancos.                      | Alta  |
 | #116                      | Historia Enredada: editor de historias + editor de colores.       | Alta  |
-| #117                      | Trivia: rediseño de editor + checkboxes + fix deuda #108.         | Alta  |
+| #117                      | ~~Trivia: rediseño de editor + checkboxes + fix deuda #108.~~ **Cerrada en 7.5** (radios, no checkboxes). | ~~Alta~~ Cerrada |
 | #118                      | QPEP: simplificación de editor + fix deuda #108.                  | Media |
 
-**Deuda #108** (vigente): `trivia/editor.js:363` y `que-piensa-el-publico/editor.js:222`
-pasan `items.map(i => i.id)` (strings). El contrato es `Array<{id}>`.
-Corregir en 7.5 y 7.6.
+**Deuda #108** (parcial → 7.5): `trivia/editor.js` corregido en 7.5
+(`reordenarItems` con `[{id}]`). Queda pendiente en
+`que-piensa-el-publico/editor.js:222` (7.6).
 
 **Deuda #110** (vigente): divergencia de `.trim()` entre editor y dominio de
 Enlaces. No bloquea.
