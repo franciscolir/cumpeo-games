@@ -151,6 +151,12 @@ export const EnlacesGameDefinition = {
       );
     }
 
+    if (contenido.items.length > 10) {
+      throw new ValidacionError(
+        'items no puede tener más de 10 items (máximo 10)'
+      );
+    }
+
     const conceptosA = new Set();
     const conceptosB = new Set();
 

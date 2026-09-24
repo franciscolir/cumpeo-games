@@ -267,6 +267,39 @@ describe('EnlacesGameDefinition', () => {
   });
 
   /* =============================================================
+     Grupo 3b — validarContenidoSet: máximo 10 (6 tests)
+     ============================================================= */
+
+  describe('validarContenidoSet — máximo 10', () => {
+    it('set con 9 items y pares_por_turno: 8 → válido', () => {
+      expect(def.validarContenidoSet(contenidoValido(9), configuracionValida({ pares_por_turno: 8 }))).toBe(true);
+    });
+
+    it('set con 10 items y pares_por_turno: 8 → válido', () => {
+      expect(def.validarContenidoSet(contenidoValido(10), configuracionValida({ pares_por_turno: 8 }))).toBe(true);
+    });
+
+    it('set con 11 items y pares_por_turno: 8 → error "más de 10 items"', () => {
+      expect(() => def.validarContenidoSet(contenidoValido(11), configuracionValida({ pares_por_turno: 8 })))
+        .toThrow('items no puede tener más de 10 items (máximo 10)');
+    });
+
+    it('set con 12 items y pares_por_turno: 8 → error', () => {
+      expect(() => def.validarContenidoSet(contenidoValido(12), configuracionValida({ pares_por_turno: 8 })))
+        .toThrow(ValidacionError);
+    });
+
+    it('set con 10 items y pares_por_turno: 10 → válido (borde)', () => {
+      expect(def.validarContenidoSet(contenidoValido(10), configuracionValida({ pares_por_turno: 10 }))).toBe(true);
+    });
+
+    it('set con 11 items y pares_por_turno: 10 → error', () => {
+      expect(() => def.validarContenidoSet(contenidoValido(11), configuracionValida({ pares_por_turno: 10 })))
+        .toThrow('items no puede tener más de 10 items (máximo 10)');
+    });
+  });
+
+  /* =============================================================
      Grupo 4 — estadoInicial (8 tests)
      ============================================================= */
 

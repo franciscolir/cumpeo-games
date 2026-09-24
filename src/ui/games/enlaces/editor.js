@@ -136,6 +136,12 @@ function _validarItem(container) {
     return null;
   }
 
+  if (estado.editandoId === null && estado.items.length >= 10) {
+    errorEl.textContent = 'El set ya tiene 10 pares (máximo permitido)';
+    errorEl.classList.remove('hidden');
+    return null;
+  }
+
   const contenido = { concepto_a: conceptoA, concepto_b: conceptoB };
 
   const categoria = container.querySelector('#item-categoria-enlaces').value.trim();

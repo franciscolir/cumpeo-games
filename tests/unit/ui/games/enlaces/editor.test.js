@@ -66,6 +66,14 @@ function itemsBase() {
   ];
 }
 
+function itemsN(n) {
+  const items = [];
+  for (let i = 0; i < n; i++) {
+    items.push({ id: `i${i + 1}`, orden: i + 1, contenido: { concepto_a: `A${i + 1}`, concepto_b: `B${i + 1}` } });
+  }
+  return items;
+}
+
 function contar(html, re) {
   return (html.match(re) || []).length;
 }
@@ -524,6 +532,85 @@ describe('renderEditorItemsEnlaces', () => {
 
     it('recarga la lista tras reordenar', async () => {
       await btnItem(container, 'bajar', 'i1').click();
+      expect(app.services.set.listarItemsDeSet).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('validación — máximo 10 items', () => {
+    it('con 9 items existentes, agregar el 10 → OK', async () => {
+      app = crearApp(itemsN(9));
+      await renderEditorItemsEnlaces(container, app, SET_ID);
+      llenarFormNuevo(container, { conceptoA: 'NuevoA', conceptoB: 'NuevoB' });
+      await container.querySelector('#btn-guardar-item-enlaces').click();
+
+      expect(app.services.set.agregarItem).toHaveBeenCalledTimes(1);
+      expect(app.services.set.agregarItem.mock.calls[0][1]).toEqual({
+        concepto_a: 'NuevoA',
+        concepto_b: 'NuevoB'
+      });
+    });
+
+    it('con 10 items existentes, intentar agregar → error y NO llama agregarItem', async () => {
+      app = crearApp(itemsN(10));
+      await renderEditorItemsEnlaces(container, app, SET_ID);
+      llenarFormNuevo(container, { conceptoA: 'NuevoA', conceptoB: 'NuevoB' });
+      await container.querySelector('#btn-guardar-item-enlaces').click();
+
+      const errorEl = container.querySelector('#item-error-enlaces');
+      expect(errorEl.textContent).toBe('El set ya tiene 10 pares (máximo permitido)');
+      expect(errorEl.classList.contains('hidden')).toBe(false);
+      expect(app.services.set.agregarItem).not.toHaveBeenCalled();
+    });
+
+    it('con 10 items, editar uno existente → OK (no bloquea)', async () => {
+      app = crearApp(itemsN(10));
+      await renderEditorItemsEnlaces(container, app, SET_ID);
+      await btnItem(container, 'editar', 'i5').click();
+      await container.querySelector('#btn-guardar-item-enlaces').click();
+
+      expect(app.services.set.actualizarItem).toHaveBeenCalledWith('i5', {
+        concepto_a: 'A5',
+        concepto_b: 'B5'
+      });
+      expect(app.services.set.agregarItem).not.toHaveBeenCalled();
+      expect(container.querySelector('#item-error-enlaces').textContent).toBe('');
+    });
+
+    it("con 10 items, el mensaje de error es 'El set ya tiene 10 pares (máximo permitido)'", async () => {
+      app = crearApp(itemsN(10));
+      await renderEditorItemsEnlaces(container, app, SET_ID);
+      llenarFormNuevo(container, { conceptoA: 'X', conceptoB: 'Y' });
+      await container.querySelector('#btn-guardar-item-enlaces').click();
+
+      expect(container.querySelector('#item-error-enlaces').textContent)
+        .toBe('El set ya tiene 10 pares (máximo permitido)');
+    });
+
+    it('con 10 items, tras el error, el form NO se limpia', async () => {
+      app = crearApp(itemsN(10));
+      await renderEditorItemsEnlaces(container, app, SET_ID);
+      llenarFormNuevo(container, { conceptoA: 'KeepA', conceptoB: 'KeepB', categoria: 'Cat', dificultad: '2' });
+      await container.querySelector('#btn-guardar-item-enlaces').click();
+
+      expect(container.querySelector('#item-concepto-a-enlaces').value).toBe('KeepA');
+      expect(container.querySelector('#item-concepto-b-enlaces').value).toBe('KeepB');
+      expect(container.querySelector('#item-categoria-enlaces').value).toBe('Cat');
+      expect(container.querySelector('#item-dificultad-enlaces').value).toBe('2');
+      expect(container.querySelector('#form-item-titulo-enlaces').textContent).not.toBe('Agregar par');
+      expect(app.services.set.listarItemsDeSet).toHaveBeenCalledTimes(1);
+    });
+
+    it('con 9 items, agregar OK → limpia form y recarga lista', async () => {
+      app = crearApp(itemsN(9));
+      await renderEditorItemsEnlaces(container, app, SET_ID);
+      llenarFormNuevo(container, { conceptoA: 'Decimo', conceptoB: 'B10' });
+      await container.querySelector('#btn-guardar-item-enlaces').click();
+
+      expect(app.services.set.agregarItem).toHaveBeenCalledTimes(1);
+      expect(container.querySelector('#item-concepto-a-enlaces').value).toBe('');
+      expect(container.querySelector('#item-concepto-b-enlaces').value).toBe('');
+      expect(container.querySelector('#item-error-enlaces').textContent).toBe('');
+      expect(container.querySelector('#item-error-enlaces').classList.contains('hidden')).toBe(true);
       expect(app.services.set.listarItemsDeSet).toHaveBeenCalledTimes(2);
     });
   });
