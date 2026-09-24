@@ -228,7 +228,7 @@ de implementarse.
 
 ---
 
-### Bloque 7 — Formularios de sets por juego 🔄 EN PROGRESO (18/20)
+### Bloque 7 — Formularios de sets por juego 🔄 EN PROGRESO (19/21)
 
 **Objetivo:** Crear formularios de sets dedicados por juego y rediseñar el rosco.
 
@@ -252,6 +252,7 @@ de implementarse.
 | 7.6a | Config juego + submodo set (deudas #113/#114) | ✅ APROBADO | 7077163 |
 | 7.7a | RPC crear_set_completo con submodo (deuda #120) | ✅ APROBADO | 0d31604 |
 | 7.7b | Pictionary: GameDefinition con submodos | ✅ APROBADO | 539ab0b |
+| 7.7c | Pictionary: UI + shell con submodos, shims eliminados | ✅ APROBADO | 47226d0 |
 | 7.7 | Pictionary: 4 editores + 2 bancos | ⬜ PENDIENTE | — |
 | 7.8 | Historia Enredada: historias + colores | ⬜ PENDIENTE | — |
 
@@ -307,6 +308,7 @@ de implementarse.
 | 7.16 | 2026-09-24 | 7.6a: Juego.configuracion + Set.submodo (deudas #113/#114). Migración 0017. |
 | 7.17 | 2026-09-24 | 7.7a: RPC crear_set_completo con submodo (deuda #120). Migración 0018. |
 | 7.18 | 2026-09-24 | 7.7b: Pictionary GameDefinition con submodos + shims deprecated (hasta 7.7c). |
+| 7.19 | 2026-09-24 | 7.7c: Pictionary UI + shell con submodos; shims eliminados. 2299 unit. |
 ---
 
 ## 5. Convenciones
