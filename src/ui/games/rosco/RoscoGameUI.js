@@ -11,6 +11,7 @@
    ============================================================= */
 
 import { Boton } from '../../components/boton.js';
+import { Modal } from '../../components/modal.js';
 import { crearTimer } from '../_shared/index.js';
 import { renderRosco } from './renderRosco.js';
 
@@ -144,28 +145,29 @@ function _renderModalInicio(contexto, modal) {
     }
   }
 
-  return `
-    <div id="rosco-modal-inicio" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div class="bg-surface-container-lowest border-2.5 border-on-surface rounded-2xl p-6 shadow-comic-lg w-full max-w-md mx-4">
-        <p class="font-headline-md uppercase text-on-surface mb-4">Iniciar juego Rosco</p>
-        ${haySets ? `
-          <div class="mb-4">
-            <label class="font-label-sm uppercase text-on-surface-variant" for="rosco-select-rondas">Rondas</label>
-            <select id="rosco-select-rondas"
-              class="mt-1 w-full border-2 border-on-surface rounded-lg p-2 bg-surface-container-lowest font-body-md">
-              ${opcionesRondas.join('')}
-            </select>
-          </div>
-          <div class="flex flex-col gap-3 mb-4">${selectsHTML.join('')}</div>
-        ` : ''}
-        ${mensajeError ? `<p id="rosco-modal-error" class="font-body-md text-error mb-4">${mensajeError}</p>` : ''}
-        <div class="flex gap-2 justify-end">
-          ${Boton({ texto: 'Cancelar', variante: 'ghost', id: 'btn-rosco-modal-cancelar' })}
-          ${Boton({ texto: 'Iniciar', variante: 'primary', id: 'btn-rosco-modal-iniciar', disabled: !validacion.ok })}
-        </div>
+  const contenido = `
+    ${haySets ? `
+      <div>
+        <label class="font-label-sm uppercase text-on-surface-variant" for="rosco-select-rondas">Rondas</label>
+        <select id="rosco-select-rondas"
+          class="mt-1 w-full border-2 border-on-surface rounded-lg p-2 bg-surface-container-lowest font-body-md">
+          ${opcionesRondas.join('')}
+        </select>
       </div>
-    </div>
+      <div class="flex flex-col gap-3">${selectsHTML.join('')}</div>
+    ` : ''}
+    ${mensajeError ? `<p id="rosco-modal-error" class="font-body-md text-error">${mensajeError}</p>` : ''}
   `;
+
+  return Modal({
+    id: 'rosco-modal-inicio',
+    titulo: 'Iniciar juego Rosco',
+    contenido,
+    acciones: [
+      { texto: 'Cancelar', variante: 'ghost', id: 'btn-rosco-modal-cancelar' },
+      { texto: 'Iniciar', variante: 'primary', id: 'btn-rosco-modal-iniciar', disabled: !validacion.ok }
+    ]
+  });
 }
 
 function _rerenderPanel() {

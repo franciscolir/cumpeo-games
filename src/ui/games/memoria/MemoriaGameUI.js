@@ -10,6 +10,7 @@
    ============================================================= */
 
 import { Boton } from '../../components/boton.js';
+import { Modal } from '../../components/modal.js';
 import { crearTimer } from '../_shared/index.js';
 
 const NOMBRE_FASES = {
@@ -282,12 +283,17 @@ export const MemoriaGameUI = {
             <span class="inline-block bg-secondary-container text-on-secondary-container font-label-sm uppercase px-2 py-1 rounded-md">${nombreFase}</span>
           </div>
           ${contenido}
-          <div id="memoria-modal-cambio-turno" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div class="bg-surface-container-lowest border-2.5 border-on-surface rounded-2xl p-8 shadow-comic-lg text-center">
+          ${Modal({
+            id: 'memoria-modal-cambio-turno',
+            mostrarTitulo: false,
+            padding: 'p-8',
+            alineacion: 'center',
+            contenido: `
               <p class="font-display-hero text-2xl text-on-surface uppercase mb-2">Turno de ${nombreEquipo}</p>
               <p class="font-body-md text-on-surface-variant">Prepará al equipo para jugar.</p>
-            </div>
-          </div>
+            `,
+            acciones: []
+          })}
           ${_renderMarcador(equipo1, equipo2, pts1, pts2)}
         </div>
       `;

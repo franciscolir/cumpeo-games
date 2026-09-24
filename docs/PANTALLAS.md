@@ -336,10 +336,9 @@ text
   - **No finaliza el juego.**
   - **No reinicia el juego.**
 
-**Reutilización:** el proyecto no tiene componente `Modal` compartido.
-Cada GameUI implementa modales inline (Rosco `_renderModalInicio`,
-Memoria `memoria-modal-cambio-turno`). **El Bloque 8 debería extraer un
-componente `Modal` compartido.**
+**Reutilización:** ~~el proyecto no tiene componente `Modal` compartido.~~
+**Componente `Modal` creado en `src/ui/components/modal.js` (8.0).
+Rosco y Memoria migrados al componente.**
 
 ### 3.5 Modo espera (TO-BE)
 
@@ -557,9 +556,7 @@ existentes (`comenzarPartida`, `pausarJuego`, `reanudarJuego`,
 
 ### 6.2 Modales
 
-- **No hay componente `Modal` compartido.**
-- Rosco: `_renderModalInicio` (inline).
-- Memoria: `<div id="memoria-modal-cambio-turno">` (inline).
+- **Componente Modal compartido en `src/ui/components/modal.js`.** Rosco y Memoria ya migrados.
 - Otras acciones destructivas usan `window.confirm` y `window.alert`.
 
 ### 6.3 Configuración
@@ -580,7 +577,7 @@ existentes (`comenzarPartida`, `pausarJuego`, `reanudarJuego`,
 
 | # | Gap | Impacto | Complejidad | Prioridad |
 |---|-----|---------|-------------|-----------|
-| 1 | No hay componente `Modal` compartido | Cada GameUI implementa modales inline | Media | Alta |
+| 1 | ~~No hay componente `Modal` compartido~~ **✅ resuelto en 8.0** | Cada GameUI implementa modales inline | Media | Alta |
 | 2 | No hay `pausado_at` en `JuegoEjecutado` | No se puede medir tiempo de pausa | Media | Alta |
 | 3 | No hay sistema de "ajustes generales" | No se puede configurar tiempo máx de pausa | Media | Alta |
 | 4 | No hay botón `MODO ESPERA` | El conductor no puede forzar el estado | Baja | Media |
