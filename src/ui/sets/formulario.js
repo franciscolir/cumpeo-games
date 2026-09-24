@@ -15,6 +15,7 @@ import { renderEditorItemsPictionaryPalabras } from '../games/pictionary/palabra
 import { renderEditorItemsPictionaryGestos } from '../games/pictionary/gestos/editor.js';
 import { renderEditorItemsPictionaryPreguntas } from '../games/pictionary/preguntas/editor.js';
 import { renderEditorItemsPictionaryDibujo } from '../games/pictionary/dibujo/editor.js';
+import { renderEditorItemsHistoria } from '../games/historia-enredada/editor.js';
 
 /**
  * Renderiza el formulario de set.
@@ -47,6 +48,7 @@ export async function renderFormularioSet(container, app, params = {}) {
   const esAntiTrivia = juegoDelSet?.codigo === 'ANTI_TRIVIA';
   const esEnlaces = juegoDelSet?.codigo === 'ENLACES';
   const esPictionary = juegoDelSet?.codigo === 'PICTIONARY';
+  const esHistoriaEnredada = juegoDelSet?.codigo === 'HISTORIA_ENREDADA';
   const juegoPorIdDefault = juegos.find((j) => j.id === juegoIdDefault) || null;
   const esPictionaryCreacion = !esEdicion && juegoPorIdDefault?.codigo === 'PICTIONARY';
 
@@ -121,7 +123,8 @@ export async function renderFormularioSet(container, app, params = {}) {
       ${esEdicion && esAntiTrivia ? '<div id="editor-items-anti-trivia"></div>' : ''}
       ${esEdicion && esEnlaces ? '<div id="editor-items-enlaces"></div>' : ''}
       ${esEdicion && esPictionary ? '<div id="editor-items-pictionary"></div>' : ''}
-      ${esEdicion && !esQPEP && !esTrivia && !esRosco && !esMemoria && !esAntiTrivia && !esEnlaces && !esPictionary ? '<p class="mt-8 font-body-sm text-on-surface-variant italic">Este juego aún no tiene editor de items.</p>' : ''}
+      ${esEdicion && esHistoriaEnredada ? '<div id="editor-items-historia-enredada"></div>' : ''}
+      ${esEdicion && !esQPEP && !esTrivia && !esRosco && !esMemoria && !esAntiTrivia && !esEnlaces && !esPictionary && !esHistoriaEnredada ? '<p class="mt-8 font-body-sm text-on-surface-variant italic">Este juego aún no tiene editor de items.</p>' : ''}
     </main>
   `;
 
@@ -196,8 +199,10 @@ export async function renderFormularioSet(container, app, params = {}) {
       await renderEditorItemsPictionaryGestos(container, app, set.id);
     } else if (submodo === 'PREGUNTAS') {
       await renderEditorItemsPictionaryPreguntas(container, app, set.id);
-    } else if (submodo === 'DIBUJO') {
+    } else     if (submodo === 'DIBUJO') {
       await renderEditorItemsPictionaryDibujo(container, app, set.id);
     }
+  } else if (esEdicion && esHistoriaEnredada) {
+    await renderEditorItemsHistoria(container, app, set.id);
   }
 }

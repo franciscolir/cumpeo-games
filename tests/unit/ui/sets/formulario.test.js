@@ -10,6 +10,7 @@ import { renderEditorItemsPictionaryPalabras } from '../../../../src/ui/games/pi
 import { renderEditorItemsPictionaryGestos } from '../../../../src/ui/games/pictionary/gestos/editor.js';
 import { renderEditorItemsPictionaryPreguntas } from '../../../../src/ui/games/pictionary/preguntas/editor.js';
 import { renderEditorItemsPictionaryDibujo } from '../../../../src/ui/games/pictionary/dibujo/editor.js';
+import { renderEditorItemsHistoria } from '../../../../src/ui/games/historia-enredada/editor.js';
 
 vi.mock('../../../../src/ui/games/que-piensa-el-publico/editor.js', () => ({
   renderEditorItemsQPEP: vi.fn()
@@ -41,6 +42,9 @@ vi.mock('../../../../src/ui/games/pictionary/preguntas/editor.js', () => ({
 vi.mock('../../../../src/ui/games/pictionary/dibujo/editor.js', () => ({
   renderEditorItemsPictionaryDibujo: vi.fn()
 }));
+vi.mock('../../../../src/ui/games/historia-enredada/editor.js', () => ({
+  renderEditorItemsHistoria: vi.fn()
+}));
 
 const JUEGOS = [
   { id: 'g1', nombre: 'Trivia', codigo: 'TRIVIA' },
@@ -50,7 +54,8 @@ const JUEGOS = [
   { id: 'g5', nombre: 'Anti-Trivia', codigo: 'ANTI_TRIVIA' },
   { id: 'g6', nombre: 'Enlaces', codigo: 'ENLACES' },
   { id: 'g7', nombre: 'Pictionary', codigo: 'PICTIONARY' },
-  { id: 'g8', nombre: 'Canción', codigo: 'CANCION_INCOMPLETA' }
+  { id: 'g8', nombre: 'Canción', codigo: 'CANCION_INCOMPLETA' },
+  { id: 'g9', nombre: 'Historia Enredada', codigo: 'HISTORIA_ENREDADA' }
 ];
 
 function crearElem() {
@@ -354,6 +359,20 @@ describe('renderFormularioSet', () => {
       const app = crearApp({ set: { id: 's6', juego_id: 'g6', nombre: 'E' } });
       await renderFormularioSet(container, app, { id: 's6' });
       expect(renderEditorItemsEnlaces).toHaveBeenCalledWith(container, app, 's6');
+    });
+
+    it('HISTORIA_ENREDADA → renderEditorItemsHistoria', async () => {
+      const app = crearApp({ set: { id: 's9', juego_id: 'g9', nombre: 'H' } });
+      await renderFormularioSet(container, app, { id: 's9' });
+      expect(renderEditorItemsHistoria).toHaveBeenCalledWith(container, app, 's9');
+      expect(renderEditorItemsTrivia).not.toHaveBeenCalled();
+    });
+
+    it('HISTORIA_ENREDADA en edición NO muestra mensaje "aún no tiene editor"', async () => {
+      const app = crearApp({ set: { id: 's9', juego_id: 'g9', nombre: 'H' } });
+      await renderFormularioSet(container, app, { id: 's9' });
+      expect(container.innerHTML).not.toContain('Este juego aún no tiene editor de items.');
+      expect(container.innerHTML).toContain('id="editor-items-historia-enredada"');
     });
   });
 

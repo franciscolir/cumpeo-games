@@ -112,6 +112,71 @@ describe('validarContenidoSet', () => {
     const res = def.validarContenidoSet(contenido, config);
     expect(res.ok).toBe(false);
   });
+
+  it('item con dibujo válido (string no vacío) → válido', () => {
+    const contenido = { items: [{ titulo: 'A', descripcion: 'd', guion: 'g', dibujo: 'ref-abc-123' }] };
+    const res = def.validarContenidoSet(contenido, config);
+    expect(res.ok).toBe(true);
+    expect(res.errores).toEqual([]);
+  });
+
+  it('item sin dibujo → válido', () => {
+    const contenido = { items: [{ titulo: 'A', descripcion: 'd', guion: 'g' }] };
+    const res = def.validarContenidoSet(contenido, config);
+    expect(res.ok).toBe(true);
+  });
+
+  it('item con dibujo: null → válido (tratado como ausente)', () => {
+    const contenido = { items: [{ titulo: 'A', descripcion: 'd', guion: 'g', dibujo: null }] };
+    const res = def.validarContenidoSet(contenido, config);
+    expect(res.ok).toBe(true);
+  });
+
+  it('item con dibujo: undefined → válido (tratado como ausente)', () => {
+    const contenido = { items: [{ titulo: 'A', descripcion: 'd', guion: 'g', dibujo: undefined }] };
+    const res = def.validarContenidoSet(contenido, config);
+    expect(res.ok).toBe(true);
+  });
+
+  it('item con dibujo vacío → error', () => {
+    const contenido = { items: [{ titulo: 'A', descripcion: 'd', guion: 'g', dibujo: '' }] };
+    const res = def.validarContenidoSet(contenido, config);
+    expect(res.ok).toBe(false);
+    expect(res.errores[0]).toContain('items[0].dibujo');
+  });
+
+  it('item con dibujo solo whitespace → error', () => {
+    const contenido = { items: [{ titulo: 'A', descripcion: 'd', guion: 'g', dibujo: '   ' }] };
+    const res = def.validarContenidoSet(contenido, config);
+    expect(res.ok).toBe(false);
+    expect(res.errores[0]).toContain('items[0].dibujo');
+  });
+
+  it('item con dibujo no-string → error', () => {
+    const contenido = { items: [{ titulo: 'A', descripcion: 'd', guion: 'g', dibujo: 123 }] };
+    const res = def.validarContenidoSet(contenido, config);
+    expect(res.ok).toBe(false);
+    expect(res.errores[0]).toContain('items[0].dibujo');
+  });
+
+  it('item con dibujo booleano → error', () => {
+    const contenido = { items: [{ titulo: 'A', descripcion: 'd', guion: 'g', dibujo: true }] };
+    const res = def.validarContenidoSet(contenido, config);
+    expect(res.ok).toBe(false);
+    expect(res.errores[0]).toContain('items[0].dibujo');
+  });
+
+  it('mixto: un item con dibujo inválido falla, el resto no agrega errores', () => {
+    const contenido = { items: [
+      { titulo: 'A', descripcion: 'd', guion: 'g', dibujo: 'ok-ref' },
+      { titulo: 'B', descripcion: 'd', guion: 'g' },
+      { titulo: 'C', descripcion: 'd', guion: 'g', dibujo: '' }
+    ]};
+    const res = def.validarContenidoSet(contenido, config);
+    expect(res.ok).toBe(false);
+    expect(res.errores).toHaveLength(1);
+    expect(res.errores[0]).toContain('items[2].dibujo');
+  });
 });
 
 describe('estadoInicial', () => {

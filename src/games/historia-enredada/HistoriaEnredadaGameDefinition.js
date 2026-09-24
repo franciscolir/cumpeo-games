@@ -122,7 +122,13 @@ export const HistoriaEnredadaGameDefinition = {
       if (!esStringNoVacio(item.guion)) {
         errores.push(`items[${i}].guion debe ser un string no vacío`);
       }
-      // dibujo y ruidos son opcionales
+
+      if (item.dibujo !== undefined && item.dibujo !== null) {
+        if (typeof item.dibujo !== 'string' || item.dibujo.trim() === '') {
+          errores.push(`items[${i}].dibujo debe ser un string no vacío si está presente`);
+        }
+      }
+      // dibujo es opcional (storageRef)
     }
 
     return { ok: errores.length === 0, errores };
