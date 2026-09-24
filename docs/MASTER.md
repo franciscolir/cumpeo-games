@@ -543,7 +543,7 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 | Progreso global | ~99% |
 | Bloques cerrados | 6 (Bloques 0–5) |
 | Juegos implementados | 9 (QPEP, Trivia, Rosco, Canción Incompleta, Pictionary, Historia Enredada, Memoricé, Anti-Trivia, Enlaces) |
-| Tests unit | 1749 (61 archivos) |
+| Tests unit | 2080 (69 archivos) |
 | Tests e2e | ~215 |
 | Tests integration | 99 (contra Supabase Cloud) |
 | Commits totales (rama) | 100+ |
@@ -1153,6 +1153,13 @@ Vista de solo lectura para el público. Cierra la fase H6.
 - `drag-drop.spec.js` (5), `flujo-completo.spec.js` (5), `puntuacion.spec.js` (3), `timer.spec.js` (3), `validacion.spec.js` (3).
 - Helper `_helpers/enlaces.js` con polling robusto.
 - Deuda #61 respetada (output crudo).
+
+**Editor de sets (7.4, commit 2d4f441):**
+- `src/ui/games/enlaces/editor.js` (306 líneas).
+- Lista de pares + form (concepto_a, concepto_b, categoría, dificultad).
+- Validación de unicidad A/B (excepto item en edición).
+- 49 tests unit.
+- Integración en `formulario.js` (5 cambios).
 
 ### 8.4 Commits clave
 
