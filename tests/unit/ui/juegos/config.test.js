@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderConfigJuego } from '../../../../src/ui/juegos/config.js';
 
 const CODIGO_PIC = 'PICTIONARY';
+const CODIGO_HISTORIA = 'HISTORIA_ENREDADA';
 
 function crearElem() {
   const clases = new Set();
@@ -55,9 +56,24 @@ function juegoTrivia() {
   return { id: 'j-trivia', codigo: 'TRIVIA', nombre: 'Trivia', configuracion: {} };
 }
 
+function juegoHistoria(overrides = {}) {
+  return { id: 'j-he', codigo: 'HISTORIA_ENREDADA', nombre: 'Historia Enredada', configuracion: {}, ...overrides };
+}
+
 async function agregar(container, banco, texto) {
   container.querySelector(`#input-nueva-${banco}`).value = texto;
   await container.querySelector(`#btn-agregar-${banco}`).click();
+}
+
+async function agregarColor(container, color, pregunta) {
+  container.querySelector('#input-nuevo-color').value = color;
+  container.querySelector('#input-nueva-pregunta').value = pregunta;
+  await container.querySelector('#btn-agregar-color').click();
+}
+
+async function enterEn(input, container) {
+  const el = container.querySelector(input);
+  el.listeners.keydown?.({ key: 'Enter' });
 }
 
 async function guardar(container) {
@@ -403,6 +419,301 @@ describe('renderConfigJuego', () => {
       const payload = app.services.juego.actualizarConfiguracion.mock.calls[0][1];
       payload.condiciones_gestos.push('HACK');
       expect(container.__configJuegoEstado.condiciones_gestos).toEqual(['X']);
+    });
+  });
+
+  describe('render — HISTORIA_ENREDADA', () => {
+    it('renderiza 2 inputs, botón y lista de colores', async () => {
+      const app = crearApp({ juego: juegoHistoria() });
+      await renderConfigJuego(container, app, { codigo: CODIGO_HISTORIA });
+
+      expect(container.innerHTML).toContain('id="lista-colores"');
+      expect(container.innerHTML).toContain('id="input-nuevo-color"');
+      expect(container.innerHTML).toContain('id="input-nueva-pregunta"');
+      expect(container.innerHTML).toContain('id="btn-agregar-color"');
+      expect(container.innerHTML).toContain('id="btn-guardar-config"');
+      expect(container.innerHTML).toContain('id="config-error"');
+      expect(container.innerHTML).toContain('id="config-ok"');
+    });
+
+    it('muestra títulos de colores', async () => {
+      const app = crearApp({ juego: juegoHistoria() });
+      await renderConfigJuego(container, app, { codigo: CODIGO_HISTORIA });
+      expect(container.innerHTML).toContain('Colores y consignas');
+      expect(container.innerHTML).toContain('Configuración — Historia Enredada');
+    });
+
+    it('Header y Cancelar apuntan a sets del juego', async () => {
+      const app = crearApp({ juego: juegoHistoria() });
+      await renderConfigJuego(container, app, { codigo: CODIGO_HISTORIA });
+      expect(container.innerHTML).toContain('href="#/sets?juego=j-he"');
+    });
+
+    it('error y ok nacen ocultos', async () => {
+      const app = crearApp({ juego: juegoHistoria() });
+      await renderConfigJuego(container, app, { codigo: CODIGO_HISTORIA });
+      expect(container.innerHTML).toMatch(/id="config-error"[^>]*class="[^"]*hidden/);
+      expect(container.innerHTML).toMatch(/id="config-ok"[^>]*class="[^"]*hidden/);
+    });
+
+    it('no muestra bancos de Pictionary', async () => {
+      const app = crearApp({ juego: juegoHistoria() });
+      await renderConfigJuego(container, app, { codigo: CODIGO_HISTORIA });
+      expect(container.innerHTML).not.toContain('id="banco-gestos"');
+      expect(container.innerHTML).not.toContain('id="lista-gestos"');
+      expect(container.innerHTML).not.toContain('id="input-nueva-gestos"');
+    });
+
+    it('config vacía → lista vacía con mensaje', async () => {
+      const app = crearApp({ juego: juegoHistoria(), config: {} });
+      await renderConfigJuego(container, app, { codigo: CODIGO_HISTORIA });
+
+      expect(app.services.juego.obtenerConfiguracion).toHaveBeenCalledWith('j-he');
+      expect(container.__configJuegoEstado.colores).toEqual([]);
+      expect(container.querySelector('#lista-colores').innerHTML).toContain('Sin colores todavía');
+    });
+
+    it('config con colores → lista poblada', async () => {
+      const app = crearApp({
+        juego: juegoHistoria(),
+        config: {
+          colores: [
+            { color: 'AZUL', pregunta: 'Nombre de alguien presente' },
+            { color: 'ROJO', pregunta: 'Algún sobrenombre' }
+          ]
+        }
+      });
+      await renderConfigJuego(container, app, { codigo: CODIGO_HISTORIA });
+
+      expect(container.__configJuegoEstado.colores).toEqual([
+        { color: 'AZUL', pregunta: 'Nombre de alguien presente' },
+        { color: 'ROJO', pregunta: 'Algún sobrenombre' }
+      ]);
+      expect(container.querySelector('#lista-colores').innerHTML).toContain('AZUL');
+      expect(container.querySelector('#lista-colores').innerHTML).toContain('ROJO');
+    });
+
+    it('config sin colores → defaults vacíos', async () => {
+      const app = crearApp({ juego: juegoHistoria(), config: { otra: 1 } });
+      await renderConfigJuego(container, app, { codigo: CODIGO_HISTORIA });
+      expect(container.__configJuegoEstado.colores).toEqual([]);
+    });
+
+    it('guarda juegoId en el estado', async () => {
+      const app = crearApp({ juego: juegoHistoria() });
+      await renderConfigJuego(container, app, { codigo: CODIGO_HISTORIA });
+      expect(container.__configJuegoEstado.juegoId).toBe('j-he');
+    });
+
+    it('agregar color → aparece en la lista', async () => {
+      const app = crearApp({ juego: juegoHistoria() });
+      await renderConfigJuego(container, app, { codigo: CODIGO_HISTORIA });
+      await agregarColor(container, 'AZUL', 'Nombre de alguien');
+
+      expect(container.__configJuegoEstado.colores).toEqual([
+        { color: 'AZUL', pregunta: 'Nombre de alguien' }
+      ]);
+      expect(container.querySelector('#lista-colores').innerHTML).toContain('AZUL');
+      expect(container.querySelector('#lista-colores').innerHTML).toContain('Nombre de alguien');
+    });
+
+    it('NO agrega si color vacío', async () => {
+      const app = crearApp({ juego: juegoHistoria() });
+      await renderConfigJuego(container, app, { codigo: CODIGO_HISTORIA });
+      await agregarColor(container, '  ', 'Pregunta válida');
+
+      expect(container.__configJuegoEstado.colores).toEqual([]);
+      expect(container.querySelector('#config-error').textContent).toBe('El color no puede estar vacío');
+      expect(container.querySelector('#config-error').classList.contains('hidden')).toBe(false);
+    });
+
+    it('NO agrega si pregunta vacía', async () => {
+      const app = crearApp({ juego: juegoHistoria() });
+      await renderConfigJuego(container, app, { codigo: CODIGO_HISTORIA });
+      await agregarColor(container, 'AZUL', '   ');
+
+      expect(container.__configJuegoEstado.colores).toEqual([]);
+      expect(container.querySelector('#config-error').textContent).toBe('La pregunta no puede estar vacía');
+      expect(container.querySelector('#config-error').classList.contains('hidden')).toBe(false);
+    });
+
+    it('NO agrega color duplicado', async () => {
+      const app = crearApp({ juego: juegoHistoria() });
+      await renderConfigJuego(container, app, { codigo: CODIGO_HISTORIA });
+      await agregarColor(container, 'AZUL', 'Primera');
+      await agregarColor(container, 'AZUL', 'Segunda');
+
+      expect(container.__configJuegoEstado.colores).toHaveLength(1);
+      expect(container.__configJuegoEstado.colores[0].pregunta).toBe('Primera');
+      expect(container.querySelector('#config-error').textContent).toBe('El color "AZUL" ya existe');
+    });
+
+    it('duplicado es case-sensitive', async () => {
+      const app = crearApp({ juego: juegoHistoria() });
+      await renderConfigJuego(container, app, { codigo: CODIGO_HISTORIA });
+      await agregarColor(container, 'AZUL', 'Uno');
+      await agregarColor(container, 'azul', 'Dos');
+
+      expect(container.__configJuegoEstado.colores).toHaveLength(2);
+    });
+
+    it('recorta whitespace al agregar', async () => {
+      const app = crearApp({ juego: juegoHistoria() });
+      await renderConfigJuego(container, app, { codigo: CODIGO_HISTORIA });
+      await agregarColor(container, '  VERDE  ', '  Pregunta  ');
+
+      expect(container.__configJuegoEstado.colores).toEqual([
+        { color: 'VERDE', pregunta: 'Pregunta' }
+      ]);
+    });
+
+    it('tras agregar, los inputs quedan vacíos', async () => {
+      const app = crearApp({ juego: juegoHistoria() });
+      await renderConfigJuego(container, app, { codigo: CODIGO_HISTORIA });
+      await agregarColor(container, 'AZUL', 'Pregunta');
+
+      expect(container.querySelector('#input-nuevo-color').value).toBe('');
+      expect(container.querySelector('#input-nueva-pregunta').value).toBe('');
+    });
+
+    it('agregar tras error limpia el error', async () => {
+      const app = crearApp({ juego: juegoHistoria() });
+      await renderConfigJuego(container, app, { codigo: CODIGO_HISTORIA });
+      await agregarColor(container, '', '');
+      expect(container.querySelector('#config-error').classList.contains('hidden')).toBe(false);
+
+      await agregarColor(container, 'AZUL', 'Válida');
+      expect(container.querySelector('#config-error').classList.contains('hidden')).toBe(true);
+      expect(container.__configJuegoEstado.colores).toEqual([
+        { color: 'AZUL', pregunta: 'Válida' }
+      ]);
+    });
+
+    it('eliminar color → se quita de la lista', async () => {
+      const app = crearApp({
+        juego: juegoHistoria(),
+        config: {
+          colores: [
+            { color: 'AZUL', pregunta: 'A' },
+            { color: 'ROJO', pregunta: 'B' }
+          ]
+        }
+      });
+      await renderConfigJuego(container, app, { codigo: CODIGO_HISTORIA });
+
+      await container.querySelector('[data-quitar-color="0"]').click();
+
+      expect(container.__configJuegoEstado.colores).toEqual([
+        { color: 'ROJO', pregunta: 'B' }
+      ]);
+      expect(container.querySelector('#lista-colores').innerHTML).not.toContain('AZUL');
+    });
+
+    it('eliminar el último color muestra "Sin colores todavía"', async () => {
+      const app = crearApp({
+        juego: juegoHistoria(),
+        config: { colores: [{ color: 'ÚNICO', pregunta: 'P' }] }
+      });
+      await renderConfigJuego(container, app, { codigo: CODIGO_HISTORIA });
+      await container.querySelector('[data-quitar-color="0"]').click();
+
+      expect(container.__configJuegoEstado.colores).toEqual([]);
+      expect(container.querySelector('#lista-colores').innerHTML).toContain('Sin colores todavía');
+    });
+
+    it('guardar → llama actualizarConfiguracion con { colores: [...] }', async () => {
+      const app = crearApp({ juego: juegoHistoria() });
+      await renderConfigJuego(container, app, { codigo: CODIGO_HISTORIA });
+      await agregarColor(container, 'AZUL', 'Nombre');
+      await guardar(container);
+
+      expect(app.services.juego.actualizarConfiguracion).toHaveBeenCalledWith('j-he', {
+        colores: [{ color: 'AZUL', pregunta: 'Nombre' }]
+      });
+    });
+
+    it('guardar sin cambios → llama igual (idempotente)', async () => {
+      const app = crearApp({
+        juego: juegoHistoria(),
+        config: { colores: [{ color: 'AZUL', pregunta: 'P' }] }
+      });
+      await renderConfigJuego(container, app, { codigo: CODIGO_HISTORIA });
+      await guardar(container);
+
+      expect(app.services.juego.actualizarConfiguracion).toHaveBeenCalledTimes(1);
+      expect(app.services.juego.actualizarConfiguracion).toHaveBeenCalledWith('j-he', {
+        colores: [{ color: 'AZUL', pregunta: 'P' }]
+      });
+    });
+
+    it('guardar con lista vacía → envía colores: []', async () => {
+      const app = crearApp({ juego: juegoHistoria() });
+      await renderConfigJuego(container, app, { codigo: CODIGO_HISTORIA });
+      await guardar(container);
+
+      expect(app.services.juego.actualizarConfiguracion).toHaveBeenCalledWith('j-he', {
+        colores: []
+      });
+    });
+
+    it('éxito al guardar → muestra #config-ok', async () => {
+      const app = crearApp({ juego: juegoHistoria() });
+      await renderConfigJuego(container, app, { codigo: CODIGO_HISTORIA });
+      await guardar(container);
+
+      const ok = container.querySelector('#config-ok');
+      expect(ok.textContent).toBe('Configuración guardada');
+      expect(ok.classList.contains('hidden')).toBe(false);
+      expect(container.querySelector('#config-error').classList.contains('hidden')).toBe(true);
+    });
+
+    it('error al guardar → muestra #config-error', async () => {
+      const app = crearApp({ juego: juegoHistoria() });
+      app.services.juego.actualizarConfiguracion.mockRejectedValue(new Error('fallo colores'));
+      await renderConfigJuego(container, app, { codigo: CODIGO_HISTORIA });
+      await guardar(container);
+
+      const err = container.querySelector('#config-error');
+      expect(err.textContent).toBe('fallo colores');
+      expect(err.classList.contains('hidden')).toBe(false);
+      expect(container.querySelector('#config-ok').classList.contains('hidden')).toBe(true);
+    });
+
+    it('el payload es una copia (no referencia al estado)', async () => {
+      const app = crearApp({ juego: juegoHistoria() });
+      await renderConfigJuego(container, app, { codigo: CODIGO_HISTORIA });
+      await agregarColor(container, 'AZUL', 'P');
+      await guardar(container);
+
+      const payload = app.services.juego.actualizarConfiguracion.mock.calls[0][1];
+      payload.colores.push({ color: 'HACK', pregunta: 'HACK' });
+      expect(container.__configJuegoEstado.colores).toEqual([
+        { color: 'AZUL', pregunta: 'P' }
+      ]);
+    });
+
+    it('Enter en input color agrega', async () => {
+      const app = crearApp({ juego: juegoHistoria() });
+      await renderConfigJuego(container, app, { codigo: CODIGO_HISTORIA });
+      container.querySelector('#input-nuevo-color').value = 'AZUL';
+      container.querySelector('#input-nueva-pregunta').value = 'P';
+      enterEn('#input-nuevo-color', container);
+
+      expect(container.__configJuegoEstado.colores).toEqual([
+        { color: 'AZUL', pregunta: 'P' }
+      ]);
+    });
+
+    it('Enter en input pregunta agrega', async () => {
+      const app = crearApp({ juego: juegoHistoria() });
+      await renderConfigJuego(container, app, { codigo: CODIGO_HISTORIA });
+      container.querySelector('#input-nuevo-color').value = 'ROJO';
+      container.querySelector('#input-nueva-pregunta').value = 'Q';
+      enterEn('#input-nueva-pregunta', container);
+
+      expect(container.__configJuegoEstado.colores).toEqual([
+        { color: 'ROJO', pregunta: 'Q' }
+      ]);
     });
   });
 });

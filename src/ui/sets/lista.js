@@ -53,6 +53,7 @@ export async function renderListaSets(container, app) {
 
   const juegoActual = juegos.find((j) => j.id === juegoId);
   const esPictionary = juegoActual?.codigo === 'PICTIONARY';
+  const esHistoriaEnredada = juegoActual?.codigo === 'HISTORIA_ENREDADA';
 
   const selectHTML = `
     <div class="mb-6">
@@ -126,6 +127,11 @@ export async function renderListaSets(container, app) {
           ${esPictionary ? `
             <a href="#/juegos/PICTIONARY/config">
               ${Boton({ texto: 'Configurar condiciones', variante: 'secondary' })}
+            </a>
+          ` : ''}
+          ${esHistoriaEnredada ? `
+            <a href="#/juegos/HISTORIA_ENREDADA/config">
+              ${Boton({ texto: 'Configurar colores', variante: 'secondary' })}
             </a>
           ` : ''}
         </div>

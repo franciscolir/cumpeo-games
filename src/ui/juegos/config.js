@@ -3,8 +3,10 @@
 
    Ruta: #/juegos/:codigo/config
 
-   Hoy implementa el editor de bancos de condiciones de Pictionary
-   (GESTOS y DIBUJO). Otros juegos muestran un placeholder.
+   Hoy implementa:
+   - Editor de bancos de condiciones de Pictionary (GESTOS y DIBUJO)
+   - Editor de colores de Historia Enredada
+   Otros juegos muestran un placeholder.
 
    Estado en container.__configJuegoEstado (precedente deuda #102).
    ============================================================= */
@@ -138,45 +140,7 @@ function _bindPictionary(container, app) {
   _renderLista(container, 'dibujo');
 }
 
-/**
- * Renderiza la pantalla de configuración de un juego.
- * @param {HTMLElement} container
- * @param {object} app
- * @param {object} params - { codigo }
- */
-export async function renderConfigJuego(container, app, params = {}) {
-  const codigo = params.codigo || '';
-
-  const juego = codigo
-    ? await app.services.juego.obtenerJuegoPorCodigo(codigo)
-    : null;
-
-  if (!juego) {
-    container.innerHTML = `
-      <main class="min-h-screen p-6 max-w-3xl mx-auto">
-        ${Header({ subtitulo: 'Configuración', volverA: '#/' })}
-        <p class="font-body-md text-error">Juego no encontrado.</p>
-      </main>
-    `;
-    bindHeaderListeners(container);
-    return;
-  }
-
-  const volverA = `#/sets?juego=${encodeURIComponent(juego.id)}`;
-
-  if (codigo !== 'PICTIONARY') {
-    container.innerHTML = `
-      <main class="min-h-screen p-6 max-w-3xl mx-auto">
-        ${Header({ subtitulo: `Configuración — ${juego.nombre}`, volverA })}
-        <p class="font-body-md text-on-surface-variant italic">
-          Configuración pendiente para este juego.
-        </p>
-      </main>
-    `;
-    bindHeaderListeners(container);
-    return;
-  }
-
+async function _renderConfigPictionary(container, app, juego, volverA) {
   container.innerHTML = `
     <main class="min-h-screen p-6 max-w-3xl mx-auto">
       ${Header({ subtitulo: 'Configuración — Pictionary', volverA })}
@@ -245,4 +209,207 @@ export async function renderConfigJuego(container, app, params = {}) {
   };
 
   _bindPictionary(container, app);
+}
+
+function _renderColoresLista(container) {
+  const estado = container.__configJuegoEstado;
+  const lista = container.querySelector('#lista-colores');
+  if (!lista || !estado) return;
+
+  const colores = estado.colores;
+
+  if (colores.length === 0) {
+    lista.innerHTML = '<li class="font-body-sm text-on-surface-variant italic">Sin colores todavía</li>';
+    return;
+  }
+
+  lista.innerHTML = colores.map((item, i) => `
+    <li class="border-2 border-on-surface rounded-lg px-3 py-2 flex justify-between items-center gap-2" data-color-idx="${i}">
+      <div>
+        <p class="font-label-md uppercase">${item.color}</p>
+        <p class="font-body-md">${item.pregunta}</p>
+      </div>
+      <button type="button" data-quitar-color="${i}" title="Eliminar color"
+        class="btn-quitar-cond font-label-sm border-2 border-error rounded px-2 py-1 bg-error/15 text-error hover:bg-error/30 transition">✗</button>
+    </li>
+  `).join('');
+
+  for (let i = 0; i < colores.length; i++) {
+    const btn = container.querySelector(`[data-quitar-color="${i}"]`);
+    if (btn) {
+      btn.addEventListener('click', () => {
+        estado.colores.splice(i, 1);
+        _renderColoresLista(container);
+        _ocultarError(container);
+        _ocultarOk(container);
+      });
+    }
+  }
+}
+
+function _agregarColor(container) {
+  const estado = container.__configJuegoEstado;
+  const inputColor = container.querySelector('#input-nuevo-color');
+  const inputPregunta = container.querySelector('#input-nueva-pregunta');
+  const color = (inputColor?.value || '').trim();
+  const pregunta = (inputPregunta?.value || '').trim();
+
+  _ocultarError(container);
+  _ocultarOk(container);
+
+  if (!color) {
+    _mostrarError(container, 'El color no puede estar vacío');
+    return;
+  }
+
+  if (!pregunta) {
+    _mostrarError(container, 'La pregunta no puede estar vacía');
+    return;
+  }
+
+  if (estado.colores.some((c) => c.color === color)) {
+    _mostrarError(container, `El color "${color}" ya existe`);
+    return;
+  }
+
+  estado.colores.push({ color, pregunta });
+  if (inputColor) inputColor.value = '';
+  if (inputPregunta) inputPregunta.value = '';
+  _renderColoresLista(container);
+}
+
+async function _guardarColores(container, app) {
+  const estado = container.__configJuegoEstado;
+  _ocultarError(container);
+  _ocultarOk(container);
+
+  try {
+    await app.services.juego.actualizarConfiguracion(estado.juegoId, {
+      colores: estado.colores.map((c) => ({ ...c }))
+    });
+    _mostrarOk(container, 'Configuración guardada');
+  } catch (err) {
+    _mostrarError(container, err.message);
+  }
+}
+
+async function _renderConfigHistoria(container, app, juego, volverA) {
+  container.innerHTML = `
+    <main class="min-h-screen p-6 max-w-3xl mx-auto">
+      ${Header({ subtitulo: 'Configuración — Historia Enredada', volverA })}
+
+      <section class="mb-8">
+        <h2 class="font-headline-md uppercase mb-2">Colores y consignas</h2>
+        <p class="font-body-sm text-on-surface-variant mb-4">
+          Cada color tiene una consigna asociada. Se usan durante la partida
+          para que el público escriba respuestas en los papeles de color.
+        </p>
+      </section>
+
+      <section class="mb-8">
+        <ul id="lista-colores" class="space-y-2 mb-4"></ul>
+
+        <div class="flex flex-col gap-2 border-2 border-dashed border-on-surface-variant rounded-lg p-3">
+          <p class="font-label-md uppercase text-on-surface-variant">Agregar color</p>
+          <div class="flex gap-2 items-center">
+            <input id="input-nuevo-color" type="text" placeholder="Ej: AZUL"
+              class="w-32 font-body-md border-2.5 border-on-surface rounded-lg px-3 py-2 bg-background focus:outline-none" />
+            <input id="input-nueva-pregunta" type="text" placeholder="Ej: Nombre de alguien presente"
+              class="flex-1 font-body-md border-2.5 border-on-surface rounded-lg px-3 py-2 bg-background focus:outline-none" />
+            <button id="btn-agregar-color" type="button"
+              class="font-label-md uppercase border-2 border-tertiary rounded-lg px-4 py-2 bg-tertiary/15 text-tertiary hover:bg-tertiary/30 transition">
+              + Agregar
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <div class="flex gap-3">
+        <button id="btn-guardar-config" type="button"
+          class="font-label-md uppercase border-2 border-tertiary rounded-lg px-4 py-2 bg-tertiary/15 text-tertiary hover:bg-tertiary/30 transition">
+          Guardar configuración
+        </button>
+        <a href="${volverA}">
+          ${Boton({ texto: 'Cancelar', variante: 'ghost' })}
+        </a>
+      </div>
+
+      <p id="config-error" class="font-body-sm text-error mt-3 hidden"></p>
+      <p id="config-ok" class="font-body-sm text-tertiary mt-3 hidden"></p>
+    </main>
+  `;
+
+  bindHeaderListeners(container);
+
+  const config = (await app.services.juego.obtenerConfiguracion(juego.id)) || {};
+
+  container.__configJuegoEstado = {
+    juegoId: juego.id,
+    colores: Array.isArray(config.colores)
+      ? config.colores.map((c) => ({ ...c }))
+      : []
+  };
+
+  container.querySelector('#btn-agregar-color')?.addEventListener('click', () => {
+    _agregarColor(container);
+  });
+
+  container.querySelector('#input-nuevo-color')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') _agregarColor(container);
+  });
+
+  container.querySelector('#input-nueva-pregunta')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') _agregarColor(container);
+  });
+
+  container.querySelector('#btn-guardar-config')?.addEventListener('click', () => _guardarColores(container, app));
+
+  _renderColoresLista(container);
+}
+
+/**
+ * Renderiza la pantalla de configuración de un juego.
+ * @param {HTMLElement} container
+ * @param {object} app
+ * @param {object} params - { codigo }
+ */
+export async function renderConfigJuego(container, app, params = {}) {
+  const codigo = params.codigo || '';
+
+  const juego = codigo
+    ? await app.services.juego.obtenerJuegoPorCodigo(codigo)
+    : null;
+
+  if (!juego) {
+    container.innerHTML = `
+      <main class="min-h-screen p-6 max-w-3xl mx-auto">
+        ${Header({ subtitulo: 'Configuración', volverA: '#/' })}
+        <p class="font-body-md text-error">Juego no encontrado.</p>
+      </main>
+    `;
+    bindHeaderListeners(container);
+    return;
+  }
+
+  const volverA = `#/sets?juego=${encodeURIComponent(juego.id)}`;
+
+  if (codigo === 'PICTIONARY') {
+    await _renderConfigPictionary(container, app, juego, volverA);
+    return;
+  }
+
+  if (codigo === 'HISTORIA_ENREDADA') {
+    await _renderConfigHistoria(container, app, juego, volverA);
+    return;
+  }
+
+  container.innerHTML = `
+    <main class="min-h-screen p-6 max-w-3xl mx-auto">
+      ${Header({ subtitulo: `Configuración — ${juego.nombre}`, volverA })}
+      <p class="font-body-md text-on-surface-variant italic">
+        Configuración pendiente para este juego.
+      </p>
+    </main>
+  `;
+  bindHeaderListeners(container);
 }

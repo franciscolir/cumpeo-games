@@ -3,6 +3,7 @@ import { renderListaSets } from '../../../../src/ui/sets/lista.js';
 
 const JUEGO_PIC = { id: 'g-pic', codigo: 'PICTIONARY', nombre: 'Pictionary' };
 const JUEGO_TRIVIA = { id: 'g-trivia', codigo: 'TRIVIA', nombre: 'Trivia' };
+const JUEGO_HISTORIA = { id: 'g-he', codigo: 'HISTORIA_ENREDADA', nombre: 'Historia Enredada' };
 
 function crearElem() {
   const clases = new Set();
@@ -180,5 +181,46 @@ describe('renderListaSets — botón Configurar condiciones', () => {
     expect(idxLink).toBeGreaterThan(-1);
     expect(idxSecondary).toBeGreaterThan(idxLink);
     expect(idxTexto).toBeGreaterThan(idxSecondary);
+  });
+
+  it('juego Historia Enredada → muestra "Configurar colores"', async () => {
+    window.location.hash = '#/sets?juego=g-he';
+    const app = crearApp({ juegos: [JUEGO_HISTORIA], sets: [] });
+    await renderListaSets(container, app);
+    expect(container.innerHTML).toContain('Configurar colores');
+    expect(container.innerHTML).toContain('+ Nuevo set');
+  });
+
+  it('el link de Historia Enredada apunta a #/juegos/HISTORIA_ENREDADA/config', async () => {
+    window.location.hash = '#/sets?juego=g-he';
+    const app = crearApp({ juegos: [JUEGO_HISTORIA], sets: [] });
+    await renderListaSets(container, app);
+    expect(container.innerHTML).toContain('href="#/juegos/HISTORIA_ENREDADA/config"');
+  });
+
+  it('con Pictionary muestra condiciones, no colores', async () => {
+    window.location.hash = '#/sets?juego=g-pic';
+    const app = crearApp({ juegos: [JUEGO_PIC], sets: [] });
+    await renderListaSets(container, app);
+    expect(container.innerHTML).toContain('Configurar condiciones');
+    expect(container.innerHTML).not.toContain('Configurar colores');
+    expect(container.innerHTML).not.toContain('#/juegos/HISTORIA_ENREDADA/config');
+  });
+
+  it('otro juego → no muestra ninguno de los dos botones', async () => {
+    window.location.hash = '#/sets?juego=g-trivia';
+    const app = crearApp({ juegos: [JUEGO_TRIVIA], sets: [] });
+    await renderListaSets(container, app);
+    expect(container.innerHTML).not.toContain('Configurar colores');
+    expect(container.innerHTML).not.toContain('Configurar condiciones');
+    expect(container.innerHTML).toContain('+ Nuevo set');
+  });
+
+  it('Historia Enredada con sets vacíos el botón sigue visible', async () => {
+    window.location.hash = '#/sets?juego=g-he';
+    const app = crearApp({ juegos: [JUEGO_HISTORIA], sets: [] });
+    await renderListaSets(container, app);
+    expect(container.innerHTML).toContain('Configurar colores');
+    expect(container.innerHTML).toContain('No hay sets para este juego.');
   });
 });
