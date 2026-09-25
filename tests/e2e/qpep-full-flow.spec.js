@@ -128,25 +128,25 @@ test('flujo QPEP end-to-end: 2 rondas completas con móvil real', async ({ brows
 
   /* === RONDA 1 === */
 
-  await pageConductor.locator('#btn-qpep-iniciar-juego').click();
+  await pageConductor.locator('[data-accion-conductor="cambiar-estado-juego"]').filter({ hasText: 'Iniciar juego' }).click();
   await pageConductor.waitForTimeout(500);
-  await pageConductor.locator('#btn-qpep-iniciar').click();
+  await pageConductor.locator('[data-accion-conductor="cambiar-estado-juego"]').filter({ hasText: 'Iniciar encuesta' }).click();
   await pageConductor.waitForTimeout(500);
 
   await votarMovil(pageMovil, 'A');
 
-  await pageConductor.locator('#btn-qpep-cerrar').click();
+  await pageConductor.locator('[data-accion-conductor="cerrar-encuesta"]').click();
   await pageConductor.waitForTimeout(1000);
 
   let estado = await leerEstado(pageConductor, id);
   expect(estado.fase).toBe('ENCUESTA_CERRADA');
   expect(estado.resultado_publico).toBe('A');
 
-  await pageConductor.locator('[data-team="1"][data-valor="A"]').click();
+  await pageConductor.locator(`[data-accion-payload='{"equipo":1,"valor":"A"}']`).click();
   await pageConductor.waitForTimeout(300);
-  await pageConductor.locator('[data-team="2"][data-valor="B"]').click();
+  await pageConductor.locator(`[data-accion-payload='{"equipo":2,"valor":"B"}']`).click();
   await pageConductor.waitForTimeout(300);
-  await pageConductor.locator('#btn-qpep-revelar').click();
+  await pageConductor.locator('[data-accion-conductor="revelar-qpep"]').click();
   await pageConductor.waitForTimeout(1000);
 
   estado = await leerEstado(pageConductor, id);
@@ -154,7 +154,7 @@ test('flujo QPEP end-to-end: 2 rondas completas con móvil real', async ({ brows
   expect(estado.puntos_equipo_1).toBe(10);
   expect(estado.puntos_equipo_2).toBe(0);
 
-  await pageConductor.locator('#btn-qpep-siguiente').click();
+  await pageConductor.locator('[data-accion-conductor="siguiente-qpep"]').click();
   await pageConductor.waitForTimeout(1000);
 
   estado = await leerEstado(pageConductor, id);
@@ -163,23 +163,23 @@ test('flujo QPEP end-to-end: 2 rondas completas con móvil real', async ({ brows
 
   /* === RONDA 2 === */
 
-  await pageConductor.locator('#btn-qpep-iniciar').click();
+  await pageConductor.locator('[data-accion-conductor="cambiar-estado-juego"]').filter({ hasText: 'Iniciar encuesta' }).click();
   await pageConductor.waitForTimeout(500);
 
   await votarMovil(pageMovil, 'B');
 
-  await pageConductor.locator('#btn-qpep-cerrar').click();
+  await pageConductor.locator('[data-accion-conductor="cerrar-encuesta"]').click();
   await pageConductor.waitForTimeout(1000);
 
   estado = await leerEstado(pageConductor, id);
   expect(estado.fase).toBe('ENCUESTA_CERRADA');
   expect(estado.resultado_publico).toBe('B');
 
-  await pageConductor.locator('[data-team="1"][data-valor="A"]').click();
+  await pageConductor.locator(`[data-accion-payload='{"equipo":1,"valor":"A"}']`).click();
   await pageConductor.waitForTimeout(300);
-  await pageConductor.locator('[data-team="2"][data-valor="B"]').click();
+  await pageConductor.locator(`[data-accion-payload='{"equipo":2,"valor":"B"}']`).click();
   await pageConductor.waitForTimeout(300);
-  await pageConductor.locator('#btn-qpep-revelar').click();
+  await pageConductor.locator('[data-accion-conductor="revelar-qpep"]').click();
   await pageConductor.waitForTimeout(1000);
 
   estado = await leerEstado(pageConductor, id);
@@ -187,7 +187,7 @@ test('flujo QPEP end-to-end: 2 rondas completas con móvil real', async ({ brows
   expect(estado.puntos_equipo_1).toBe(10);
   expect(estado.puntos_equipo_2).toBe(10);
 
-  await pageConductor.locator('#btn-qpep-siguiente').click();
+  await pageConductor.locator('[data-accion-conductor="siguiente-qpep"]').click();
   await pageConductor.waitForTimeout(1000);
 
   /* === VERIFICACIÓN FINAL === */

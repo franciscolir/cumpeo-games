@@ -218,6 +218,36 @@ export const QuePiensaElPublicoGameDefinition = {
   },
 
   /**
+   * Calcula aciertos y puntos ganados por el pronostico de cada
+   * equipo contra el resultado del publico. Logica de dominio
+   * movida desde QuePiensaElPublicoGameUI (8.5c.2b — la comparten
+   * el panel legacy, el descriptor REVELANDO y el handler
+   * `revelar-qpep` del shell).
+   * @param {object} estadoJuego
+   * @param {Array} [items] items del juego (snapshot)
+   * @param {object} [config] configuracion congelada
+   * @returns {{ acierto1: boolean, acierto2: boolean, puntos: number,
+   *             puntosGanados1: number, puntosGanados2: number }}
+   */
+  calcularPuntos(estadoJuego, items, config) {
+    const resultado = estadoJuego.resultado_publico;
+    const idx = estadoJuego.pregunta_actual_index || 0;
+    const item = (items || [])[idx];
+    const puntos = item?.puntos_acierto || config?.puntos_por_acierto || 0;
+
+    const acierto1 = estadoJuego.pronostico_equipo_1 === resultado;
+    const acierto2 = estadoJuego.pronostico_equipo_2 === resultado;
+
+    return {
+      acierto1,
+      acierto2,
+      puntos,
+      puntosGanados1: acierto1 ? puntos : 0,
+      puntosGanados2: acierto2 ? puntos : 0
+    };
+  },
+
+  /**
    * Aplica el efecto de tiempo agotado.
    * @param {object} estadoJuego
    * @returns {object|null} Nuevo estado o null si ya termino.

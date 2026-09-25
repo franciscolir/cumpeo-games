@@ -9,6 +9,7 @@
 
 import { Boton } from '../../components/boton.js';
 import { crearTimer } from '../_shared/index.js';
+import { QuePiensaElPublicoGameDefinition } from '../../../games/que-piensa-el-publico/QuePiensaElPublicoGameDefinition.js';
 
 let _timer = null;
 let _latestCallbacks = null;
@@ -77,26 +78,14 @@ function _iniciarTimer(estadoJuego, contexto, callbacks, container) {
 }
 
 function _calcularPuntos(estadoJuego, contexto) {
-  const resultado = estadoJuego.resultado_publico;
-  const items = _getItems(contexto);
-  const idx = estadoJuego.pregunta_actual_index || 0;
-  const item = items[idx];
-  const config = contexto.juegoEjecutado?.configuracion_congelada;
-  const puntos = item?.puntos_acierto || config?.puntos_por_acierto || 0;
-
-  const acierto1 = estadoJuego.pronostico_equipo_1 === resultado;
-  const acierto2 = estadoJuego.pronostico_equipo_2 === resultado;
-
-  return {
-    acierto1,
-    acierto2,
-    puntos,
-    puntosGanados1: acierto1 ? puntos : 0,
-    puntosGanados2: acierto2 ? puntos : 0
-  };
+  return QuePiensaElPublicoGameDefinition.calcularPuntos(
+    estadoJuego,
+    _getItems(contexto),
+    contexto.juegoEjecutado?.configuracion_congelada
+  );
 }
 
-function _renderBotonSiguiente(estadoJuego, contexto) {
+function _datosSiguiente(estadoJuego, contexto) {
   const config = contexto.juegoEjecutado?.configuracion_congelada;
   const items = _getItems(contexto);
   const totalItems = items.length;
@@ -104,10 +93,48 @@ function _renderBotonSiguiente(estadoJuego, contexto) {
     ? Math.min(config?.rondas || totalItems, totalItems)
     : (config?.rondas || 1);
   const siguienteIdx = (estadoJuego.pregunta_actual_index || 0) + 1;
-  const esUltima = siguienteIdx >= rondas;
+  return { siguienteIdx, rondas, esUltima: siguienteIdx >= rondas };
+}
 
+function _renderBotonSiguiente(estadoJuego, contexto) {
+  const { esUltima } = _datosSiguiente(estadoJuego, contexto);
   const texto = esUltima ? 'Finalizar juego' : 'Siguiente ronda';
   return `<button id="btn-qpep-siguiente" class="font-label-md uppercase border-2.5 border-on-surface rounded-lg px-4 py-2 bg-primary text-on-primary shadow-comic-sm hover:shadow-comic-md transition">${texto}</button>`;
+}
+
+function _renderRevelando(estadoJuego, contexto) {
+  const equipo1 = contexto.equipos?.[0] || { nombre: 'Eq1' };
+  const equipo2 = contexto.equipos?.[1] || { nombre: 'Eq2' };
+  const { acierto1, acierto2, puntosGanados1, puntosGanados2 } =
+    _calcularPuntos(estadoJuego, contexto);
+
+  return `
+    <div class="border-2.5 border-on-surface rounded-lg p-4 bg-surface-container-lowest">
+      <p class="font-label-md uppercase text-on-surface-variant">Resultado del publico</p>
+      <p class="font-display-hero text-3xl text-primary">${estadoJuego.resultado_publico || '—'}</p>
+    </div>
+
+    <div class="border-2.5 ${acierto1 ? 'border-tertiary bg-tertiary/15' : 'border-on-surface bg-surface-container-lowest'} rounded-lg p-4">
+      <p class="font-headline-sm uppercase">${equipo1.nombre}</p>
+      <p class="font-body-md">Pronostico: <strong>${estadoJuego.pronostico_equipo_1}</strong></p>
+      <p class="font-body-md ${acierto1 ? 'text-tertiary font-bold' : 'text-on-surface-variant'}">
+        ${acierto1 ? '\u2713 ACERT\u00d3 (+' + puntosGanados1 + ')' : '\u2717 No acert\u00f3'}
+      </p>
+    </div>
+
+    <div class="border-2.5 ${acierto2 ? 'border-tertiary bg-tertiary/15' : 'border-on-surface bg-surface-container-lowest'} rounded-lg p-4">
+      <p class="font-headline-sm uppercase">${equipo2.nombre}</p>
+      <p class="font-body-md">Pronostico: <strong>${estadoJuego.pronostico_equipo_2}</strong></p>
+      <p class="font-body-md ${acierto2 ? 'text-tertiary font-bold' : 'text-on-surface-variant'}">
+        ${acierto2 ? '\u2713 ACERT\u00d3 (+' + puntosGanados2 + ')' : '\u2717 No acert\u00f3'}
+      </p>
+    </div>
+
+    <div class="flex justify-between items-center border-2.5 border-on-surface rounded-lg p-4 bg-surface-container-lowest">
+      <span class="font-headline-sm">${equipo1.nombre}: ${estadoJuego.puntos_equipo_1}</span>
+      <span class="font-headline-sm">${equipo2.nombre}: ${estadoJuego.puntos_equipo_2}</span>
+    </div>
+  `;
 }
 
 export const QuePiensaElPublicoGameUI = {
@@ -258,6 +285,117 @@ export const QuePiensaElPublicoGameUI = {
   },
 
   /**
+   * Descriptores de acciones del panel conductor (contrato 8.5a,
+   * migración 8.5c.2b — deuda #128). Si devuelve array no vacío, el
+   * shell renderiza el panel desde acá; si no o devuelve array
+   * vacío, usa renderizarPanelConductor legacy (D6, convivencia).
+   *
+   * Notas:
+   * - `''` y `SELECCIONANDO_PREGUNTA` usan `cambiar-estado-juego`
+   *   con payload estático calculado acá (D1).
+   * - Los 6 botones de pronóstico usan `tipo` variable: `primario`
+   *   si coincide con el pronóstico registrado, `secundario` si no
+   *   (D4) y envían `registrar-pronostico-qpep` con `payload
+   *   { equipo, valor }` (D2).
+   * - `REVELANDO` usa descriptor `html` con el mismo bloque que el
+   *   legacy (_renderRevelando, sin duplicar) + botón `siguiente-qpep`
+   *   con texto dinámico 'Siguiente ronda'/'Finalizar juego' (paridad
+   *   con el legacy).
+   *
+   * @param {object} estadoJuego estado crudo del juego
+   * @param {object} contexto - { equipos, itemsDelJuego, juegoEjecutado, ... }
+   * @returns {Array<object>} descriptores de acción
+   */
+  accionesConductor(estadoJuego, contexto) {
+    const fase = estadoJuego?.fase || '';
+    const equipo1 = contexto.equipos?.[0] || { nombre: 'Eq1' };
+    const equipo2 = contexto.equipos?.[1] || { nombre: 'Eq2' };
+    const pron1 = estadoJuego?.pronostico_equipo_1 || '';
+    const pron2 = estadoJuego?.pronostico_equipo_2 || '';
+    const puedeRevelar = pron1 && pron2;
+
+    switch (fase) {
+      case '':
+        return [
+          {
+            tipo: 'primario',
+            texto: 'Iniciar juego',
+            accion: 'cambiar-estado-juego',
+            payload: { estadoJuego: _estadoInicial() }
+          }
+        ];
+
+      case 'SELECCIONANDO_PREGUNTA':
+        return [
+          {
+            tipo: 'primario',
+            texto: 'Iniciar encuesta',
+            accion: 'cambiar-estado-juego',
+            payload: {
+              estadoJuego: {
+                ...estadoJuego,
+                fase: 'ENCUESTA_ACTIVA',
+                respuestas_publico: { a: 0, b: 0 },
+                total_respuestas: 0
+              }
+            }
+          }
+        ];
+
+      case 'ENCUESTA_ACTIVA':
+        return [
+          {
+            tipo: 'peligro',
+            texto: 'Cerrar encuesta',
+            accion: 'cerrar-encuesta',
+            payload: { preguntaIndex: estadoJuego.pregunta_actual_index ?? 0 }
+          }
+        ];
+
+      case 'ENCUESTA_CERRADA': {
+        const botonPron = (equipo, valor) => ({
+          tipo: (equipo === 1 ? pron1 : pron2) === valor ? 'primario' : 'secundario',
+          texto: valor,
+          accion: 'registrar-pronostico-qpep',
+          payload: { equipo, valor }
+        });
+        return [
+          { tipo: 'html', html: `<p class="font-headline-sm uppercase mb-1">${equipo1.nombre}</p>` },
+          botonPron(1, 'A'),
+          botonPron(1, 'B'),
+          botonPron(1, 'EMPATE'),
+          { tipo: 'html', html: `<p class="font-headline-sm uppercase mb-1 mt-3">${equipo2.nombre}</p>` },
+          botonPron(2, 'A'),
+          botonPron(2, 'B'),
+          botonPron(2, 'EMPATE'),
+          {
+            tipo: 'primario',
+            texto: 'Revelar resultado',
+            accion: 'revelar-qpep',
+            disabled: !puedeRevelar
+          }
+        ];
+      }
+
+      case 'REVELANDO': {
+        const { esUltima } = _datosSiguiente(estadoJuego, contexto);
+        return [
+          { tipo: 'html', html: _renderRevelando(estadoJuego, contexto) },
+          {
+            tipo: 'primario',
+            texto: esUltima ? 'Finalizar juego' : 'Siguiente ronda',
+            accion: 'siguiente-qpep'
+          }
+        ];
+      }
+
+      case 'FIN_DE_JUEGO':
+      default:
+        return [];
+    }
+  },
+
+  /**
    * Renderiza el panel del conductor con botones de control.
    * @param {object} estadoJuego
    * @param {HTMLElement} container
@@ -321,37 +459,9 @@ export const QuePiensaElPublicoGameUI = {
       }
 
       case 'REVELANDO': {
-        const { acierto1, acierto2, puntos, puntosGanados1, puntosGanados2 } =
-          _calcularPuntos(estadoJuego, contexto);
-
         botonesHTML = `
           <div class="flex flex-col gap-4">
-            <div class="border-2.5 border-on-surface rounded-lg p-4 bg-surface-container-lowest">
-              <p class="font-label-md uppercase text-on-surface-variant">Resultado del publico</p>
-              <p class="font-display-hero text-3xl text-primary">${estadoJuego.resultado_publico || '—'}</p>
-            </div>
-
-            <div class="border-2.5 ${acierto1 ? 'border-tertiary bg-tertiary/15' : 'border-on-surface bg-surface-container-lowest'} rounded-lg p-4">
-              <p class="font-headline-sm uppercase">${equipo1.nombre}</p>
-              <p class="font-body-md">Pronostico: <strong>${estadoJuego.pronostico_equipo_1}</strong></p>
-              <p class="font-body-md ${acierto1 ? 'text-tertiary font-bold' : 'text-on-surface-variant'}">
-                ${acierto1 ? `\u2713 ACERT\u00d3 (+${puntosGanados1})` : '\u2717 No acert\u00f3'}
-              </p>
-            </div>
-
-            <div class="border-2.5 ${acierto2 ? 'border-tertiary bg-tertiary/15' : 'border-on-surface bg-surface-container-lowest'} rounded-lg p-4">
-              <p class="font-headline-sm uppercase">${equipo2.nombre}</p>
-              <p class="font-body-md">Pronostico: <strong>${estadoJuego.pronostico_equipo_2}</strong></p>
-              <p class="font-body-md ${acierto2 ? 'text-tertiary font-bold' : 'text-on-surface-variant'}">
-                ${acierto2 ? `\u2713 ACERT\u00d3 (+${puntosGanados2})` : '\u2717 No acert\u00f3'}
-              </p>
-            </div>
-
-            <div class="flex justify-between items-center border-2.5 border-on-surface rounded-lg p-4 bg-surface-container-lowest">
-              <span class="font-headline-sm">${equipo1.nombre}: ${estadoJuego.puntos_equipo_1}</span>
-              <span class="font-headline-sm">${equipo2.nombre}: ${estadoJuego.puntos_equipo_2}</span>
-            </div>
-
+            ${_renderRevelando(estadoJuego, contexto)}
             ${_renderBotonSiguiente(estadoJuego, contexto)}
           </div>
         `;

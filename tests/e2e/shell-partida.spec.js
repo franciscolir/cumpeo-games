@@ -378,7 +378,7 @@ test('flujo QPEP: iniciar juego → iniciar encuesta → cerrar encuesta', async
 
   await expect(page.locator('#btn-pausar')).toBeVisible({ timeout: 15000 });
 
-  const btnIniciarJuego = page.locator('#btn-qpep-iniciar-juego');
+  const btnIniciarJuego = page.locator('[data-accion-conductor="cambiar-estado-juego"]').filter({ hasText: 'Iniciar juego' });
   await expect(btnIniciarJuego).toBeVisible({ timeout: 10000 });
   await btnIniciarJuego.click();
 
@@ -390,8 +390,8 @@ test('flujo QPEP: iniciar juego → iniciar encuesta → cerrar encuesta', async
   }, id);
   expect(faseActual).toBe('SELECCIONANDO_PREGUNTA');
 
-  await expect(page.locator('#btn-qpep-iniciar')).toBeVisible({ timeout: 10000 });
-  await page.locator('#btn-qpep-iniciar').click();
+  await expect(page.locator('[data-accion-conductor="cambiar-estado-juego"]').filter({ hasText: 'Iniciar encuesta' })).toBeVisible({ timeout: 10000 });
+  await page.locator('[data-accion-conductor="cambiar-estado-juego"]').filter({ hasText: 'Iniciar encuesta' }).click();
 
   await page.waitForTimeout(500);
 
@@ -401,8 +401,8 @@ test('flujo QPEP: iniciar juego → iniciar encuesta → cerrar encuesta', async
   }, id);
   expect(faseActual).toBe('ENCUESTA_ACTIVA');
 
-  await expect(page.locator('#btn-qpep-cerrar')).toBeVisible({ timeout: 10000 });
-  await page.locator('#btn-qpep-cerrar').click();
+  await expect(page.locator('[data-accion-conductor="cerrar-encuesta"]')).toBeVisible({ timeout: 10000 });
+  await page.locator('[data-accion-conductor="cerrar-encuesta"]').click();
 
   await page.waitForTimeout(500);
 
@@ -490,10 +490,10 @@ test('timer de encuesta se inicia y auto-cierra', async ({ page }) => {
 
   await expect(page.locator('#btn-pausar')).toBeVisible({ timeout: 15000 });
 
-  await page.locator('#btn-qpep-iniciar-juego').click();
+  await page.locator('[data-accion-conductor="cambiar-estado-juego"]').filter({ hasText: 'Iniciar juego' }).click();
   await page.waitForTimeout(500);
 
-  await page.locator('#btn-qpep-iniciar').click();
+  await page.locator('[data-accion-conductor="cambiar-estado-juego"]').filter({ hasText: 'Iniciar encuesta' }).click();
   await page.waitForTimeout(1000);
 
   const timerLocator = page.locator('#qpep-timer');
@@ -530,9 +530,9 @@ test('cerrar encuesta cuenta votos reales de respuestas_encuesta', async ({ page
   await page.goto(`/#/partidas/${id}`);
   await waitForCumpeo(page);
 
-  await page.locator('#btn-qpep-iniciar-juego').click();
+  await page.locator('[data-accion-conductor="cambiar-estado-juego"]').filter({ hasText: 'Iniciar juego' }).click();
   await page.waitForTimeout(500);
-  await page.locator('#btn-qpep-iniciar').click();
+  await page.locator('[data-accion-conductor="cambiar-estado-juego"]').filter({ hasText: 'Iniciar encuesta' }).click();
   await page.waitForTimeout(500);
 
   await page.evaluate(async (pid) => {
@@ -563,7 +563,7 @@ test('cerrar encuesta cuenta votos reales de respuestas_encuesta', async ({ page
     });
   }, id);
 
-  await page.locator('#btn-qpep-cerrar').click();
+  await page.locator('[data-accion-conductor="cerrar-encuesta"]').click();
   await page.waitForTimeout(1000);
 
   const estado = await page.evaluate(async (pid) => {
@@ -602,17 +602,17 @@ test('conductor registra pronóstico equipo 1 y equipo 2', async ({ page }) => {
   await page.goto(`/#/partidas/${id}`);
   await waitForCumpeo(page);
 
-  await page.locator('#btn-qpep-iniciar-juego').click();
+  await page.locator('[data-accion-conductor="cambiar-estado-juego"]').filter({ hasText: 'Iniciar juego' }).click();
   await page.waitForTimeout(500);
-  await page.locator('#btn-qpep-iniciar').click();
+  await page.locator('[data-accion-conductor="cambiar-estado-juego"]').filter({ hasText: 'Iniciar encuesta' }).click();
   await page.waitForTimeout(500);
-  await page.locator('#btn-qpep-cerrar').click();
+  await page.locator('[data-accion-conductor="cerrar-encuesta"]').click();
   await page.waitForTimeout(500);
 
-  const btnEq1A = page.locator('[data-team="1"][data-valor="A"]');
+  const btnEq1A = page.locator(`[data-accion-payload='{"equipo":1,"valor":"A"}']`);
   await expect(btnEq1A).toBeVisible({ timeout: 10000 });
   await btnEq1A.click();
-  await expect(btnEq1A).toHaveClass(/bg-tertiary/, { timeout: 10000 });
+  await expect(btnEq1A).toHaveClass(/bg-primary/, { timeout: 10000 });
 
   let pron1 = await page.evaluate(async (pid) => {
     const ctx = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
@@ -620,10 +620,10 @@ test('conductor registra pronóstico equipo 1 y equipo 2', async ({ page }) => {
   }, id);
   expect(pron1).toBe('A');
 
-  const btnEq2EMPATE = page.locator('[data-team="2"][data-valor="EMPATE"]');
+  const btnEq2EMPATE = page.locator(`[data-accion-payload='{"equipo":2,"valor":"EMPATE"}']`);
   await expect(btnEq2EMPATE).toBeVisible();
   await btnEq2EMPATE.click();
-  await expect(page.locator('[data-team="2"][data-valor="EMPATE"]')).toHaveClass(/bg-tertiary/, { timeout: 10000 });
+  await expect(page.locator(`[data-accion-payload='{"equipo":2,"valor":"EMPATE"}']`)).toHaveClass(/bg-primary/, { timeout: 10000 });
 
   const estado = await page.evaluate(async (pid) => {
     const ctx = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
@@ -655,22 +655,22 @@ test('botón Revelar se habilita cuando ambos pronósticos están registrados', 
   await page.goto(`/#/partidas/${id}`);
   await waitForCumpeo(page);
 
-  await page.locator('#btn-qpep-iniciar-juego').click();
+  await page.locator('[data-accion-conductor="cambiar-estado-juego"]').filter({ hasText: 'Iniciar juego' }).click();
   await page.waitForTimeout(500);
-  await page.locator('#btn-qpep-iniciar').click();
+  await page.locator('[data-accion-conductor="cambiar-estado-juego"]').filter({ hasText: 'Iniciar encuesta' }).click();
   await page.waitForTimeout(500);
-  await page.locator('#btn-qpep-cerrar').click();
+  await page.locator('[data-accion-conductor="cerrar-encuesta"]').click();
   await page.waitForTimeout(500);
 
-  const btnRevelar = page.locator('#btn-qpep-revelar');
+  const btnRevelar = page.locator('[data-accion-conductor="revelar-qpep"]');
   await expect(btnRevelar).toBeVisible({ timeout: 10000 });
   await expect(btnRevelar).toBeDisabled();
 
-  await page.locator('[data-team="1"][data-valor="B"]').click();
-  await expect(page.locator('[data-team="1"][data-valor="B"]')).toHaveClass(/bg-tertiary/, { timeout: 10000 });
+  await page.locator(`[data-accion-payload='{"equipo":1,"valor":"B"}']`).click();
+  await expect(page.locator(`[data-accion-payload='{"equipo":1,"valor":"B"}']`)).toHaveClass(/bg-primary/, { timeout: 10000 });
   await expect(btnRevelar).toBeDisabled();
 
-  await page.locator('[data-team="2"][data-valor="A"]').click();
+  await page.locator(`[data-accion-payload='{"equipo":2,"valor":"A"}']`).click();
   await expect(btnRevelar).toBeEnabled({ timeout: 10000 });
 
   await btnRevelar.click();
@@ -702,20 +702,20 @@ test('conductor revela y suma puntos a los equipos que acertaron', async ({ page
   await page.goto(`/#/partidas/${id}`);
   await waitForCumpeo(page);
 
-  await page.locator('#btn-qpep-iniciar-juego').click();
+  await page.locator('[data-accion-conductor="cambiar-estado-juego"]').filter({ hasText: 'Iniciar juego' }).click();
   await page.waitForTimeout(500);
-  await page.locator('#btn-qpep-iniciar').click();
+  await page.locator('[data-accion-conductor="cambiar-estado-juego"]').filter({ hasText: 'Iniciar encuesta' }).click();
   await page.waitForTimeout(500);
-  await page.locator('#btn-qpep-cerrar').click();
+  await page.locator('[data-accion-conductor="cerrar-encuesta"]').click();
   await page.waitForTimeout(500);
 
-  await page.locator('[data-team="1"][data-valor="EMPATE"]').click();
-  await expect(page.locator('[data-team="1"][data-valor="EMPATE"]')).toHaveClass(/bg-tertiary/, { timeout: 10000 });
+  await page.locator(`[data-accion-payload='{"equipo":1,"valor":"EMPATE"}']`).click();
+  await expect(page.locator(`[data-accion-payload='{"equipo":1,"valor":"EMPATE"}']`)).toHaveClass(/bg-primary/, { timeout: 10000 });
 
-  await page.locator('[data-team="2"][data-valor="EMPATE"]').click();
-  await expect(page.locator('#btn-qpep-revelar')).toBeEnabled({ timeout: 10000 });
+  await page.locator(`[data-accion-payload='{"equipo":2,"valor":"EMPATE"}']`).click();
+  await expect(page.locator('[data-accion-conductor="revelar-qpep"]')).toBeEnabled({ timeout: 10000 });
 
-  await page.locator('#btn-qpep-revelar').click();
+  await page.locator('[data-accion-conductor="revelar-qpep"]').click();
   await page.waitForTimeout(500);
 
   const estado = await page.evaluate(async (pid) => {
@@ -753,7 +753,7 @@ test('conductor muestra la pregunta QPEP', async ({ page }) => {
   await page.goto(`/#/partidas/${id}`);
   await waitForCumpeo(page);
 
-  await page.locator('#btn-qpep-iniciar-juego').click();
+  await page.locator('[data-accion-conductor="cambiar-estado-juego"]').filter({ hasText: 'Iniciar juego' }).click();
   await page.waitForTimeout(500);
 
   await expect(page.getByText('¿Pizza o empanadas?')).toBeVisible({ timeout: 15000 });
@@ -780,22 +780,22 @@ test('conductor avanza a la siguiente ronda', async ({ page }) => {
   await page.goto(`/#/partidas/${id}`);
   await waitForCumpeo(page);
 
-  await page.locator('#btn-qpep-iniciar-juego').click();
+  await page.locator('[data-accion-conductor="cambiar-estado-juego"]').filter({ hasText: 'Iniciar juego' }).click();
   await page.waitForTimeout(500);
-  await page.locator('#btn-qpep-iniciar').click();
+  await page.locator('[data-accion-conductor="cambiar-estado-juego"]').filter({ hasText: 'Iniciar encuesta' }).click();
   await page.waitForTimeout(500);
-  await page.locator('#btn-qpep-cerrar').click();
-  await page.waitForTimeout(500);
-
-  await page.locator('[data-team="1"][data-valor="A"]').click();
-  await expect(page.locator('[data-team="1"][data-valor="A"]')).toHaveClass(/bg-tertiary/, { timeout: 10000 });
-  await page.locator('[data-team="2"][data-valor="B"]').click();
-  await expect(page.locator('#btn-qpep-revelar')).toBeEnabled({ timeout: 10000 });
-
-  await page.locator('#btn-qpep-revelar').click();
+  await page.locator('[data-accion-conductor="cerrar-encuesta"]').click();
   await page.waitForTimeout(500);
 
-  const btnSiguiente = page.locator('#btn-qpep-siguiente');
+  await page.locator(`[data-accion-payload='{"equipo":1,"valor":"A"}']`).click();
+  await expect(page.locator(`[data-accion-payload='{"equipo":1,"valor":"A"}']`)).toHaveClass(/bg-primary/, { timeout: 10000 });
+  await page.locator(`[data-accion-payload='{"equipo":2,"valor":"B"}']`).click();
+  await expect(page.locator('[data-accion-conductor="revelar-qpep"]')).toBeEnabled({ timeout: 10000 });
+
+  await page.locator('[data-accion-conductor="revelar-qpep"]').click();
+  await page.waitForTimeout(500);
+
+  const btnSiguiente = page.locator('[data-accion-conductor="siguiente-qpep"]');
   await expect(btnSiguiente).toBeVisible({ timeout: 10000 });
   await expect(btnSiguiente).toHaveText('Siguiente ronda');
   await btnSiguiente.click();
@@ -841,24 +841,24 @@ test('conductor finaliza el juego después de la última ronda', async ({ page }
   await page.goto(`/#/partidas/${id}`);
   await waitForCumpeo(page);
 
-  await page.locator('#btn-qpep-iniciar-juego').click();
+  await page.locator('[data-accion-conductor="cambiar-estado-juego"]').filter({ hasText: 'Iniciar juego' }).click();
   await page.waitForTimeout(500);
 
   for (let ronda = 0; ronda < 2; ronda++) {
-    await page.locator('#btn-qpep-iniciar').click();
+    await page.locator('[data-accion-conductor="cambiar-estado-juego"]').filter({ hasText: 'Iniciar encuesta' }).click();
     await page.waitForTimeout(500);
-    await page.locator('#btn-qpep-cerrar').click();
-    await page.waitForTimeout(500);
-
-    await page.locator('[data-team="1"][data-valor="A"]').click();
-    await expect(page.locator('[data-team="1"][data-valor="A"]')).toHaveClass(/bg-tertiary/, { timeout: 10000 });
-    await page.locator('[data-team="2"][data-valor="A"]').click();
-    await expect(page.locator('#btn-qpep-revelar')).toBeEnabled({ timeout: 10000 });
-
-    await page.locator('#btn-qpep-revelar').click();
+    await page.locator('[data-accion-conductor="cerrar-encuesta"]').click();
     await page.waitForTimeout(500);
 
-    const btnFinalizar = page.locator('#btn-qpep-siguiente');
+    await page.locator(`[data-accion-payload='{"equipo":1,"valor":"A"}']`).click();
+    await expect(page.locator(`[data-accion-payload='{"equipo":1,"valor":"A"}']`)).toHaveClass(/bg-primary/, { timeout: 10000 });
+    await page.locator(`[data-accion-payload='{"equipo":2,"valor":"A"}']`).click();
+    await expect(page.locator('[data-accion-conductor="revelar-qpep"]')).toBeEnabled({ timeout: 10000 });
+
+    await page.locator('[data-accion-conductor="revelar-qpep"]').click();
+    await page.waitForTimeout(500);
+
+    const btnFinalizar = page.locator('[data-accion-conductor="siguiente-qpep"]');
     await expect(btnFinalizar).toBeVisible({ timeout: 10000 });
 
     if (ronda === 0) {

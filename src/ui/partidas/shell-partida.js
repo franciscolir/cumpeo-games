@@ -242,6 +242,68 @@ async function _renderContenido(container, app, partidaId) {
             sessionId,
             nuevoActionId()
           );
+        } else if (tipo === 'registrar-pronostico-qpep') {
+          const { equipo, valor } = payload;
+          if (equipo !== 1 && equipo !== 2) return;
+          if (!['A', 'B', 'EMPATE'].includes(valor)) return;
+          const key = equipo === 1 ? 'pronostico_equipo_1' : 'pronostico_equipo_2';
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId,
+            juegoActivo.id,
+            { ...estadoJuego, [key]: valor },
+            juegoActivo.state_version,
+            sessionId,
+            nuevoActionId()
+          );
+        } else if (tipo === 'revelar-qpep') {
+          const { QuePiensaElPublicoGameDefinition } = await import('../../games/que-piensa-el-publico/QuePiensaElPublicoGameDefinition.js');
+          if (!estadoJuego.pronostico_equipo_1 || !estadoJuego.pronostico_equipo_2) return;
+          const { puntosGanados1, puntosGanados2 } = QuePiensaElPublicoGameDefinition.calcularPuntos(
+            estadoJuego,
+            itemsDelJuego,
+            juegoActivo.configuracion_congelada
+          );
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId,
+            juegoActivo.id,
+            {
+              ...estadoJuego,
+              fase: 'REVELANDO',
+              puntos_equipo_1: (estadoJuego.puntos_equipo_1 || 0) + puntosGanados1,
+              puntos_equipo_2: (estadoJuego.puntos_equipo_2 || 0) + puntosGanados2
+            },
+            juegoActivo.state_version,
+            sessionId,
+            nuevoActionId()
+          );
+        } else if (tipo === 'siguiente-qpep') {
+          const config = juegoActivo.configuracion_congelada;
+          const totalItems = itemsDelJuego?.length || 0;
+          const rondas = totalItems > 0
+            ? Math.min(config?.rondas || totalItems, totalItems)
+            : (config?.rondas || 1);
+          const siguienteIdx = (estadoJuego.pregunta_actual_index || 0) + 1;
+          const nuevoEstado = siguienteIdx >= rondas
+            ? { ...estadoJuego, fase: 'FIN_DE_JUEGO' }
+            : {
+                ...estadoJuego,
+                pregunta_actual_index: siguienteIdx,
+                ronda_actual: siguienteIdx + 1,
+                fase: 'SELECCIONANDO_PREGUNTA',
+                respuestas_publico: { a: 0, b: 0 },
+                total_respuestas: 0,
+                resultado_publico: null,
+                pronostico_equipo_1: null,
+                pronostico_equipo_2: null
+              };
+          await app.services.partida.actualizarEstadoJuego(
+            partidaId,
+            juegoActivo.id,
+            nuevoEstado,
+            juegoActivo.state_version,
+            sessionId,
+            nuevoActionId()
+          );
         } else if (tipo === 'finalizar-juego') {
           if (!payload.resultado || !payload.finishReason) {
             console.warn(`[ShellPartida] finalizar-juego requiere resultado y finishReason`);

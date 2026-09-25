@@ -265,10 +265,10 @@ async function activarEncuestaQPEP(page, id) {
 
   await expect(page.locator('#btn-pausar')).toBeVisible({ timeout: 15000 });
 
-  await page.locator('#btn-qpep-iniciar-juego').click();
+  await page.locator('[data-accion-conductor="cambiar-estado-juego"]').filter({ hasText: 'Iniciar juego' }).click();
   await page.waitForTimeout(500);
 
-  await page.locator('#btn-qpep-iniciar').click();
+  await page.locator('[data-accion-conductor="cambiar-estado-juego"]').filter({ hasText: 'Iniciar encuesta' }).click();
   await page.waitForTimeout(500);
 }
 
