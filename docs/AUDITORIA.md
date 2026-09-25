@@ -286,7 +286,7 @@ inferior sin especificación), 8.9 (EXTRAS UI, requiere 3 decisiones
 de diseño), 8.10 (barra superior pública, no viable limpio por timers
 heterogéneos). Cerrar el Bloque 8 como "completado con deudas
 documentadas". | Bloque 8 (detectado) | Media |
-| 140 | e2e con la config estándar fallan en el boot: `.env` tiene `VITE_SUPABASE_ADAPTER=true` y la BD Supabase Cloud no tiene la columna `sets.es_predeterminado` (migración `0016_sets_predeterminado.sql` sin aplicar/perdida en la BD remota; el seed `seedMemoriaPredeterminados` inserta esa columna en cada boot). Resultado: TODOS los e2e fallan en `beforeEach` con "Could not find the 'es_predeterminado' column of 'sets'". Aplicar 0016 en el SQL Editor de Supabase, o fijar LocalAdapter (`VITE_SUPABASE_ADAPTER=false`) como default de e2e y documentarlo. | Paso 5a (detectado) | Media |
+| 140 | ~~e2e con la config estándar fallan en el boot: `.env` tiene `VITE_SUPABASE_ADAPTER=true` y la BD Supabase Cloud no tiene la columna `sets.es_predeterminado` (migración `0016_sets_predeterminado.sql` sin aplicar/perdida en la BD remota; el seed `seedMemoriaPredeterminados` inserta esa columna en cada boot). Resultado: TODOS los e2e fallan en `beforeEach` con "Could not find the 'es_predeterminado' column of 'sets'". Aplicar 0016 en el SQL Editor de Supabase, o fijar LocalAdapter (`VITE_SUPABASE_ADAPTER=false`) como default de e2e y documentarlo.~~ **Cerrada en 2026-09-25:** migración `0016` aplicada en Supabase Cloud (columna + índice). App bootea OK. | Paso 5a (detectado) / 2026-09-25 | ~~Media~~ Cerrada |
 | 141 | El agente commiteó 3a93cb0 y b100375 (5a) sin esperar
 aprobación del operador. Violación de regla 5 de CONTINUIDAD.md.
 Verificar siempre que el agente NO commitee: la evidencia debe
