@@ -253,7 +253,7 @@ text
   - Cambia la UI a estado "espera".
   - La vista pública recibe el estado y muestra su modo espera.
 
-#### Panel conductor (contrato `accionesConductor` — 8.5a / 8.5b.1 / 8.5b.2 / 8.5c.1 / 8.5c.2a / 8.5c.2b)
+#### Panel conductor (contrato `accionesConductor` — 8.5a / 8.5b.1 / 8.5b.2 / 8.5c.1 / 8.5c.2a / 8.5c.2b / 8.5d)
 
 - **Estado actual:** ✅ **implementado en 8.5a.** El shell renderiza
   `#shell-panel-conductor` desde `gameUI.accionesConductor(estadoJuego, contexto)`
@@ -274,7 +274,7 @@ text
   de Rosco desde 8.5c.2a, #132).
 - **Adopción:** Trivia (8.5a, 8 fases); Anti-Trivia, Canción Incompleta,
   Enlaces e Historia Enredada (8.5b.1); **Memoria migrado completo** y
-  **Rosco parcial** + **Pictionary sin migrar** (8.5b.2); **Rosco
+  **Rosco parcial** (8.5b.2); **Rosco
   `TURNO_ACTIVO`** (html + 5 botones) e **Historia `VOTANDO`**
   (descriptor `input`, sin botón — `change` dispara la acción) en
   8.5c.2a. **QPEP migrado completo en 8.5c.2b** (6 fases: `''`/
@@ -283,16 +283,23 @@ text
   payload `{ equipo, valor }` con `tipo` variable + `revelar-qpep`,
   `REVELANDO` → `html` + `siguiente-qpep`; `calcularPuntos` vive en el
   GameDefinition y lo comparten legacy/descriptor/handler — deuda #128
-  **cerrada**). Quedan en legacy: Pictionary 100% (deuda #133 → 8.5d) y
-  Rosco fase `''` (modal de inicio, deuda #132) + el resto hasta
-  8.5d/8.7. Excepciones: **8.5c.2a** Historia `VOTANDO`
+  **cerrada**). **Pictionary migrado completo en 8.5d** (las 9 fases:
+  `''` → `iniciar-juego`, `SELECCIONANDO_SUBMODO` → mensaje + 4 botones
+  payload `{submodo}`, `SELECCIONANDO_SET` → N botones `elegir-set`
+  payload `{set_id}` — sin `<select>` —, `MOSTRANDO_PALABRA`,
+  `ADIVINANDO` → Correcto/Incorrecto/Pasar, `ESPERA_VALIDACION`,
+  `FIN_DE_RONDA`; bonus = 2 descriptores `input` con `payload { equipo }`
+  en `ADIVINANDO`/`ESPERA_VALIDACION`/`FIN_DE_RONDA` — deudas **#131 y
+  #133 cerradas**). Quedan en legacy: solo Rosco fase `''` (modal de
+  inicio, deuda #132). Excepciones: **8.5c.2a** Historia `VOTANDO`
   migra con `input` + `payload { equipo }` (handler lee
   `payload.puntos ?? payload.valor` — deuda #129 **cerrada**);
   **8.5c.1** Memoria `JUGANDO` usa el descriptor `selector` (deuda #130
   **cerrada** — handler `cambiar-turno-manual-memoria` convierte
   `Number(payload.valor)` y acepta `{ equipo }` por retrocompatibilidad);
-  **M2-A** Pictionary devuelve `[]` en todas las fases (deudas #131/#133
-  → 8.5d); **M3-A/8.5c.2a** Rosco `TURNO_ACTIVO` migró con `html` +
+  **8.5d** Pictionary `INICIO_RONDA`/`CAMBIO_TURNO`/`FIN_DE_JUEGO` →
+  `[]` (fallback legacy, "Preparando turno…"); **M3-A/8.5c.2a** Rosco
+  `TURNO_ACTIVO` migró con `html` +
   5 botones, solo la fase `''` (modal con `{ sets }`) sigue `[]`
   (deuda #132, parcialmente cerrada).
 
@@ -324,7 +331,8 @@ text
   Canción Incompleta (`marcar-acierto/error-cancion-incompleta`),
    Enlaces (`validar-enlaces`) e Historia Enredada (fases no-VOTANDO);
    desde 8.5c.2a también Rosco (`marcar-acierto/error-rosco`).
-   Queda Pictionary (deuda #133 → 8.5d). QPEP no tiene botones
+   Desde 8.5d también Pictionary (`marcar-acierto/error/pasar-palabra`)
+   — deuda #133 **cerrada**. QPEP no tiene botones
    acierto/error (su validación es `revelar-qpep`, migrada en 8.5c.2b).
 - **TO-BE:** conjunto de botones unificado visualmente en el panel derecho.
   Las acciones siguen siendo específicas por juego (`onAccion` con tipo).
