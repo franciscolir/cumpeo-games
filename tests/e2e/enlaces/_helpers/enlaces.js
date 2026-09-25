@@ -211,8 +211,11 @@ export async function elegirSet(page, setId) {
 export async function moverElemento(page, desdeIdx, hastaIdx) {
   const source = page.locator(`.enlaces-columna-b-item[data-idx="${desdeIdx}"]`);
   const target = page.locator(`.enlaces-columna-b-item[data-idx="${hastaIdx}"]`);
-  await source.dragTo(target);
-  await page.waitForTimeout(350);
+  await source.dispatchEvent('dragstart');
+  await target.dispatchEvent('dragover');
+  await target.dispatchEvent('drop');
+  await source.dispatchEvent('dragend');
+  await page.waitForTimeout(500);
 }
 
 /**

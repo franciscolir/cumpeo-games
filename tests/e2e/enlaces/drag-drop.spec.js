@@ -87,7 +87,7 @@ test('deshacer revierte el último movimiento', async ({ page }) => {
 
 test('mientras el timer corre se puede deshacer', async ({ page }) => {
   test.setTimeout(60000);
-  const { partidaId, setIdEq1 } = await setupPartidaEnlaces(page, { tiempoTurno: 30 });
+  const { partidaId, setIdEq1 } = await setupPartidaEnlaces(page, { tiempoTurno: 60 });
 
   await irACOnductor(page, partidaId);
   await iniciarPartidaEnlaces(page, partidaId);
