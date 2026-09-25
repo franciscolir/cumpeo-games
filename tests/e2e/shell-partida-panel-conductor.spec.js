@@ -17,8 +17,12 @@
 
    8.5d: Pictionary migrado completo (deuda #131 cerrada):
    9 fases con descriptores + bonus `input` en ADIVINANDO /
-   ESPERA_VALIDACION / FIN_DE_RONDA; INICIO_RONDA, CAMBIO_TURNO
-   y FIN_DE_JUEGO siguen en [] (fallback legacy, decisión D2).
+   ESPERA_VALIDACION / FIN_DE_RONDA.
+
+   8.7a: Pictionary INICIO_RONDA / CAMBIO_TURNO → descriptor
+   `mensaje` "Preparando turno…" (1 c/u, antes eran [] con
+   fallback legacy); FIN_DE_JUEGO sigue en [] (no hay nada
+   que mostrar).
 
    Nota: Trivia conserva `renderizarPanelConductor` legacy
    (convivencia D8) — el shell lo ignora cuando hay
@@ -356,19 +360,20 @@ test('3 GameUIs de 8.5b.2/8.5c.1/8.5d: Memoria con selector en JUGANDO, Pictiona
     }
   ]);
 
-  // M2-A → 8.5d (deuda #131 cerrada): Pictionary migrado.
+  // M2-A → 8.5d → 8.7a (deudas #131 cerrada): Pictionary migrado.
   // fases: '', INICIO_RONDA, SELECCIONANDO_SUBMODO, SELECCIONANDO_SET,
   // MOSTRANDO_PALABRA, ADIVINANDO, ESPERA_VALIDACION, CAMBIO_TURNO,
   // FIN_DE_RONDA, FIN_DE_JUEGO
   // - '': botón Iniciar juego (1)
-  // - INICIO_RONDA / CAMBIO_TURNO / FIN_DE_JUEGO: [] → fallback legacy (D2)
+  // - INICIO_RONDA / CAMBIO_TURNO: mensaje "Preparando turno…" (1, 8.7a)
+  // - FIN_DE_JUEGO: [] (no hay nada que mostrar)
   // - SELECCIONANDO_SUBMODO: mensaje + 4 submodos (5)
   // - SELECCIONANDO_SET: mensaje + 1 set del fixture sin submodo (2)
   // - MOSTRANDO_PALABRA: 1
   // - ADIVINANDO: 3 botones + 2 inputs de bonus (5)
   // - ESPERA_VALIDACION: 1 + 2 bonus (3)
   // - FIN_DE_RONDA: 1 ('Finalizar juego', sin config → rondas=1) + 2 bonus (3)
-  expect(res.PICTIONARY.largos).toEqual([1, 0, 5, 2, 1, 5, 3, 0, 3, 0]);
+  expect(res.PICTIONARY.largos).toEqual([1, 1, 5, 2, 1, 5, 3, 1, 3, 0]);
 
   // M3-A (8.5b.2) + 8.5c.2a (deuda #132): Rosco migra
   // INICIO_RONDA/TURNO_ACTIVO (html + 5 botones)/CAMBIO_TURNO/

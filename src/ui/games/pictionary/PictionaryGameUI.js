@@ -419,10 +419,11 @@ export const PictionaryGameUI = {
    * `{ ...payload, valor }` (valor string) y el handler
    * `aplicar-bonus-pictionary` acepta `puntos` (legacy) o `valor`.
    *
-   * INICIO_RONDA / CAMBIO_TURNO / FIN_DE_JUEGO devuelven [] a
-   * propósito (decisión D2): caen al fallback legacy
-   * `renderizarPanelConductor` ("Preparando turno…", panel vacío y
-   * su bloque de bonus legacy, que sigue visible en esas fases).
+   * INICIO_RONDA / CAMBIO_TURNO devuelven un descriptor `mensaje`
+   * "Preparando turno…" (8.7a, mismo texto del panel legacy) para no
+   * depender del fallback que 8.7b elimina. FIN_DE_JUEGO devuelve []
+   * a propósito (no hay nada que mostrar; D1 de 8.7a: solo
+   * Pictionary cambia, los otros 8 GameUIs siguen con [] ahí).
    *
    * @param {object} estadoJuego
    * @param {object} [contexto]
@@ -531,6 +532,11 @@ export const PictionaryGameUI = {
 
       case 'INICIO_RONDA':
       case 'CAMBIO_TURNO':
+        acciones = [
+          { tipo: 'mensaje', texto: 'Preparando turno…' }
+        ];
+        break;
+
       case 'FIN_DE_JUEGO':
       default:
         acciones = [];

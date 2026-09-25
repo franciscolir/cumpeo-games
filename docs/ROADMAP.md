@@ -286,6 +286,7 @@ Fuente: `docs/PANTALLAS.md` §8 (plan de 11 pasos, gaps #1–#11).
 | 8.5d | Migrar Pictionary a `accionesConductor` (9 fases + bonus `input` con `payload { equipo }`; e2e ×11 a `data-accion-conductor`; cierra #131 y #133) | 🕓 IMPLEMENTADO (sin commit) | PENDIENTE |
 | 8.5 | Panel conductor unificado | ⬜ | — |
 | 8.6 | AJUSTES global (UI): botón `#btn-ajustes` en topbar + modal `#modal-ajustes` (`tiempo_max_pausa_seg`) | 🕓 IMPLEMENTADO (sin commit) | PENDIENTE |
+| 8.7a | Pictionary `INICIO_RONDA`/`CAMBIO_TURNO` → descriptor `mensaje` "Preparando turno…" (deja de depender del fallback) | 🕓 IMPLEMENTADO (sin commit) | PENDIENTE |
 | 8.7 | Refactor de los 9 GameUIs al panel unificado | ⬜ | — |
 | 8.8 | Zona inferior (placeholder) | ⬜ | — |
 | 8.9 | EXTRAS UI | ⬜ | — |
