@@ -246,11 +246,11 @@ export const HistoriaEnredadaGameUI = {
    * (contrato 8.5b.1). El shell renderiza desde estos descriptores;
    * si devuelve `[]` delega en `renderizarPanelConductor` legacy (D1/D8).
    *
-   * Fase VOTANDO: devuelve `[]` a propósito (decisión 8.5b.1, D3
-   * suspendida) — el binding de `input` del shell envía `{ valor }`
-   * pero el handler `asignar-puntos-historia` lee `payload.puntos`
-   * (asignaría 0). El fallback legacy conserva input + botón con
-   * `{ puntos }` y su validación local.
+   * Fase VOTANDO (8.5c.2a, deuda #129 cerrada): descriptor
+   * `input` con `payload: { equipo }` — el bind del shell envía
+   * `{ equipo, valor }` y el handler `asignar-puntos-historia`
+   * lee `payload.puntos ?? payload.valor` (retrocompatible con el
+   * legacy). Sin botón: el `change` del input dispara la acción.
    *
    * @param {object} estadoJuego estado crudo del juego
    * @param {object} contexto - { equipos, itemsDelJuego, ... }
@@ -303,7 +303,17 @@ export const HistoriaEnredadaGameUI = {
         ];
 
       case 'VOTANDO':
-        return [];
+        return [
+          {
+            tipo: 'input',
+            label: `Puntos para ${nombreEquipoActual}`,
+            tipoInput: 'number',
+            min: 0,
+            valorActual: 0,
+            accion: 'asignar-puntos-historia',
+            payload: { equipo: equipoActual }
+          }
+        ];
 
       case 'FIN_DE_RONDA': {
         const ronda = estadoJuego?.ronda_actual || 1;

@@ -470,11 +470,10 @@ export const RoscoGameUI = {
    * desde acá; si no o devuelve array vacío, el shell usa
    * renderizarPanelConductor (legacy, convivencia D1/D8).
    *
-   * M3-A (8.5b.2): solo migran INICIO_RONDA, CAMBIO_TURNO y
-   * FIN_DE_RONDA. Fase '' (el modal de inicio recopila { sets }
-   * con validaciones) y TURNO_ACTIVO (el panel incluye la card
-   * RESPUESTA, información crítica del conductor) quedan en
-   * legacy — deuda #132.
+   * M3-A (8.5b.2): INICIO_RONDA, CAMBIO_TURNO y FIN_DE_RONDA.
+   * 8.5c.2a: TURNO_ACTIVO migra con descriptor `html` (card
+   * RESPUESTA) + 5 botones. La fase '' (modal de inicio con
+   * { sets }) sigue en legacy — deuda #132.
    *
    * @param {object} estadoJuego estado crudo del juego
    * @param {object} contexto - { partida, juegoEjecutado, equipos,
@@ -494,6 +493,24 @@ export const RoscoGameUI = {
         const nombreActual = equipoActual === 1 ? equipo1.nombre : equipo2.nombre;
         return [
           { tipo: 'primario', texto: `Iniciar turno — ${nombreActual}`, accion: 'iniciar-turno-rosco' }
+        ];
+      }
+
+      case 'TURNO_ACTIVO': {
+        const itemActual = _obtenerItemActual(estadoJuego);
+        const respuesta = itemActual?.respuesta || '';
+        return [
+          { tipo: 'html', html: `
+            <div id="rosco-panel-respuesta" class="bg-[#fff9e6] border-2.5 border-on-surface rounded-xl p-3 shadow-comic-sm">
+              <p class="font-label-md uppercase text-on-surface-variant mb-1">RESPUESTA</p>
+              <p class="font-display-hero text-xl text-on-surface">${respuesta || '—'}</p>
+            </div>
+          ` },
+          { tipo: 'primario', texto: 'OK', accion: 'marcar-acierto-rosco' },
+          { tipo: 'peligro', texto: 'X', accion: 'marcar-error-rosco' },
+          { tipo: 'secundario', texto: 'Pasapalabra', accion: 'pasapalabra-rosco' },
+          { tipo: 'fantasma', texto: 'Saltar letra', accion: 'saltar-letra-rosco' },
+          { tipo: 'fantasma', texto: 'Siguiente equipo', accion: 'siguiente-equipo-rosco' }
         ];
       }
 

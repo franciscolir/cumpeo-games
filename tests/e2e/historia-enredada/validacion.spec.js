@@ -34,8 +34,8 @@ test('múltiples rondas: FIN_DE_RONDA → siguiente ronda → FIN_DE_JUEGO', asy
   await page.waitForTimeout(300);
   await page.click('[data-accion-conductor="empezar-votacion-historia"]');
   await page.waitForTimeout(300);
-  await page.fill('#input-puntos-historia', '5');
-  await page.click('#btn-he-asignar-puntos');
+  await page.fill('[data-accion-conductor="asignar-puntos-historia"]', '5');
+  await page.press('[data-accion-conductor="asignar-puntos-historia"]', 'Tab');
   await page.waitForTimeout(500);
 
   // Eq2
@@ -46,8 +46,8 @@ test('múltiples rondas: FIN_DE_RONDA → siguiente ronda → FIN_DE_JUEGO', asy
   await page.waitForTimeout(300);
   await page.click('[data-accion-conductor="empezar-votacion-historia"]');
   await page.waitForTimeout(300);
-  await page.fill('#input-puntos-historia', '3');
-  await page.click('#btn-he-asignar-puntos');
+  await page.fill('[data-accion-conductor="asignar-puntos-historia"]', '3');
+  await page.press('[data-accion-conductor="asignar-puntos-historia"]', 'Tab');
   await page.waitForTimeout(500);
 
   // Verificar FIN_DE_RONDA con botón siguiente ronda

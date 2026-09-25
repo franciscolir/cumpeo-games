@@ -53,11 +53,11 @@ test('cards excluyen historias usadas', async ({ page }) => {
   await page.click('[data-accion-conductor="empezar-votacion-historia"]');
   await page.waitForFunction(() => {
     const panel = document.querySelector('#shell-panel-conductor');
-    return panel && panel.querySelector('#input-puntos-historia');
+    return panel && panel.querySelector('[data-accion-conductor="asignar-puntos-historia"]');
   }, { timeout: 10000 });
 
-  await page.fill('#input-puntos-historia', '5');
-  await page.click('#btn-he-asignar-puntos');
+  await page.fill('[data-accion-conductor="asignar-puntos-historia"]', '5');
+  await page.press('[data-accion-conductor="asignar-puntos-historia"]', 'Tab');
 
   // Esperar a que el estado del juego cambie a Eq2
   await page.waitForFunction(async () => {

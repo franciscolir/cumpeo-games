@@ -46,7 +46,7 @@ test('flujo completo: crear set, partida, jugar y finalizar', async ({ page }) =
   const ctx1 = await obtenerContextoRosco(page, partidaId);
   expect(ctx1.estadoJuego.fase).toBe('TURNO_ACTIVO');
 
-  await page.click('#btn-rosco-acierto');
+  await page.click('[data-accion-conductor="marcar-acierto-rosco"]');
   await page.waitForTimeout(200);
 
   const ctx2 = await obtenerContextoRosco(page, partidaId);
@@ -108,7 +108,7 @@ test('puntaje se actualiza tras acierto', async ({ page }) => {
   await esperarBotonTurno(page);
   await page.click('[data-accion-conductor="iniciar-turno-rosco"]');
 
-  await page.click('#btn-rosco-acierto');
+  await page.click('[data-accion-conductor="marcar-acierto-rosco"]');
   await page.waitForTimeout(200);
 
   const ctx = await obtenerContextoRosco(page, partidaId);
@@ -130,7 +130,7 @@ test('error marca letra como incorrecta', async ({ page }) => {
   await esperarBotonTurno(page);
   await page.click('[data-accion-conductor="iniciar-turno-rosco"]');
 
-  await page.click('#btn-rosco-error');
+  await page.click('[data-accion-conductor="marcar-error-rosco"]');
   await page.waitForTimeout(200);
 
   const ctx = await obtenerContextoRosco(page, partidaId);

@@ -47,7 +47,7 @@ test('error cambia al equipo 2', async ({ page }) => {
   let ctx = await obtenerContextoRosco(page, partidaId);
   expect(ctx.estadoJuego.equipo_actual).toBe(1);
 
-  await page.click('#btn-rosco-error');
+  await page.click('[data-accion-conductor="marcar-error-rosco"]');
   await page.waitForTimeout(200);
 
   ctx = await obtenerContextoRosco(page, partidaId);
@@ -73,7 +73,7 @@ test('pasapalabra cambia de turno y marca letra como pasada', async ({ page }) =
   expect(ctx.estadoJuego.rosco[0].estado).toBe('pendiente');
   expect(ctx.estadoJuego.equipo_actual).toBe(1);
 
-  await page.click('#btn-rosco-pasapalabra');
+  await page.click('[data-accion-conductor="pasapalabra-rosco"]');
   await page.waitForTimeout(200);
 
   ctx = await obtenerContextoRosco(page, partidaId);
@@ -95,7 +95,7 @@ test('saltar letra avanza sin marcar estado', async ({ page }) => {
   await esperarBotonTurno(page);
   await page.click('[data-accion-conductor="iniciar-turno-rosco"]');
 
-  await page.click('#btn-rosco-saltar');
+  await page.click('[data-accion-conductor="saltar-letra-rosco"]');
   await page.waitForTimeout(200);
 
   const ctx = await obtenerContextoRosco(page, partidaId);
@@ -120,7 +120,7 @@ test('siguiente equipo cambia turno manualmente', async ({ page }) => {
   let ctx = await obtenerContextoRosco(page, partidaId);
   expect(ctx.estadoJuego.equipo_actual).toBe(1);
 
-  await page.click('#btn-rosco-siguiente-equipo');
+  await page.click('[data-accion-conductor="siguiente-equipo-rosco"]');
   await page.waitForTimeout(200);
 
   ctx = await obtenerContextoRosco(page, partidaId);
@@ -142,10 +142,10 @@ test('dos aciertos seguidos mantienen mismo equipo', async ({ page }) => {
   await esperarBotonTurno(page);
   await page.click('[data-accion-conductor="iniciar-turno-rosco"]');
 
-  await page.click('#btn-rosco-acierto');
+  await page.click('[data-accion-conductor="marcar-acierto-rosco"]');
   await page.waitForTimeout(200);
 
-  await page.click('#btn-rosco-acierto');
+  await page.click('[data-accion-conductor="marcar-acierto-rosco"]');
   await page.waitForTimeout(200);
 
   const ctx = await obtenerContextoRosco(page, partidaId);
@@ -167,17 +167,17 @@ test('aciertos de ambos equipos acumulan puntos correctamente', async ({ page })
   await esperarBotonTurno(page);
   await page.click('[data-accion-conductor="iniciar-turno-rosco"]');
 
-  await page.click('#btn-rosco-pasapalabra');
+  await page.click('[data-accion-conductor="pasapalabra-rosco"]');
   await page.waitForTimeout(500);
 
   await esperarBotonTurno(page);
   await page.click('[data-accion-conductor="iniciar-turno-rosco"]');
   await page.waitForTimeout(200);
 
-  await page.click('#btn-rosco-acierto');
+  await page.click('[data-accion-conductor="marcar-acierto-rosco"]');
   await page.waitForTimeout(500);
 
-  await page.click('#btn-rosco-acierto');
+  await page.click('[data-accion-conductor="marcar-acierto-rosco"]');
   await page.waitForTimeout(500);
 
   const ctx = await obtenerContextoRosco(page, partidaId);

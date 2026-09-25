@@ -14,9 +14,9 @@ async function jugarTurno(page, puntos) {
   await page.waitForFunction(() => document.querySelector('[data-accion-conductor="empezar-votacion-historia"]'), { timeout: 10000 });
   await page.click('[data-accion-conductor="empezar-votacion-historia"]');
   await page.waitForTimeout(300);
-  await page.waitForFunction(() => document.querySelector('#input-puntos-historia'), { timeout: 10000 });
-  await page.fill('#input-puntos-historia', String(puntos));
-  await page.click('#btn-he-asignar-puntos');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="asignar-puntos-historia"]'), { timeout: 10000 });
+  await page.fill('[data-accion-conductor="asignar-puntos-historia"]', String(puntos));
+  await page.press('[data-accion-conductor="asignar-puntos-historia"]', 'Tab');
   await page.waitForTimeout(500);
 }
 

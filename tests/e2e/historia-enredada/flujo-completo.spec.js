@@ -74,9 +74,9 @@ test('ciclo completo Eq1: elegir → preparar → actuar → votar → asignar p
   await page.click('[data-accion-conductor="empezar-votacion-historia"]');
   await page.waitForTimeout(300);
 
-  await page.waitForFunction(() => document.querySelector('#input-puntos-historia'), { timeout: 10000 });
-  await page.fill('#input-puntos-historia', '7');
-  await page.click('#btn-he-asignar-puntos');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="asignar-puntos-historia"]'), { timeout: 10000 });
+  await page.fill('[data-accion-conductor="asignar-puntos-historia"]', '7');
+  await page.press('[data-accion-conductor="asignar-puntos-historia"]', 'Tab');
   await page.waitForTimeout(500);
 
   // Verificar que Eq1 tiene 7 puntos
@@ -115,9 +115,9 @@ test('ciclo Eq1 + Eq2 → FIN_DE_RONDA', async ({ page }) => {
   await page.waitForFunction(() => document.querySelector('[data-accion-conductor="empezar-votacion-historia"]'), { timeout: 10000 });
   await page.click('[data-accion-conductor="empezar-votacion-historia"]');
   await page.waitForTimeout(300);
-  await page.waitForFunction(() => document.querySelector('#input-puntos-historia'), { timeout: 10000 });
-  await page.fill('#input-puntos-historia', '5');
-  await page.click('#btn-he-asignar-puntos');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="asignar-puntos-historia"]'), { timeout: 10000 });
+  await page.fill('[data-accion-conductor="asignar-puntos-historia"]', '5');
+  await page.press('[data-accion-conductor="asignar-puntos-historia"]', 'Tab');
   await page.waitForTimeout(500);
 
   // Ciclo Eq2
@@ -130,9 +130,9 @@ test('ciclo Eq1 + Eq2 → FIN_DE_RONDA', async ({ page }) => {
   await page.waitForFunction(() => document.querySelector('[data-accion-conductor="empezar-votacion-historia"]'), { timeout: 10000 });
   await page.click('[data-accion-conductor="empezar-votacion-historia"]');
   await page.waitForTimeout(300);
-  await page.waitForFunction(() => document.querySelector('#input-puntos-historia'), { timeout: 10000 });
-  await page.fill('#input-puntos-historia', '8');
-  await page.click('#btn-he-asignar-puntos');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="asignar-puntos-historia"]'), { timeout: 10000 });
+  await page.fill('[data-accion-conductor="asignar-puntos-historia"]', '8');
+  await page.press('[data-accion-conductor="asignar-puntos-historia"]', 'Tab');
   await page.waitForTimeout(500);
 
   // Verificar FIN_DE_RONDA

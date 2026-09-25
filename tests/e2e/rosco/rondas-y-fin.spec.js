@@ -45,7 +45,7 @@ test('cascading pasapalabra: rosco con pasapalabras permite respuestas del otro 
   await esperarBotonTurno(page);
   await page.click('[data-accion-conductor="iniciar-turno-rosco"]');
 
-  await page.click('#btn-rosco-pasapalabra');
+  await page.click('[data-accion-conductor="pasapalabra-rosco"]');
   await page.waitForTimeout(200);
 
   const ctxAfterPP = await obtenerContextoRosco(page, partidaId);
@@ -56,7 +56,7 @@ test('cascading pasapalabra: rosco con pasapalabras permite respuestas del otro 
   await page.click('[data-accion-conductor="iniciar-turno-rosco"]');
   await page.waitForTimeout(200);
 
-  await page.click('#btn-rosco-acierto');
+  await page.click('[data-accion-conductor="marcar-acierto-rosco"]');
   await page.waitForTimeout(200);
 
   const ctxAfterAcierto = await obtenerContextoRosco(page, partidaId);
@@ -86,7 +86,7 @@ test('fin de ronda aparece al completar todas las letras', async ({ page }) => {
     if (fase === 'FIN_DE_RONDA' || fase === 'FIN_DE_JUEGO') break;
 
     const ptsAntes = (ctx.estadoJuego.puntos_equipo_1 || 0) + (ctx.estadoJuego.puntos_equipo_2 || 0);
-    await page.click('#btn-rosco-acierto');
+    await page.click('[data-accion-conductor="marcar-acierto-rosco"]');
 
     await page.waitForFunction(
       async ({ pid, ptsAntes }) => {
@@ -134,7 +134,7 @@ test('siguiente ronda inicia el set de la ronda 2', async ({ page }) => {
     if (fase === 'FIN_DE_RONDA' || fase === 'FIN_DE_JUEGO') break;
 
     const ptsAntes = (ctx.estadoJuego.puntos_equipo_1 || 0) + (ctx.estadoJuego.puntos_equipo_2 || 0);
-    await page.click('#btn-rosco-acierto');
+    await page.click('[data-accion-conductor="marcar-acierto-rosco"]');
 
     await page.waitForFunction(
       async ({ pid, ptsAntes }) => {
@@ -187,7 +187,7 @@ test('fin de juego en última ronda', async ({ page }) => {
     if (fase === 'FIN_DE_RONDA' || fase === 'FIN_DE_JUEGO') break;
 
     const ptsAntes = (ctx.estadoJuego.puntos_equipo_1 || 0) + (ctx.estadoJuego.puntos_equipo_2 || 0);
-    await page.click('#btn-rosco-acierto');
+    await page.click('[data-accion-conductor="marcar-acierto-rosco"]');
 
     await page.waitForFunction(
       async ({ pid, ptsAntes }) => {
@@ -227,7 +227,7 @@ test('pública muestra resultado del rosco', async ({ page }) => {
   await esperarBotonTurno(page);
   await page.click('[data-accion-conductor="iniciar-turno-rosco"]');
 
-  await page.click('#btn-rosco-acierto');
+  await page.click('[data-accion-conductor="marcar-acierto-rosco"]');
   await page.waitForTimeout(200);
 
   await page.goto(`/#/publica-nueva/${codigo}`);

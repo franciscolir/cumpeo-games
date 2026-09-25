@@ -234,7 +234,7 @@ test('TriviaGameUI expone accionesConductor y devuelve array en las 8 fases', as
   expect(res.legacyIntacto).toBe(true);
 });
 
-test('4 GameUIs de 8.5b.1: accionesConductor devuelve array por fase, VOTANDO Historia → [] y legacy intacto', async ({ page }) => {
+test('4 GameUIs de 8.5b.1/8.5c.2a: accionesConductor por fase, VOTANDO Historia → input y legacy intacto', async ({ page }) => {
   await page.goto('/');
   await waitForCumpeo(page);
 
@@ -263,10 +263,16 @@ test('4 GameUIs de 8.5b.1: accionesConductor devuelve array por fase, VOTANDO Hi
       };
     }
 
-    // Decisión 8.5b.1 (D3 suspendida): VOTANDO → [] → fallback legacy
-    // (input + botón con { puntos } — el binding `input` envía { valor }).
+    // 8.5c.2a (deuda #129 cerrada): VOTANDO → descriptor input con
+    // payload { equipo } (sin botón; el `change` dispara la acción).
     const he = window.cumpeo.uiRegistry.obtener('HISTORIA_ENREDADA');
-    out.votandoVacio = he?.accionesConductor?.({ fase: 'VOTANDO' }, contexto)?.length;
+    const votando = he?.accionesConductor?.({ fase: 'VOTANDO' }, contexto);
+    out.votando = {
+      largo: votando?.length,
+      tipo: votando?.[0]?.tipo,
+      accion: votando?.[0]?.accion,
+      payload: votando?.[0]?.payload ?? null
+    };
 
     return out;
   });
@@ -277,7 +283,12 @@ test('4 GameUIs de 8.5b.1: accionesConductor devuelve array por fase, VOTANDO Hi
     expect(res[codigo].arrays.every(Boolean), codigo).toBe(true);
     expect(res[codigo].largoINICIO, codigo).toBe(1);
   }
-  expect(res.votandoVacio).toBe(0);
+  expect(res.votando).toEqual({
+    largo: 1,
+    tipo: 'input',
+    accion: 'asignar-puntos-historia',
+    payload: { equipo: 1 }
+  });
 });
 
 test('3 GameUIs de 8.5b.2/8.5c.1: Memoria con selector en JUGANDO, Pictionary [] y Rosco parcial con legacy intacto', async ({ page }) => {
@@ -344,7 +355,8 @@ test('3 GameUIs de 8.5b.2/8.5c.1: Memoria con selector en JUGANDO, Pictionary []
   // M2-A (deuda #131): Pictionary → [] en todas las fases (legacy intacto)
   expect(res.PICTIONARY.largos).toEqual([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
 
-  // M3-A (deuda #132): Rosco migra INICIO_RONDA/CAMBIO_TURNO/FIN_DE_RONDA;
-  // '' (modal) y TURNO_ACTIVO (card RESPUESTA) quedan en legacy → 0
-  expect(res.ROSCO.largos).toEqual([0, 1, 0, 2, 1, 0]);
+  // M3-A (8.5b.2) + 8.5c.2a (deuda #132): Rosco migra
+  // INICIO_RONDA/TURNO_ACTIVO (html + 5 botones)/CAMBIO_TURNO/
+  // FIN_DE_RONDA; '' (modal de inicio) sigue legacy → 0
+  expect(res.ROSCO.largos).toEqual([0, 1, 6, 2, 1, 0]);
 });

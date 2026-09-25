@@ -1241,7 +1241,11 @@ async function _renderContenido(container, app, partidaId) {
         } else if (tipo === 'asignar-puntos-historia') {
           const { HistoriaEnredadaGameDefinition } = await import('../../games/historia-enredada/HistoriaEnredadaGameDefinition.js');
           const config = juegoActivo.configuracion_congelada || HistoriaEnredadaGameDefinition.defaultConfig;
-          const nuevoEstado = HistoriaEnredadaGameDefinition.asignarPuntos(estadoJuego, config, payload.puntos || 0);
+          // Legacy: { puntos } (botón). Nuevo: { equipo, valor } (descriptor input — 8.5c.2a).
+          const puntosRaw = payload.puntos ?? payload.valor ?? 0;
+          const puntos = Number(puntosRaw);
+          if (!Number.isFinite(puntos) || puntos < 0) return;
+          const nuevoEstado = HistoriaEnredadaGameDefinition.asignarPuntos(estadoJuego, config, puntos);
           await app.services.partida.actualizarEstadoJuego(
             partidaId, juegoActivo.id, nuevoEstado,
             juegoActivo.state_version, sessionId, nuevoActionId()
