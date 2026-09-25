@@ -253,10 +253,28 @@ text
   - Cambia la UI a estado "espera".
   - La vista pública recibe el estado y muestra su modo espera.
 
+#### Panel conductor (contrato `accionesConductor` — 8.5a)
+
+- **Estado actual:** ✅ **implementado en 8.5a.** El shell renderiza
+  `#shell-panel-conductor` desde `gameUI.accionesConductor(estadoJuego, contexto)`
+  cuando devuelve un array no vacío; si el método no existe o devuelve
+  `[]`, delega en `renderizarPanelConductor` legacy (convivencia D1/D8).
+- **Contrato de descriptor:** `{ tipo: 'primario'|'secundario'|'peligro'|
+  'fantasma'|'selector'|'input'|'mensaje', texto, accion, payload?, disabled?,
+  variante?, label?, valorActual?, opciones? }`. El shell emite
+  `data-accion-conductor="<accion>"` (+ `data-accion-payload` con el payload
+  en JSON) y bindea a `callbacks.onAccion(accion, payload)`. Los `accion`
+  son exactamente los strings del switch `onAccion` del shell.
+- **Piloto:** Trivia (`TriviaGameUI.accionesConductor`, 8 fases). Los otros
+  8 GameUIs siguen en legacy hasta 8.7.
+
 #### Selector A/B
 
 - **Estado actual:** existe en algunos GameUIs (Pictionary, Rosco,
-  Anti-Trivia). No unificado.
+  Anti-Trivia). No unificado. **🔵 parcialmente resuelto en 8.5a**: el
+  contrato `accionesConductor` ya permite declarar un selector de equipo
+  (`tipo: 'selector'`) de forma unificada; el piloto Trivia no lo usa
+  porque el turno lo indica el mensaje del panel.
 - **TO-BE:** un único componente `SelectorEquipo` en el panel derecho.
   Los GameUIs leen `estadoJuego.equipo_actual`.
 
@@ -270,6 +288,11 @@ text
 
 - **Estado actual:** cada GameUI define sus botones (`marcar-acierto-pictionary`,
   `marcar-error-pictionary`, `pasar-palabra-pictionary`).
+  **🔵 parcialmente resuelto en 8.5a**: el shell ya renderiza botones
+  unificados visualmente desde descriptores (`data-accion-conductor`);
+  Trivia (piloto) los usa con sus propias acciones
+  (`validar-respuesta-trivia`, `pasar-pregunta-trivia`, ...). Los demás
+  GameUIs migran en 8.7.
 - **TO-BE:** conjunto de botones unificado visualmente en el panel derecho.
   Las acciones siguen siendo específicas por juego (`onAccion` con tipo).
 
@@ -616,8 +639,8 @@ existentes (`comenzarPartida`, `pausarJuego`, `reanudarJuego`,
 | 6 | No hay `EXTRAS` UI | No se pueden usar herramientas auxiliares | Alta | Media |
 | 7 | No hay `AVATAR REACT` | Reservado, sin especificación | TBD | Baja |
 | 8 | No hay `SOUND BAR` | Reservado, sin especificación | TBD | Baja |
-| 9 | `CORRECTO / ERROR / SIGUIENTE` por juego, no unificados | Inconsistencia visual | Media | Media |
-| 10 | Selector A/B por juego, no unificado | Inconsistencia visual | Media | Media |
+| 9 | ~~`CORRECTO / ERROR / SIGUIENTE` por juego, no unificados~~ **🔵 parcialmente resuelto en 8.5a** (contrato `accionesConductor` + piloto Trivia; resto en 8.7) | Inconsistencia visual | Media | Media |
+| 10 | ~~Selector A/B por juego, no unificado~~ **🔵 parcialmente resuelto en 8.5a** (tipo `selector` disponible en el contrato; adopción en 8.7) | Inconsistencia visual | Media | Media |
 | 11 | ~~Barra superior fragmentada (cada GameUI renderiza su timer)~~ **⏳ parcialmente resuelto en 8.2** (shell con `#shell-timer`; timers de GameUI aún activos, duplicación hasta 8.7) | Inconsistencia visual | Media | Media |
 
 ---
@@ -636,6 +659,7 @@ existentes (`comenzarPartida`, `pausarJuego`, `reanudarJuego`,
 | 8.3 | Modal de pausa + contador | Modal de 8.0 en `document.body` (`#modal-pausa`, `cerrable: false`) + contador desde `pausado_at` de 8.1 + límite de ajustes; `REANUDAR` opera. Auto-transición y `MODO ESPERA` → 8.4 (deuda #123) | Media | 1, 2, 3 (parcial: botón/estado MODO ESPERA en 8.4) |
 | 8.4 | Botón `MODO ESPERA` + estado UI | Flag UI `_modoEsperaActivo` + overlay `#modo-espera-overlay` (sin botones, no cubre la barra) + `#btn-modo-espera` en la barra; auto-transición cierra el modal → overlay; modal 8.3 queda SOLO informativo; `#btn-reanudar` condicionado a `juegoActivo.estado === 'PAUSADO'` (cierra #124) | Media | 4 |
 | 8.5 | Panel conductor unificado (conductor) | Shell unifica START/PAUSE, FINISH/NEXT, A/B, CORRECTO/ERROR/SIGUIENTE | Alta | 9, 10 |
+| 8.5a | Contrato `accionesConductor` + piloto Trivia (funde 8.5-pre) | ✅ El shell renderiza `#shell-panel-conductor` desde descriptores declarativos (`data-accion-conductor` + payload) con fallback a `renderizarPanelConductor` legacy (D1/D8); `TriviaGameUI.accionesConductor` (8 fases) como piloto; specs de Trivia migrados a los nuevos selectores | Media | 9, 10 (parcial) |
 | 8.6 | `AJUSTES` global | Modal/pantalla nueva | Media | 5 |
 | 8.7 | Refactor de los 9 GameUIs al panel unificado | Refactor masivo | Muy alta | — |
 | 8.8 | Zona inferior (placeholder) | Espacios reservados Avatar + Sound | Baja | 7, 8 |
