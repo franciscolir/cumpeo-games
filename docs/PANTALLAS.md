@@ -135,7 +135,7 @@ text
 | Selector A/B | Dentro de cada GameUI | No unificado. |
 | `RESPUESTA` | Dentro de cada GameUI | No unificado. |
 | `CORRECTO / ERROR / SIGUIENTE` | Dentro de cada GameUI | No unificado. |
-| `AJUSTES` | ❌ No existe | — |
+| `AJUSTES` | `_renderTopBar` (botón "Ajustes") + `#modal-ajustes` | 8.6. Solo `tiempo_max_pausa_seg`. |
 | `MODO ESPERA` | ❌ No existe | — |
 | `EXTRAS` | ❌ No existe | — |
 | Cola de moderación | `_renderColaModeracion` | Existe. |
@@ -331,15 +331,23 @@ text
 
 #### AJUSTES
 
-- **Estado actual:** modelo creado en 8.1 (`AjustesGlobales` singleton, store
-  `ajustes_globales`, tabla Supabase 0019). UI ❌ no existe (es 8.6).
-  Los ajustes de set/juego siguen en `#/sets/:id` o `#/juegos/:codigo/config`.
-- **TO-BE:** botón `AJUSTES` en el panel derecho que abre un modal.
-  Dentro del modal:
-  - **Configuración general de partida:**
-    - Tiempo máximo en pausa (default: 2 minutos, `tiempo_max_pausa_seg`).
-  - **Configuración específica del juego activo** (opcional, si el juego
-    lo requiere).
+- **Estado actual:** ✅ **implementado en 8.6.** Botón `#btn-ajustes`
+  ("Ajustes", ghost) en `_renderTopBar` — visible solo si `tieneControl`
+  y `juegoActivo?.estado !== 'PAUSADO'` (durante la pausa el conductor
+  está en el modal de pausa). Abre `#modal-ajustes` montado en
+  `document.body` (sobrevive al re-render del polling cada 2s),
+  `cerrable: true` (click fuera + ESC), con input number (`min="1"`,
+  `max="3600"`, `step="1"`, valor actual) para
+  **`tiempo_max_pausa_seg`** — único ajuste hoy (decisión D2: la
+  "configuración específica del juego activo" no existe y no se
+  inventa). Botón "Guardar" valida entero > 0, llama a
+  `services.ajustes.actualizar()` y cierra el modal; limpieza del
+  modal en `hashchange`. Modelo: `AjustesGlobales` singleton (8.1,
+  store `ajustes_globales`, tabla Supabase 0019). Los ajustes de
+  set/juego siguen en `#/sets/:id` o `#/juegos/:codigo/config`.
+- **TO-BE:** ampliar el modal con más ajustes globales cuando el
+  producto lo pida. El botón vive en la barra superior, no en un panel
+  derecho (que no existe — decisión D1 de 8.6).
 - **Persistencia:** `AjustesGlobales` (singleton `id='default'`), fila única
   en IndexedDB y en Supabase.
 
@@ -666,9 +674,9 @@ existentes (`comenzarPartida`, `pausarJuego`, `reanudarJuego`,
 |---|-----|---------|-------------|-----------|
 | 1 | ~~No hay componente `Modal` compartido~~ **✅ resuelto en 8.0** | Cada GameUI implementa modales inline | Media | Alta |
 | 2 | ~~No hay `pausado_at` en `JuegoEjecutado`~~ **✅ resuelto en 8.1** | No se puede medir tiempo de pausa | Media | Alta |
-| 3 | ~~No hay sistema de "ajustes generales"~~ **✅ resuelto en 8.1** (modelo; UI en 8.6) | No se puede configurar tiempo máx de pausa | Media | Alta |
+| 3 | ~~No hay sistema de "ajustes generales"~~ **✅ resuelto en 8.1 + 8.6** (modelo + UI: botón topbar + modal `#modal-ajustes`) | No se puede configurar tiempo máx de pausa | Media | Alta |
 | 4 | ~~No hay botón `MODO ESPERA`~~ **✅ resuelto en 8.4** | El conductor no puede forzar el estado | Baja | Media |
-| 5 | No hay `AJUSTES` global | No hay punto de entrada a config general | Media | Media |
+| 5 | ~~No hay `AJUSTES` global~~ **✅ resuelto en 8.6** (botón `#btn-ajustes` en `_renderTopBar` + modal `#modal-ajustes`, único ajuste `tiempo_max_pausa_seg`) | No hay punto de entrada a config general | Media | Media |
 | 6 | No hay `EXTRAS` UI | No se pueden usar herramientas auxiliares | Alta | Media |
 | 7 | No hay `AVATAR REACT` | Reservado, sin especificación | TBD | Baja |
 | 8 | No hay `SOUND BAR` | Reservado, sin especificación | TBD | Baja |

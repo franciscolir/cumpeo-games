@@ -283,7 +283,7 @@ Fuente: `docs/PANTALLAS.md` §8 (plan de 11 pasos, gaps #1–#11).
 | 8.5c.2a | Migrar Rosco `TURNO_ACTIVO` (html + 5 botones) y Historia `VOTANDO` (input) al contrato (cierra #129; #133 Pictionary) | 🕓 IMPLEMENTADO (sin commit) | PENDIENTE |
 | 8.5c.2b | Migrar QPEP a `accionesConductor` (6 fases, 3 handlers `registrar-pronostico/revelar/siguiente-qpep`, `calcularPuntos` al GameDefinition; e2e ×3; cierra #128) | 🕓 IMPLEMENTADO (sin commit) | PENDIENTE |
 | 8.5 | Panel conductor unificado | ⬜ | — |
-| 8.6 | AJUSTES global (UI) | ⬜ | — |
+| 8.6 | AJUSTES global (UI): botón `#btn-ajustes` en topbar + modal `#modal-ajustes` (`tiempo_max_pausa_seg`) | 🕓 IMPLEMENTADO (sin commit) | PENDIENTE |
 | 8.7 | Refactor de los 9 GameUIs al panel unificado | ⬜ | — |
 | 8.8 | Zona inferior (placeholder) | ⬜ | — |
 | 8.9 | EXTRAS UI | ⬜ | — |
