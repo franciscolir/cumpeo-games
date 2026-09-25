@@ -1,16 +1,23 @@
 /* =============================================================
    Pictionary E2E Helpers — fixture factories para tests e2e.
+   Reescrito en 8.5d-pre (deuda #122): sets con `submodo`,
+   config `palabras_por_turno`, 9 fases reales y acciones
+   reales del shell vía `window.__shellPartidaCallbacks`
+   (sin fabricar estados).
    ============================================================= */
 
 import { waitForCumpeo } from '../../_helpers/auth.js';
 
 /**
- * Crea un set válido de Pictionary con items para todos los modos.
+ * Crea un set válido por submodo de Pictionary.
+ * Los items siguen el formato real: `{ concepto, prohibidas? }`,
+ * donde `prohibidas` solo existe en PALABRAS.
  * @param {import('@playwright/test').Page} page
  * @param {object} opts
- * @param {number} opts.rondas - rondas del juego (default 1)
- * @param {number} opts.palabrasPorModo - palabras por modo (default 1)
- * @returns {Promise<{setId: string, juegoId: string}>}
+ * @param {number} [opts.rondas] - rondas del juego (default 1)
+ * @param {number} [opts.palabrasPorTurno] - palabras por turno (default 1)
+ * @param {string[]} [opts.submodos] - submodos a crear (default los 4)
+ * @returns {Promise<{setIds: Record<string, string>, juegoId: string}>}
  */
 export async function crearSetPictionary(page, opts = {}) {
   await waitForCumpeo(page);
@@ -20,46 +27,44 @@ export async function crearSetPictionary(page, opts = {}) {
     if (!pic) throw new Error('Juego PICTIONARY no encontrado');
 
     const uid = Date.now().toString(36);
-    const set = await window.cumpeo.services.set.crearSet({
-      juego_id: pic.id,
-      nombre: `Pictionary E2E ${uid}`
-    });
-
     const rondas = opts.rondas || 1;
-    const palabrasPorModo = opts.palabrasPorModo || 1;
-    const totalItems = rondas * palabrasPorModo;
+    const palabrasPorTurno = opts.palabrasPorTurno || 1;
+    const submodos = Array.isArray(opts.submodos) && opts.submodos.length > 0
+      ? opts.submodos
+      : ['PALABRAS', 'GESTOS', 'PREGUNTAS', 'DIBUJO'];
+    const totalItems = rondas * palabrasPorTurno;
 
-    const modos = [
-      { modo: 1, conceptos: ['GATO', 'PERRO', 'CASA', 'ARBOL', 'SOL', 'LUNA', 'AGUA', 'FUEGO'] },
-      { modo: 2, conceptos: ['BAILAR', 'CANTAR', 'CORRER', 'SALTAR', 'NADAR', 'VOLAR', 'COMER', 'DORMIR'] },
-      { modo: 3, conceptos: ['MONTAÑA', 'RIO', 'CIUDAD', 'BARCO', 'AVION', 'TREN', 'MOTO', 'BICI'] },
-      { modo: 4, conceptos: ['HIELO', 'VIENTO', 'LUZ', 'SONIDO', 'CALOR', 'FRIO', 'COLOR', 'FORMA'] }
-    ];
+    const setIds = {};
+    for (const submodo of submodos) {
+      const set = await window.cumpeo.services.set.crearSet({
+        juego_id: pic.id,
+        nombre: `Pictionary ${submodo} E2E ${uid}`,
+        submodo
+      });
 
-    for (const { modo, conceptos } of modos) {
       for (let i = 0; i < totalItems; i++) {
-        const item = {
-          modo,
-          concepto: conceptos[i % conceptos.length]
-        };
-        if (modo === 1) {
-          item.prohibidas = ['prohibida_a', 'prohibida_b'];
+        const item = { concepto: `${submodo}_CONCEPTO_${i}` };
+        if (submodo === 'PALABRAS') {
+          item.prohibidas = [`${submodo}_PROH_A_${i}`, `${submodo}_PROH_B_${i}`];
         }
         await window.cumpeo.services.set.agregarItem(set.id, item);
       }
+
+      setIds[submodo] = set.id;
     }
 
-    return { setId: set.id, juegoId: pic.id };
+    return { setIds, juegoId: pic.id };
   }, opts);
 }
 
 /**
- * Crea una partida completa de Pictionary con circuito y set.
+ * Crea una partida completa de Pictionary: sets por submodo,
+ * circuito LISTO y partida con código público.
  * @param {import('@playwright/test').Page} page
  * @param {object} opts
- * @param {number} opts.rondas - rondas (default 1)
- * @param {number} opts.palabrasPorModo - palabras por modo (default 1)
- * @param {number} opts.segundosPorModo - segundos por modo (default 3)
+ * @param {number} [opts.rondas] - rondas (default 1)
+ * @param {number} [opts.palabrasPorTurno] - palabras por turno (default 1)
+ * @param {number} [opts.segundosPorModo] - segundos por submodo (default 30)
  * @returns {Promise<{partidaId: string, codigo: string}>}
  */
 export async function crearPartidaPictionary(page, opts = {}) {
@@ -67,21 +72,19 @@ export async function crearPartidaPictionary(page, opts = {}) {
 
   return await page.evaluate(async ({ juegoId, opts }) => {
     const uid = Date.now().toString(36);
+    const config = {
+      rondas: opts.rondas || 1,
+      palabras_por_turno: opts.palabrasPorTurno || 1,
+      segundos_por_modo: opts.segundosPorModo || 30,
+      puntos_por_acierto: 10,
+      penalizacion_por_error: 0,
+      penalizacion_por_pasar: 0,
+      bonus_puntos: 5
+    };
 
     const circuito = await window.cumpeo.services.circuito.crearCircuito({
       nombre: `Pictionary E2E Circuit ${uid}`,
-      juegos: [{
-        juego_id: juegoId,
-        configuracion: {
-          rondas: opts.rondas || 1,
-          palabras_por_modo: opts.palabrasPorModo || 1,
-          segundos_por_modo: opts.segundosPorModo || 3,
-          puntos_por_acierto: 10,
-          penalizacion_por_error: 0,
-          penalizacion_por_pasar: 0,
-          bonus_puntos: 5
-        }
-      }],
+      juegos: [{ juego_id: juegoId, configuracion: config }],
       equipos: [
         { posicion: 1, nombre: 'Rojo', color: '#E53E3E' },
         { posicion: 2, nombre: 'Azul', color: '#3182CE' }
@@ -92,18 +95,7 @@ export async function crearPartidaPictionary(page, opts = {}) {
       circuito.id, circuito.version,
       {
         nombre: `Pictionary E2E Circuit ${uid}`,
-        juegos: [{
-          juego_id: juegoId,
-          configuracion: {
-            rondas: opts.rondas || 1,
-            palabras_por_modo: opts.palabrasPorModo || 1,
-            segundos_por_modo: opts.segundosPorModo || 3,
-            puntos_por_acierto: 10,
-            penalizacion_por_error: 0,
-            penalizacion_por_pasar: 0,
-            bonus_puntos: 5
-          }
-        }],
+        juegos: [{ juego_id: juegoId, configuracion: config }],
         equipos: [
           { posicion: 1, nombre: 'Rojo', color: '#E53E3E' },
           { posicion: 2, nombre: 'Azul', color: '#3182CE' }
@@ -118,7 +110,7 @@ export async function crearPartidaPictionary(page, opts = {}) {
       crypto.randomUUID()
     );
 
-    return { partidaId: partida.id, codigo: partida.public_codigo };
+    return { partidaId: partida.id, codigo: partida.public_codigo || codigo };
   }, { juegoId, opts });
 }
 
@@ -172,100 +164,6 @@ export async function irAPublica(page, codigo) {
 }
 
 /**
- * Juega un turno completo vía UI: iniciar modo → iniciar tiempo → acierto.
- */
-export async function jugarTurnoUI(page) {
-  await page.click('#btn-pic-iniciar-modo');
-  await page.waitForFunction(() => {
-    const panel = document.querySelector('#shell-panel-conductor');
-    return panel && panel.querySelector('#btn-pic-iniciar-tiempo');
-  }, { timeout: 10000 });
-
-  await page.click('#btn-pic-iniciar-tiempo');
-  await page.waitForFunction(() => {
-    const panel = document.querySelector('#shell-panel-conductor');
-    return panel && panel.querySelector('#btn-pic-acierto');
-  }, { timeout: 10000 });
-
-  await page.click('#btn-pic-acierto');
-  await page.waitForTimeout(300);
-}
-
-/**
- * Avanza N turnos programáticamente (vía service calls, sin dynamic import).
- * Cada iteración completa un turno full (INICIO→ADIVINANDO→next).
- */
-export async function avanzarTurnosProgramatico(page, partidaId, cantidad) {
-  await page.evaluate(async ({ pid, cantidad }) => {
-    for (let i = 0; i < cantidad; i++) {
-      let ctx = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
-      let je = ctx.juegos[0];
-      let estado = je.estado_juego;
-      let config = je.configuracion_congelada;
-
-      if (estado.fase === 'FIN_DE_RONDA' || estado.fase === 'FIN_DE_JUEGO') break;
-
-      if (estado.fase === 'INICIO_RONDA') {
-        let nuevoEstado = { ...estado, fase: 'MOSTRANDO_PALABRA' };
-        nuevoEstado = { ...nuevoEstado, palabra_actual: { modo: nuevoEstado.modo_actual, concepto: 'X' }, prohibidas_actuales: [] };
-        nuevoEstado = { ...nuevoEstado, fase: 'ADIVINANDO', timer_corriendo: true, turno_activo: true };
-
-        await window.cumpeo.services.partida.actualizarEstadoJuego(
-          pid, je.id, nuevoEstado, je.state_version,
-          window.cumpeo.session.sessionId, crypto.randomUUID()
-        );
-      }
-
-      ctx = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
-      je = ctx.juegos[0];
-      estado = je.estado_juego;
-      config = je.configuracion_congelada;
-
-      if (estado.fase === 'ADIVINANDO') {
-        let nuevoEstado = { ...estado, fase: 'ESPERA_VALIDACION', timer_corriendo: false, tiempo_restante_seg: 0, turno_activo: false };
-        const puntos = config?.puntos_por_acierto || 10;
-        const key = `puntos_equipo_${estado.equipo_actual}`;
-        nuevoEstado = { ...nuevoEstado, [key]: (nuevoEstado[key] || 0) + puntos };
-
-        let avanzado = avanzarTurnoSimple(nuevoEstado, config);
-
-        await window.cumpeo.services.partida.actualizarEstadoJuego(
-          pid, je.id, avanzado, je.state_version,
-          window.cumpeo.session.sessionId, crypto.randomUUID()
-        );
-      }
-    }
-
-    function avanzarTurnoSimple(estado, config) {
-      const palabrasPorModo = config?.palabras_por_modo || 1;
-      const palabrasDelTurno = (estado.palabras_del_turno || 0) + 1;
-
-      if (palabrasDelTurno < palabrasPorModo) {
-        return { ...estado, palabra_actual_index: (estado.palabra_actual_index || 0) + 1, palabras_del_turno: palabrasDelTurno, fase: 'INICIO_RONDA', timer_corriendo: false, turno_activo: false, palabra_actual: null, prohibidas_actuales: [] };
-      }
-
-      const modoActual = estado.modo_actual || 1;
-      const equipo = estado.equipo_actual;
-      const base = { ...estado, palabra_actual_index: 0, palabras_del_turno: 0, fase: 'INICIO_RONDA', timer_corriendo: false, turno_activo: false, palabra_actual: null, prohibidas_actuales: [] };
-
-      if (modoActual < 4) return { ...base, modo_actual: modoActual + 1 };
-
-      if (equipo === 1) return { ...base, equipo_actual: 2, modo_actual: 1 };
-
-      const ronda = estado.ronda_actual || 1;
-      const totalRondas = estado.total_rondas || 1;
-      const keyTurnos = `turnos_completados_equipo_${equipo}`;
-      const turnosCompletados = (estado[keyTurnos] || 0) + 1;
-      const nuevoEstado = { ...base, [keyTurnos]: turnosCompletados };
-
-      if (ronda >= totalRondas) return { ...nuevoEstado, fase: 'FIN_DE_JUEGO', timer_corriendo: false, turno_activo: false };
-
-      return { ...nuevoEstado, ronda_actual: ronda + 1, modo_actual: 1, equipo_actual: 1, fase: 'FIN_DE_RONDA', timer_corriendo: false, turno_activo: false };
-    }
-  }, { pid: partidaId, cantidad }, { timeout: 60000 });
-}
-
-/**
  * Espera a que el panel del conductor muestre un botón específico.
  */
 export async function esperarBotonPictionary(page, botonId) {
@@ -273,4 +171,127 @@ export async function esperarBotonPictionary(page, botonId) {
     const panel = document.querySelector('#shell-panel-conductor');
     return panel && panel.querySelector(id);
   }, botonId, { timeout: 15000 });
+}
+
+/**
+ * Lleva la UI hasta la fase ADIVINANDO (submodo → set → tiempo).
+ * Deja el botón `#btn-pic-acierto` visible.
+ */
+export async function empezarTurnoUI(page) {
+  await esperarBotonPictionary(page, '#btn-pic-submodo-PALABRAS');
+  await page.click('#btn-pic-submodo-PALABRAS');
+  await esperarBotonPictionary(page, '#btn-pic-elegir-set');
+  await page.click('#btn-pic-elegir-set');
+  await esperarBotonPictionary(page, '#btn-pic-iniciar-tiempo');
+  await page.click('#btn-pic-iniciar-tiempo');
+  await esperarBotonPictionary(page, '#btn-pic-acierto');
+}
+
+/**
+ * Juega un turno completo vía UI: submodo → set → tiempo → acierto.
+ * Tras el acierto el shell aplica puntos y cambia de turno solo.
+ */
+export async function jugarTurnoUI(page) {
+  await empezarTurnoUI(page);
+  await page.click('#btn-pic-acierto');
+  await page.waitForTimeout(300);
+}
+
+/**
+ * Motor interno: ejecuta las acciones REALES del shell
+ * (`window.__shellPartidaCallbacks.onAccion`) hasta cumplir el
+ * objetivo, sin fabricar estados.
+ * - `{ turnos }`: se detiene tras N aciertos.
+ * - `{ submodo, fase }`: se detiene en esa combinación.
+ * @param {import('@playwright/test').Page} page
+ * @param {string} partidaId
+ * @param {object} opciones
+ */
+async function _ejecutarFasesPictionary(page, partidaId, opciones) {
+  await page.evaluate(async ({ pid, opciones }) => {
+    const MAX_ITER = 200;
+
+    const leer = async () => {
+      const ctx = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
+      return ctx.juegos[0];
+    };
+
+    const ejecutar = async (tipo, payload) => {
+      const previo = await leer();
+      const version = previo.state_version;
+      const cb = window.__shellPartidaCallbacks;
+      if (!cb || typeof cb.onAccion !== 'function') {
+        throw new Error('window.__shellPartidaCallbacks no disponible en el conductor');
+      }
+      await cb.onAccion(tipo, payload || {});
+
+      const inicio = Date.now();
+      while (Date.now() - inicio < 15000) {
+        const je = await leer();
+        if (je.state_version !== version) return;
+        await new Promise((r) => setTimeout(r, 100));
+      }
+      const je = await leer();
+      throw new Error(
+        `Sin cambio de estado tras "${tipo}" (fase=${je.estado_juego?.fase || 'sin fase'})`
+      );
+    };
+
+    let turnos = 0;
+    for (let iter = 0; iter < MAX_ITER; iter++) {
+      const je = await leer();
+      const estado = je.estado_juego || {};
+      const fase = estado.fase || '';
+
+      const cumplido = opciones.turnos != null
+        ? turnos >= opciones.turnos
+        : (estado.submodo_actual === opciones.submodo && fase === opciones.fase);
+      if (cumplido) return;
+
+      if (fase === 'FIN_DE_RONDA' || fase === 'FIN_DE_JUEGO') {
+        throw new Error(`Objetivo no alcanzado: el juego terminó en ${fase}`);
+      }
+
+      if (fase === 'SELECCIONANDO_SUBMODO') {
+        await ejecutar('elegir-submodo-pictionary', { submodo: estado.submodo_actual });
+      } else if (fase === 'SELECCIONANDO_SET') {
+        const sets = await window.cumpeo.services.set.listarSetsActivosPorJuego(je.juego_id);
+        const set = (sets || []).find(
+          (s) => !s.submodo || s.submodo === (estado.submodo_actual || 'PALABRAS')
+        );
+        if (!set) throw new Error(`No hay set activo para ${estado.submodo_actual}`);
+        await ejecutar('elegir-set-pictionary', { set_id: set.id });
+      } else if (fase === 'MOSTRANDO_PALABRA') {
+        await ejecutar('iniciar-tiempo-pictionary');
+      } else if (fase === 'ADIVINANDO') {
+        await ejecutar('marcar-acierto-pictionary');
+        turnos++;
+      } else if (fase === 'ESPERA_VALIDACION') {
+        await ejecutar('siguiente-turno-pictionary');
+      } else {
+        throw new Error(`Fase no manejada: ${fase || '(sin fase)'}`);
+      }
+    }
+    throw new Error('Se alcanzó el máximo de iteraciones sin cumplir el objetivo');
+  }, { pid: partidaId, opciones });
+}
+
+/**
+ * Avanza N turnos programáticamente ejecutando las acciones reales
+ * del shell (elegir submodo → set → tiempo → acierto), hasta que se
+ * completen N aciertos o el juego termine.
+ */
+export async function avanzarTurnosProgramatico(page, partidaId, cantidad) {
+  await _ejecutarFasesPictionary(page, partidaId, { turnos: cantidad });
+}
+
+/**
+ * Salta a la primera vez que `submodo` queda en fase MOSTRANDO_PALABRA
+ * (concepts cargados), jugando los turnos previos con acciones reales.
+ */
+export async function saltarASubmodoPictionary(page, partidaId, submodo) {
+  await _ejecutarFasesPictionary(page, partidaId, {
+    submodo,
+    fase: 'MOSTRANDO_PALABRA'
+  });
 }

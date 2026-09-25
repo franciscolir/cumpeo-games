@@ -1,63 +1,51 @@
 /* =============================================================
    Pictionary Validación de Set — test e2e de validación.
-   
-   Cubre: set sin items del modo 3 → iniciar juego falla.
+
+   Cubre: set vacío del submodo PREGUNTAS → al elegirlo el shell
+   muestra alerta "Set inválido" y NO avanza de fase (el juego ya
+   no valida al iniciar la partida, solo al elegir el set).
    ============================================================= */
 
 import { test, expect } from '@playwright/test';
 import { loginTestUser, waitForCumpeo } from '../_helpers/auth.js';
 import {
   crearSetPictionary,
+  iniciarPartidaPictionary,
+  obtenerContextoPictionary,
   irAConductor,
   esperarBotonPictionary
 } from './_helpers/pictionary.js';
 
 test.beforeEach(loginTestUser);
 
-test('set sin items del modo 3 no permite iniciar juego', async ({ page }) => {
+test('set vacío del submodo PREGUNTAS muestra alerta y no avanza de fase', async ({ page }) => {
   await page.goto('/');
   await waitForCumpeo(page);
 
-  const { juegoId } = await crearSetPictionary(page);
+  const { juegoId } = await crearSetPictionary(page, { submodos: ['PALABRAS', 'GESTOS'] });
 
-  await page.evaluate(async (juegoId) => {
+  const { partidaId } = await page.evaluate(async (juegoId) => {
     const uid = Date.now().toString(36);
 
-    const setVacio = await window.cumpeo.services.set.crearSet({
+    await window.cumpeo.services.set.crearSet({
       juego_id: juegoId,
-      nombre: `Pictionary BadSet ${uid}`
+      nombre: `Pictionary PREGUNTAS Vacio E2E ${uid}`,
+      submodo: 'PREGUNTAS'
     });
 
-    for (let i = 0; i < 2; i++) {
-      await window.cumpeo.services.set.agregarItem(setVacio.id, {
-        modo: 1,
-        concepto: `Concepto M1 ${i}`,
-        prohibidas: ['prohibida_a', 'prohibida_b']
-      });
-      await window.cumpeo.services.set.agregarItem(setVacio.id, {
-        modo: 2,
-        concepto: `Concepto M2 ${i}`
-      });
-      await window.cumpeo.services.set.agregarItem(setVacio.id, {
-        modo: 4,
-        concepto: `Concepto M4 ${i}`
-      });
-    }
+    const config = {
+      rondas: 1,
+      palabras_por_turno: 1,
+      segundos_por_modo: 30,
+      puntos_por_acierto: 10,
+      penalizacion_por_error: 0,
+      penalizacion_por_pasar: 0,
+      bonus_puntos: 5
+    };
 
     const circuito = await window.cumpeo.services.circuito.crearCircuito({
-      nombre: `Pictionary Bad Circuit ${uid}`,
-      juegos: [{
-        juego_id: juegoId,
-        configuracion: {
-          rondas: 1,
-          palabras_por_modo: 1,
-          segundos_por_modo: 3,
-          puntos_por_acierto: 10,
-          penalizacion_por_error: 0,
-          penalizacion_por_pasar: 0,
-          bonus_puntos: 5
-        }
-      }],
+      nombre: `Pictionary BadSet Circuit ${uid}`,
+      juegos: [{ juego_id: juegoId, configuracion: config }],
       equipos: [
         { posicion: 1, nombre: 'Rojo', color: '#E53E3E' },
         { posicion: 2, nombre: 'Azul', color: '#3182CE' }
@@ -67,19 +55,8 @@ test('set sin items del modo 3 no permite iniciar juego', async ({ page }) => {
     await window.cumpeo.services.circuito.actualizarCircuito(
       circuito.id, circuito.version,
       {
-        nombre: `Pictionary Bad Circuit ${uid}`,
-        juegos: [{
-          juego_id: juegoId,
-          configuracion: {
-            rondas: 1,
-            palabras_por_modo: 1,
-            segundos_por_modo: 3,
-            puntos_por_acierto: 10,
-            penalizacion_por_error: 0,
-            penalizacion_por_pasar: 0,
-            bonus_puntos: 5
-          }
-        }],
+        nombre: `Pictionary BadSet Circuit ${uid}`,
+        juegos: [{ juego_id: juegoId, configuracion: config }],
         equipos: [
           { posicion: 1, nombre: 'Rojo', color: '#E53E3E' },
           { posicion: 2, nombre: 'Azul', color: '#3182CE' }
@@ -88,46 +65,39 @@ test('set sin items del modo 3 no permite iniciar juego', async ({ page }) => {
       }
     );
 
-    const codigo = `PB${Date.now().toString(36).slice(-4).toUpperCase()}`;
+    const codigo = `PV${Date.now().toString(36).slice(-4).toUpperCase()}`;
     const partida = await window.cumpeo.services.partida.crearPartida(
       { circuito_id: circuito.id, public_codigo: codigo },
       crypto.randomUUID()
     );
 
-    window._picPartidaId = partida.id;
-    window._picCodigo = codigo;
+    return { partidaId: partida.id };
   }, juegoId);
 
-  const partidaId = await page.evaluate(() => window._picPartidaId);
-  const codigo = await page.evaluate(() => window._picCodigo);
-
   await irAConductor(page, partidaId);
-
-  await page.evaluate(async (pid) => {
-    await window.cumpeo.services.partida.tomarControl(pid, window.cumpeo.session.sessionId);
-    await window.cumpeo.services.partida.comenzarPartida(pid, window.cumpeo.session.sessionId, crypto.randomUUID());
-    const ctx = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
-    const je = ctx.juegos[0];
-    await window.cumpeo.services.partida.iniciarJuego(
-      pid, je.id, window.cumpeo.session.sessionId, crypto.randomUUID()
-    );
-  }, partidaId);
-
+  await iniciarPartidaPictionary(page, partidaId);
   await esperarBotonPictionary(page, '#btn-pic-iniciar-juego');
 
+  let dialogMsg = '';
   page.on('dialog', async (dialog) => {
+    dialogMsg = dialog.message();
     await dialog.accept();
   });
 
   await page.click('#btn-pic-iniciar-juego');
-  await page.waitForTimeout(500);
+  await esperarBotonPictionary(page, '#btn-pic-submodo-PREGUNTAS');
+  await page.click('#btn-pic-submodo-PREGUNTAS');
+  await esperarBotonPictionary(page, '#btn-pic-elegir-set');
+  await page.click('#btn-pic-elegir-set');
 
-  const ctx = await page.evaluate(async (pid) => {
-    const w = window;
-    const ctx = await w.cumpeo.services.partida.obtenerContextoEspera(pid);
-    const je = ctx.juegos[0];
-    return { fase: je.estado_juego?.fase };
-  }, partidaId);
+  await expect.poll(() => dialogMsg, { timeout: 5000 }).toContain('Set inválido');
+  expect(dialogMsg).toContain('items no puede estar vacío');
 
-  expect(ctx.fase).not.toBe('INICIO_RONDA');
+  const ctx = await obtenerContextoPictionary(page, partidaId);
+  expect(ctx.estadoJuego.fase).toBe('SELECCIONANDO_SET');
+  expect(ctx.estadoJuego.submodo_actual).toBe('PREGUNTAS');
+
+  const panel = page.locator('#shell-panel-conductor');
+  await expect(panel.locator('#pic-set-select')).toBeVisible();
+  await expect(panel.locator('#btn-pic-iniciar-tiempo')).toHaveCount(0);
 });

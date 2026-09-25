@@ -1,7 +1,8 @@
 /* =============================================================
    Pictionary Bonus — test e2e de bonus manual.
-   
-   Cubre: aplicar bonus a Eq1 y Eq2 con input inline.
+
+   Cubre: aplicar bonus a Eq1 y Eq2 con input inline, en la
+   fase ADIVINANDO (el bonus está visible en todas las fases).
    ============================================================= */
 
 import { test, expect } from '@playwright/test';
@@ -11,22 +12,23 @@ import {
   iniciarPartidaPictionary,
   obtenerContextoPictionary,
   irAConductor,
-  esperarBotonPictionary
+  esperarBotonPictionary,
+  empezarTurnoUI
 } from './_helpers/pictionary.js';
 
 test.beforeEach(loginTestUser);
 
 test('aplicar bonus a Eq1 suma 5 puntos', async ({ page }) => {
-  const { partidaId, codigo } = await crearPartidaPictionary(page);
+  const { partidaId } = await crearPartidaPictionary(page);
   await irAConductor(page, partidaId);
   await iniciarPartidaPictionary(page, partidaId);
 
   await esperarBotonPictionary(page, '#btn-pic-iniciar-juego');
   await page.click('#btn-pic-iniciar-juego');
-
-  await esperarBotonPictionary(page, '#btn-pic-iniciar-modo');
+  await empezarTurnoUI(page);
 
   const ctx1 = await obtenerContextoPictionary(page, partidaId);
+  expect(ctx1.estadoJuego.fase).toBe('ADIVINANDO');
   expect(ctx1.estadoJuego.puntos_equipo_1).toBe(0);
 
   await page.fill('#pic-bonus-input-eq1', '5');
@@ -35,19 +37,20 @@ test('aplicar bonus a Eq1 suma 5 puntos', async ({ page }) => {
 
   const ctx2 = await obtenerContextoPictionary(page, partidaId);
   expect(ctx2.estadoJuego.puntos_equipo_1).toBe(5);
+  expect(ctx2.estadoJuego.fase).toBe('ADIVINANDO');
 });
 
 test('aplicar bonus a Eq2 suma 5 puntos', async ({ page }) => {
-  const { partidaId, codigo } = await crearPartidaPictionary(page);
+  const { partidaId } = await crearPartidaPictionary(page);
   await irAConductor(page, partidaId);
   await iniciarPartidaPictionary(page, partidaId);
 
   await esperarBotonPictionary(page, '#btn-pic-iniciar-juego');
   await page.click('#btn-pic-iniciar-juego');
-
-  await esperarBotonPictionary(page, '#btn-pic-iniciar-modo');
+  await empezarTurnoUI(page);
 
   const ctx1 = await obtenerContextoPictionary(page, partidaId);
+  expect(ctx1.estadoJuego.fase).toBe('ADIVINANDO');
   expect(ctx1.estadoJuego.puntos_equipo_2).toBe(0);
 
   await page.fill('#pic-bonus-input-eq2', '5');
@@ -56,4 +59,5 @@ test('aplicar bonus a Eq2 suma 5 puntos', async ({ page }) => {
 
   const ctx2 = await obtenerContextoPictionary(page, partidaId);
   expect(ctx2.estadoJuego.puntos_equipo_2).toBe(5);
+  expect(ctx2.estadoJuego.fase).toBe('ADIVINANDO');
 });
