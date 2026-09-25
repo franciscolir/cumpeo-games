@@ -1,5 +1,5 @@
 /* =============================================================
-   E2E — Panel conductor con contrato `accionesConductor` (8.5a / 8.5b.1)
+   E2E — Panel conductor con contrato `accionesConductor` (8.5a / 8.5b.1 / 8.5b.2)
 
    Verifica que el shell renderiza el panel de Trivia desde
    `accionesConductor` (descriptores + data-accion-conductor)
@@ -8,6 +8,11 @@
    8.5b.1: Anti-Trivia, Canción Incompleta, Enlaces y Historia
    Enredada exponen `accionesConductor` con convivencia legacy
    (D1/D8) — el shell los ignora cuando devuelven array vacío.
+
+   8.5b.2: Memoria migrado (JUGANDO usa 2 botones fantasma con
+   payload { equipo } — deuda #130), Pictionary devuelve [] en
+   todas las fases (bonus requiere payload compuesto — deuda
+   #131) y Rosco parcial ('' y TURNO_ACTIVO → [] — deuda #132).
 
    Nota: Trivia conserva `renderizarPanelConductor` legacy
    (convivencia D8) — el shell lo ignora cuando hay
@@ -271,4 +276,62 @@ test('4 GameUIs de 8.5b.1: accionesConductor devuelve array por fase, VOTANDO Hi
     expect(res[codigo].largoINICIO, codigo).toBe(1);
   }
   expect(res.votandoVacio).toBe(0);
+});
+
+test('3 GameUIs de 8.5b.2: Memoria migrado, Pictionary [] y Rosco parcial con legacy intacto', async ({ page }) => {
+  await page.goto('/');
+  await waitForCumpeo(page);
+
+  const res = await page.evaluate(() => {
+    const contexto = {
+      equipos: [{ nombre: 'Rojo' }, { nombre: 'Azul' }],
+      setsDisponibles: [{ id: 's1', nombre: 'Set 1' }],
+      itemsDelJuego: []
+    };
+
+    const defs = {
+      MEMORIA: ['', 'INICIO_RONDA', 'SELECCIONANDO_SET', 'PREPARANDO_GRILLA', 'JUGANDO', 'CAMBIO_TURNO', 'FIN_DE_RONDA', 'FIN_DE_JUEGO'],
+      PICTIONARY: ['', 'INICIO_RONDA', 'SELECCIONANDO_SUBMODO', 'SELECCIONANDO_SET', 'MOSTRANDO_PALABRA', 'ADIVINANDO', 'ESPERA_VALIDACION', 'CAMBIO_TURNO', 'FIN_DE_RONDA', 'FIN_DE_JUEGO'],
+      ROSCO: ['', 'INICIO_RONDA', 'TURNO_ACTIVO', 'CAMBIO_TURNO', 'FIN_DE_RONDA', 'FIN_DE_JUEGO']
+    };
+
+    const out = {};
+    for (const [codigo, fases] of Object.entries(defs)) {
+      const ui = window.cumpeo.uiRegistry.obtener(codigo);
+      out[codigo] = {
+        esFuncion: typeof ui?.accionesConductor === 'function',
+        legacyIntacto: typeof ui?.renderizarPanelConductor === 'function',
+        largos: fases.map((f) => ui?.accionesConductor?.({ fase: f }, contexto)?.length)
+      };
+    }
+
+    const mem = window.cumpeo.uiRegistry.obtener('MEMORIA');
+    out.memoriaJugando = mem
+      .accionesConductor({ fase: 'JUGANDO', equipo_actual: 1 }, contexto)
+      .map((d) => ({ tipo: d.tipo, texto: d.texto, accion: d.accion, payload: d.payload ?? null }));
+
+    return out;
+  });
+
+  for (const codigo of ['MEMORIA', 'PICTIONARY', 'ROSCO']) {
+    expect(res[codigo].esFuncion, codigo).toBe(true);
+    expect(res[codigo].legacyIntacto, codigo).toBe(true);
+  }
+
+  // Memoria migrado en todas las fases (M1-A)
+  expect(res.MEMORIA.largos).toEqual([1, 1, 2, 1, 3, 1, 1, 0]);
+
+  // M1-A: JUGANDO → mensaje + 2 botones fantasma con payload { equipo }
+  expect(res.memoriaJugando).toEqual([
+    { tipo: 'mensaje', texto: 'Cambiar a:', accion: undefined, payload: null },
+    { tipo: 'secundario', texto: 'Rojo', accion: 'cambiar-turno-manual-memoria', payload: { equipo: 1 } },
+    { tipo: 'secundario', texto: 'Azul', accion: 'cambiar-turno-manual-memoria', payload: { equipo: 2 } }
+  ]);
+
+  // M2-A (deuda #131): Pictionary → [] en todas las fases (legacy intacto)
+  expect(res.PICTIONARY.largos).toEqual([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+
+  // M3-A (deuda #132): Rosco migra INICIO_RONDA/CAMBIO_TURNO/FIN_DE_RONDA;
+  // '' (modal) y TURNO_ACTIVO (card RESPUESTA) quedan en legacy → 0
+  expect(res.ROSCO.largos).toEqual([0, 1, 0, 2, 1, 0]);
 });

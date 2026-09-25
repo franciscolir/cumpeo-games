@@ -464,6 +464,65 @@ export const RoscoGameUI = {
     }
   },
 
+  /**
+   * Descriptores de acciones del panel conductor (contrato 8.5a).
+   * Si existe y devuelve array no vacío, el shell renderiza el panel
+   * desde acá; si no o devuelve array vacío, el shell usa
+   * renderizarPanelConductor (legacy, convivencia D1/D8).
+   *
+   * M3-A (8.5b.2): solo migran INICIO_RONDA, CAMBIO_TURNO y
+   * FIN_DE_RONDA. Fase '' (el modal de inicio recopila { sets }
+   * con validaciones) y TURNO_ACTIVO (el panel incluye la card
+   * RESPUESTA, información crítica del conductor) quedan en
+   * legacy — deuda #132.
+   *
+   * @param {object} estadoJuego estado crudo del juego
+   * @param {object} contexto - { partida, juegoEjecutado, equipos,
+   *                              itemsDelJuego, setsDisponibles,
+   *                              urlsImagenes, puedeControlar }
+   * @returns {Array<object>} descriptores de acciones
+   */
+  accionesConductor(estadoJuego, contexto) {
+    const fase = estadoJuego?.fase || '';
+
+    const equipo1 = contexto?.equipos?.[0] || { nombre: 'Eq1' };
+    const equipo2 = contexto?.equipos?.[1] || { nombre: 'Eq2' };
+    const equipoActual = estadoJuego?.equipo_actual || 1;
+
+    switch (fase) {
+      case 'INICIO_RONDA': {
+        const nombreActual = equipoActual === 1 ? equipo1.nombre : equipo2.nombre;
+        return [
+          { tipo: 'primario', texto: `Iniciar turno — ${nombreActual}`, accion: 'iniciar-turno-rosco' }
+        ];
+      }
+
+      case 'CAMBIO_TURNO': {
+        const nuevoEquipo = equipoActual === 1 ? 2 : 1;
+        const nombreNuevo = nuevoEquipo === 1 ? equipo1.nombre : equipo2.nombre;
+        return [
+          { tipo: 'mensaje', texto: `Cambio a ${nombreNuevo}` },
+          { tipo: 'primario', texto: `Iniciar turno — ${nombreNuevo}`, accion: 'iniciar-turno-rosco' }
+        ];
+      }
+
+      case 'FIN_DE_RONDA': {
+        const config = contexto?.juegoEjecutado?.configuracion_congelada || {};
+        const totalRondas = estadoJuego?.total_rondas || config.rondas || 1;
+        const siguienteRonda = (estadoJuego?.ronda_actual || 1) + 1;
+        const esUltimaRonda = siguienteRonda > totalRondas;
+        const texto = esUltimaRonda ? 'Finalizar juego' : 'Iniciar siguiente ronda';
+        return [
+          { tipo: 'primario', texto, accion: 'siguiente-ronda-rosco' }
+        ];
+      }
+
+      case 'FIN_DE_JUEGO':
+      default:
+        return [];
+    }
+  },
+
   cleanup() {
     _cancelarTimers();
     _modalInicio = null;

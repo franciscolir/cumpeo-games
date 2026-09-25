@@ -17,20 +17,20 @@ test('después de un fallo, Eq2 toma el turno', async ({ page }) => {
   await irACOnductor(page, partidaId);
   await iniciarPartidaMemoria(page, partidaId);
 
-  await page.waitForFunction(() => document.querySelector('#btn-memoria-iniciar-juego'), { timeout: 20000 });
-  await page.click('#btn-memoria-iniciar-juego');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-juego-memoria"]'), { timeout: 20000 });
+  await page.click('[data-accion-conductor="iniciar-juego-memoria"]');
   await page.waitForTimeout(300);
 
-  await page.waitForFunction(() => document.querySelector('#btn-memoria-iniciar-ronda'), { timeout: 10000 });
-  await page.click('#btn-memoria-iniciar-ronda');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-ronda-memoria"]'), { timeout: 10000 });
+  await page.click('[data-accion-conductor="iniciar-ronda-memoria"]');
   await page.waitForTimeout(300);
 
-  await page.waitForFunction(() => document.querySelector('[data-set-id]'), { timeout: 10000 });
-  await page.locator('[data-set-id]').first().click();
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="seleccionar-set-memoria"]'), { timeout: 10000 });
+  await page.locator('[data-accion-conductor="seleccionar-set-memoria"]').first().click();
   await page.waitForTimeout(300);
 
-  await page.waitForFunction(() => document.querySelector('#btn-memoria-confirmar-grilla'), { timeout: 10000 });
-  await page.click('#btn-memoria-confirmar-grilla');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="confirmar-grilla-memoria"]'), { timeout: 10000 });
+  await page.click('[data-accion-conductor="confirmar-grilla-memoria"]');
   await page.waitForTimeout(500);
 
   // Eq1 falla una pareja
@@ -60,32 +60,33 @@ test('selector manual cambia el equipo', async ({ page }) => {
   await irACOnductor(page, partidaId);
   await iniciarPartidaMemoria(page, partidaId);
 
-  await page.waitForFunction(() => document.querySelector('#btn-memoria-iniciar-juego'), { timeout: 20000 });
-  await page.click('#btn-memoria-iniciar-juego');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-juego-memoria"]'), { timeout: 20000 });
+  await page.click('[data-accion-conductor="iniciar-juego-memoria"]');
   await page.waitForTimeout(300);
 
-  await page.waitForFunction(() => document.querySelector('#btn-memoria-iniciar-ronda'), { timeout: 10000 });
-  await page.click('#btn-memoria-iniciar-ronda');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-ronda-memoria"]'), { timeout: 10000 });
+  await page.click('[data-accion-conductor="iniciar-ronda-memoria"]');
   await page.waitForTimeout(300);
 
-  await page.waitForFunction(() => document.querySelector('[data-set-id]'), { timeout: 10000 });
-  await page.locator('[data-set-id]').first().click();
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="seleccionar-set-memoria"]'), { timeout: 10000 });
+  await page.locator('[data-accion-conductor="seleccionar-set-memoria"]').first().click();
   await page.waitForTimeout(300);
 
-  await page.waitForFunction(() => document.querySelector('#btn-memoria-confirmar-grilla'), { timeout: 10000 });
-  await page.click('#btn-memoria-confirmar-grilla');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="confirmar-grilla-memoria"]'), { timeout: 10000 });
+  await page.click('[data-accion-conductor="confirmar-grilla-memoria"]');
   await page.waitForTimeout(500);
 
   // Verificar Eq1 activo
   const estado = await obtenerEstadoMemoria(page, String(partidaId));
   expect(estado.equipo_actual).toBe(1);
 
-  // Botones de cambio manual
+  // Botones de cambio manual (descriptores accionesConductor)
   await page.waitForFunction(() => {
-    return document.querySelector('#btn-memoria-cambiar-eq2');
+    return Array.from(document.querySelectorAll('[data-accion-conductor="cambiar-turno-manual-memoria"]'))
+      .some((el) => JSON.parse(el.dataset.accionPayload).equipo === 2);
   }, { timeout: 10000 });
 
-  await page.click('#btn-memoria-cambiar-eq2');
+  await page.locator('[data-accion-conductor="cambiar-turno-manual-memoria"]').nth(1).click();
   await page.waitForTimeout(500);
 
   // Verificar que ahora es CAMBIO_TURNO (manual)

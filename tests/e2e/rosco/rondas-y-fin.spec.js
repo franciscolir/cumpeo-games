@@ -27,7 +27,7 @@ async function esperarPanelRosco(page) {
 async function esperarBotonTurno(page) {
   await page.waitForFunction(() => {
     const panel = document.querySelector('#shell-panel-conductor');
-    return panel && panel.querySelector('#btn-rosco-iniciar-turno');
+    return panel && panel.querySelector('[data-accion-conductor="iniciar-turno-rosco"]');
   }, { timeout: 15000 });
 }
 
@@ -43,7 +43,7 @@ test('cascading pasapalabra: rosco con pasapalabras permite respuestas del otro 
   await esperarPanelRosco(page);
   await iniciarJuegoRoscoConSets(page, { sets });
   await esperarBotonTurno(page);
-  await page.click('#btn-rosco-iniciar-turno');
+  await page.click('[data-accion-conductor="iniciar-turno-rosco"]');
 
   await page.click('#btn-rosco-pasapalabra');
   await page.waitForTimeout(200);
@@ -53,7 +53,7 @@ test('cascading pasapalabra: rosco con pasapalabras permite respuestas del otro 
   expect(ctxAfterPP.estadoJuego.equipo_actual).toBe(2);
 
   await esperarBotonTurno(page);
-  await page.click('#btn-rosco-iniciar-turno');
+  await page.click('[data-accion-conductor="iniciar-turno-rosco"]');
   await page.waitForTimeout(200);
 
   await page.click('#btn-rosco-acierto');
@@ -77,7 +77,7 @@ test('fin de ronda aparece al completar todas las letras', async ({ page }) => {
   await iniciarJuegoRoscoConSets(page, { sets });
   await page.waitForTimeout(500);
   await esperarBotonTurno(page);
-  await page.click('#btn-rosco-iniciar-turno');
+  await page.click('[data-accion-conductor="iniciar-turno-rosco"]');
   await page.waitForTimeout(500);
 
   for (let i = 0; i < 27; i++) {
@@ -104,7 +104,7 @@ test('fin de ronda aparece al completar todas las letras', async ({ page }) => {
 
   const ctx = await obtenerContextoRosco(page, partidaId);
   expect(ctx.estadoJuego.fase).toBe('FIN_DE_RONDA');
-  await expect(page.locator('#btn-rosco-siguiente-ronda')).toBeVisible({ timeout: 5000 });
+  await expect(page.locator('[data-accion-conductor="siguiente-ronda-rosco"]')).toBeVisible({ timeout: 5000 });
 });
 
 test('siguiente ronda inicia el set de la ronda 2', async ({ page }) => {
@@ -121,7 +121,7 @@ test('siguiente ronda inicia el set de la ronda 2', async ({ page }) => {
   await iniciarJuegoRoscoConSets(page, { sets });
   await page.waitForTimeout(500);
   await esperarBotonTurno(page);
-  await page.click('#btn-rosco-iniciar-turno');
+  await page.click('[data-accion-conductor="iniciar-turno-rosco"]');
   await page.waitForTimeout(500);
 
   const ctxInicio = await obtenerContextoRosco(page, partidaId);
@@ -150,7 +150,7 @@ test('siguiente ronda inicia el set de la ronda 2', async ({ page }) => {
 
   await page.waitForTimeout(500);
 
-  await page.click('#btn-rosco-siguiente-ronda');
+  await page.click('[data-accion-conductor="siguiente-ronda-rosco"]');
   await page.waitForTimeout(500);
 
   const ctx = await obtenerContextoRosco(page, partidaId);
@@ -178,7 +178,7 @@ test('fin de juego en última ronda', async ({ page }) => {
   await iniciarJuegoRoscoConSets(page, { sets });
   await page.waitForTimeout(500);
   await esperarBotonTurno(page);
-  await page.click('#btn-rosco-iniciar-turno');
+  await page.click('[data-accion-conductor="iniciar-turno-rosco"]');
   await page.waitForTimeout(500);
 
   for (let i = 0; i < 27; i++) {
@@ -206,7 +206,7 @@ test('fin de juego en última ronda', async ({ page }) => {
   const ctxFin = await obtenerContextoRosco(page, partidaId);
   expect(ctxFin.estadoJuego.fase).toBe('FIN_DE_RONDA');
 
-  await page.click('#btn-rosco-siguiente-ronda');
+  await page.click('[data-accion-conductor="siguiente-ronda-rosco"]');
   await page.waitForTimeout(500);
 
   const ctxFinal = await obtenerContextoRosco(page, partidaId);
@@ -225,7 +225,7 @@ test('pública muestra resultado del rosco', async ({ page }) => {
   await esperarPanelRosco(page);
   await iniciarJuegoRoscoConSets(page, { sets });
   await esperarBotonTurno(page);
-  await page.click('#btn-rosco-iniciar-turno');
+  await page.click('[data-accion-conductor="iniciar-turno-rosco"]');
 
   await page.click('#btn-rosco-acierto');
   await page.waitForTimeout(200);

@@ -45,23 +45,23 @@ test('múltiples rondas: FIN_DE_RONDA → siguiente ronda', async ({ page }) => 
   await iniciarPartidaMemoria(page, partidaId);
 
   // INICIO_RONDA
-  await page.waitForFunction(() => document.querySelector('#btn-memoria-iniciar-juego'), { timeout: 20000 });
-  await page.click('#btn-memoria-iniciar-juego');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-juego-memoria"]'), { timeout: 20000 });
+  await page.click('[data-accion-conductor="iniciar-juego-memoria"]');
   await page.waitForTimeout(300);
 
   // SELECCIONANDO_SET
-  await page.waitForFunction(() => document.querySelector('#btn-memoria-iniciar-ronda'), { timeout: 10000 });
-  await page.click('#btn-memoria-iniciar-ronda');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-ronda-memoria"]'), { timeout: 10000 });
+  await page.click('[data-accion-conductor="iniciar-ronda-memoria"]');
   await page.waitForTimeout(300);
 
   // Elegir set (2 parejas = 4 elementos)
-  await page.waitForFunction(() => document.querySelector('[data-set-id]'), { timeout: 10000 });
-  await page.locator('[data-set-id]').first().click();
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="seleccionar-set-memoria"]'), { timeout: 10000 });
+  await page.locator('[data-accion-conductor="seleccionar-set-memoria"]').first().click();
   await page.waitForTimeout(300);
 
   // PREPARANDO_GRILLA → JUGANDO
-  await page.waitForFunction(() => document.querySelector('#btn-memoria-confirmar-grilla'), { timeout: 10000 });
-  await page.click('#btn-memoria-confirmar-grilla');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="confirmar-grilla-memoria"]'), { timeout: 10000 });
+  await page.click('[data-accion-conductor="confirmar-grilla-memoria"]');
   await page.waitForTimeout(500);
 
   // Descubrir las 2 parejas (4 elementos) para llegar a FIN_DE_RONDA
@@ -96,8 +96,8 @@ test('múltiples rondas: FIN_DE_RONDA → siguiente ronda', async ({ page }) => 
   expect(estadoFinRonda.fase).toBe('FIN_DE_RONDA');
 
   // Verificar botón siguiente ronda
-  await page.waitForFunction(() => document.querySelector('#btn-memoria-siguiente-ronda'), { timeout: 10000 });
-  await page.click('#btn-memoria-siguiente-ronda');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-siguiente-ronda-memoria"]'), { timeout: 10000 });
+  await page.click('[data-accion-conductor="iniciar-siguiente-ronda-memoria"]');
   await page.waitForTimeout(500);
 
   // Verificar INICIO_RONDA de ronda 2

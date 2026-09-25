@@ -25,7 +25,7 @@ async function esperarPanelRosco(page) {
 async function esperarBotonTurno(page) {
   await page.waitForFunction(() => {
     const panel = document.querySelector('#shell-panel-conductor');
-    return panel && panel.querySelector('#btn-rosco-iniciar-turno');
+    return panel && panel.querySelector('[data-accion-conductor="iniciar-turno-rosco"]');
   }, { timeout: 30000 });
 }
 
@@ -41,7 +41,7 @@ test('flujo completo: crear set, partida, jugar y finalizar', async ({ page }) =
   await esperarPanelRosco(page);
   await iniciarJuegoRoscoConSets(page, { sets });
   await esperarBotonTurno(page);
-  await page.click('#btn-rosco-iniciar-turno');
+  await page.click('[data-accion-conductor="iniciar-turno-rosco"]');
 
   const ctx1 = await obtenerContextoRosco(page, partidaId);
   expect(ctx1.estadoJuego.fase).toBe('TURNO_ACTIVO');
@@ -66,7 +66,7 @@ test('rosco se renderiza con 27 letras', async ({ page }) => {
   await esperarPanelRosco(page);
   await iniciarJuegoRoscoConSets(page, { sets });
   await esperarBotonTurno(page);
-  await page.click('#btn-rosco-iniciar-turno');
+  await page.click('[data-accion-conductor="iniciar-turno-rosco"]');
 
   await page.waitForFunction(() => {
     return document.querySelector('[data-letra]');
@@ -88,7 +88,7 @@ test('definition panel muestra la definición actual', async ({ page }) => {
   await esperarPanelRosco(page);
   await iniciarJuegoRoscoConSets(page, { sets });
   await esperarBotonTurno(page);
-  await page.click('#btn-rosco-iniciar-turno');
+  await page.click('[data-accion-conductor="iniciar-turno-rosco"]');
 
   const gameArea = page.locator('#shell-game-container');
   await expect(gameArea.getByText('de la letra')).toBeVisible({ timeout: 10000 });
@@ -106,7 +106,7 @@ test('puntaje se actualiza tras acierto', async ({ page }) => {
   await esperarPanelRosco(page);
   await iniciarJuegoRoscoConSets(page, { sets });
   await esperarBotonTurno(page);
-  await page.click('#btn-rosco-iniciar-turno');
+  await page.click('[data-accion-conductor="iniciar-turno-rosco"]');
 
   await page.click('#btn-rosco-acierto');
   await page.waitForTimeout(200);
@@ -128,7 +128,7 @@ test('error marca letra como incorrecta', async ({ page }) => {
   await esperarPanelRosco(page);
   await iniciarJuegoRoscoConSets(page, { sets });
   await esperarBotonTurno(page);
-  await page.click('#btn-rosco-iniciar-turno');
+  await page.click('[data-accion-conductor="iniciar-turno-rosco"]');
 
   await page.click('#btn-rosco-error');
   await page.waitForTimeout(200);

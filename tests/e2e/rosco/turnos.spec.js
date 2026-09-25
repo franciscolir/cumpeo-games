@@ -26,7 +26,7 @@ async function esperarPanelRosco(page) {
 async function esperarBotonTurno(page) {
   await page.waitForFunction(() => {
     const panel = document.querySelector('#shell-panel-conductor');
-    return panel && panel.querySelector('#btn-rosco-iniciar-turno');
+    return panel && panel.querySelector('[data-accion-conductor="iniciar-turno-rosco"]');
   }, { timeout: 30000 });
 }
 
@@ -42,7 +42,7 @@ test('error cambia al equipo 2', async ({ page }) => {
   await esperarPanelRosco(page);
   await iniciarJuegoRoscoConSets(page, { sets });
   await esperarBotonTurno(page);
-  await page.click('#btn-rosco-iniciar-turno');
+  await page.click('[data-accion-conductor="iniciar-turno-rosco"]');
 
   let ctx = await obtenerContextoRosco(page, partidaId);
   expect(ctx.estadoJuego.equipo_actual).toBe(1);
@@ -67,7 +67,7 @@ test('pasapalabra cambia de turno y marca letra como pasada', async ({ page }) =
   await esperarPanelRosco(page);
   await iniciarJuegoRoscoConSets(page, { sets });
   await esperarBotonTurno(page);
-  await page.click('#btn-rosco-iniciar-turno');
+  await page.click('[data-accion-conductor="iniciar-turno-rosco"]');
 
   let ctx = await obtenerContextoRosco(page, partidaId);
   expect(ctx.estadoJuego.rosco[0].estado).toBe('pendiente');
@@ -93,7 +93,7 @@ test('saltar letra avanza sin marcar estado', async ({ page }) => {
   await esperarPanelRosco(page);
   await iniciarJuegoRoscoConSets(page, { sets });
   await esperarBotonTurno(page);
-  await page.click('#btn-rosco-iniciar-turno');
+  await page.click('[data-accion-conductor="iniciar-turno-rosco"]');
 
   await page.click('#btn-rosco-saltar');
   await page.waitForTimeout(200);
@@ -115,7 +115,7 @@ test('siguiente equipo cambia turno manualmente', async ({ page }) => {
   await esperarPanelRosco(page);
   await iniciarJuegoRoscoConSets(page, { sets });
   await esperarBotonTurno(page);
-  await page.click('#btn-rosco-iniciar-turno');
+  await page.click('[data-accion-conductor="iniciar-turno-rosco"]');
 
   let ctx = await obtenerContextoRosco(page, partidaId);
   expect(ctx.estadoJuego.equipo_actual).toBe(1);
@@ -140,7 +140,7 @@ test('dos aciertos seguidos mantienen mismo equipo', async ({ page }) => {
   await esperarPanelRosco(page);
   await iniciarJuegoRoscoConSets(page, { sets });
   await esperarBotonTurno(page);
-  await page.click('#btn-rosco-iniciar-turno');
+  await page.click('[data-accion-conductor="iniciar-turno-rosco"]');
 
   await page.click('#btn-rosco-acierto');
   await page.waitForTimeout(200);
@@ -165,13 +165,13 @@ test('aciertos de ambos equipos acumulan puntos correctamente', async ({ page })
   await esperarPanelRosco(page);
   await iniciarJuegoRoscoConSets(page, { sets });
   await esperarBotonTurno(page);
-  await page.click('#btn-rosco-iniciar-turno');
+  await page.click('[data-accion-conductor="iniciar-turno-rosco"]');
 
   await page.click('#btn-rosco-pasapalabra');
   await page.waitForTimeout(500);
 
   await esperarBotonTurno(page);
-  await page.click('#btn-rosco-iniciar-turno');
+  await page.click('[data-accion-conductor="iniciar-turno-rosco"]');
   await page.waitForTimeout(200);
 
   await page.click('#btn-rosco-acierto');

@@ -18,20 +18,20 @@ test('encontrar pareja → suma puntos', async ({ page }) => {
   await irACOnductor(page, partidaId);
   await iniciarPartidaMemoria(page, partidaId);
 
-  await page.waitForFunction(() => document.querySelector('#btn-memoria-iniciar-juego'), { timeout: 20000 });
-  await page.click('#btn-memoria-iniciar-juego');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-juego-memoria"]'), { timeout: 20000 });
+  await page.click('[data-accion-conductor="iniciar-juego-memoria"]');
   await page.waitForTimeout(300);
 
-  await page.waitForFunction(() => document.querySelector('#btn-memoria-iniciar-ronda'), { timeout: 10000 });
-  await page.click('#btn-memoria-iniciar-ronda');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-ronda-memoria"]'), { timeout: 10000 });
+  await page.click('[data-accion-conductor="iniciar-ronda-memoria"]');
   await page.waitForTimeout(300);
 
-  await page.waitForFunction(() => document.querySelector('[data-set-id]'), { timeout: 10000 });
-  await page.locator('[data-set-id]').first().click();
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="seleccionar-set-memoria"]'), { timeout: 10000 });
+  await page.locator('[data-accion-conductor="seleccionar-set-memoria"]').first().click();
   await page.waitForTimeout(300);
 
-  await page.waitForFunction(() => document.querySelector('#btn-memoria-confirmar-grilla'), { timeout: 10000 });
-  await page.click('#btn-memoria-confirmar-grilla');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="confirmar-grilla-memoria"]'), { timeout: 10000 });
+  await page.click('[data-accion-conductor="confirmar-grilla-memoria"]');
   await page.waitForTimeout(500);
 
   const estado = await obtenerEstadoMemoria(page, String(partidaId));
@@ -55,20 +55,20 @@ test('fallar pareja → CAMBIO_TURNO', async ({ page }) => {
   await irACOnductor(page, partidaId);
   await iniciarPartidaMemoria(page, partidaId);
 
-  await page.waitForFunction(() => document.querySelector('#btn-memoria-iniciar-juego'), { timeout: 20000 });
-  await page.click('#btn-memoria-iniciar-juego');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-juego-memoria"]'), { timeout: 20000 });
+  await page.click('[data-accion-conductor="iniciar-juego-memoria"]');
   await page.waitForTimeout(300);
 
-  await page.waitForFunction(() => document.querySelector('#btn-memoria-iniciar-ronda'), { timeout: 10000 });
-  await page.click('#btn-memoria-iniciar-ronda');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-ronda-memoria"]'), { timeout: 10000 });
+  await page.click('[data-accion-conductor="iniciar-ronda-memoria"]');
   await page.waitForTimeout(300);
 
-  await page.waitForFunction(() => document.querySelector('[data-set-id]'), { timeout: 10000 });
-  await page.locator('[data-set-id]').first().click();
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="seleccionar-set-memoria"]'), { timeout: 10000 });
+  await page.locator('[data-accion-conductor="seleccionar-set-memoria"]').first().click();
   await page.waitForTimeout(300);
 
-  await page.waitForFunction(() => document.querySelector('#btn-memoria-confirmar-grilla'), { timeout: 10000 });
-  await page.click('#btn-memoria-confirmar-grilla');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="confirmar-grilla-memoria"]'), { timeout: 10000 });
+  await page.click('[data-accion-conductor="confirmar-grilla-memoria"]');
   await page.waitForTimeout(500);
 
   const estado = await obtenerEstadoMemoria(page, String(partidaId));
@@ -92,20 +92,20 @@ test('modal CAMBIO_TURNO dura 1s → JUGANDO con otro equipo', async ({ page }) 
   await irACOnductor(page, partidaId);
   await iniciarPartidaMemoria(page, partidaId);
 
-  await page.waitForFunction(() => document.querySelector('#btn-memoria-iniciar-juego'), { timeout: 20000 });
-  await page.click('#btn-memoria-iniciar-juego');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-juego-memoria"]'), { timeout: 20000 });
+  await page.click('[data-accion-conductor="iniciar-juego-memoria"]');
   await page.waitForTimeout(300);
 
-  await page.waitForFunction(() => document.querySelector('#btn-memoria-iniciar-ronda'), { timeout: 10000 });
-  await page.click('#btn-memoria-iniciar-ronda');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-ronda-memoria"]'), { timeout: 10000 });
+  await page.click('[data-accion-conductor="iniciar-ronda-memoria"]');
   await page.waitForTimeout(300);
 
-  await page.waitForFunction(() => document.querySelector('[data-set-id]'), { timeout: 10000 });
-  await page.locator('[data-set-id]').first().click();
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="seleccionar-set-memoria"]'), { timeout: 10000 });
+  await page.locator('[data-accion-conductor="seleccionar-set-memoria"]').first().click();
   await page.waitForTimeout(300);
 
-  await page.waitForFunction(() => document.querySelector('#btn-memoria-confirmar-grilla'), { timeout: 10000 });
-  await page.click('#btn-memoria-confirmar-grilla');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="confirmar-grilla-memoria"]'), { timeout: 10000 });
+  await page.click('[data-accion-conductor="confirmar-grilla-memoria"]');
   await page.waitForTimeout(500);
 
   // Fallar una pareja

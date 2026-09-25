@@ -488,6 +488,90 @@ export const MemoriaGameUI = {
     }
   },
 
+  /**
+   * Descriptores de acciones del panel conductor (contrato 8.5a).
+   * Si existe y devuelve array no vacío, el shell renderiza el panel
+   * desde acá; si no o devuelve array vacío, el shell usa
+   * renderizarPanelConductor (legacy, convivencia D1/D8).
+   *
+   * Los `accion` son exactamente los strings que maneja el switch
+   * de onAccion del shell (sin renombrar).
+   *
+   * M1-A (8.5b.2): JUGANDO usa 2 botones fantasma con payload
+   * { equipo } — paridad con el legacy. El descriptor `selector`
+   * no sirve porque el binding envía { valor } y el handler lee
+   * payload.equipo (deuda #130).
+   *
+   * @param {object} estadoJuego estado crudo del juego
+   * @param {object} contexto - { partida, juegoEjecutado, equipos,
+   *                              itemsDelJuego, setsDisponibles,
+   *                              urlsImagenes, puedeControlar }
+   * @returns {Array<object>} descriptores de acciones
+   */
+  accionesConductor(estadoJuego, contexto) {
+    const fase = estadoJuego?.fase || '';
+    const equipo = estadoJuego?.equipo_actual || 1;
+    const nombreEquipo = _nombreEquipo(equipo, contexto);
+    const equipo1 = contexto?.equipos?.[0] || { nombre: 'Eq1' };
+    const equipo2 = contexto?.equipos?.[1] || { nombre: 'Eq2' };
+
+    switch (fase) {
+      case '':
+        return [
+          { tipo: 'primario', texto: 'Iniciar juego', accion: 'iniciar-juego-memoria' }
+        ];
+
+      case 'INICIO_RONDA':
+        return [
+          { tipo: 'primario', texto: 'Comenzar ronda', accion: 'iniciar-ronda-memoria' }
+        ];
+
+      case 'SELECCIONANDO_SET': {
+        const sets = contexto?.setsDisponibles || [];
+        if (sets.length === 0) {
+          return [
+            { tipo: 'mensaje', texto: 'No hay sets disponibles.', variante: 'error' }
+          ];
+        }
+        return [
+          { tipo: 'mensaje', texto: 'Elegí un set' },
+          ...sets.map((s) => ({
+            tipo: 'fantasma',
+            texto: s.nombre || s.id,
+            accion: 'seleccionar-set-memoria',
+            payload: { set: s }
+          }))
+        ];
+      }
+
+      case 'PREPARANDO_GRILLA':
+        return [
+          { tipo: 'primario', texto: 'Iniciar turno', accion: 'confirmar-grilla-memoria' }
+        ];
+
+      case 'JUGANDO':
+        return [
+          { tipo: 'mensaje', texto: 'Cambiar a:' },
+          { tipo: 'secundario', texto: equipo1.nombre, accion: 'cambiar-turno-manual-memoria', payload: { equipo: 1 } },
+          { tipo: 'secundario', texto: equipo2.nombre, accion: 'cambiar-turno-manual-memoria', payload: { equipo: 2 } }
+        ];
+
+      case 'CAMBIO_TURNO':
+        return [
+          { tipo: 'primario', texto: `Iniciar turno de ${nombreEquipo}`, accion: 'iniciar-turno-memoria' }
+        ];
+
+      case 'FIN_DE_RONDA':
+        return [
+          { tipo: 'primario', texto: 'Siguiente ronda', accion: 'iniciar-siguiente-ronda-memoria' }
+        ];
+
+      case 'FIN_DE_JUEGO':
+      default:
+        return [];
+    }
+  },
+
   cleanup() {
     _timer?.cancelar();
     _timerModal?.cancelar();

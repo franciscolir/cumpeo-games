@@ -409,6 +409,22 @@ export const PictionaryGameUI = {
     container.querySelector('#btn-pic-bonus-eq2')?.addEventListener('click', () => _aplicarBonus(2));
   },
 
+  /**
+   * Descriptores de acciones del panel conductor (contrato 8.5a).
+   *
+   * M2-A (8.5b.2): devuelve [] en todas las fases → fallback
+   * completo a renderizarPanelConductor legacy. El bonus del panel
+   * requiere payload compuesto { equipo, puntos } que el contrato
+   * no expresa (el binding `input` envía { valor } y el payload de
+   * botón es estático) y el bonus vive en todas las fases, así que
+   * migrar parcialmente el panel lo rompería. Deuda #131.
+   *
+   * @returns {Array<object>} siempre [] (fallback legacy)
+   */
+  accionesConductor() {
+    return [];
+  },
+
   cleanup() {
     _cancelarTimer();
   }
