@@ -253,31 +253,40 @@ text
   - Cambia la UI a estado "espera".
   - La vista pública recibe el estado y muestra su modo espera.
 
-#### Panel conductor (contrato `accionesConductor` — 8.5a / 8.5b.1 / 8.5b.2)
+#### Panel conductor (contrato `accionesConductor` — 8.5a / 8.5b.1 / 8.5b.2 / 8.5c.1)
 
 - **Estado actual:** ✅ **implementado en 8.5a.** El shell renderiza
   `#shell-panel-conductor` desde `gameUI.accionesConductor(estadoJuego, contexto)`
   cuando devuelve un array no vacío; si el método no existe o devuelve
   `[]`, delega en `renderizarPanelConductor` legacy (convivencia D1/D8).
 - **Contrato de descriptor:** `{ tipo: 'primario'|'secundario'|'peligro'|
-  'fantasma'|'selector'|'input'|'mensaje', texto, accion, payload?, disabled?,
-  variante?, label?, valorActual?, opciones? }`. El shell emite
-  `data-accion-conductor="<accion>"` (+ `data-accion-payload` con el payload
-  en JSON) y bindea a `callbacks.onAccion(accion, payload)`. Los `accion`
-  son exactamente los strings del switch `onAccion` del shell.
+  'fantasma'|'selector'|'input'|'html'|'mensaje', texto, accion, payload?,
+  disabled?, variante?, label?, valorActual?, opciones?, html? }`. El shell
+  emite `data-accion-conductor="<accion>"` (+ `data-accion-payload` con el
+  payload en JSON) y bindea a `callbacks.onAccion(accion, payload)`. Los
+  `accion` son exactamente los strings del switch `onAccion` del shell.
+- **Extensiones 8.5c.1:** (1) `input` y `selector` aceptan `payload`
+  opcional — se inyecta como `data-accion-payload` y el bind envía
+  `{ ...payload, valor }` (el `selector` sigue enviando `{ valor }`
+  **string**; el handler convierte con `Number()` si necesita número —
+  cierra #129/#130); (2) nuevo descriptor `html` inyecta HTML **sin
+  escapar** (HTML confiable del GameUI — vía para la card RESPUESTA de
+  Rosco, #132).
 - **Adopción:** Trivia (8.5a, 8 fases); Anti-Trivia, Canción Incompleta,
   Enlaces e Historia Enredada (8.5b.1); **Memoria migrado completo** y
   **Rosco parcial** + **Pictionary sin migrar** (8.5b.2). Quedan en legacy
   Pictionary, Rosco (fases `''`/`TURNO_ACTIVO`), QPEP y el resto hasta
-  8.5c/8.7. Excepciones: **D3 (8.5b.1)** Historia Enredada devuelve `[]`
+  8.5c.2/8.7. Excepciones: **D3 (8.5b.1)** Historia Enredada devuelve `[]`
   en `VOTANDO` (binding `input` envía `{ valor }` pero el handler lee
-  `payload.puntos` — deuda #129); **M1-A (8.5b.2)** Memoria `JUGANDO` usa
-  2 botones fantasma `{ equipo }` en vez de `selector` (el binding
-  selector envía `{ valor }` pero `cambiar-turno-manual-memoria` lee
-  `payload.equipo` — deuda #130); **M2-A** Pictionary devuelve `[]` en
-  todas las fases (bonus requiere payload compuesto `{ equipo, puntos }`
-  — deuda #131); **M3-A** Rosco `''`/`TURNO_ACTIVO` → `[]` (modal con
-  `{ sets }` y card RESPUESTA — deuda #132).
+  `payload.puntos` — deuda #129, aún sin migrar el bonus de Historia);
+  **8.5c.1** Memoria `JUGANDO` usa el descriptor `selector` (deuda #130
+  **cerrada** — handler `cambiar-turno-manual-memoria` convierte
+  `Number(payload.valor)` y acepta `{ equipo }` por retrocompatibilidad);
+  **M2-A** Pictionary devuelve `[]` en todas las fases (bonus requiere
+  payload compuesto `{ equipo, puntos }` — deuda #131, contrato ya
+  extendido, migrar en 8.5c.2); **M3-A** Rosco `''`/`TURNO_ACTIVO` → `[]`
+  (modal con `{ sets }` y card RESPUESTA — deuda #132, descriptor `html`
+  disponible, migrar en 8.5c.2).
 
 #### Selector A/B
 
