@@ -1625,6 +1625,10 @@ function _renderTopBar(partida, juegoActivo, tieneControl, app, partidaId) {
     ? Boton({ texto: 'Fin', variante: 'danger', id: 'btn-fin' })
     : '';
 
+  const btnAjustes = tieneControl && juegoActivo?.estado !== 'PAUSADO'
+    ? Boton({ texto: 'Ajustes', variante: 'ghost', id: 'btn-ajustes' })
+    : '';
+
   const btnPublica = partida.public_codigo
     ? `<a href="#/publica/${partida.public_codigo}" target="_blank" class="font-label-md uppercase border-2.5 border-on-surface rounded-lg px-4 py-2 bg-surface-container-lowest shadow-comic-sm hover:shadow-comic-md transition inline-flex items-center gap-2">
         Ver pública ↗
@@ -1647,6 +1651,7 @@ function _renderTopBar(partida, juegoActivo, tieneControl, app, partidaId) {
         ${btnModoEspera}
         ${btnDescartar}
         ${btnFin}
+        ${btnAjustes}
         ${btnPublica}
       </div>
     </div>
@@ -1850,6 +1855,69 @@ function _bindModeracion(container, app, partidaId) {
       btn.disabled = false;
     }
   });
+}
+
+/* =============================================================
+   Modal de AJUSTES globales (step 8.6)
+   ============================================================= */
+
+/**
+ * Abre el modal AJUSTES (D1: botón en la barra superior; D6: montado
+ * en document.body para sobrevivir a los re-renders del polling, igual
+ * que el modal de pausa). Único ajuste hoy: `tiempo_max_pausa_seg` (D2).
+ * Cerrable con click fuera + ESC (D3, propio de montarModal). Al
+ * guardar llama a `services.ajustes.actualizar()` y cierra el modal
+ * (D4). Valida entero > 0 antes de guardar (D5). Limpia el modal en
+ * hashchange para evitar huérfanos por navegación (opción B).
+ * @param {object} app
+ * @returns {Promise<void>}
+ */
+async function _abrirModalAjustes(app) {
+  const ajustes = await app.services.ajustes.obtener();
+  const valorActual = ajustes.tiempo_max_pausa_seg;
+
+  desmontarModal(document.body, 'modal-ajustes');
+
+  montarModal(document.body, {
+    id: 'modal-ajustes',
+    titulo: 'AJUSTES',
+    contenido: `
+      <div class="flex flex-col gap-3">
+        <label class="font-label-md uppercase text-on-surface-variant flex flex-col gap-1">
+          Tiempo máximo en pausa (segundos)
+          <input type="number" min="1" max="3600" step="1"
+            value="${valorActual}"
+            id="ajustes-tiempo-max-pausa"
+            class="border-2 border-on-surface rounded-lg px-3 py-2 bg-surface-container-lowest font-body-md" />
+        </label>
+      </div>
+    `,
+    acciones: [
+      { texto: 'Guardar', variante: 'primary', id: 'btn-ajustes-guardar' }
+    ],
+    cerrable: true
+  });
+
+  const cleanupHash = () => desmontarModal(document.body, 'modal-ajustes');
+  window.addEventListener('hashchange', cleanupHash, { once: true });
+
+  const btnGuardar = document.body.querySelector('#btn-ajustes-guardar');
+  if (btnGuardar) {
+    btnGuardar.addEventListener('click', async () => {
+      const input = document.body.querySelector('#ajustes-tiempo-max-pausa');
+      const valor = parseInt(input?.value, 10);
+      if (!Number.isInteger(valor) || valor < 1) {
+        window.alert('El tiempo debe ser un entero mayor a 0.');
+        return;
+      }
+      try {
+        await app.services.ajustes.actualizar({ tiempo_max_pausa_seg: valor });
+        desmontarModal(document.body, 'modal-ajustes');
+      } catch (err) {
+        window.alert(`Error: ${err.message}`);
+      }
+    });
+  }
 }
 
 /* =============================================================
@@ -2057,6 +2125,15 @@ function _bindAcciones(container, app, partidaId, juegoActivo) {
       try {
         await app.services.partida.descartarPartida(partidaId, sessionId, nuevoActionId());
         window.location.hash = '#/partidas';
+      } catch (err) { window.alert(`Error: ${err.message}`); }
+    });
+  }
+
+  const btnAjustes = container.querySelector('#btn-ajustes');
+  if (btnAjustes) {
+    btnAjustes.addEventListener('click', async () => {
+      try {
+        await _abrirModalAjustes(app);
       } catch (err) { window.alert(`Error: ${err.message}`); }
     });
   }

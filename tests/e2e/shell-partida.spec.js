@@ -886,3 +886,92 @@ test('conductor finaliza el juego después de la última ronda', async ({ page }
   expect(estado.pts1).toBeGreaterThanOrEqual(0);
   expect(estado.pts2).toBeGreaterThanOrEqual(0);
 });
+
+test('botón Ajustes visible si tengo control y juego EN_CURSO', async ({ page }) => {
+  await page.goto('/');
+  const { id } = await setupCircuitoYPartida(page);
+  await page.goto(`/#/partidas/${id}`);
+  await waitForCumpeo(page);
+
+  await page.evaluate(async (pid) => {
+    await window.cumpeo.services.partida.tomarControl(pid, window.cumpeo.session.sessionId);
+    await window.cumpeo.services.partida.comenzarPartida(pid, window.cumpeo.session.sessionId, crypto.randomUUID());
+  }, id);
+
+  await page.goto('/');
+  await page.goto(`/#/partidas/${id}`);
+  await waitForCumpeo(page);
+
+  await expect(page.locator('#btn-ajustes')).toBeVisible({ timeout: 15000 });
+});
+
+test('botón Ajustes NO visible si no tengo control', async ({ page }) => {
+  await page.goto('/');
+  const { id } = await setupCircuitoYPartida(page);
+  await page.goto(`/#/partidas/${id}`);
+  await waitForCumpeo(page);
+
+  await expect(page.locator('#btn-tomar-control')).toBeVisible({ timeout: 15000 });
+  await expect(page.locator('#btn-ajustes')).toBeHidden();
+});
+
+test('botón Ajustes NO visible si juego PAUSADO', async ({ page }) => {
+  await page.goto('/');
+  const { id } = await setupCircuitoYPartida(page);
+  await page.goto(`/#/partidas/${id}`);
+  await waitForCumpeo(page);
+
+  await page.evaluate(async (pid) => {
+    await window.cumpeo.services.partida.tomarControl(pid, window.cumpeo.session.sessionId);
+    await window.cumpeo.services.partida.comenzarPartida(pid, window.cumpeo.session.sessionId, crypto.randomUUID());
+
+    const ctx = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
+    const cj = ctx.juegos[0];
+    await window.cumpeo.services.partida.iniciarJuego(
+      pid, cj.id, window.cumpeo.session.sessionId, crypto.randomUUID()
+    );
+  }, id);
+
+  await page.goto('/');
+  await page.goto(`/#/partidas/${id}`);
+  await waitForCumpeo(page);
+
+  await expect(page.locator('#btn-pausar')).toBeVisible({ timeout: 15000 });
+  await page.locator('#btn-pausar').click();
+  await expect(page.locator('#btn-reanudar')).toBeVisible({ timeout: 15000 });
+  await expect(page.locator('#btn-ajustes')).toBeHidden();
+});
+
+test('abrir Ajustes muestra modal con valor actual; guardar actualiza', async ({ page }) => {
+  await page.goto('/');
+  const { id } = await setupCircuitoYPartida(page);
+  await page.goto(`/#/partidas/${id}`);
+  await waitForCumpeo(page);
+
+  await page.evaluate(async (pid) => {
+    await window.cumpeo.services.partida.tomarControl(pid, window.cumpeo.session.sessionId);
+    await window.cumpeo.services.partida.comenzarPartida(pid, window.cumpeo.session.sessionId, crypto.randomUUID());
+  }, id);
+
+  await page.goto('/');
+  await page.goto(`/#/partidas/${id}`);
+  await waitForCumpeo(page);
+
+  try {
+    await expect(page.locator('#btn-ajustes')).toBeVisible({ timeout: 15000 });
+    await page.locator('#btn-ajustes').click();
+
+    await expect(page.locator('#modal-ajustes')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('#ajustes-tiempo-max-pausa')).toHaveValue('120');
+
+    await page.locator('#ajustes-tiempo-max-pausa').fill('60');
+    await page.locator('#btn-ajustes-guardar').click();
+
+    await expect(page.locator('#modal-ajustes')).toBeHidden();
+
+    const valor = await page.evaluate(() => window.cumpeo.services.ajustes.obtenerTiempoMaxPausaSeg());
+    expect(valor).toBe(60);
+  } finally {
+    await page.evaluate(() => window.cumpeo.services.ajustes.actualizar({ tiempo_max_pausa_seg: 120 }));
+  }
+});
