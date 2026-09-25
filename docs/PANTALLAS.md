@@ -253,7 +253,7 @@ text
   - Cambia la UI a estado "espera".
   - La vista pública recibe el estado y muestra su modo espera.
 
-#### Panel conductor (contrato `accionesConductor` — 8.5a / 8.5b.1 / 8.5b.2 / 8.5c.1 / 8.5c.2a)
+#### Panel conductor (contrato `accionesConductor` — 8.5a / 8.5b.1 / 8.5b.2 / 8.5c.1 / 8.5c.2a / 8.5c.2b)
 
 - **Estado actual:** ✅ **implementado en 8.5a.** El shell renderiza
   `#shell-panel-conductor` desde `gameUI.accionesConductor(estadoJuego, contexto)`
@@ -277,9 +277,15 @@ text
   **Rosco parcial** + **Pictionary sin migrar** (8.5b.2); **Rosco
   `TURNO_ACTIVO`** (html + 5 botones) e **Historia `VOTANDO`**
   (descriptor `input`, sin botón — `change` dispara la acción) en
-  8.5c.2a. Quedan en legacy: Pictionary 100% (deuda #133 → 8.5d),
-  Rosco fase `''` (modal de inicio, deuda #132), QPEP (8.5c.2b) y el
-  resto hasta 8.5d/8.7. Excepciones: **8.5c.2a** Historia `VOTANDO`
+  8.5c.2a. **QPEP migrado completo en 8.5c.2b** (6 fases: `''`/
+  `SELECCIONANDO_PREGUNTA` → `cambiar-estado-juego`, `ENCUESTA_ACTIVA`
+  → `cerrar-encuesta`, `ENCUESTA_CERRADA` → 6 botones de pronóstico
+  payload `{ equipo, valor }` con `tipo` variable + `revelar-qpep`,
+  `REVELANDO` → `html` + `siguiente-qpep`; `calcularPuntos` vive en el
+  GameDefinition y lo comparten legacy/descriptor/handler — deuda #128
+  **cerrada**). Quedan en legacy: Pictionary 100% (deuda #133 → 8.5d) y
+  Rosco fase `''` (modal de inicio, deuda #132) + el resto hasta
+  8.5d/8.7. Excepciones: **8.5c.2a** Historia `VOTANDO`
   migra con `input` + `payload { equipo }` (handler lee
   `payload.puntos ?? payload.valor` — deuda #129 **cerrada**);
   **8.5c.1** Memoria `JUGANDO` usa el descriptor `selector` (deuda #130
@@ -316,8 +322,10 @@ text
   (`validar-respuesta-trivia`, `pasar-pregunta-trivia`, ...) y desde
   8.5b.1 también Anti-Trivia (`marcar-acierto/error-antitrivia`),
   Canción Incompleta (`marcar-acierto/error-cancion-incompleta`),
-  Enlaces (`validar-enlaces`) e Historia Enredada (fases no-VOTANDO).
-  Los demás GameUIs (Pictionary, Rosco, QPEP) migran en 8.5c/8.7.
+   Enlaces (`validar-enlaces`) e Historia Enredada (fases no-VOTANDO);
+   desde 8.5c.2a también Rosco (`marcar-acierto/error-rosco`).
+   Queda Pictionary (deuda #133 → 8.5d). QPEP no tiene botones
+   acierto/error (su validación es `revelar-qpep`, migrada en 8.5c.2b).
 - **TO-BE:** conjunto de botones unificado visualmente en el panel derecho.
   Las acciones siguen siendo específicas por juego (`onAccion` con tipo).
 
