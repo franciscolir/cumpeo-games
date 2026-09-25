@@ -1,5 +1,6 @@
 import { Header, bindHeaderListeners } from '../components/header.js';
 import { Boton } from '../components/boton.js';
+import { generarPublicCodigo, nuevoActionId } from '../partidas/utils.js';
 
 /**
  * Renderiza la lista de circuitos.
@@ -22,6 +23,15 @@ export async function renderListaCircuitos(container, app) {
               </p>
             </div>
             <div class="flex gap-2">
+              ${c.estado === 'LISTO' ? `
+                <button
+                  data-comenzar="${c.id}"
+                  data-nombre="${c.nombre}"
+                  class="font-label-md uppercase border-2.5 border-on-surface rounded-lg px-3 py-2 bg-primary text-on-primary shadow-comic-sm hover:shadow-comic-md transition"
+                >
+                  Comenzar
+                </button>
+              ` : ''}
               <a href="#/circuitos/${c.id}" class="font-label-md uppercase border-2.5 border-on-surface rounded-lg px-3 py-2 bg-secondary-container shadow-comic-sm hover:shadow-comic-md transition">
                 Editar
               </a>
@@ -65,6 +75,37 @@ export async function renderListaCircuitos(container, app) {
       } catch (err) {
         window.alert(`Error: ${err.message}`);
       }
+    });
+  });
+
+  container.querySelectorAll('[data-comenzar]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.comenzar;
+      btn.disabled = true;
+      btn.classList.add('opacity-50', 'cursor-not-allowed');
+
+      let intentos = 0;
+      let partida = null;
+
+      while (intentos < 3) {
+        try {
+          partida = await app.services.partida.crearPartida(
+            { circuito_id: id, public_codigo: generarPublicCodigo() },
+            nuevoActionId()
+          );
+          break;
+        } catch (err) {
+          intentos++;
+          if (intentos >= 3) {
+            window.alert(`Error: ${err.message}`);
+            btn.disabled = false;
+            btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            return;
+          }
+        }
+      }
+
+      window.location.hash = `#/partidas/${partida.id}`;
     });
   });
 }

@@ -2,8 +2,10 @@ import { Header, bindHeaderListeners } from '../components/header.js';
 import { Boton } from '../components/boton.js';
 import { Input } from '../components/input.js';
 
+const COLOR_REGEX = /^#[0-9A-Fa-f]{6}$/;
+
 /**
- * Renderiza el formulario de circuito.
+ * Renderiza el formulario de circuito (N juegos).
  * Si params.id está presente, es edición. Si no, es creación.
  * @param {HTMLElement} container
  * @param {object} app
@@ -33,9 +35,11 @@ export async function renderFormularioCircuito(container, app, params = {}) {
     { posicion: 1, nombre: 'Equipo 1', color: '#E53E3E' },
     { posicion: 2, nombre: 'Equipo 2', color: '#F6E05E' }
   ];
-  const juegosSeleccionados = completo ? completo.juegos : [];
   const juegosDisponibles = await app.services.juego.listarJuegos();
-  const juegoSeleccionadoId = juegosSeleccionados[0]?.juego_id || (juegosDisponibles[0]?.id || '');
+  const juegosSeleccionados = completo ? completo.juegos : [];
+  let juegosIds = juegosSeleccionados.length > 0
+    ? juegosSeleccionados.map((j) => j.juego_id)
+    : (juegosDisponibles[0]?.id ? [juegosDisponibles[0].id] : []);
 
   container.innerHTML = `
     <main class="min-h-screen p-6 max-w-3xl mx-auto">
@@ -77,13 +81,9 @@ export async function renderFormularioCircuito(container, app, params = {}) {
 
         <fieldset class="border-2.5 border-on-surface rounded-lg p-4 bg-surface-container-lowest">
           <legend class="font-label-md uppercase px-2">Juegos</legend>
-          <div class="mb-4">
-            <label for="juego_id" class="font-label-md uppercase block mb-1">Juego principal</label>
-            <select id="juego_id" name="juego_id" class="w-full font-body-md border-2.5 border-on-surface rounded-lg px-3 py-2 bg-surface-container-lowest focus:outline-none">
-              ${juegosDisponibles.map((d) => `
-                <option value="${d.id}" ${d.id === juegoSeleccionadoId ? 'selected' : ''}>${d.nombre}</option>
-              `).join('')}
-            </select>
+          <div id="lista-juegos" class="mb-4"></div>
+          <div>
+            ${Boton({ texto: '+ Agregar juego', id: 'btn-agregar-juego', variante: 'secondary' })}
           </div>
         </fieldset>
 
@@ -101,28 +101,109 @@ export async function renderFormularioCircuito(container, app, params = {}) {
 
   const form = container.querySelector('#form-circuito');
   const errorEl = container.querySelector('#form-error');
+  const listaJuegos = container.querySelector('#lista-juegos');
+  const btnAgregar = container.querySelector('#btn-agregar-juego');
+
+  const opcionesJuegos = (seleccionadoId) => juegosDisponibles.map((d) => `
+    <option value="${d.id}" ${d.id === seleccionadoId ? 'selected' : ''}>${d.nombre}</option>
+  `).join('');
+
+  function renderJuegos() {
+    listaJuegos.innerHTML = juegosIds.map((jid, i) => `
+      <div class="flex items-end gap-2 mb-3" data-fila-juego="${i}">
+        <div class="flex-1">
+          <label for="juego_${i}" class="font-label-md uppercase block mb-1">Juego ${i + 1}</label>
+          <select
+            id="juego_${i}"
+            name="juego_${i}"
+            class="w-full font-body-md border-2.5 border-on-surface rounded-lg px-3 py-2 bg-surface-container-lowest focus:outline-none"
+          >
+            ${opcionesJuegos(jid)}
+          </select>
+        </div>
+        ${juegosIds.length > 1 ? `
+          <button
+            type="button"
+            data-quitar-juego="${i}"
+            class="font-label-md uppercase border-2.5 border-on-surface rounded-lg px-3 py-2 bg-error text-on-error shadow-comic-sm hover:shadow-comic-md transition"
+          >
+            Quitar
+          </button>
+        ` : ''}
+      </div>
+    `).join('');
+
+    listaJuegos.querySelectorAll('[data-quitar-juego]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        sincronizarJuegosDesdeDOM();
+        const i = Number(btn.dataset.quitarJuego);
+        juegosIds.splice(i, 1);
+        renderJuegos();
+      });
+    });
+  }
+
+  function sincronizarJuegosDesdeDOM() {
+    const selects = listaJuegos.querySelectorAll('select[id^="juego_"]');
+    juegosIds = Array.from(selects).map((s) => s.value);
+  }
+
+  renderJuegos();
+
+  btnAgregar.addEventListener('click', () => {
+    sincronizarJuegosDesdeDOM();
+    juegosIds.push(juegosDisponibles[0]?.id || '');
+    renderJuegos();
+    const ultima = listaJuegos.querySelector(`#juego_${juegosIds.length - 1}`);
+    if (ultima) ultima.focus();
+  });
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     errorEl.classList.add('hidden');
 
+    const nombreValor = form.querySelector('#nombre').value.trim();
+    if (!nombreValor) {
+      errorEl.textContent = 'Ingresá un nombre.';
+      errorEl.classList.remove('hidden');
+      return;
+    }
+
+    const equiposValor = [0, 1].map((i) => ({
+      posicion: i + 1,
+      nombre: form.querySelector(`#equipo_${i}_nombre`).value.trim(),
+      color: form.querySelector(`#equipo_${i}_color`).value.trim()
+    }));
+
+    if (equiposValor.some((eq) => !eq.nombre)) {
+      errorEl.textContent = 'Completá el nombre de ambos equipos.';
+      errorEl.classList.remove('hidden');
+      return;
+    }
+    if (equiposValor.some((eq) => !COLOR_REGEX.test(eq.color))) {
+      errorEl.textContent = 'El color de cada equipo debe tener formato #RRGGBB.';
+      errorEl.classList.remove('hidden');
+      return;
+    }
+
+    const selects = listaJuegos.querySelectorAll('select[id^="juego_"]');
+    const seleccionados = Array.from(selects).map((s) => s.value);
+
+    if (seleccionados.length === 0) {
+      errorEl.textContent = 'Agregá al menos un juego.';
+      errorEl.classList.remove('hidden');
+      return;
+    }
+    if (new Set(seleccionados).size !== seleccionados.length) {
+      errorEl.textContent = 'No podés agregar el mismo juego más de una vez.';
+      errorEl.classList.remove('hidden');
+      return;
+    }
+
     const payload = {
-      nombre: form.querySelector('#nombre').value.trim(),
-      juegos: [
-        { juego_id: form.querySelector('#juego_id').value }
-      ],
-      equipos: [
-        {
-          posicion: 1,
-          nombre: form.querySelector('#equipo_0_nombre').value.trim(),
-          color: form.querySelector('#equipo_0_color').value.trim()
-        },
-        {
-          posicion: 2,
-          nombre: form.querySelector('#equipo_1_nombre').value.trim(),
-          color: form.querySelector('#equipo_1_color').value.trim()
-        }
-      ]
+      nombre: nombreValor,
+      juegos: seleccionados.map((juego_id) => ({ juego_id })),
+      equipos: equiposValor
     };
 
     try {
