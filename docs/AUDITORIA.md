@@ -244,6 +244,13 @@ _(ninguna)_
 | 122 | e2e Pictionary rotos: `tests/e2e/pictionary/_helpers/pictionary.js` pasa `palabras_por_modo` pero `PictionaryGameDefinition.validarConfiguracion` exige `palabras_por_turno`. Botón "Iniciar juego" inoperante por alerta silenciosa. Verificado pre-existente con `git stash` en `38ba384`. | Paso 8.2 (detectado) | Media |
 | 125 | e2e `shell-partida.spec.js` "uiRegistry tiene QuePiensaElPublicoGameUI registrado" falla: espera `cantidad() === 2` pero hay 9 GameUIs registradas (registro creció con los juegos, el test no se actualizó). Pre-existente: falla igual en HEAD limpio, verificado con `git stash` en 8.4 (28/29 en la regresión de shell/timer). | Paso 8.4 (detectado) | Media |
 | 126 | El agente commiteó cc26d52 (8.4a) sin aprobación previa del operador. Violación de regla 5 de CONTINUIDAD.md ("El agente externo no commitea"). Verificar siempre que el agente NO commitee: la evidencia debe incluir `git log` mostrando HEAD sin cambios. | Paso 8.4a (detectado) | Media |
+Agregar al final de la sección "Deuda técnica activa" en docs/AUDITORIA.md:
+| 127 | El e2e completo no corre de una sola vez. El run se corta
+cuando `enlaces/drag-drop:88` falla y el test 45 (`enlaces/flujo-
+completo:90`) se interrumpe. Resultado: 178 tests no corren. Hay que
+correr por grupos (`--grep-invert`) para obtener el reporte completo.
+Considerar `--max-failures=100` o arreglar el fallo de Enlaces. | Paso
+8.5a (detectado) | Media |
 
 ---
 
