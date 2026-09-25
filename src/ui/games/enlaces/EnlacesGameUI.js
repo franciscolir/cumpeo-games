@@ -488,6 +488,83 @@ export const EnlacesGameUI = {
     }
   },
 
+  /**
+   * Declara las acciones del panel conductor para la fase actual
+   * (contrato 8.5b.1). El shell renderiza desde estos descriptores;
+   * si devuelve `[]` delega en `renderizarPanelConductor` legacy (D1/D8).
+   *
+   * El drag & drop vive en el área de juego (`_bindDragAndDrop`),
+   * no en el panel — no se toca.
+   *
+   * @param {object} estadoJuego estado crudo del juego
+   * @param {object} contexto
+   * @returns {Array<object>} descriptores de acción
+   */
+  accionesConductor(estadoJuego, contexto) {
+    const fase = estadoJuego?.fase || '';
+    const equipo = estadoJuego?.equipo_actual || 1;
+    const nombreEquipo = _nombreEquipo(equipo, contexto);
+
+    switch (fase) {
+      case '':
+        return [
+          { tipo: 'primario', texto: 'Iniciar juego', accion: 'iniciar-juego-enlaces' }
+        ];
+
+      case 'INICIO_RONDA':
+        return [
+          { tipo: 'primario', texto: 'Comenzar ronda', accion: 'iniciar-ronda-enlaces' }
+        ];
+
+      case 'SELECCIONANDO_SET': {
+        const sets = contexto?.setsDisponibles || [];
+        if (sets.length === 0) {
+          return [
+            { tipo: 'mensaje', texto: 'No hay sets disponibles.', variante: 'error' }
+          ];
+        }
+        return [
+          { tipo: 'mensaje', texto: `Elegí un set para ${nombreEquipo}` },
+          ...sets.map((s) => ({
+            tipo: 'fantasma',
+            texto: s.nombre || s.id,
+            accion: 'seleccionar-set-enlaces',
+            payload: { set: s }
+          }))
+        ];
+      }
+
+      case 'ORDENANDO':
+        return [
+          { tipo: 'primario', texto: 'Validar', accion: 'validar-enlaces' },
+          { tipo: 'secundario', texto: 'Deshacer', accion: 'deshacer-enlaces' }
+        ];
+
+      case 'ESPERA_VALIDACION':
+        return [
+          { tipo: 'primario', texto: 'Validar', accion: 'validar-enlaces' }
+        ];
+
+      case 'MOSTRANDO_RESULTADO':
+        return [
+          { tipo: 'primario', texto: 'Siguiente turno', accion: 'siguiente-turno-enlaces' }
+        ];
+
+      case 'CAMBIO_TURNO':
+        return [
+          { tipo: 'primario', texto: `Iniciar turno de ${nombreEquipo}`, accion: 'iniciar-turno-enlaces' }
+        ];
+
+      case 'FIN_DE_RONDA':
+        return [
+          { tipo: 'primario', texto: 'Siguiente ronda', accion: 'iniciar-siguiente-ronda-enlaces' }
+        ];
+
+      default:
+        return [];
+    }
+  },
+
   cleanup() {
     _timer?.cancelar();
     _dragDesdeIdx = null;

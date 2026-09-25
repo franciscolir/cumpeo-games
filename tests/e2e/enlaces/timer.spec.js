@@ -59,8 +59,8 @@ test('timer llega a 0 → ESPERA_VALIDACION con tiempo_agotado', async ({ page }
   expect(estado.timer_activo).toBe(false);
 
   // En ESPERA_VALIDACION sigue habiendo botón Validar (sin Deshacer)
-  await page.waitForFunction(() => document.querySelector('#btn-enlaces-validar'), null, { timeout: 10000 });
-  const deshacerVisible = await page.locator('#btn-enlaces-deshacer').count();
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="validar-enlaces"]'), null, { timeout: 10000 });
+  const deshacerVisible = await page.locator('[data-accion-conductor="deshacer-enlaces"]').count();
   expect(deshacerVisible).toBe(0);
 });
 

@@ -241,6 +241,84 @@ export const HistoriaEnredadaGameUI = {
     }
   },
 
+  /**
+   * Declara las acciones del panel conductor para la fase actual
+   * (contrato 8.5b.1). El shell renderiza desde estos descriptores;
+   * si devuelve `[]` delega en `renderizarPanelConductor` legacy (D1/D8).
+   *
+   * Fase VOTANDO: devuelve `[]` a propósito (decisión 8.5b.1, D3
+   * suspendida) — el binding de `input` del shell envía `{ valor }`
+   * pero el handler `asignar-puntos-historia` lee `payload.puntos`
+   * (asignaría 0). El fallback legacy conserva input + botón con
+   * `{ puntos }` y su validación local.
+   *
+   * @param {object} estadoJuego estado crudo del juego
+   * @param {object} contexto - { equipos, itemsDelJuego, ... }
+   * @returns {Array<object>} descriptores de acción
+   */
+  accionesConductor(estadoJuego, contexto) {
+    const fase = estadoJuego?.fase || '';
+    const equipo1 = contexto?.equipos?.[0] || { nombre: 'Eq1' };
+    const equipo2 = contexto?.equipos?.[1] || { nombre: 'Eq2' };
+    const equipoActual = estadoJuego?.equipo_actual || 1;
+    const nombreEquipoActual = equipoActual === 1 ? equipo1.nombre : equipo2.nombre;
+
+    switch (fase) {
+      case '':
+        return [
+          { tipo: 'primario', texto: 'Iniciar juego', accion: 'iniciar-juego-historia' }
+        ];
+
+      case 'INICIO_RONDA':
+        return [
+          { tipo: 'primario', texto: 'Comenzar ronda', accion: 'iniciar-ronda-historia' }
+        ];
+
+      case 'SELECCIONANDO_HISTORIA': {
+        const disponibles = _historiasDisponibles(estadoJuego, contexto);
+        if (disponibles.length === 0) {
+          return [
+            { tipo: 'mensaje', texto: 'No hay historias disponibles. Cargá más items en el set.', variante: 'error' }
+          ];
+        }
+        return [
+          { tipo: 'mensaje', texto: `Elegí una historia para ${nombreEquipoActual}` },
+          ...disponibles.map((h) => ({
+            tipo: 'fantasma',
+            texto: h.titulo,
+            accion: 'seleccionar-historia-historia',
+            payload: { historiaId: h.id }
+          }))
+        ];
+      }
+
+      case 'PREPARANDO':
+        return [
+          { tipo: 'primario', texto: 'Empezar actuación', accion: 'empezar-actuacion-historia' }
+        ];
+
+      case 'ACTUANDO':
+        return [
+          { tipo: 'primario', texto: 'Empezar votación', accion: 'empezar-votacion-historia' }
+        ];
+
+      case 'VOTANDO':
+        return [];
+
+      case 'FIN_DE_RONDA': {
+        const ronda = estadoJuego?.ronda_actual || 1;
+        const totalRondas = estadoJuego?.total_rondas || 1;
+        const hayMas = ronda < totalRondas;
+        return hayMas
+          ? [{ tipo: 'primario', texto: 'Siguiente ronda', accion: 'iniciar-siguiente-ronda-historia' }]
+          : [{ tipo: 'primario', texto: 'Finalizar juego', accion: 'finalizar-historia' }];
+      }
+
+      default:
+        return [];
+    }
+  },
+
   cleanup() {
     _latestCallbacks = null;
   }

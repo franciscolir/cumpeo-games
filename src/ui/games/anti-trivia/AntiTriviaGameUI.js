@@ -510,6 +510,98 @@ export const AntiTriviaGameUI = {
     }
   },
 
+  /**
+   * Declara las acciones del panel conductor para la fase actual
+   * (contrato 8.5b.1). El shell renderiza desde estos descriptores;
+   * si devuelve `[]` delega en `renderizarPanelConductor` legacy (D1/D8).
+   *
+   * No cancela el timer acá: lo resuelve el re-render del área al
+   * cambiar de fase (el shell vía `onAccion`).
+   *
+   * @param {object} estadoJuego estado crudo del juego
+   * @param {object} contexto - { partida, juegoEjecutado, equipos,
+   *                              itemsDelJuego, setsDisponibles, ... }
+   * @returns {Array<object>} descriptores de acción
+   */
+  accionesConductor(estadoJuego, contexto) {
+    const fase = estadoJuego?.fase || '';
+    const equipo = estadoJuego?.equipo_actual || 1;
+    const nombreEquipo = _nombreEquipo(equipo, contexto);
+    const tiempoAgotado = estadoJuego?.tiempo_agotado === true;
+
+    switch (fase) {
+      case '':
+        return [
+          { tipo: 'primario', texto: 'Iniciar juego', accion: 'iniciar-juego-antitrivia' }
+        ];
+
+      case 'INICIO_RONDA':
+        return [
+          { tipo: 'primario', texto: 'Comenzar ronda', accion: 'iniciar-ronda-antitrivia' }
+        ];
+
+      case 'SELECCIONANDO_SET': {
+        const sets = contexto?.setsDisponibles || [];
+        if (sets.length === 0) {
+          return [
+            { tipo: 'mensaje', texto: 'No hay sets disponibles.', variante: 'error' }
+          ];
+        }
+        return [
+          { tipo: 'mensaje', texto: `Elegí un set para ${nombreEquipo}` },
+          ...sets.map((s) => ({
+            tipo: 'fantasma',
+            texto: s.nombre || s.id,
+            accion: 'seleccionar-set-antitrivia',
+            payload: { set: s }
+          }))
+        ];
+      }
+
+      case 'MOSTRANDO_PREGUNTA':
+        return [
+          { tipo: 'primario', texto: 'Iniciar respuesta', accion: 'iniciar-respuesta-antitrivia' }
+        ];
+
+      case 'RESPONDIENDO':
+        if (tiempoAgotado) {
+          return [
+            { tipo: 'mensaje', texto: 'Tiempo agotado', variante: 'error' },
+            { tipo: 'primario', texto: 'El jugador respondió', accion: 'jugador-respondio-antitrivia' },
+            { tipo: 'secundario', texto: 'No respondió', accion: 'no-respondio-antitrivia' }
+          ];
+        }
+        return [
+          { tipo: 'primario', texto: 'Acierto', accion: 'marcar-acierto-antitrivia' },
+          { tipo: 'peligro', texto: 'Error', accion: 'marcar-error-antitrivia' }
+        ];
+
+      case 'ESPERA_VALIDACION':
+        return [
+          { tipo: 'primario', texto: 'Acierto', accion: 'marcar-acierto-antitrivia' },
+          { tipo: 'peligro', texto: 'Error', accion: 'marcar-error-antitrivia' }
+        ];
+
+      case 'MOSTRANDO_RESULTADO':
+        return [
+          { tipo: 'primario', texto: 'Siguiente pregunta', accion: 'siguiente-pregunta-antitrivia' }
+        ];
+
+      case 'CAMBIO_TURNO':
+        return [
+          { tipo: 'primario', texto: `Iniciar turno de ${nombreEquipo}`, accion: 'iniciar-turno-antitrivia' }
+        ];
+
+      case 'FIN_DE_RONDA':
+        return [
+          { tipo: 'primario', texto: 'Siguiente ronda', accion: 'iniciar-siguiente-ronda-antitrivia' }
+        ];
+
+      default:
+        return [];
+    }
+  },
+
   cleanup() {
     _timer?.cancelar();
   }

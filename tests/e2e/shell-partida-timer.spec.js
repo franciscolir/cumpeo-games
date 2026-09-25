@@ -84,8 +84,8 @@ test('#shell-timer NO existe cuando el juego no tiene timer (Historia Enredada)'
   await waitForCumpeo(page);
   await iniciarPartidaHistoriaEnredada(page, partidaId);
 
-  await page.waitForFunction(() => document.querySelector('#btn-he-iniciar-juego'), { timeout: 20000 });
-  await page.click('#btn-he-iniciar-juego');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-juego-historia"]'), { timeout: 20000 });
+  await page.click('[data-accion-conductor="iniciar-juego-historia"]');
   await page.waitForTimeout(300);
 
   await expect(page.locator('#shell-timer')).toHaveCount(0);

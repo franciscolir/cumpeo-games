@@ -133,29 +133,44 @@ export async function obtenerEstadoAntiTrivia(page, partidaId) {
 
 /**
  * Iniciar juego + iniciar ronda → SELECCIONANDO_SET.
+ * Selectores: contrato `accionesConductor` (8.5b.1).
  */
 export async function iniciarJuegoYRonda(page) {
-  await page.waitForFunction(() => document.querySelector('#btn-antitrivia-iniciar-juego'), null, { timeout: 20000 });
-  await page.click('#btn-antitrivia-iniciar-juego');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-juego-antitrivia"]'), null, { timeout: 20000 });
+  await page.click('[data-accion-conductor="iniciar-juego-antitrivia"]');
   await page.waitForTimeout(300);
-  await page.waitForFunction(() => document.querySelector('#btn-antitrivia-iniciar-ronda'), null, { timeout: 10000 });
-  await page.click('#btn-antitrivia-iniciar-ronda');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-ronda-antitrivia"]'), null, { timeout: 10000 });
+  await page.click('[data-accion-conductor="iniciar-ronda-antitrivia"]');
   await page.waitForTimeout(300);
-  await page.waitForFunction(() => document.querySelector('[data-set-id]'), null, { timeout: 10000 });
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="seleccionar-set-antitrivia"]'), null, { timeout: 10000 });
 }
 
 /**
  * Elegir set por id (o el primero si no se indica).
+ * El payload del descriptor es `{ set }` — se busca por `set.id`.
  */
 export async function elegirSet(page, setId) {
-  await page.waitForFunction(() => document.querySelector('[data-set-id]'), null, { timeout: 10000 });
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="seleccionar-set-antitrivia"]'), null, { timeout: 10000 });
   if (setId) {
-    await page.click(`[data-set-id="${setId}"]`);
+    await page.evaluate((sid) => {
+      const botones = Array.from(
+        document.querySelectorAll('[data-accion-conductor="seleccionar-set-antitrivia"]')
+      );
+      const btn = botones.find((b) => {
+        try {
+          return JSON.parse(b.dataset.accionPayload || '{}')?.set?.id === sid;
+        } catch {
+          return false;
+        }
+      });
+      if (!btn) throw new Error(`Botón de set no encontrado: ${sid}`);
+      btn.click();
+    }, setId);
   } else {
-    await page.locator('[data-set-id]').first().click();
+    await page.locator('[data-accion-conductor="seleccionar-set-antitrivia"]').first().click();
   }
   await page.waitForTimeout(300);
-  await page.waitForFunction(() => document.querySelector('#btn-antitrivia-iniciar-respuesta'), null, { timeout: 10000 });
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-respuesta-antitrivia"]'), null, { timeout: 10000 });
 }
 
 /**
@@ -164,17 +179,19 @@ export async function elegirSet(page, setId) {
  * clics sobre callbacks stale (race con _renderContenido).
  */
 export async function responderPregunta(page, resultado = 'acierto') {
-  await page.waitForFunction(() => document.querySelector('#btn-antitrivia-iniciar-respuesta'), null, { timeout: 10000 });
-  await page.click('#btn-antitrivia-iniciar-respuesta');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-respuesta-antitrivia"]'), null, { timeout: 10000 });
+  await page.click('[data-accion-conductor="iniciar-respuesta-antitrivia"]');
   await page.waitForTimeout(300);
 
-  const btn = resultado === 'acierto' ? '#btn-antitrivia-acierto' : '#btn-antitrivia-error';
+  const btn = resultado === 'acierto'
+    ? '[data-accion-conductor="marcar-acierto-antitrivia"]'
+    : '[data-accion-conductor="marcar-error-antitrivia"]';
   await page.waitForFunction((sel) => !!document.querySelector(sel), btn, { timeout: 10000 });
   await page.click(btn);
-  await page.waitForFunction(() => document.querySelector('#btn-antitrivia-siguiente-pregunta'), null, { timeout: 10000 });
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="siguiente-pregunta-antitrivia"]'), null, { timeout: 10000 });
   await page.waitForTimeout(300);
 
-  await page.click('#btn-antitrivia-siguiente-pregunta');
+  await page.click('[data-accion-conductor="siguiente-pregunta-antitrivia"]');
   await page.waitForTimeout(300);
 }
 

@@ -160,29 +160,44 @@ export async function esperarFase(page, partidaId, faseEsperada, timeout = 15000
 
 /**
  * Iniciar juego + iniciar ronda → SELECCIONANDO_SET con sets visibles.
+ * Selectores: contrato `accionesConductor` (8.5b.1).
  */
 export async function iniciarJuegoYRonda(page) {
-  await page.waitForFunction(() => document.querySelector('#btn-enlaces-iniciar-juego'), null, { timeout: 20000 });
-  await page.click('#btn-enlaces-iniciar-juego');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-juego-enlaces"]'), null, { timeout: 20000 });
+  await page.click('[data-accion-conductor="iniciar-juego-enlaces"]');
   await page.waitForTimeout(300);
-  await page.waitForFunction(() => document.querySelector('#btn-enlaces-iniciar-ronda'), null, { timeout: 10000 });
-  await page.click('#btn-enlaces-iniciar-ronda');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-ronda-enlaces"]'), null, { timeout: 10000 });
+  await page.click('[data-accion-conductor="iniciar-ronda-enlaces"]');
   await page.waitForTimeout(300);
-  await page.waitForFunction(() => document.querySelector('[data-set-id]'), null, { timeout: 10000 });
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="seleccionar-set-enlaces"]'), null, { timeout: 10000 });
 }
 
 /**
  * Elegir set por id (o el primero si no se indica).
  * seleccionar-set encadena seleccionarSet + prepararTablero → ORDENANDO.
+ * El payload del descriptor es `{ set }` — se busca por `set.id`.
  */
 export async function elegirSet(page, setId) {
-  await page.waitForFunction(() => document.querySelector('[data-set-id]'), null, { timeout: 10000 });
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="seleccionar-set-enlaces"]'), null, { timeout: 10000 });
   if (setId) {
-    await page.click(`[data-set-id="${setId}"]`);
+    await page.evaluate((sid) => {
+      const botones = Array.from(
+        document.querySelectorAll('[data-accion-conductor="seleccionar-set-enlaces"]')
+      );
+      const btn = botones.find((b) => {
+        try {
+          return JSON.parse(b.dataset.accionPayload || '{}')?.set?.id === sid;
+        } catch {
+          return false;
+        }
+      });
+      if (!btn) throw new Error(`Botón de set no encontrado: ${sid}`);
+      btn.click();
+    }, setId);
   } else {
-    await page.locator('[data-set-id]').first().click();
+    await page.locator('[data-accion-conductor="seleccionar-set-enlaces"]').first().click();
   }
-  await page.waitForFunction(() => document.querySelector('#btn-enlaces-validar'), null, { timeout: 10000 });
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="validar-enlaces"]'), null, { timeout: 10000 });
   await page.waitForFunction(() => document.querySelector('.enlaces-columna-b-item'), null, { timeout: 10000 });
 }
 
@@ -204,9 +219,9 @@ export async function moverElemento(page, desdeIdx, hastaIdx) {
  * Presiona Validar (disponible en ORDENANDO y ESPERA_VALIDACION).
  */
 export async function validarTurno(page) {
-  await page.waitForFunction(() => document.querySelector('#btn-enlaces-validar'), null, { timeout: 10000 });
-  await page.click('#btn-enlaces-validar');
-  await page.waitForFunction(() => document.querySelector('#btn-enlaces-siguiente-turno'), null, { timeout: 10000 });
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="validar-enlaces"]'), null, { timeout: 10000 });
+  await page.click('[data-accion-conductor="validar-enlaces"]');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="siguiente-turno-enlaces"]'), null, { timeout: 10000 });
   await page.waitForTimeout(300);
 }
 
@@ -214,8 +229,8 @@ export async function validarTurno(page) {
  * Presiona Deshacer (solo disponible en ORDENANDO).
  */
 export async function deshacer(page) {
-  await page.waitForFunction(() => document.querySelector('#btn-enlaces-deshacer'), null, { timeout: 10000 });
-  await page.click('#btn-enlaces-deshacer');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="deshacer-enlaces"]'), null, { timeout: 10000 });
+  await page.click('[data-accion-conductor="deshacer-enlaces"]');
   await page.waitForTimeout(350);
 }
 
@@ -318,8 +333,8 @@ export async function ordenarCeroAciertos(page, partidaId, estado) {
  */
 export async function completarTurnoEq1(page, partidaId) {
   await validarTurno(page);
-  await page.waitForFunction(() => document.querySelector('#btn-enlaces-siguiente-turno'), null, { timeout: 10000 });
-  await page.click('#btn-enlaces-siguiente-turno');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="siguiente-turno-enlaces"]'), null, { timeout: 10000 });
+  await page.click('[data-accion-conductor="siguiente-turno-enlaces"]');
   await esperarFase(page, partidaId, 'CAMBIO_TURNO');
 }
 
@@ -327,7 +342,7 @@ export async function completarTurnoEq1(page, partidaId) {
  * Desde CAMBIO_TURNO inicia el siguiente turno (Eq1→Eq2 o Eq2→FIN_DE_RONDA).
  */
 export async function iniciarSiguienteTurno(page, partidaId) {
-  await page.waitForFunction(() => document.querySelector('#btn-enlaces-iniciar-turno'), null, { timeout: 15000 });
-  await page.click('#btn-enlaces-iniciar-turno');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-turno-enlaces"]'), null, { timeout: 15000 });
+  await page.click('[data-accion-conductor="iniciar-turno-enlaces"]');
   await page.waitForTimeout(400);
 }

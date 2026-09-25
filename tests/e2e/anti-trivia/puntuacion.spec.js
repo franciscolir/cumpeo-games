@@ -21,13 +21,13 @@ test('acierto suma +10 al equipo activo', async ({ page }) => {
   await iniciarJuegoYRonda(page);
   await elegirSet(page, setIdEq1);
 
-  await page.waitForFunction(() => document.querySelector('#btn-antitrivia-iniciar-respuesta'), null, { timeout: 10000 });
-  await page.click('#btn-antitrivia-iniciar-respuesta');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-respuesta-antitrivia"]'), null, { timeout: 10000 });
+  await page.click('[data-accion-conductor="iniciar-respuesta-antitrivia"]');
   await page.waitForTimeout(300);
 
-  await page.waitForFunction(() => document.querySelector('#btn-antitrivia-acierto'), null, { timeout: 10000 });
-  await page.click('#btn-antitrivia-acierto');
-  await page.waitForFunction(() => document.querySelector('#btn-antitrivia-siguiente-pregunta'), null, { timeout: 10000 });
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="marcar-acierto-antitrivia"]'), null, { timeout: 10000 });
+  await page.click('[data-accion-conductor="marcar-acierto-antitrivia"]');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="siguiente-pregunta-antitrivia"]'), null, { timeout: 10000 });
   await page.waitForTimeout(300);
 
   const estado = await obtenerEstadoAntiTrivia(page, partidaId);
@@ -47,13 +47,13 @@ test('error con penalizacion 0 no cambia el puntaje', async ({ page }) => {
   await iniciarJuegoYRonda(page);
   await elegirSet(page, setIdEq1);
 
-  await page.waitForFunction(() => document.querySelector('#btn-antitrivia-iniciar-respuesta'), null, { timeout: 10000 });
-  await page.click('#btn-antitrivia-iniciar-respuesta');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-respuesta-antitrivia"]'), null, { timeout: 10000 });
+  await page.click('[data-accion-conductor="iniciar-respuesta-antitrivia"]');
   await page.waitForTimeout(300);
 
-  await page.waitForFunction(() => document.querySelector('#btn-antitrivia-error'), null, { timeout: 10000 });
-  await page.click('#btn-antitrivia-error');
-  await page.waitForFunction(() => document.querySelector('#btn-antitrivia-siguiente-pregunta'), null, { timeout: 10000 });
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="marcar-error-antitrivia"]'), null, { timeout: 10000 });
+  await page.click('[data-accion-conductor="marcar-error-antitrivia"]');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="siguiente-pregunta-antitrivia"]'), null, { timeout: 10000 });
   await page.waitForTimeout(300);
 
   const estado = await obtenerEstadoAntiTrivia(page, partidaId);

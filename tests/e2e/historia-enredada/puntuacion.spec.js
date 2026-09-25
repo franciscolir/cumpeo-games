@@ -5,14 +5,14 @@ import { setupPartidaHistoriaEnredada, iniciarPartidaHistoriaEnredada, irACOnduc
 test.beforeEach(loginTestUser);
 
 async function jugarTurno(page, puntos) {
-  await page.waitForFunction(() => document.querySelector('[data-historia-id]'), { timeout: 10000 });
-  await page.locator('[data-historia-id]').first().click();
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="seleccionar-historia-historia"]'), { timeout: 10000 });
+  await page.locator('[data-accion-conductor="seleccionar-historia-historia"]').first().click();
   await page.waitForTimeout(300);
-  await page.waitForFunction(() => document.querySelector('#btn-he-empezar-actuacion'), { timeout: 10000 });
-  await page.click('#btn-he-empezar-actuacion');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="empezar-actuacion-historia"]'), { timeout: 10000 });
+  await page.click('[data-accion-conductor="empezar-actuacion-historia"]');
   await page.waitForTimeout(300);
-  await page.waitForFunction(() => document.querySelector('#btn-he-empezar-votacion'), { timeout: 10000 });
-  await page.click('#btn-he-empezar-votacion');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="empezar-votacion-historia"]'), { timeout: 10000 });
+  await page.click('[data-accion-conductor="empezar-votacion-historia"]');
   await page.waitForTimeout(300);
   await page.waitForFunction(() => document.querySelector('#input-puntos-historia'), { timeout: 10000 });
   await page.fill('#input-puntos-historia', String(puntos));
@@ -27,11 +27,11 @@ test('asignar puntos a Eq1 suma al Eq1', async ({ page }) => {
   await waitForCumpeo(page);
   await iniciarPartidaHistoriaEnredada(page, partidaId);
 
-  await page.waitForFunction(() => document.querySelector('#btn-he-iniciar-juego'), { timeout: 20000 });
-  await page.click('#btn-he-iniciar-juego');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-juego-historia"]'), { timeout: 20000 });
+  await page.click('[data-accion-conductor="iniciar-juego-historia"]');
   await page.waitForTimeout(300);
-  await page.waitForFunction(() => document.querySelector('#btn-he-iniciar-ronda'), { timeout: 10000 });
-  await page.click('#btn-he-iniciar-ronda');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-ronda-historia"]'), { timeout: 10000 });
+  await page.click('[data-accion-conductor="iniciar-ronda-historia"]');
   await page.waitForTimeout(300);
 
   await jugarTurno(page, 7);
@@ -52,11 +52,11 @@ test('asignar puntos a Eq2 suma al Eq2', async ({ page }) => {
   await waitForCumpeo(page);
   await iniciarPartidaHistoriaEnredada(page, partidaId);
 
-  await page.waitForFunction(() => document.querySelector('#btn-he-iniciar-juego'), { timeout: 20000 });
-  await page.click('#btn-he-iniciar-juego');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-juego-historia"]'), { timeout: 20000 });
+  await page.click('[data-accion-conductor="iniciar-juego-historia"]');
   await page.waitForTimeout(300);
-  await page.waitForFunction(() => document.querySelector('#btn-he-iniciar-ronda'), { timeout: 10000 });
-  await page.click('#btn-he-iniciar-ronda');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-ronda-historia"]'), { timeout: 10000 });
+  await page.click('[data-accion-conductor="iniciar-ronda-historia"]');
   await page.waitForTimeout(300);
 
   await jugarTurno(page, 5);

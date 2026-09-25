@@ -104,7 +104,7 @@ test('mientras el timer corre se puede deshacer', async ({ page }) => {
   expect(conMov.tiempo_agotado).toBe(false);
 
   // El botón Deshacer está visible mientras el timer corre
-  await page.waitForFunction(() => document.querySelector('#btn-enlaces-deshacer'), null, { timeout: 10000 });
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="deshacer-enlaces"]'), null, { timeout: 10000 });
 
   await deshacer(page);
 
@@ -134,7 +134,7 @@ test('después del time-up no se puede deshacer (botón oculto, fase ESPERA_VALI
   expect(estado.tiempo_agotado).toBe(true);
 
   // El botón Deshacer no existe en ESPERA_VALIDACION
-  const deshacerBtn = await page.locator('#btn-enlaces-deshacer').count();
+  const deshacerBtn = await page.locator('[data-accion-conductor="deshacer-enlaces"]').count();
   expect(deshacerBtn).toBe(0);
 
   // Intentar deshacer vía acción directa: el dominio lanza ValidacionError

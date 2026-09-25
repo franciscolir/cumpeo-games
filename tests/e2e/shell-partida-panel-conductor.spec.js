@@ -1,9 +1,13 @@
 /* =============================================================
-   E2E — Panel conductor con contrato `accionesConductor` (8.5a)
+   E2E — Panel conductor con contrato `accionesConductor` (8.5a / 8.5b.1)
 
    Verifica que el shell renderiza el panel de Trivia desde
    `accionesConductor` (descriptores + data-accion-conductor)
    y que las acciones bindean al onAccion del shell.
+
+   8.5b.1: Anti-Trivia, Canción Incompleta, Enlaces y Historia
+   Enredada exponen `accionesConductor` con convivencia legacy
+   (D1/D8) — el shell los ignora cuando devuelven array vacío.
 
    Nota: Trivia conserva `renderizarPanelConductor` legacy
    (convivencia D8) — el shell lo ignora cuando hay
@@ -221,4 +225,50 @@ test('TriviaGameUI expone accionesConductor y devuelve array en las 8 fases', as
   expect(res.largoINICIO).toBe(1);
   expect(res.largoSELECCIONANDO_SET).toBe(2);
   expect(res.legacyIntacto).toBe(true);
+});
+
+test('4 GameUIs de 8.5b.1: accionesConductor devuelve array por fase, VOTANDO Historia → [] y legacy intacto', async ({ page }) => {
+  await page.goto('/');
+  await waitForCumpeo(page);
+
+  const res = await page.evaluate(() => {
+    const contexto = {
+      equipos: [{ nombre: 'Rojo' }, { nombre: 'Azul' }],
+      setsDisponibles: [{ id: 's1', nombre: 'Set 1' }],
+      itemsDelJuego: []
+    };
+
+    const defs = {
+      ANTI_TRIVIA: ['', 'INICIO_RONDA', 'SELECCIONANDO_SET', 'MOSTRANDO_PREGUNTA', 'RESPONDIENDO', 'ESPERA_VALIDACION', 'MOSTRANDO_RESULTADO', 'CAMBIO_TURNO', 'FIN_DE_RONDA', 'FIN_DE_JUEGO'],
+      CANCION_INCOMPLETA: ['', 'INICIO_RONDA', 'TURNO_ACTIVO', 'ESPERA_VALIDACION', 'FIN_DE_RONDA', 'FIN_DE_JUEGO'],
+      ENLACES: ['', 'INICIO_RONDA', 'SELECCIONANDO_SET', 'PREPARANDO_TABLERO', 'ORDENANDO', 'ESPERA_VALIDACION', 'MOSTRANDO_RESULTADO', 'CAMBIO_TURNO', 'FIN_DE_RONDA'],
+      HISTORIA_ENREDADA: ['', 'INICIO_RONDA', 'SELECCIONANDO_HISTORIA', 'PREPARANDO', 'ACTUANDO', 'VOTANDO', 'FIN_DE_RONDA', 'FIN_DE_JUEGO']
+    };
+
+    const out = {};
+    for (const [codigo, fases] of Object.entries(defs)) {
+      const ui = window.cumpeo.uiRegistry.obtener(codigo);
+      out[codigo] = {
+        esFuncion: typeof ui?.accionesConductor === 'function',
+        legacyIntacto: typeof ui?.renderizarPanelConductor === 'function',
+        arrays: fases.map((f) => Array.isArray(ui?.accionesConductor?.({ fase: f }, contexto))),
+        largoINICIO: ui?.accionesConductor?.({ fase: 'INICIO_RONDA' }, contexto)?.length
+      };
+    }
+
+    // Decisión 8.5b.1 (D3 suspendida): VOTANDO → [] → fallback legacy
+    // (input + botón con { puntos } — el binding `input` envía { valor }).
+    const he = window.cumpeo.uiRegistry.obtener('HISTORIA_ENREDADA');
+    out.votandoVacio = he?.accionesConductor?.({ fase: 'VOTANDO' }, contexto)?.length;
+
+    return out;
+  });
+
+  for (const codigo of ['ANTI_TRIVIA', 'CANCION_INCOMPLETA', 'ENLACES', 'HISTORIA_ENREDADA']) {
+    expect(res[codigo].esFuncion, codigo).toBe(true);
+    expect(res[codigo].legacyIntacto, codigo).toBe(true);
+    expect(res[codigo].arrays.every(Boolean), codigo).toBe(true);
+    expect(res[codigo].largoINICIO, codigo).toBe(1);
+  }
+  expect(res.votandoVacio).toBe(0);
 });

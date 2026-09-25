@@ -98,8 +98,8 @@ test('Eq1 completa turno → CAMBIO_TURNO → Eq2 selecciona set', async ({ page
 
   // Validar sin mover (puede tener aciertos o no) → resultado → cambio turno
   await validarTurno(page);
-  await page.waitForFunction(() => document.querySelector('#btn-enlaces-siguiente-turno'), null, { timeout: 10000 });
-  await page.click('#btn-enlaces-siguiente-turno');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="siguiente-turno-enlaces"]'), null, { timeout: 10000 });
+  await page.click('[data-accion-conductor="siguiente-turno-enlaces"]');
   await esperarFase(page, partidaId, 'CAMBIO_TURNO');
 
   let estado = await obtenerEstadoEnlaces(page, partidaId);
@@ -129,7 +129,7 @@ test('ronda completa Eq1+Eq2 → FIN_DE_RONDA → FIN_DE_JUEGO', async ({ page }
   await iniciarJuegoYRonda(page);
   await elegirSet(page, setIdEq1);
   await validarTurno(page);
-  await page.click('#btn-enlaces-siguiente-turno');
+  await page.click('[data-accion-conductor="siguiente-turno-enlaces"]');
   await esperarFase(page, partidaId, 'CAMBIO_TURNO');
   await iniciarSiguienteTurno(page, partidaId);
   await esperarFase(page, partidaId, 'SELECCIONANDO_SET');
@@ -137,7 +137,7 @@ test('ronda completa Eq1+Eq2 → FIN_DE_RONDA → FIN_DE_JUEGO', async ({ page }
   // Ronda 1 — Eq2
   await elegirSet(page, setIdEq2);
   await validarTurno(page);
-  await page.click('#btn-enlaces-siguiente-turno');
+  await page.click('[data-accion-conductor="siguiente-turno-enlaces"]');
   await esperarFase(page, partidaId, 'CAMBIO_TURNO');
   await iniciarSiguienteTurno(page, partidaId);
   await esperarFase(page, partidaId, 'FIN_DE_RONDA');
@@ -147,8 +147,8 @@ test('ronda completa Eq1+Eq2 → FIN_DE_RONDA → FIN_DE_JUEGO', async ({ page }
   expect(estado.ronda_actual).toBe(1);
 
   // Última ronda (rondas: 1) → FIN_DE_JUEGO
-  await page.waitForFunction(() => document.querySelector('#btn-enlaces-siguiente-ronda'), null, { timeout: 15000 });
-  await page.click('#btn-enlaces-siguiente-ronda');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-siguiente-ronda-enlaces"]'), null, { timeout: 15000 });
+  await page.click('[data-accion-conductor="iniciar-siguiente-ronda-enlaces"]');
   await esperarFase(page, partidaId, 'FIN_DE_JUEGO');
 
   estado = await obtenerEstadoEnlaces(page, partidaId);

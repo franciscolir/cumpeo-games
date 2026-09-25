@@ -38,13 +38,13 @@ test('responder pregunta con acierto → MOSTRANDO_RESULTADO +10', async ({ page
   await iniciarJuegoYRonda(page);
   await elegirSet(page, setIdEq1);
 
-  await page.waitForFunction(() => document.querySelector('#btn-antitrivia-iniciar-respuesta'), null, { timeout: 10000 });
-  await page.click('#btn-antitrivia-iniciar-respuesta');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-respuesta-antitrivia"]'), null, { timeout: 10000 });
+  await page.click('[data-accion-conductor="iniciar-respuesta-antitrivia"]');
   await page.waitForTimeout(300);
 
-  await page.waitForFunction(() => document.querySelector('#btn-antitrivia-acierto'), null, { timeout: 10000 });
-  await page.click('#btn-antitrivia-acierto');
-  await page.waitForFunction(() => document.querySelector('#btn-antitrivia-siguiente-pregunta'), null, { timeout: 10000 });
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="marcar-acierto-antitrivia"]'), null, { timeout: 10000 });
+  await page.click('[data-accion-conductor="marcar-acierto-antitrivia"]');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="siguiente-pregunta-antitrivia"]'), null, { timeout: 10000 });
   await page.waitForTimeout(300);
 
   const estado = await obtenerEstadoAntiTrivia(page, partidaId);
@@ -65,7 +65,7 @@ test('Eq1 completa 5 preguntas → CAMBIO_TURNO → Eq2', async ({ page }) => {
   await elegirSet(page, setIdEq1);
   await jugarTurnoCompleto(page, 'acierto');
 
-  await page.waitForFunction(() => document.querySelector('#btn-antitrivia-iniciar-turno'), null, { timeout: 15000 });
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-turno-antitrivia"]'), null, { timeout: 15000 });
 
   const estado = await obtenerEstadoAntiTrivia(page, partidaId);
   expect(estado.fase).toBe('CAMBIO_TURNO');
@@ -87,15 +87,15 @@ test('ronda completa Eq1+Eq2 → FIN_DE_RONDA → FIN_DE_JUEGO', async ({ page }
   await jugarTurnoCompleto(page, 'acierto');
 
   // Cambio de turno → Eq2
-  await page.waitForFunction(() => document.querySelector('#btn-antitrivia-iniciar-turno'), null, { timeout: 15000 });
-  await page.click('#btn-antitrivia-iniciar-turno');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-turno-antitrivia"]'), null, { timeout: 15000 });
+  await page.click('[data-accion-conductor="iniciar-turno-antitrivia"]');
   await page.waitForTimeout(300);
-  await page.waitForFunction(() => document.querySelector('[data-set-id]'), null, { timeout: 10000 });
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="seleccionar-set-antitrivia"]'), null, { timeout: 10000 });
   await elegirSet(page, setIdEq2);
 
   // Eq2 completa su turno → FIN_DE_RONDA
   await jugarTurnoCompleto(page, 'acierto');
-  await page.waitForFunction(() => document.querySelector('#btn-antitrivia-siguiente-ronda'), null, { timeout: 15000 });
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-siguiente-ronda-antitrivia"]'), null, { timeout: 15000 });
 
   let estado = await obtenerEstadoAntiTrivia(page, partidaId);
   expect(estado.fase).toBe('FIN_DE_RONDA');
@@ -103,13 +103,13 @@ test('ronda completa Eq1+Eq2 → FIN_DE_RONDA → FIN_DE_JUEGO', async ({ page }
   expect(estado.puntos_equipo_2).toBe(50);
 
   // Última ronda (rondas: 1) → FIN_DE_JUEGO
-  await page.click('#btn-antitrivia-siguiente-ronda');
+  await page.click('[data-accion-conductor="iniciar-siguiente-ronda-antitrivia"]');
   await page.waitForTimeout(300);
   await page.waitForFunction(() => {
     const panel = document.querySelector('#shell-panel-conductor');
     if (!panel) return false;
-    return !panel.querySelector('#btn-antitrivia-iniciar-ronda') &&
-           !panel.querySelector('#btn-antitrivia-siguiente-ronda');
+    return !panel.querySelector('[data-accion-conductor="iniciar-ronda-antitrivia"]') &&
+           !panel.querySelector('[data-accion-conductor="iniciar-siguiente-ronda-antitrivia"]');
   }, null, { timeout: 10000 });
 
   estado = await obtenerEstadoAntiTrivia(page, partidaId);

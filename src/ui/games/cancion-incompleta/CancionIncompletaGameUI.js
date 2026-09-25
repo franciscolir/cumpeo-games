@@ -221,6 +221,57 @@ export const CancionIncompletaGameUI = {
     }
   },
 
+  /**
+   * Declara las acciones del panel conductor para la fase actual
+   * (contrato 8.5b.1). El shell renderiza desde estos descriptores;
+   * si devuelve `[]` delega en `renderizarPanelConductor` legacy (D1/D8).
+   *
+   * El timer se cancela vía re-render del área (estado `timer_corriendo`).
+   *
+   * @param {object} estadoJuego estado crudo del juego
+   * @param {object} contexto
+   * @returns {Array<object>} descriptores de acción
+   */
+  accionesConductor(estadoJuego, contexto) {
+    const fase = estadoJuego?.fase || '';
+    const equipo1 = contexto?.equipos?.[0] || { nombre: 'Eq1' };
+    const equipo2 = contexto?.equipos?.[1] || { nombre: 'Eq2' };
+    const equipoActual = estadoJuego?.equipo_actual || 1;
+    const nombreEquipoActual = equipoActual === 1 ? equipo1.nombre : equipo2.nombre;
+    const timerCorriendo = !!estadoJuego?.timer_corriendo;
+
+    switch (fase) {
+      case '':
+        return [
+          { tipo: 'primario', texto: 'Iniciar juego', accion: 'iniciar-juego-cancion-incompleta' }
+        ];
+
+      case 'INICIO_RONDA':
+        return [
+          { tipo: 'primario', texto: `Iniciar turno — ${nombreEquipoActual}`, accion: 'iniciar-turno-cancion-incompleta' }
+        ];
+
+      case 'TURNO_ACTIVO':
+        return timerCorriendo
+          ? [{ tipo: 'fantasma', texto: 'Detener tiempo', accion: 'detener-tiempo-cancion-incompleta' }]
+          : [{ tipo: 'primario', texto: 'Iniciar tiempo', accion: 'iniciar-tiempo-cancion-incompleta' }];
+
+      case 'ESPERA_VALIDACION':
+        return [
+          { tipo: 'primario', texto: 'Correcto', accion: 'marcar-acierto-cancion-incompleta' },
+          { tipo: 'peligro', texto: 'Incorrecto', accion: 'marcar-error-cancion-incompleta' }
+        ];
+
+      case 'FIN_DE_RONDA':
+        return [
+          { tipo: 'primario', texto: 'Siguiente ronda', accion: 'siguiente-ronda-cancion-incompleta' }
+        ];
+
+      default:
+        return [];
+    }
+  },
+
   cleanup() {
     _cancelarTimer();
   }

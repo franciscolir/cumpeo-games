@@ -85,7 +85,7 @@ test('empate técnico al final de ambos turnos con mismo puntaje', async ({ page
   let moves = planificarOrden(estado.columna_b, objetivo);
   await aplicarMovimientos(page, partidaId, moves, estado);
   await validarTurno(page);
-  await page.click('#btn-enlaces-siguiente-turno');
+  await page.click('[data-accion-conductor="siguiente-turno-enlaces"]');
   await esperarFase(page, partidaId, 'CAMBIO_TURNO');
   await iniciarSiguienteTurno(page, partidaId);
   await esperarFase(page, partidaId, 'SELECCIONANDO_SET');
@@ -97,14 +97,14 @@ test('empate técnico al final de ambos turnos con mismo puntaje', async ({ page
   moves = planificarOrden(estado.columna_b, objetivo);
   await aplicarMovimientos(page, partidaId, moves, estado);
   await validarTurno(page);
-  await page.click('#btn-enlaces-siguiente-turno');
+  await page.click('[data-accion-conductor="siguiente-turno-enlaces"]');
   await esperarFase(page, partidaId, 'CAMBIO_TURNO');
   await iniciarSiguienteTurno(page, partidaId);
   await esperarFase(page, partidaId, 'FIN_DE_RONDA');
 
   // FIN_DE_RONDA → FIN_DE_JUEGO
-  await page.waitForFunction(() => document.querySelector('#btn-enlaces-siguiente-ronda'), null, { timeout: 15000 });
-  await page.click('#btn-enlaces-siguiente-ronda');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-siguiente-ronda-enlaces"]'), null, { timeout: 15000 });
+  await page.click('[data-accion-conductor="iniciar-siguiente-ronda-enlaces"]');
   await esperarFase(page, partidaId, 'FIN_DE_JUEGO');
 
   const final = await obtenerEstadoEnlaces(page, partidaId);

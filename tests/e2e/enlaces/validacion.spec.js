@@ -102,7 +102,7 @@ test('múltiples rondas: FIN_DE_RONDA → siguiente ronda → INICIO_RONDA ronda
   await iniciarJuegoYRonda(page);
   await elegirSet(page, setIdEq1);
   await validarTurno(page);
-  await page.click('#btn-enlaces-siguiente-turno');
+  await page.click('[data-accion-conductor="siguiente-turno-enlaces"]');
   await esperarFase(page, partidaId, 'CAMBIO_TURNO');
   await iniciarSiguienteTurno(page, partidaId);
   await esperarFase(page, partidaId, 'SELECCIONANDO_SET');
@@ -110,16 +110,16 @@ test('múltiples rondas: FIN_DE_RONDA → siguiente ronda → INICIO_RONDA ronda
   // Ronda 1 — Eq2
   await elegirSet(page, setIdEq2);
   await validarTurno(page);
-  await page.click('#btn-enlaces-siguiente-turno');
+  await page.click('[data-accion-conductor="siguiente-turno-enlaces"]');
   await esperarFase(page, partidaId, 'CAMBIO_TURNO');
   await iniciarSiguienteTurno(page, partidaId);
   await esperarFase(page, partidaId, 'FIN_DE_RONDA');
 
   // FIN_DE_RONDA ronda 1 → siguiente ronda
-  await page.waitForFunction(() => document.querySelector('#btn-enlaces-siguiente-ronda'), null, { timeout: 15000 });
-  await page.click('#btn-enlaces-siguiente-ronda');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-siguiente-ronda-enlaces"]'), null, { timeout: 15000 });
+  await page.click('[data-accion-conductor="iniciar-siguiente-ronda-enlaces"]');
   await page.waitForTimeout(400);
-  await page.waitForFunction(() => document.querySelector('#btn-enlaces-iniciar-ronda'), null, { timeout: 10000 });
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-ronda-enlaces"]'), null, { timeout: 10000 });
 
   const estado = await obtenerEstadoEnlaces(page, partidaId);
   expect(estado.ronda_actual).toBe(2);

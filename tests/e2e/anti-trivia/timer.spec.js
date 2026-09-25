@@ -22,16 +22,16 @@ test('time-up muestra botones "El jugador respondió" / "No respondió"', async 
   await iniciarJuegoYRonda(page);
   await elegirSet(page, setIdEq1);
 
-  await page.waitForFunction(() => document.querySelector('#btn-antitrivia-iniciar-respuesta'), null, { timeout: 10000 });
-  await page.click('#btn-antitrivia-iniciar-respuesta');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-respuesta-antitrivia"]'), null, { timeout: 10000 });
+  await page.click('[data-accion-conductor="iniciar-respuesta-antitrivia"]');
   await page.waitForTimeout(300);
 
   // Esperar time-up: aparecen los 2 botones de decisión
   await page.waitForFunction(() => {
     const panel = document.querySelector('#shell-panel-conductor');
     return panel &&
-      panel.querySelector('#btn-antitrivia-jugador-respondio') &&
-      panel.querySelector('#btn-antitrivia-no-respondio');
+      panel.querySelector('[data-accion-conductor="jugador-respondio-antitrivia"]') &&
+      panel.querySelector('[data-accion-conductor="no-respondio-antitrivia"]');
   }, null, { timeout: 15000 });
 
   const estado = await obtenerEstadoAntiTrivia(page, partidaId);
@@ -50,25 +50,25 @@ test('time-up + "El jugador respondió" → ESPERA_VALIDACION → acierto', asyn
   await iniciarJuegoYRonda(page);
   await elegirSet(page, setIdEq1);
 
-  await page.waitForFunction(() => document.querySelector('#btn-antitrivia-iniciar-respuesta'), null, { timeout: 10000 });
-  await page.click('#btn-antitrivia-iniciar-respuesta');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-respuesta-antitrivia"]'), null, { timeout: 10000 });
+  await page.click('[data-accion-conductor="iniciar-respuesta-antitrivia"]');
   await page.waitForTimeout(300);
 
-  await page.waitForFunction(() => document.querySelector('#btn-antitrivia-jugador-respondio'), null, { timeout: 15000 });
-  await page.click('#btn-antitrivia-jugador-respondio');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="jugador-respondio-antitrivia"]'), null, { timeout: 15000 });
+  await page.click('[data-accion-conductor="jugador-respondio-antitrivia"]');
   await page.waitForTimeout(300);
 
   await page.waitForFunction(() => {
     const panel = document.querySelector('#shell-panel-conductor');
-    return panel && panel.querySelector('#btn-antitrivia-acierto');
+    return panel && panel.querySelector('[data-accion-conductor="marcar-acierto-antitrivia"]');
   }, null, { timeout: 10000 });
 
   let estado = await obtenerEstadoAntiTrivia(page, partidaId);
   expect(estado.fase).toBe('ESPERA_VALIDACION');
 
   // Validar acierto desde ESPERA_VALIDACION
-  await page.click('#btn-antitrivia-acierto');
-  await page.waitForFunction(() => document.querySelector('#btn-antitrivia-siguiente-pregunta'), null, { timeout: 10000 });
+  await page.click('[data-accion-conductor="marcar-acierto-antitrivia"]');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="siguiente-pregunta-antitrivia"]'), null, { timeout: 10000 });
   await page.waitForTimeout(300);
 
   estado = await obtenerEstadoAntiTrivia(page, partidaId);
@@ -87,15 +87,15 @@ test('time-up + "No respondió" → MOSTRANDO_RESULTADO sin puntaje', async ({ p
   await iniciarJuegoYRonda(page);
   await elegirSet(page, setIdEq1);
 
-  await page.waitForFunction(() => document.querySelector('#btn-antitrivia-iniciar-respuesta'), null, { timeout: 10000 });
-  await page.click('#btn-antitrivia-iniciar-respuesta');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-respuesta-antitrivia"]'), null, { timeout: 10000 });
+  await page.click('[data-accion-conductor="iniciar-respuesta-antitrivia"]');
   await page.waitForTimeout(300);
 
-  await page.waitForFunction(() => document.querySelector('#btn-antitrivia-no-respondio'), null, { timeout: 15000 });
-  await page.click('#btn-antitrivia-no-respondio');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="no-respondio-antitrivia"]'), null, { timeout: 15000 });
+  await page.click('[data-accion-conductor="no-respondio-antitrivia"]');
   await page.waitForTimeout(300);
 
-  await page.waitForFunction(() => document.querySelector('#btn-antitrivia-siguiente-pregunta'), null, { timeout: 10000 });
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="siguiente-pregunta-antitrivia"]'), null, { timeout: 10000 });
   await page.waitForTimeout(300);
 
   const estado = await obtenerEstadoAntiTrivia(page, partidaId);

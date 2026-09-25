@@ -105,18 +105,18 @@ test('múltiples rondas: FIN_DE_RONDA → siguiente ronda → INICIO_RONDA ronda
   await page.waitForTimeout(300);
 
   // Ronda 1 — Eq2
-  await page.waitForFunction(() => document.querySelector('#btn-antitrivia-iniciar-turno'), null, { timeout: 15000 });
-  await page.click('#btn-antitrivia-iniciar-turno');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-turno-antitrivia"]'), null, { timeout: 15000 });
+  await page.click('[data-accion-conductor="iniciar-turno-antitrivia"]');
   await page.waitForTimeout(300);
-  await page.waitForFunction(() => document.querySelector('[data-set-id]'), null, { timeout: 10000 });
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="seleccionar-set-antitrivia"]'), null, { timeout: 10000 });
   await elegirSet(page, setIdEq2);
   await jugarTurnoCompleto(page, 'acierto');
 
   // FIN_DE_RONDA ronda 1 → siguiente ronda
-  await page.waitForFunction(() => document.querySelector('#btn-antitrivia-siguiente-ronda'), null, { timeout: 15000 });
-  await page.click('#btn-antitrivia-siguiente-ronda');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-siguiente-ronda-antitrivia"]'), null, { timeout: 15000 });
+  await page.click('[data-accion-conductor="iniciar-siguiente-ronda-antitrivia"]');
   await page.waitForTimeout(300);
-  await page.waitForFunction(() => document.querySelector('#btn-antitrivia-iniciar-ronda'), null, { timeout: 10000 });
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-ronda-antitrivia"]'), null, { timeout: 10000 });
 
   const estado = await obtenerEstadoAntiTrivia(page, partidaId);
   expect(estado.ronda_actual).toBe(2);

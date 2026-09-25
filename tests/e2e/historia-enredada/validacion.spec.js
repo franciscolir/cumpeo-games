@@ -17,42 +17,42 @@ test('múltiples rondas: FIN_DE_RONDA → siguiente ronda → FIN_DE_JUEGO', asy
   await waitForCumpeo(page);
   await iniciarPartidaHistoriaEnredada(page, partidaId);
 
-  await page.waitForFunction(() => document.querySelector('#btn-he-iniciar-juego'), { timeout: 20000 });
-  await page.click('#btn-he-iniciar-juego');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-juego-historia"]'), { timeout: 20000 });
+  await page.click('[data-accion-conductor="iniciar-juego-historia"]');
   await page.waitForTimeout(300);
 
   // Ronda 1
-  await page.waitForFunction(() => document.querySelector('#btn-he-iniciar-ronda'), { timeout: 10000 });
-  await page.click('#btn-he-iniciar-ronda');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-ronda-historia"]'), { timeout: 10000 });
+  await page.click('[data-accion-conductor="iniciar-ronda-historia"]');
   await page.waitForTimeout(300);
 
   // Eq1
-  await page.waitForFunction(() => document.querySelector('[data-historia-id]'), { timeout: 10000 });
-  await page.locator('[data-historia-id]').first().click();
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="seleccionar-historia-historia"]'), { timeout: 10000 });
+  await page.locator('[data-accion-conductor="seleccionar-historia-historia"]').first().click();
   await page.waitForTimeout(300);
-  await page.click('#btn-he-empezar-actuacion');
+  await page.click('[data-accion-conductor="empezar-actuacion-historia"]');
   await page.waitForTimeout(300);
-  await page.click('#btn-he-empezar-votacion');
+  await page.click('[data-accion-conductor="empezar-votacion-historia"]');
   await page.waitForTimeout(300);
   await page.fill('#input-puntos-historia', '5');
   await page.click('#btn-he-asignar-puntos');
   await page.waitForTimeout(500);
 
   // Eq2
-  await page.waitForFunction(() => document.querySelector('[data-historia-id]'), { timeout: 10000 });
-  await page.locator('[data-historia-id]').first().click();
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="seleccionar-historia-historia"]'), { timeout: 10000 });
+  await page.locator('[data-accion-conductor="seleccionar-historia-historia"]').first().click();
   await page.waitForTimeout(300);
-  await page.click('#btn-he-empezar-actuacion');
+  await page.click('[data-accion-conductor="empezar-actuacion-historia"]');
   await page.waitForTimeout(300);
-  await page.click('#btn-he-empezar-votacion');
+  await page.click('[data-accion-conductor="empezar-votacion-historia"]');
   await page.waitForTimeout(300);
   await page.fill('#input-puntos-historia', '3');
   await page.click('#btn-he-asignar-puntos');
   await page.waitForTimeout(500);
 
   // Verificar FIN_DE_RONDA con botón siguiente ronda
-  await page.waitForFunction(() => document.querySelector('#btn-he-siguiente-ronda'), { timeout: 10000 });
-  await page.click('#btn-he-siguiente-ronda');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-siguiente-ronda-historia"]'), { timeout: 10000 });
+  await page.click('[data-accion-conductor="iniciar-siguiente-ronda-historia"]');
   await page.waitForTimeout(500);
 
   // Verificar ronda 2

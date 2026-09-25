@@ -15,35 +15,35 @@ test('crear partida + iniciar + elegir historia', async ({ page }) => {
   // Iniciar juego
   await page.waitForFunction(() => {
     const panel = document.querySelector('#shell-panel-conductor');
-    return panel && panel.querySelector('#btn-he-iniciar-juego');
+    return panel && panel.querySelector('[data-accion-conductor="iniciar-juego-historia"]');
   }, { timeout: 20000 });
 
-  await page.click('#btn-he-iniciar-juego');
+  await page.click('[data-accion-conductor="iniciar-juego-historia"]');
   await page.waitForTimeout(300);
 
   // Iniciar ronda
   await page.waitForFunction(() => {
     const panel = document.querySelector('#shell-panel-conductor');
-    return panel && panel.querySelector('#btn-he-iniciar-ronda');
+    return panel && panel.querySelector('[data-accion-conductor="iniciar-ronda-historia"]');
   }, { timeout: 10000 });
 
-  await page.click('#btn-he-iniciar-ronda');
+  await page.click('[data-accion-conductor="iniciar-ronda-historia"]');
   await page.waitForTimeout(300);
 
   // Elegir primera historia
   await page.waitForFunction(() => {
     const panel = document.querySelector('#shell-panel-conductor');
-    return panel && panel.querySelector('[data-historia-id]');
+    return panel && panel.querySelector('[data-accion-conductor="seleccionar-historia-historia"]');
   }, { timeout: 10000 });
 
-  const primeraCard = page.locator('[data-historia-id]').first();
+  const primeraCard = page.locator('[data-accion-conductor="seleccionar-historia-historia"]').first();
   await primeraCard.click();
   await page.waitForTimeout(500);
 
   // Verificar que estamos en PREPARANDO
   await page.waitForFunction(() => {
     const panel = document.querySelector('#shell-panel-conductor');
-    return panel && panel.querySelector('#btn-he-empezar-actuacion');
+    return panel && panel.querySelector('[data-accion-conductor="empezar-actuacion-historia"]');
   }, { timeout: 10000 });
 });
 
@@ -54,24 +54,24 @@ test('ciclo completo Eq1: elegir → preparar → actuar → votar → asignar p
   await waitForCumpeo(page);
   await iniciarPartidaHistoriaEnredada(page, partidaId);
 
-  await page.waitForFunction(() => document.querySelector('#btn-he-iniciar-juego'), { timeout: 20000 });
-  await page.click('#btn-he-iniciar-juego');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-juego-historia"]'), { timeout: 20000 });
+  await page.click('[data-accion-conductor="iniciar-juego-historia"]');
   await page.waitForTimeout(300);
 
-  await page.waitForFunction(() => document.querySelector('#btn-he-iniciar-ronda'), { timeout: 10000 });
-  await page.click('#btn-he-iniciar-ronda');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-ronda-historia"]'), { timeout: 10000 });
+  await page.click('[data-accion-conductor="iniciar-ronda-historia"]');
   await page.waitForTimeout(300);
 
-  await page.waitForFunction(() => document.querySelector('[data-historia-id]'), { timeout: 10000 });
-  await page.locator('[data-historia-id]').first().click();
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="seleccionar-historia-historia"]'), { timeout: 10000 });
+  await page.locator('[data-accion-conductor="seleccionar-historia-historia"]').first().click();
   await page.waitForTimeout(300);
 
-  await page.waitForFunction(() => document.querySelector('#btn-he-empezar-actuacion'), { timeout: 10000 });
-  await page.click('#btn-he-empezar-actuacion');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="empezar-actuacion-historia"]'), { timeout: 10000 });
+  await page.click('[data-accion-conductor="empezar-actuacion-historia"]');
   await page.waitForTimeout(300);
 
-  await page.waitForFunction(() => document.querySelector('#btn-he-empezar-votacion'), { timeout: 10000 });
-  await page.click('#btn-he-empezar-votacion');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="empezar-votacion-historia"]'), { timeout: 10000 });
+  await page.click('[data-accion-conductor="empezar-votacion-historia"]');
   await page.waitForTimeout(300);
 
   await page.waitForFunction(() => document.querySelector('#input-puntos-historia'), { timeout: 10000 });
@@ -97,23 +97,23 @@ test('ciclo Eq1 + Eq2 → FIN_DE_RONDA', async ({ page }) => {
   await waitForCumpeo(page);
   await iniciarPartidaHistoriaEnredada(page, partidaId);
 
-  await page.waitForFunction(() => document.querySelector('#btn-he-iniciar-juego'), { timeout: 20000 });
-  await page.click('#btn-he-iniciar-juego');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-juego-historia"]'), { timeout: 20000 });
+  await page.click('[data-accion-conductor="iniciar-juego-historia"]');
   await page.waitForTimeout(300);
 
-  await page.waitForFunction(() => document.querySelector('#btn-he-iniciar-ronda'), { timeout: 10000 });
-  await page.click('#btn-he-iniciar-ronda');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-ronda-historia"]'), { timeout: 10000 });
+  await page.click('[data-accion-conductor="iniciar-ronda-historia"]');
   await page.waitForTimeout(300);
 
   // Ciclo Eq1
-  await page.waitForFunction(() => document.querySelector('[data-historia-id]'), { timeout: 10000 });
-  await page.locator('[data-historia-id]').first().click();
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="seleccionar-historia-historia"]'), { timeout: 10000 });
+  await page.locator('[data-accion-conductor="seleccionar-historia-historia"]').first().click();
   await page.waitForTimeout(300);
-  await page.waitForFunction(() => document.querySelector('#btn-he-empezar-actuacion'), { timeout: 10000 });
-  await page.click('#btn-he-empezar-actuacion');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="empezar-actuacion-historia"]'), { timeout: 10000 });
+  await page.click('[data-accion-conductor="empezar-actuacion-historia"]');
   await page.waitForTimeout(300);
-  await page.waitForFunction(() => document.querySelector('#btn-he-empezar-votacion'), { timeout: 10000 });
-  await page.click('#btn-he-empezar-votacion');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="empezar-votacion-historia"]'), { timeout: 10000 });
+  await page.click('[data-accion-conductor="empezar-votacion-historia"]');
   await page.waitForTimeout(300);
   await page.waitForFunction(() => document.querySelector('#input-puntos-historia'), { timeout: 10000 });
   await page.fill('#input-puntos-historia', '5');
@@ -121,14 +121,14 @@ test('ciclo Eq1 + Eq2 → FIN_DE_RONDA', async ({ page }) => {
   await page.waitForTimeout(500);
 
   // Ciclo Eq2
-  await page.waitForFunction(() => document.querySelector('[data-historia-id]'), { timeout: 10000 });
-  await page.locator('[data-historia-id]').first().click();
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="seleccionar-historia-historia"]'), { timeout: 10000 });
+  await page.locator('[data-accion-conductor="seleccionar-historia-historia"]').first().click();
   await page.waitForTimeout(300);
-  await page.waitForFunction(() => document.querySelector('#btn-he-empezar-actuacion'), { timeout: 10000 });
-  await page.click('#btn-he-empezar-actuacion');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="empezar-actuacion-historia"]'), { timeout: 10000 });
+  await page.click('[data-accion-conductor="empezar-actuacion-historia"]');
   await page.waitForTimeout(300);
-  await page.waitForFunction(() => document.querySelector('#btn-he-empezar-votacion'), { timeout: 10000 });
-  await page.click('#btn-he-empezar-votacion');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="empezar-votacion-historia"]'), { timeout: 10000 });
+  await page.click('[data-accion-conductor="empezar-votacion-historia"]');
   await page.waitForTimeout(300);
   await page.waitForFunction(() => document.querySelector('#input-puntos-historia'), { timeout: 10000 });
   await page.fill('#input-puntos-historia', '8');

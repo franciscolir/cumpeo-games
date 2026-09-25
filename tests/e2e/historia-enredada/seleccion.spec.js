@@ -10,14 +10,14 @@ test('conductor ve cards de historias disponibles', async ({ page }) => {
   await waitForCumpeo(page);
   await iniciarPartidaHistoriaEnredada(page, partidaId);
 
-  await page.waitForFunction(() => document.querySelector('#btn-he-iniciar-juego'), { timeout: 20000 });
-  await page.click('#btn-he-iniciar-juego');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-juego-historia"]'), { timeout: 20000 });
+  await page.click('[data-accion-conductor="iniciar-juego-historia"]');
   await page.waitForTimeout(300);
-  await page.waitForFunction(() => document.querySelector('#btn-he-iniciar-ronda'), { timeout: 10000 });
-  await page.click('#btn-he-iniciar-ronda');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-ronda-historia"]'), { timeout: 10000 });
+  await page.click('[data-accion-conductor="iniciar-ronda-historia"]');
   await page.waitForTimeout(300);
 
-  const cards = page.locator('[data-historia-id]');
+  const cards = page.locator('[data-accion-conductor="seleccionar-historia-historia"]');
   await expect(cards).toHaveCount(3, { timeout: 10000 });
 });
 
@@ -27,30 +27,30 @@ test('cards excluyen historias usadas', async ({ page }) => {
   await waitForCumpeo(page);
   await iniciarPartidaHistoriaEnredada(page, partidaId);
 
-  await page.waitForFunction(() => document.querySelector('#btn-he-iniciar-juego'), { timeout: 20000 });
-  await page.click('#btn-he-iniciar-juego');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-juego-historia"]'), { timeout: 20000 });
+  await page.click('[data-accion-conductor="iniciar-juego-historia"]');
   await page.waitForTimeout(300);
-  await page.waitForFunction(() => document.querySelector('#btn-he-iniciar-ronda'), { timeout: 10000 });
-  await page.click('#btn-he-iniciar-ronda');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-ronda-historia"]'), { timeout: 10000 });
+  await page.click('[data-accion-conductor="iniciar-ronda-historia"]');
   await page.waitForTimeout(300);
 
   // Elegir primera historia
-  await page.locator('[data-historia-id]').first().click();
+  await page.locator('[data-accion-conductor="seleccionar-historia-historia"]').first().click();
 
   // Esperar a que la fase sea PREPARANDO
   await page.waitForFunction(() => {
     const panel = document.querySelector('#shell-panel-conductor');
-    return panel && panel.querySelector('#btn-he-empezar-actuacion');
+    return panel && panel.querySelector('[data-accion-conductor="empezar-actuacion-historia"]');
   }, { timeout: 10000 });
 
   // Ciclo Eq1: actuación → votación → asignar
-  await page.click('#btn-he-empezar-actuacion');
+  await page.click('[data-accion-conductor="empezar-actuacion-historia"]');
   await page.waitForFunction(() => {
     const panel = document.querySelector('#shell-panel-conductor');
-    return panel && panel.querySelector('#btn-he-empezar-votacion');
+    return panel && panel.querySelector('[data-accion-conductor="empezar-votacion-historia"]');
   }, { timeout: 10000 });
 
-  await page.click('#btn-he-empezar-votacion');
+  await page.click('[data-accion-conductor="empezar-votacion-historia"]');
   await page.waitForFunction(() => {
     const panel = document.querySelector('#shell-panel-conductor');
     return panel && panel.querySelector('#input-puntos-historia');
@@ -67,7 +67,7 @@ test('cards excluyen historias usadas', async ({ page }) => {
   }, { timeout: 10000 });
 
   // Ahora Eq2 debe ver solo 2 cards (la 1 ya fue usada)
-  const cards = page.locator('[data-historia-id]');
+  const cards = page.locator('[data-accion-conductor="seleccionar-historia-historia"]');
   await expect(cards).toHaveCount(2, { timeout: 10000 });
 });
 
@@ -78,15 +78,15 @@ test('público ve la historia elegida', async ({ page }) => {
   await waitForCumpeo(page);
   await iniciarPartidaHistoriaEnredada(page, partidaId);
 
-  await page.waitForFunction(() => document.querySelector('#btn-he-iniciar-juego'), { timeout: 20000 });
-  await page.click('#btn-he-iniciar-juego');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-juego-historia"]'), { timeout: 20000 });
+  await page.click('[data-accion-conductor="iniciar-juego-historia"]');
   await page.waitForTimeout(300);
-  await page.waitForFunction(() => document.querySelector('#btn-he-iniciar-ronda'), { timeout: 10000 });
-  await page.click('#btn-he-iniciar-ronda');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-ronda-historia"]'), { timeout: 10000 });
+  await page.click('[data-accion-conductor="iniciar-ronda-historia"]');
   await page.waitForTimeout(300);
-  await page.locator('[data-historia-id]').first().click();
+  await page.locator('[data-accion-conductor="seleccionar-historia-historia"]').first().click();
   await page.waitForTimeout(500);
-  await page.click('#btn-he-empezar-actuacion');
+  await page.click('[data-accion-conductor="empezar-actuacion-historia"]');
   await page.waitForTimeout(500);
 
   await irAPublica(page, codigo);
