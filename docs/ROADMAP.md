@@ -1,8 +1,8 @@
 # CUMPEO — Roadmap de Construcción
 
 **Versión:** 1.0
-**Última actualización:** 2026-09-18
-**Estado global:** Bloques 0, 1, 2, 3, 4, 5 cerrados · Bloque 6 pospuesto · Bloque 7 cerrado (24/24) · Bloque 8 en progreso (1/11) · ★ MVP alcanzado ★
+**Última actualización:** 2026-09-25
+**Estado global:** Bloques 0–5 y 7 cerrados · Bloque 6 pospuesto · Bloque 8 cerrado con deudas (15/19) · ★ MVP alcanzado ★
 **Rama:** feature/vertical-slice
 
 ---
@@ -22,8 +22,8 @@
 | Métrica | Valor |
 |---------|-------|
 | Bloques totales | 9 (0 al 8) |
-| Bloques cerrados | 7 (Bloques 0, 1, 2, 3, 4, 5, 7) |
-| Bloques en progreso | 1 (Bloque 8 — Rediseño del shell) |
+| Bloques cerrados | 8 (Bloques 0, 1, 2, 3, 4, 5, 7, 8) |
+| Bloques en progreso | 0 |
 | Bloques pendientes | 1 (Bloque 6, opcional) |
 | MVP alcanzado | Sí (al cerrar Bloque 4, 2026-09-21) |
 | Fecha estimada MVP | Alcanzado |
@@ -41,7 +41,7 @@
 | 5 | Juegos restantes | ✅ CERRADO | 11/11 | 9b7dfdc | 2026-09-23 |
 | 6 | Migración e2e a Supabase (opcional) | ⏸️ POSPUESTO | — | — | 2026-09-23 |
 | 7 | Formularios de sets por juego | ✅ CERRADO | 24/24 | c0d44de | 2026-09-24 |
-| 8 | Rediseño del shell | 🔜 EN PROGRESO | 1/11 | — | 2026-09-24 |
+| 8 | Rediseño del shell | ✅ CERRADO CON DEUDAS (15/19) | 15/19 | — | 2026-09-25 |
 
 **★ MVP se alcanza al cerrar el Bloque 4 ★**
 **Decisión al cerrar Bloque 5 (2026-09-23):** POSPUESTO INDEFINIDAMENTE.
@@ -261,7 +261,7 @@ de implementarse.
 
 ---
 
-### Bloque 8 — Rediseño del shell 🔜 EN PROGRESO (1/11)
+### Bloque 8 — Rediseño del shell ✅ CERRADO CON DEUDAS (15/19)
 
 **Objetivo:** Rediseñar el shell de partida (conductor y pública): Modal
 compartido, `pausado_at`, ajustes globales, barra superior unificada,
@@ -273,25 +273,29 @@ Fuente: `docs/PANTALLAS.md` §8 (plan de 11 pasos, gaps #1–#11).
 |---|------|--------|--------|
 | 8.0 | Modal componente compartido | ✅ APROBADO | c59f41c |
 | 8.1 | `pausado_at` + ajustes_globales | ✅ APROBADO | 1193983 |
-| 8.2 | Barra superior unificada (conductor) | 🕓 IMPLEMENTADO (sin commit) | PENDIENTE |
-| 8.3 | Modal de pausa + contador (sin auto-transición: deuda #123 → 8.4) | 🕓 IMPLEMENTADO (sin commit) | PENDIENTE |
-| 8.4 | Botón MODO ESPERA + estado UI + auto-transición (cierra #123 y #124) | 🕓 IMPLEMENTADO (sin commit) | PENDIENTE |
-| 8.5a | Contrato `accionesConductor` + piloto Trivia (funde 8.5-pre) | 🕓 IMPLEMENTADO (sin commit) | PENDIENTE |
-| 8.5b.1 | Migrar 4 GameUIs a `accionesConductor` (Anti-Trivia, Canción Incompleta, Enlaces, Historia Enredada) | 🕓 IMPLEMENTADO (sin commit) | PENDIENTE |
-| 8.5b.2 | Migrar 3 GameUIs a `accionesConductor` (Memoria, Pictionary, Rosco) | 🕓 IMPLEMENTADO (sin commit) | PENDIENTE |
-| 8.5c.1 | Extender contrato `accionesConductor` (input/selector con `payload`, descriptor `html`) + Memoria `JUGANDO` → `selector` (cierra #129/#130) | 🕓 IMPLEMENTADO (sin commit) | PENDIENTE |
-| 8.5c.2a | Migrar Rosco `TURNO_ACTIVO` (html + 5 botones) y Historia `VOTANDO` (input) al contrato (cierra #129; #133 Pictionary) | 🕓 IMPLEMENTADO (sin commit) | PENDIENTE |
-| 8.5c.2b | Migrar QPEP a `accionesConductor` (6 fases, 3 handlers `registrar-pronostico/revelar/siguiente-qpep`, `calcularPuntos` al GameDefinition; e2e ×3; cierra #128) | 🕓 IMPLEMENTADO (sin commit) | PENDIENTE |
-| 8.5d-pre | Reescribir e2e de Pictionary (helper + 4 specs) al flujo real de submodos — 11/11, cierra #122 | 🕓 IMPLEMENTADO (sin commit) | PENDIENTE |
-| 8.5d | Migrar Pictionary a `accionesConductor` (9 fases + bonus `input` con `payload { equipo }`; e2e ×11 a `data-accion-conductor`; cierra #131 y #133) | 🕓 IMPLEMENTADO (sin commit) | PENDIENTE |
+| 8.2 | Barra superior unificada (conductor) | ✅ APROBADO | 2b8bf0b |
+| 8.3 | Modal de pausa + contador (sin auto-transición: deuda #123 → 8.4) | ✅ APROBADO | d1ca27a |
+| 8.4 | Botón MODO ESPERA + estado UI + auto-transición (cierra #123 y #124) | ✅ APROBADO | 95acb9a |
+| 8.5a | Contrato `accionesConductor` + piloto Trivia (funde 8.5-pre) | ✅ APROBADO | 79820c5 |
+| 8.5b.1 | Migrar 4 GameUIs a `accionesConductor` (Anti-Trivia, Canción Incompleta, Enlaces, Historia Enredada) | ✅ APROBADO | 51f2b8e |
+| 8.5b.2 | Migrar 3 GameUIs a `accionesConductor` (Memoria, Pictionary, Rosco) | ✅ APROBADO | 60e28c5 |
+| 8.5c.1 | Extender contrato `accionesConductor` (input/selector con `payload`, descriptor `html`) + Memoria `JUGANDO` → `selector` (cierra #129/#130) | ✅ APROBADO | 66d7bd8 |
+| 8.5c.2a | Migrar Rosco `TURNO_ACTIVO` (html + 5 botones) y Historia `VOTANDO` (input) al contrato (cierra #129; #133 Pictionary) | ✅ APROBADO | d7c20ab |
+| 8.5c.2b | Migrar QPEP a `accionesConductor` (6 fases, 3 handlers `registrar-pronostico/revelar/siguiente-qpep`, `calcularPuntos` al GameDefinition; e2e ×3; cierra #128) | ✅ APROBADO | e5fba35 |
+| 8.5d-pre | Reescribir e2e de Pictionary (helper + 4 specs) al flujo real de submodos — 11/11, cierra #122 | ✅ APROBADO | ea77a85 |
+| 8.5d | Migrar Pictionary a `accionesConductor` (9 fases + bonus `input` con `payload { equipo }`; e2e ×11 a `data-accion-conductor`; cierra #131 y #133) | ✅ APROBADO | 4a1bee3 |
 | 8.5 | Panel conductor unificado | ⬜ | — |
-| 8.6 | AJUSTES global (UI): botón `#btn-ajustes` en topbar + modal `#modal-ajustes` (`tiempo_max_pausa_seg`) | 🕓 IMPLEMENTADO (sin commit) | PENDIENTE |
-| 8.7a | Pictionary `INICIO_RONDA`/`CAMBIO_TURNO` → descriptor `mensaje` "Preparando turno…" (deja de depender del fallback) | 🕓 IMPLEMENTADO (sin commit) | PENDIENTE |
-| 8.7b | Eliminar fallback legacy de `_renderPanelConductor` | ⛔ BLOQUEADO (deuda #135: Rosco fase `''` necesita el fallback) | — |
+| 8.6 | AJUSTES global (UI): botón `#btn-ajustes` en topbar + modal `#modal-ajustes` (`tiempo_max_pausa_seg`) | ✅ APROBADO | eac9fe2 |
+| 8.7a | Pictionary `INICIO_RONDA`/`CAMBIO_TURNO` → descriptor `mensaje` "Preparando turno…" (deja de depender del fallback) | ✅ APROBADO | cf69357 |
+| 8.7b | Eliminar fallback legacy de `_renderPanelConductor` | ⏸️ POSPUESTO (deuda #135: Rosco fase `''` necesita el fallback) | #135 |
 | 8.7 | Refactor de los 9 GameUIs al panel unificado | ⬜ | — |
-| 8.8 | Zona inferior (placeholder) | ⬜ | — |
-| 8.9 | EXTRAS UI | ⬜ | — |
-| 8.10 | Barra superior unificada (pública) | ⬜ | — |
+| 8.8 | Zona inferior (placeholder) | ⏸️ POSPUESTO (sin especificación) | — |
+| 8.9 | EXTRAS UI | ⏸️ POSPUESTO (requiere decisiones de diseño) | #137 |
+| 8.10 | Barra superior unificada (pública) | ⏸️ POSPUESTO (timers heterogéneos en la pública) | #136 |
+
+**Nota de cierre:** Bloque 8 cerrado con 4 pasos pospuestos por
+bloqueos técnicos (#135, #136) o falta de especificación (8.8, 8.9).
+Ver deudas #134-#137.
 
 ## 4. Historial de actualizaciones
 
@@ -355,6 +359,7 @@ Fuente: `docs/PANTALLAS.md` §8 (plan de 11 pasos, gaps #1–#11).
 | 8.2 | 2026-09-24 | Barra superior con `#shell-timer` (`_renderShellTimer`) en shell-partida. 3 e2e nuevos (2651 unit / 85 archivos + 3 e2e). Sin commit (pendiente auditoría). Hallazgo: e2e Pictionary pre-rotos por `palabras_por_modo` ≠ `palabras_por_turno` en helper. |
 | 8.3 | 2026-09-24 | Modal de pausa `#modal-pausa` (`_abrirModalPausa`) montado en `document.body` (sobrevive re-renders del polling), contador `#pausa-contador` (desde `pausado_at`, `_formatearTiempo` compartido con `#shell-timer`), botón `#btn-pausa-reanudar` único, `cerrable: false`, limpieza de intervalo en REANUDAR / hashchange / re-entrada al shell. Correcciones D3–D6: `pausado_at` validado parseable (sin fallback), sin línea "Tiempo máximo" ni `services.ajustes` (D4), `_limpiarPausaModal()` en handler `#btn-reanudar` (D5, defensivo — deuda #124), hashchange limpia siempre (D6). 6 e2e (test 7/D5 descartado — deuda #124) — 2651 unit / 85 archivos + 6 e2e. Sin commit (pendiente auditoría). Deudas: #123 auto-transición a MODO ESPERA (depende de 8.4), #124 `#btn-reanudar` nunca se renderiza. |
 | 8.4 | 2026-09-24 | Modal de pausa ajustado a SOLO informativo (`#btn-pausa-reanudar` eliminado, acciones vacías). Topbar `relative z-[60]` + `id="shell-topbar"` (queda sobre el modal z-50 — contradicción C1 resuelta con el operador). `_renderTopBar`: `#btn-reanudar` condicionado a `juegoActivo?.estado === 'PAUSADO'` (**cierra #124**) + nuevo `#btn-modo-espera`. Estado UI local `_modoEsperaActivo` (flag, no persistido; reset en `renderShellPartida` — decisión D1 vs Parte 6 del prompt) + overlay `#modo-espera-overlay` (`absolute top-16 bottom-0 z-40`, cubre todo menos la barra, sin botón propio). Auto-transición en `pintarContador` al alcanzar `tiempo_max_pausa_seg` (guard `Number.isFinite(maxSeg) && !_modoEsperaActivo`) que cierra el modal y entra al overlay (**cierra #123**). Salida vía `#btn-reanudar` (sale del overlay + `_limpiarPausaModal` + `reanudarJuego`). Specs: pausa reducido a 5 e2e (test 2 eliminado, test 4 → `#btn-reanudar`), nuevo `shell-partida-modo-espera.spec.js` con 7 e2e — 2651 unit / 85 archivos + 12 e2e. Sin commit (decisión C2 — D7/BLOQUE ANULADO). Hallazgo: `uiRegistry cantidad===2` pre-existente (falla en HEAD limpio, verificado con `git stash`; recibió 9). |
+| 8.CIERRE | 2026-09-25 | Bloque 8 cerrado con 15/19 pasos. 4 pospuestos. 2662 unit / 86 archivos + ~223 e2e. Deudas #134-#137. |
 ---
 
 ## 5. Convenciones

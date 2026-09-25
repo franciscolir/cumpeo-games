@@ -1,7 +1,7 @@
 # CUMPEO — Prompt Inicial de Continuidad
 
 **Versión:** 1.1
-**Fecha:** 2026-09-23
+**Fecha:** 2026-09-25
 **Propósito:** Este archivo es un **prompt inicial**. Cualquier persona o asistente que retome el proyecto debe leerlo primero. No duplica información: indica **qué leer** y **cómo trabajar**.
 
 ---
@@ -19,10 +19,12 @@ Stack actual:
 - IndexedDB (dev) + Supabase (prod).
 - Vitest (unit) + Playwright (e2e) + Vitest integration.
 
-**Estado actual (2026-09-24):** Bloques 0–5 y 7 cerrados. 9 juegos implementados
+**Estado actual (2026-09-25):** Bloques 0–5, 7 y 8 cerrados. 9 juegos implementados
 end-to-end (QPEP, Trivia, Rosco, Canción Incompleta, Pictionary, Historia
 Enredada, Memoricé, Anti-Trivia, Enlaces). MVP alcanzado al cerrar Bloque 4.
-Bloque 7 (Formularios de sets por juego) cerrado el 2026-09-24. Bloque 6
+Bloque 7 (Formularios de sets por juego) cerrado el 2026-09-24. Bloque 8
+(Rediseño del shell) cerrado con deudas el 2026-09-25 (15/19 pasos;
+pospuestos 8.7b, 8.8, 8.9, 8.10 — deudas #134-#137). Bloque 6
 (migración e2e a Supabase) pospuesto indefinidamente. **Proyecto en estado
 "cerrado salvo deudas".**
 ---
@@ -208,18 +210,18 @@ Si retomás el proyecto (nueva sesión, nuevo asistente, nueva persona):
 **¿Qué no debo hacer?**
 → Sección 8 de este archivo (reglas invariantes).
 
-### Estado al 2026-09-23
+### Estado al 2026-09-25
 
-- **Bloques 0–5 cerrados.**
+- **Bloques 0–5, 7 y 8 cerrados.** (Bloque 8: cerrado con deudas, 15/19.)
 - **Bloque 6 (opcional, no iniciado).**
-- **Unit tests:** 1749 (61 archivos).
-- **E2E:** ~215 tests, todos con LocalAdapter.
-- **Integration:** 99 tests contra Supabase Cloud.
-- **Deudas pendientes:** #51 (AUDITORIA historial duplicado), #82–#86, #91–#93.
+- **Unit tests:** 2662 (86 archivos).
+- **E2E:** ~223 tests, todos con LocalAdapter.
+- **Integration:** ~107 tests contra Supabase Cloud.
+- **Deudas pendientes:** ver `docs/AUDITORIA.md` (incluye #134–#137 del Bloque 8).
 
 ### Próximo paso al retomar
 
-1. **Leer** `docs/ROADMAP.md` → estado actual (Bloque 7 cerrado).
+1. **Leer** `docs/ROADMAP.md` → estado actual (Bloque 8 cerrado con deudas).
 2. **Leer** `docs/AUDITORIA.md` → deudas pendientes.
 3. **Decidir** el próximo trabajo:
    - Cerrar el proyecto formalmente (marcar como completo).

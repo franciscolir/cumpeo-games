@@ -1,6 +1,6 @@
 # CUMPEO — Historial de Auditorías
 
-**Última actualización:** 2026-09-24
+**Última actualización:** 2026-09-25
 
 ---
 
@@ -150,6 +150,10 @@
 
 | 2026-09-25 | 8 | 8.7a | 🔵 IMPLEMENTADO (sin commit) | **Pictionary `INICIO_RONDA`/`CAMBIO_TURNO` → descriptor `mensaje`** en `accionesConductor` (en vez de `[]`), texto exacto del panel legacy: **"Preparando turno…"** (verificado en `renderizarPanelConductor` L214) — preparación para 8.7b, que eliminará el fallback del shell. **D1**: solo Pictionary; `FIN_DE_JUEGO` de Pictionary sigue `[]` (no hay nada que mostrar) y los otros 8 GameUIs no cambian. **D2/D3**: sin tocar shell ni GameDefinition. **Colateral (único e2e que alcanza sintéticamente esas fases)**: `shell-partida-panel-conductor.spec.js` — aserción Pictionary `largos` `[1,0,5,2,1,5,3,0,3,0]` → `[1,1,5,2,1,5,3,1,3,0]` + comentarios de cabecera y bloque (los 11 e2e de `tests/e2e/pictionary/` no tocan esas fases → **sin cambios**, cumpliendo "si los e2e no tocan esas fases, no hay cambios"). **Evidencia**: `node --check` ✓; unit **2662/86** ✓; e2e pictionary **11/11** + panel-conductor **7/7** (**18/18** en 51.1s) ✓; `git status --short` solo los 4 archivos (GameUI + spec + 2 docs). **Bloqueos**: ninguno. |
 
+| 2026-09-25 | 8 | CIERRE | ✅ CERRADO CON DEUDAS | 15/19 pasos.
+4 pospuestos: 8.7b (#135), 8.8 (sin spec), 8.9 (#137), 8.10 (#136).
+2662 unit + ~223 e2e. Deudas #134-#137. | PENDIENTE |
+
 ---
 
 ## Cierres de bloque
@@ -272,7 +276,15 @@ Considerar `--max-failures=100` o arreglar el fallo de Enlaces. | Paso
 | 131 | ~~Pictionary no migrado a `accionesConductor` (M2-A): devuelve `[]` en todas las fases → fallback total al panel legacy. El bonus requiere payload compuesto `{ equipo, puntos }` (shell-partida.js:1166-1167). **Contrato extendido en 8.5c.1**: el descriptor `input` acepta `payload` y el bind envía `{ ...payload, valor }`. Pendiente **8.5d** (D1 de 8.5c.2a: Pictionary NO se migra en 8.5c.2 — ver deuda #133).~~ **Cerrada en 8.5d**: las 9 fases migran a descriptores (`''`/`SELECCIONANDO_SUBMODO`/`SELECCIONANDO_SET` N botones/`MOSTRANDO_PALABRA`/`ADIVINANDO`/`ESPERA_VALIDACION`/`FIN_DE_RONDA`; `INICIO_RONDA`/`CAMBIO_TURNO`/`FIN_DE_JUEGO` → `[]` por decisión D2 con fallback legacy) y el bonus es descriptor `input` con `payload { equipo }` en `ADIVINANDO`/`ESPERA_VALIDACION`/`FIN_DE_RONDA`; el handler `aplicar-bonus-pictionary` acepta `puntos ?? valor` con guard entero > 0. | Paso 8.5b.2 (detectado) / 8.5d | ~~Media~~ Cerrada |
 | 132 | Rosco migrado parcialmente (M3-A): fase `''` (el modal de inicio recopila `{ sets }` con validaciones de unicidad/cobertura, shell-partida.js:735) y `TURNO_ACTIVO` (el panel legacy incluye la card **RESPUESTA**, información crítica del conductor — diseño 1b; el área la oculta con `mostrarRespuesta:false`) devuelven `[]` → legacy. **8.5c.2a**: `TURNO_ACTIVO` MIGRADO (descriptor `html` con la card RESPUESTA + 5 botones `marcar-acierto/error/pasapalabra/saltar/siguiente-equipo-rosco`) → deuda **parcialmente cerrada**. Queda solo la fase `''` (modal de inicio con `{ sets }`) → pendiente **8.5c.2**/8.5d. | Paso 8.5b.2 (detectado) | Media |
 | 133 | ~~Pictionary no migrado a accionesConductor. El bonus (2 inputs + 2 botones por equipo) no se puede expresar con el contrato actual. Además, los e2e están rotos por #122. Se resuelve en 8.5d (extender contrato o arreglar e2e primero).~~ **Cerrada en 8.5d**: los e2e se repararon en 8.5d-pre (#122) y el bonus se expresó como 2 descriptores `input` (`payload { equipo }`, el bind envía `{ ...payload, valor }`; sin botón "Aplicar" — el `change` dispara la acción); los 11 e2e de `tests/e2e/pictionary/` migraron a `data-accion-conductor`. | Paso 8.5c.2a (detectado) / 8.5d | ~~Media~~ Cerrada |
+| 134 | Eliminar `renderizarPanelConductor` (panel legacy) de las 9 GameUIs y los ~169 tests unit que lo referencian — herencia del plan 8.7b/8.7 (refactor del panel unificado no ejecutado); queda vinculada a la deuda #135. | Paso 8.7b (detectado) | Media |
 | 135 | Rosco fase `''` depende del fallback legacy de `_renderPanelConductor` (shell-partida.js:1583-1586) para renderizar su modal + botón `#btn-rosco-iniciar-juego` (RoscoGameUI.js:372/376 se renderizan SOLO por el fallback; `_rerenderPanel` depende de `_lastPanelArgs` capturado en ese primer render, RoscoGameUI.js:299). Migrar el modal de Rosco a un descriptor `html` o a un componente independiente ANTES de eliminar el fallback (paso **8.7b cancelado** por esta dependencia: los 4 specs e2e de rosco esperan `#btn-rosco-iniciar-juego` dentro de `#shell-panel-conductor`). | Paso 8.7b (detectado) | Media |
+| 136 | Barra superior unificada en la shell **pública** (TIME + SCORE): paso 8.10 pospuesto, no viable en limpio por timers heterogéneos entre juegos en la vista pública; requiere sincronización previa de tiempo fuera del ciclo del shell. | Bloque 8 (detectado) | Media |
+| 137 | Bloque 8 con 4 pasos pospuestos: 8.7b (eliminar
+renderizarPanelConductor legacy, bloqueado por Rosco #135), 8.8 (zona
+inferior sin especificación), 8.9 (EXTRAS UI, requiere 3 decisiones
+de diseño), 8.10 (barra superior pública, no viable limpio por timers
+heterogéneos). Cerrar el Bloque 8 como "completado con deudas
+documentadas". | Bloque 8 (detectado) | Media |
 
 ---
 

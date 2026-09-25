@@ -1,10 +1,10 @@
 # CUMPEO — Documento Maestro de Construcción
 
 **Versión:** 3.0
-**Estado:** H4 · H5.1 · H6 · H7.1–H7.12 COMPLETOS · Bloques 0–5 y 7 COMPLETOS · Bloque 6 pospuesto · ~99% proyecto completo
-**Última actualización:** Post-commit `1193983` (8.1 pausado_at + ajustes_globales)
+**Estado:** H4 · H5.1 · H6 · H7.1–H7.12 COMPLETOS · Bloques 0–5, 7 y 8 COMPLETOS (8 con deudas) · Bloque 6 pospuesto · ~99% proyecto completo
+**Última actualización:** Cierre del Bloque 8 (2026-09-25)
 **HEAD:** `feature/vertical-slice` — `1193983`
-**Tests:** 2651 unit (85 archivos) + ~215 e2e + ~107 integration
+**Tests:** 2662 unit (86 archivos) + ~223 e2e + ~107 integration
 **Audiencia:** Desarrollador único / equipo reducido
 **Propósito:** Guía única de referencia para construcción, consulta y auditoría del sistema.
 
@@ -543,11 +543,11 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 | Métrica | Valor |
 |---------|-------|
 | Progreso global | ~99% |
-| Bloques cerrados | 7 (Bloques 0–5, 7) |
+| Bloques cerrados | 8 (Bloques 0–5, 7, 8) |
 | Bloques pospuestos | 1 (Bloque 6 — migración e2e a Supabase) |
 | Juegos implementados | 9 (QPEP, Trivia, Rosco, Canción Incompleta, Pictionary, Historia Enredada, Memoricé, Anti-Trivia, Enlaces) |
-| Tests unit | 2651 (85 archivos) |
-| Tests e2e | ~215 |
+| Tests unit | 2662 (86 archivos) |
+| Tests e2e | ~223 |
 | Tests integration | ~104 (contra Supabase Cloud) |
 | Commits totales (rama) | 130+ |
 
@@ -580,7 +580,7 @@ Métodos genéricos: `agregar`, `insertarOActualizar`, `obtener`, `listar`, `lis
 | Bloque 5 — Juegos restantes | 9 juegos implementados end-to-end | Cerrado (9b7dfdc) |
 | Bloque 6 — Migración e2e a Supabase | Pospuesto indefinidamente (2026-09-23) |
 | Bloque 7 — Formularios de sets por juego | 24/24 pasos. Cierre `97aaa8d` |
-| Bloque 8 — Rediseño del shell | En progreso | 1/11 |
+| Bloque 8 — Rediseño del shell | Cerrado con deudas. 15/19 pasos. 4 pospuestos (#135, #136, #137). |
 
 ### 8.3 H4 — Servicios de dominio (CERRADA)
 

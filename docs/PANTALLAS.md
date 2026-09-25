@@ -2,7 +2,7 @@
 
 **Versión:** 1.0
 **Estado:** Documentación del estado actual + TO-BE (rediseño propuesto).
-**Última actualización:** 2026-09-24
+**Última actualización:** 2026-09-25
 **Propósito:** Referencia canónica de las pantallas del conductor y del
 público. Describe qué existe hoy y qué se propone construir.
 
@@ -713,9 +713,10 @@ existentes (`comenzarPartida`, `pausarJuego`, `reanudarJuego`,
 | 8.5b.2 | Migrar 3 GameUIs a `accionesConductor` | ✅ Memoria migrado completo (M1-A: `JUGANDO` → 2 botones fantasma `{ equipo }`), Pictionary `[]` total (M2-A, deuda #131) y Rosco parcial (M3-A: `''`/`TURNO_ACTIVO` → `[]`, deuda #132); e2e de memoria (4) y rosco (3) migrados a `[data-accion-conductor]` (pictionary sin tocar, #122); +1 test de contrato; deuda #130 (selector `{valor}` vs `payload.equipo`) | Media | 9 (parcial) |
 | 8.6 | `AJUSTES` global | Modal/pantalla nueva | Media | 5 |
 | 8.7 | Refactor de los 9 GameUIs al panel unificado | Refactor masivo | Muy alta | — |
-| 8.8 | Zona inferior (placeholder) | Espacios reservados Avatar + Sound | Baja | 7, 8 |
-| 8.9 | `EXTRAS` UI | Tómbola, Dados, Dinamita | Alta | 6 |
-| 8.10 | Barra superior unificada (pública) | TIME + SCORE en el shell público | Media | 11 |
+| 8.7b | Eliminar fallback `renderizarPanelConductor` del shell | ⏸️ POSPUESTO (#135): Rosco fase `''` necesita el fallback | — | 9, 10 |
+| 8.8 | Zona inferior (placeholder) | ⏸️ POSPUESTO (sin especificación): espacios reservados Avatar + Sound | Baja | 7, 8 |
+| 8.9 | EXTRAS UI | ⏸️ POSPUESTO (#137): requiere decisiones de diseño — Tómbola, Dados, Dinamita | Alta | 6 |
+| 8.10 | Barra superior unificada (pública) | ⏸️ POSPUESTO (#136): TIME + SCORE en la shell pública (timers heterogéneos) | Media | 11 |
 
 ### Notas
 
