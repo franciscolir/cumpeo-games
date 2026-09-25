@@ -154,6 +154,8 @@
 4 pospuestos: 8.7b (#135), 8.8 (sin spec), 8.9 (#137), 8.10 (#136).
 2662 unit + ~223 e2e. Deudas #134-#137. | PENDIENTE |
 
+| 2026-09-25 | 8 | Fase 2 | ✅ APROBADO | Cerrar #127. maxFailures: 100 + dispatch manual en moverElemento. e2e completo no se corta. | PENDIENTE |
+
 | 2026-09-25 | 8 | Fase 3 | ✅ APROBADO | Cerrar #83 (heartbeat). Resuelto en 5.8e. | PENDIENTE |
 
 ---
@@ -268,12 +270,7 @@ _(ninguna)_
 | 125 | e2e `shell-partida.spec.js` "uiRegistry tiene QuePiensaElPublicoGameUI registrado" falla: espera `cantidad() === 2` pero hay 9 GameUIs registradas (registro creció con los juegos, el test no se actualizó). Pre-existente: falla igual en HEAD limpio, verificado con `git stash` en 8.4 (28/29 en la regresión de shell/timer). | Paso 8.4 (detectado) | Media |
 | 126 | El agente commiteó cc26d52 (8.4a) sin aprobación previa del operador. Violación de regla 5 de CONTINUIDAD.md ("El agente externo no commitea"). Verificar siempre que el agente NO commitee: la evidencia debe incluir `git log` mostrando HEAD sin cambios. | Paso 8.4a (detectado) | Media |
 Agregar al final de la sección "Deuda técnica activa" en docs/AUDITORIA.md:
-| 127 | El e2e completo no corre de una sola vez. El run se corta
-cuando `enlaces/drag-drop:88` falla y el test 45 (`enlaces/flujo-
-completo:90`) se interrumpe. Resultado: 178 tests no corren. Hay que
-correr por grupos (`--grep-invert`) para obtener el reporte completo.
-Considerar `--max-failures=100` o arreglar el fallo de Enlaces. | Paso
-8.5a (detectado) | Media |
+| 127 | ~~El e2e completo no corre de una sola vez. El run se corta cuando `enlaces/drag-drop:88` falla y el test 45 se interrumpe. Resultado: 178 tests no corren. Hay que correr por grupos (`--grep-invert`) para obtener el reporte completo. Considerar `--max-failures=100` o arreglar el fallo de Enlaces.~~ **Cerrada en 8 (2026-09-25):** `maxFailures: 100` en playwright.config.js + `moverElemento` con dispatch manual. El e2e completo corre sin cortarse. | Paso 8 (detectado) / 8-Fase 2 | ~~Crítica~~ Cerrada |
 | 128 | ~~QPEP (`QuePiensaElPublicoGameUI`) no migró a `accionesConductor`: 8.5a migró Trivia y 8.5b.1 migró Anti-Trivia, Canción Incompleta, Enlaces e Historia Enredada (D2); QPEP quedó fuera de ambos pasos. Sigue en `renderizarPanelConductor` legacy; migrar en 8.5c o 8.7 (8.5b.2 quedó para Memoria/Pictionary/Rosco).~~ **Cerrada en 8.5c.2b**: las 6 fases migran (`''`/`SELECCIONANDO_PREGUNTA` → `cambiar-estado-juego` con payload estático, `ENCUESTA_ACTIVA` → `cerrar-encuesta`, `ENCUESTA_CERRADA` → 6 pronósticos + revelar con `tipo` variable, `REVELANDO` → `html` + `siguiente-qpep` texto dinámico, `FIN_DE_JUEGO` → `[]`); `_calcularPuntos` movido al GameDefinition como `calcularPuntos` estático (sin duplicar) + 3 handlers nuevos en el shell; los 3 e2e QPEP (shell-partida, qpep-full-flow, movil) migrados a `[data-accion-conductor]`. | Paso 8.5b.1 (detectado) / 8.5c.2b | ~~Media~~ Cerrada |
 | 131 | ~~Pictionary no migrado a `accionesConductor` (M2-A): devuelve `[]` en todas las fases → fallback total al panel legacy. El bonus requiere payload compuesto `{ equipo, puntos }` (shell-partida.js:1166-1167). **Contrato extendido en 8.5c.1**: el descriptor `input` acepta `payload` y el bind envía `{ ...payload, valor }`. Pendiente **8.5d** (D1 de 8.5c.2a: Pictionary NO se migra en 8.5c.2 — ver deuda #133).~~ **Cerrada en 8.5d**: las 9 fases migran a descriptores (`''`/`SELECCIONANDO_SUBMODO`/`SELECCIONANDO_SET` N botones/`MOSTRANDO_PALABRA`/`ADIVINANDO`/`ESPERA_VALIDACION`/`FIN_DE_RONDA`; `INICIO_RONDA`/`CAMBIO_TURNO`/`FIN_DE_JUEGO` → `[]` por decisión D2 con fallback legacy) y el bonus es descriptor `input` con `payload { equipo }` en `ADIVINANDO`/`ESPERA_VALIDACION`/`FIN_DE_RONDA`; el handler `aplicar-bonus-pictionary` acepta `puntos ?? valor` con guard entero > 0. | Paso 8.5b.2 (detectado) / 8.5d | ~~Media~~ Cerrada |
 | 132 | Rosco migrado parcialmente (M3-A): fase `''` (el modal de inicio recopila `{ sets }` con validaciones de unicidad/cobertura, shell-partida.js:735) y `TURNO_ACTIVO` (el panel legacy incluye la card **RESPUESTA**, información crítica del conductor — diseño 1b; el área la oculta con `mostrarRespuesta:false`) devuelven `[]` → legacy. **8.5c.2a**: `TURNO_ACTIVO` MIGRADO (descriptor `html` con la card RESPUESTA + 5 botones `marcar-acierto/error/pasapalabra/saltar/siguiente-equipo-rosco`) → deuda **parcialmente cerrada**. Queda solo la fase `''` (modal de inicio con `{ sets }`) → pendiente **8.5c.2**/8.5d. | Paso 8.5b.2 (detectado) | Media |
