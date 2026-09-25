@@ -253,7 +253,7 @@ text
   - Cambia la UI a estado "espera".
   - La vista pública recibe el estado y muestra su modo espera.
 
-#### Panel conductor (contrato `accionesConductor` — 8.5a / 8.5b.1 / 8.5b.2 / 8.5c.1)
+#### Panel conductor (contrato `accionesConductor` — 8.5a / 8.5b.1 / 8.5b.2 / 8.5c.1 / 8.5c.2a)
 
 - **Estado actual:** ✅ **implementado en 8.5a.** El shell renderiza
   `#shell-panel-conductor` desde `gameUI.accionesConductor(estadoJuego, contexto)`
@@ -270,23 +270,25 @@ text
   `{ ...payload, valor }` (el `selector` sigue enviando `{ valor }`
   **string**; el handler convierte con `Number()` si necesita número —
   cierra #129/#130); (2) nuevo descriptor `html` inyecta HTML **sin
-  escapar** (HTML confiable del GameUI — vía para la card RESPUESTA de
-  Rosco, #132).
+  escapar** (HTML confiable del GameUI — usado por la card RESPUESTA
+  de Rosco desde 8.5c.2a, #132).
 - **Adopción:** Trivia (8.5a, 8 fases); Anti-Trivia, Canción Incompleta,
   Enlaces e Historia Enredada (8.5b.1); **Memoria migrado completo** y
-  **Rosco parcial** + **Pictionary sin migrar** (8.5b.2). Quedan en legacy
-  Pictionary, Rosco (fases `''`/`TURNO_ACTIVO`), QPEP y el resto hasta
-  8.5c.2/8.7. Excepciones: **D3 (8.5b.1)** Historia Enredada devuelve `[]`
-  en `VOTANDO` (binding `input` envía `{ valor }` pero el handler lee
-  `payload.puntos` — deuda #129, aún sin migrar el bonus de Historia);
+  **Rosco parcial** + **Pictionary sin migrar** (8.5b.2); **Rosco
+  `TURNO_ACTIVO`** (html + 5 botones) e **Historia `VOTANDO`**
+  (descriptor `input`, sin botón — `change` dispara la acción) en
+  8.5c.2a. Quedan en legacy: Pictionary 100% (deuda #133 → 8.5d),
+  Rosco fase `''` (modal de inicio, deuda #132), QPEP (8.5c.2b) y el
+  resto hasta 8.5d/8.7. Excepciones: **8.5c.2a** Historia `VOTANDO`
+  migra con `input` + `payload { equipo }` (handler lee
+  `payload.puntos ?? payload.valor` — deuda #129 **cerrada**);
   **8.5c.1** Memoria `JUGANDO` usa el descriptor `selector` (deuda #130
   **cerrada** — handler `cambiar-turno-manual-memoria` convierte
   `Number(payload.valor)` y acepta `{ equipo }` por retrocompatibilidad);
-  **M2-A** Pictionary devuelve `[]` en todas las fases (bonus requiere
-  payload compuesto `{ equipo, puntos }` — deuda #131, contrato ya
-  extendido, migrar en 8.5c.2); **M3-A** Rosco `''`/`TURNO_ACTIVO` → `[]`
-  (modal con `{ sets }` y card RESPUESTA — deuda #132, descriptor `html`
-  disponible, migrar en 8.5c.2).
+  **M2-A** Pictionary devuelve `[]` en todas las fases (deudas #131/#133
+  → 8.5d); **M3-A/8.5c.2a** Rosco `TURNO_ACTIVO` migró con `html` +
+  5 botones, solo la fase `''` (modal con `{ sets }`) sigue `[]`
+  (deuda #132, parcialmente cerrada).
 
 #### Selector A/B
 

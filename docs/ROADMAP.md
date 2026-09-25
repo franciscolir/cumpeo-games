@@ -280,6 +280,7 @@ Fuente: `docs/PANTALLAS.md` §8 (plan de 11 pasos, gaps #1–#11).
 | 8.5b.1 | Migrar 4 GameUIs a `accionesConductor` (Anti-Trivia, Canción Incompleta, Enlaces, Historia Enredada) | 🕓 IMPLEMENTADO (sin commit) | PENDIENTE |
 | 8.5b.2 | Migrar 3 GameUIs a `accionesConductor` (Memoria, Pictionary, Rosco) | 🕓 IMPLEMENTADO (sin commit) | PENDIENTE |
 | 8.5c.1 | Extender contrato `accionesConductor` (input/selector con `payload`, descriptor `html`) + Memoria `JUGANDO` → `selector` (cierra #129/#130) | 🕓 IMPLEMENTADO (sin commit) | PENDIENTE |
+| 8.5c.2a | Migrar Rosco `TURNO_ACTIVO` (html + 5 botones) y Historia `VOTANDO` (input) al contrato (cierra #129; #133 Pictionary) | 🕓 IMPLEMENTADO (sin commit) | PENDIENTE |
 | 8.5 | Panel conductor unificado | ⬜ | — |
 | 8.6 | AJUSTES global (UI) | ⬜ | — |
 | 8.7 | Refactor de los 9 GameUIs al panel unificado | ⬜ | — |
