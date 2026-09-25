@@ -178,6 +178,36 @@ export async function irAPublica(page, publicCodigo) {
 }
 
 /**
+ * Espera los descriptores de set del panel conductor (contrato
+ * `accionesConductor`) y clickea el botón cuyo payload contiene
+ * el set indicado (8.5a — reemplaza a los `[data-set-id]` legacy).
+ * @param {import('@playwright/test').Page} page
+ * @param {string} setId
+ */
+export async function elegirSetTrivia(page, setId) {
+  await page.waitForFunction(() =>
+    document.querySelector('#shell-panel-conductor [data-accion-conductor="seleccionar-set-trivia"]'),
+    { timeout: 10000 });
+
+  await page.evaluate((sid) => {
+    const botones = Array.from(
+      document.querySelectorAll('#shell-panel-conductor [data-accion-conductor="seleccionar-set-trivia"]')
+    );
+    const btn = botones.find((b) => {
+      try {
+        return JSON.parse(b.dataset.accionPayload || '{}')?.set?.id === sid;
+      } catch {
+        return false;
+      }
+    });
+    if (!btn) throw new Error(`Botón de set no encontrado: ${sid}`);
+    btn.click();
+  }, setId);
+
+  await page.waitForTimeout(300);
+}
+
+/**
  * Responde una pregunta: selecciona la opción indicada y valida.
  */
 export async function responderPregunta(page, opcionIndex) {
@@ -191,10 +221,10 @@ export async function responderPregunta(page, opcionIndex) {
 
   await page.waitForFunction(() => {
     const panel = document.querySelector('#shell-panel-conductor');
-    return panel && panel.querySelector('#btn-trivia-validar');
+    return panel && panel.querySelector('[data-accion-conductor="validar-respuesta-trivia"]');
   }, { timeout: 10000 });
 
-  await page.click('#btn-trivia-validar');
+  await page.click('#shell-panel-conductor [data-accion-conductor="validar-respuesta-trivia"]');
   await page.waitForTimeout(300);
 }
 
@@ -208,12 +238,12 @@ export async function responderTurnoCompleto(page) {
     await page.waitForFunction(() => {
       const panel = document.querySelector('#shell-panel-conductor');
       if (!panel) return false;
-      return panel.querySelector('#btn-trivia-iniciar-respuesta') ||
+      return panel.querySelector('[data-accion-conductor="iniciar-tiempo-trivia"]') ||
              document.querySelector('#shell-game-container [data-opcion-index]');
     }, { timeout: 10000 });
 
     // Si hay botón "Iniciar respuesta", clickearlo
-    const btnIniciar = await page.$('#btn-trivia-iniciar-respuesta');
+    const btnIniciar = await page.$('#shell-panel-conductor [data-accion-conductor="iniciar-tiempo-trivia"]');
     if (btnIniciar) {
       await btnIniciar.click();
       await page.waitForTimeout(200);
@@ -223,7 +253,7 @@ export async function responderTurnoCompleto(page) {
     await responderPregunta(page, 0);
 
     // Si hay "Siguiente pregunta", clickearlo
-    const btnSiguiente = await page.$('#btn-trivia-siguiente');
+    const btnSiguiente = await page.$('#shell-panel-conductor [data-accion-conductor="siguiente-pregunta-trivia"]');
     if (btnSiguiente) {
       await btnSiguiente.click();
       await page.waitForTimeout(300);

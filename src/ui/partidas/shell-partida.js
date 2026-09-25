@@ -1311,13 +1311,194 @@ async function _renderContenido(container, app, partidaId) {
     }
 
     const panelContainer = container.querySelector('#shell-panel-conductor');
-    if (gameUI.renderizarPanelConductor) {
-      const cleanupPanel = gameUI.renderizarPanelConductor(estadoJuego, panelContainer, contextoGameUI, callbacks);
-      if (typeof cleanupPanel === 'function') cleanupsGameUI.push(cleanupPanel);
-    }
+    _renderPanelConductor(gameUI, estadoJuego, contextoGameUI, callbacks, panelContainer);
   }
 
   _bindAcciones(container, app, partidaId, juegoActivo);
+}
+
+/* =============================================================
+   Panel conductor — contrato `accionesConductor` (8.5a)
+
+   Si el GameUI expone `accionesConductor(estadoJuego, contexto)`,
+   el shell renderiza el panel desde los descriptores y bindea
+   cada acción a `callbacks.onAccion(accion, payload)`.
+   Si no (o devuelve array vacío), fallback al método legacy
+   `renderizarPanelConductor` (convivencia — D1/D8).
+   ============================================================= */
+
+const VARIANTE_BOTON_CONDUCTOR = {
+  primario: 'primary',
+  secundario: 'secondary',
+  peligro: 'danger',
+  fantasma: 'ghost'
+};
+
+/**
+ * Escapa un valor para interpolar dentro de un atributo HTML
+ * entre comillas dobles. El navegador lo decodifica al leer
+ * `dataset`, por lo que JSON.parse recupera el texto original.
+ * @param {*} valor
+ * @returns {string}
+ */
+function _escapeAttrConductor(valor) {
+  return String(valor)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/**
+ * Parsea el payload transportado en `data-accion-payload`.
+ * @param {string|undefined} texto
+ * @returns {object} payload o `{}` si no hay / es inválido.
+ */
+function _parsearPayloadConductor(texto) {
+  if (!texto) return {};
+  try {
+    const payload = JSON.parse(texto);
+    return payload && typeof payload === 'object' ? payload : {};
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * Renderiza un descriptor de tipo botón usando `Boton()`,
+ * inyectando `data-accion-conductor` (+ payload si existe).
+ * @param {object} d descriptor
+ * @returns {string} HTML del botón.
+ */
+function _renderBotonConductor(d) {
+  const html = Boton({
+    texto: d.texto,
+    variante: VARIANTE_BOTON_CONDUCTOR[d.tipo] || 'primary',
+    disabled: !!d.disabled
+  });
+  const payloadAttr = d.payload !== undefined
+    ? ` data-accion-payload="${_escapeAttrConductor(JSON.stringify(d.payload))}"`
+    : '';
+  return html.replace(
+    '<button',
+    `<button data-accion-conductor="${_escapeAttrConductor(d.accion)}"${payloadAttr}`
+  );
+}
+
+/**
+ * Renderiza el panel conductor a partir de descriptores de acción.
+ * Soporta: botón (`primario`/`secundario`/`peligro`/`fantasma`),
+ * `selector`, `input` y `mensaje`. Los botones consecutivos se
+ * agrupan en una fila flex-wrap.
+ *
+ * Exportada para tests unitarios (8.5a).
+ *
+ * @param {Array<object>} acciones descriptores
+ * @returns {string} HTML del panel.
+ */
+export function _renderAccionesConductor(acciones) {
+  const partes = [];
+  let filaBotones = [];
+
+  const cerrarFila = () => {
+    if (filaBotones.length > 0) {
+      partes.push(`<div class="flex flex-wrap gap-2">${filaBotones.join('')}</div>`);
+      filaBotones = [];
+    }
+  };
+
+  for (const d of acciones) {
+    if (d.tipo === 'mensaje') {
+      cerrarFila();
+      const clase = d.variante === 'error' ? 'text-error' : 'text-on-surface-variant';
+      partes.push(`<p class="font-body-sm ${clase}">${d.texto}</p>`);
+    } else if (d.tipo === 'selector') {
+      cerrarFila();
+      const opciones = (d.opciones || []).map((o) => {
+        const seleccionada = String(o.valor) === String(d.valorActual) ? ' selected' : '';
+        return `<option value="${_escapeAttrConductor(o.valor)}"${seleccionada}>${o.texto}</option>`;
+      }).join('');
+      partes.push(`
+        <label class="font-label-md uppercase text-on-surface-variant flex items-center gap-2">
+          ${d.label || ''}
+          <select data-accion-conductor="${_escapeAttrConductor(d.accion)}"
+            class="border-2 border-on-surface rounded-lg px-2 py-1 bg-surface-container-lowest font-body-md normal-case">${opciones}</select>
+        </label>
+      `);
+    } else if (d.tipo === 'input') {
+      cerrarFila();
+      const minAttr = d.min !== undefined ? ` min="${_escapeAttrConductor(d.min)}"` : '';
+      const maxAttr = d.max !== undefined ? ` max="${_escapeAttrConductor(d.max)}"` : '';
+      partes.push(`
+        <label class="font-label-md uppercase text-on-surface-variant flex items-center gap-2">
+          ${d.label || ''}
+          <input type="${d.tipoInput || 'text'}" value="${_escapeAttrConductor(d.valorActual ?? '')}"${minAttr}${maxAttr}
+            data-accion-conductor="${_escapeAttrConductor(d.accion)}"
+            class="border-2 border-on-surface rounded-lg px-2 py-1 bg-surface-container-lowest font-body-md normal-case w-24" />
+        </label>
+      `);
+    } else {
+      filaBotones.push(_renderBotonConductor(d));
+    }
+  }
+  cerrarFila();
+
+  return `<div class="flex flex-col gap-3">${partes.join('')}</div>`;
+}
+
+/**
+ * Bindea los `[data-accion-conductor]` generados por
+ * `_renderAccionesConductor` a `callbacks.onAccion`.
+ * @param {HTMLElement} container panel conductor.
+ * @param {object} callbacks callbacks del shell.
+ * @returns {void}
+ */
+function _bindAccionesConductor(container, callbacks) {
+  container.querySelectorAll('[data-accion-conductor]').forEach((el) => {
+    const accion = el.dataset.accionConductor;
+
+    if (el.tagName === 'BUTTON' || el.tagName === 'DIV') {
+      el.addEventListener('click', async () => {
+        const payload = _parsearPayloadConductor(el.dataset.accionPayload);
+        await callbacks.onAccion(accion, payload);
+      });
+    } else if (el.tagName === 'SELECT') {
+      el.addEventListener('change', async (e) => {
+        await callbacks.onAccion(accion, { valor: e.target.value });
+      });
+    } else if (el.tagName === 'INPUT') {
+      el.addEventListener('change', async (e) => {
+        await callbacks.onAccion(accion, { valor: e.target.value });
+      });
+    }
+  });
+}
+
+/**
+ * Renderiza el panel conductor de un GameUI.
+ * Usa `accionesConductor` si existe y devuelve un array no vacío;
+ * si no, delega en `renderizarPanelConductor` (legacy).
+ * @param {object} gameUI
+ * @param {object} estadoJuego
+ * @param {object} contexto
+ * @param {object} callbacks
+ * @param {HTMLElement} panelContainer contenedor `#shell-panel-conductor`.
+ * @returns {void}
+ */
+function _renderPanelConductor(gameUI, estadoJuego, contexto, callbacks, panelContainer) {
+  if (typeof gameUI.accionesConductor === 'function') {
+    const acciones = gameUI.accionesConductor(estadoJuego, contexto);
+    if (Array.isArray(acciones) && acciones.length > 0) {
+      panelContainer.innerHTML = _renderAccionesConductor(acciones);
+      _bindAccionesConductor(panelContainer, callbacks);
+      return;
+    }
+  }
+
+  if (typeof gameUI.renderizarPanelConductor === 'function') {
+    const cleanup = gameUI.renderizarPanelConductor(estadoJuego, panelContainer, contexto, callbacks);
+    if (typeof cleanup === 'function') cleanupsGameUI.push(cleanup);
+  }
 }
 
 /* =============================================================

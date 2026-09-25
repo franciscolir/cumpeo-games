@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { loginTestUser, waitForCumpeo } from '../_helpers/auth.js';
-import { setupPartidaTrivia, iniciarPartidaTrivia, irACOnductor, responderTurnoCompleto } from './_helpers/trivia.js';
+import { setupPartidaTrivia, iniciarPartidaTrivia, irACOnductor, responderTurnoCompleto, elegirSetTrivia } from './_helpers/trivia.js';
 
 test.beforeEach(loginTestUser);
 
@@ -17,30 +17,30 @@ test('Eq1 y Eq2 alternan correctamente', async ({ page }) => {
   await page.click('#btn-trivia-iniciar-juego');
   await page.waitForTimeout(300);
 
-  await page.waitForFunction(() => document.querySelector('#btn-trivia-iniciar-ronda'), { timeout: 10000 });
-  await page.click('#btn-trivia-iniciar-ronda');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-ronda-trivia"]'), { timeout: 10000 });
+  await page.click('[data-accion-conductor="iniciar-ronda-trivia"]');
   await page.waitForTimeout(300);
 
   // Eq1 elige set
-  await page.waitForFunction(() => document.querySelector('[data-set-id]'), { timeout: 10000 });
-  await page.click(`[data-set-id="${setIdEq1}"]`);
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="seleccionar-set-trivia"]'), { timeout: 10000 });
+  await elegirSetTrivia(page, setIdEq1);
   await page.waitForTimeout(300);
 
   // Responder 5 preguntas de Eq1
   for (let i = 0; i < 5; i++) {
-    await page.waitForFunction(() => document.querySelector('#btn-trivia-iniciar-respuesta'), { timeout: 10000 });
-    await page.click('#btn-trivia-iniciar-respuesta');
+    await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-tiempo-trivia"]'), { timeout: 10000 });
+    await page.click('[data-accion-conductor="iniciar-tiempo-trivia"]');
     await page.waitForTimeout(200);
 
     await page.waitForFunction(() => document.querySelector('#shell-game-container [data-opcion-index]'), { timeout: 10000 });
     await page.click('[data-opcion-index="0"]');
     await page.waitForTimeout(200);
 
-    await page.waitForFunction(() => document.querySelector('#btn-trivia-validar'), { timeout: 10000 });
-    await page.click('#btn-trivia-validar');
+    await page.waitForFunction(() => document.querySelector('[data-accion-conductor="validar-respuesta-trivia"]'), { timeout: 10000 });
+    await page.click('[data-accion-conductor="validar-respuesta-trivia"]');
     await page.waitForTimeout(300);
 
-    const btnSiguiente = await page.$('#btn-trivia-siguiente');
+    const btnSiguiente = await page.$('[data-accion-conductor="siguiente-pregunta-trivia"]');
     if (btnSiguiente) {
       await btnSiguiente.click();
       await page.waitForTimeout(300);
@@ -48,20 +48,20 @@ test('Eq1 y Eq2 alternan correctamente', async ({ page }) => {
   }
 
   // Verificar CAMBIO_TURNO
-  await page.waitForFunction(() => document.querySelector('#btn-trivia-iniciar-turno'), { timeout: 10000 });
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-turno-trivia"]'), { timeout: 10000 });
 
   // Iniciar turno de Eq2
-  await page.click('#btn-trivia-iniciar-turno');
+  await page.click('[data-accion-conductor="iniciar-turno-trivia"]');
   await page.waitForTimeout(300);
 
   // Eq2 elige set
-  await page.waitForFunction(() => document.querySelector('[data-set-id]'), { timeout: 10000 });
-  await page.click(`[data-set-id="${setIdEq2}"]`);
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="seleccionar-set-trivia"]'), { timeout: 10000 });
+  await elegirSetTrivia(page, setIdEq2);
   await page.waitForTimeout(300);
 
   // Responder 1 pregunta de Eq2 para verificar
-  await page.waitForFunction(() => document.querySelector('#btn-trivia-iniciar-respuesta'), { timeout: 10000 });
-  await page.click('#btn-trivia-iniciar-respuesta');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-tiempo-trivia"]'), { timeout: 10000 });
+  await page.click('[data-accion-conductor="iniciar-tiempo-trivia"]');
   await page.waitForTimeout(200);
 
   const ctx = await page.evaluate(async (pid) => {
@@ -86,30 +86,30 @@ test('al terminar 5 preguntas de Eq1, fase es SELECCIONANDO_SET con equipo_actua
   await page.click('#btn-trivia-iniciar-juego');
   await page.waitForTimeout(300);
 
-  await page.waitForFunction(() => document.querySelector('#btn-trivia-iniciar-ronda'), { timeout: 10000 });
-  await page.click('#btn-trivia-iniciar-ronda');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-ronda-trivia"]'), { timeout: 10000 });
+  await page.click('[data-accion-conductor="iniciar-ronda-trivia"]');
   await page.waitForTimeout(300);
 
   // Eq1 elige set
-  await page.waitForFunction(() => document.querySelector('[data-set-id]'), { timeout: 10000 });
-  await page.click(`[data-set-id="${setIdEq1}"]`);
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="seleccionar-set-trivia"]'), { timeout: 10000 });
+  await elegirSetTrivia(page, setIdEq1);
   await page.waitForTimeout(300);
 
   // Responder 5 preguntas
   for (let i = 0; i < 5; i++) {
-    await page.waitForFunction(() => document.querySelector('#btn-trivia-iniciar-respuesta'), { timeout: 10000 });
-    await page.click('#btn-trivia-iniciar-respuesta');
+    await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-tiempo-trivia"]'), { timeout: 10000 });
+    await page.click('[data-accion-conductor="iniciar-tiempo-trivia"]');
     await page.waitForTimeout(200);
 
     await page.waitForFunction(() => document.querySelector('#shell-game-container [data-opcion-index]'), { timeout: 10000 });
     await page.click('[data-opcion-index="0"]');
     await page.waitForTimeout(200);
 
-    await page.waitForFunction(() => document.querySelector('#btn-trivia-validar'), { timeout: 10000 });
-    await page.click('#btn-trivia-validar');
+    await page.waitForFunction(() => document.querySelector('[data-accion-conductor="validar-respuesta-trivia"]'), { timeout: 10000 });
+    await page.click('[data-accion-conductor="validar-respuesta-trivia"]');
     await page.waitForTimeout(300);
 
-    const btnSiguiente = await page.$('#btn-trivia-siguiente');
+    const btnSiguiente = await page.$('[data-accion-conductor="siguiente-pregunta-trivia"]');
     if (btnSiguiente) {
       await btnSiguiente.click();
       await page.waitForTimeout(300);
@@ -117,7 +117,7 @@ test('al terminar 5 preguntas de Eq1, fase es SELECCIONANDO_SET con equipo_actua
   }
 
   // Verificar que Eq1 terminó y ahora Eq2 debe elegir set
-  await page.waitForFunction(() => document.querySelector('#btn-trivia-iniciar-turno'), { timeout: 10000 });
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-turno-trivia"]'), { timeout: 10000 });
 
   const ctx = await page.evaluate(async (pid) => {
     const ctx = await window.cumpeo.services.partida.obtenerContextoEspera(pid);
@@ -141,29 +141,29 @@ test('al terminar 5 preguntas de Eq2, fase es FIN_DE_RONDA', async ({ page }) =>
   await page.click('#btn-trivia-iniciar-juego');
   await page.waitForTimeout(300);
 
-  await page.waitForFunction(() => document.querySelector('#btn-trivia-iniciar-ronda'), { timeout: 10000 });
-  await page.click('#btn-trivia-iniciar-ronda');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-ronda-trivia"]'), { timeout: 10000 });
+  await page.click('[data-accion-conductor="iniciar-ronda-trivia"]');
   await page.waitForTimeout(300);
 
   // Eq1: elegir set + responder 5 preguntas
-  await page.waitForFunction(() => document.querySelector('[data-set-id]'), { timeout: 10000 });
-  await page.click(`[data-set-id="${setIdEq1}"]`);
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="seleccionar-set-trivia"]'), { timeout: 10000 });
+  await elegirSetTrivia(page, setIdEq1);
   await page.waitForTimeout(300);
 
   for (let i = 0; i < 5; i++) {
-    await page.waitForFunction(() => document.querySelector('#btn-trivia-iniciar-respuesta'), { timeout: 10000 });
-    await page.click('#btn-trivia-iniciar-respuesta');
+    await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-tiempo-trivia"]'), { timeout: 10000 });
+    await page.click('[data-accion-conductor="iniciar-tiempo-trivia"]');
     await page.waitForTimeout(200);
 
     await page.waitForFunction(() => document.querySelector('#shell-game-container [data-opcion-index]'), { timeout: 10000 });
     await page.click('[data-opcion-index="0"]');
     await page.waitForTimeout(200);
 
-    await page.waitForFunction(() => document.querySelector('#btn-trivia-validar'), { timeout: 10000 });
-    await page.click('#btn-trivia-validar');
+    await page.waitForFunction(() => document.querySelector('[data-accion-conductor="validar-respuesta-trivia"]'), { timeout: 10000 });
+    await page.click('[data-accion-conductor="validar-respuesta-trivia"]');
     await page.waitForTimeout(300);
 
-    const btnSiguiente = await page.$('#btn-trivia-siguiente');
+    const btnSiguiente = await page.$('[data-accion-conductor="siguiente-pregunta-trivia"]');
     if (btnSiguiente) {
       await btnSiguiente.click();
       await page.waitForTimeout(300);
@@ -171,29 +171,29 @@ test('al terminar 5 preguntas de Eq2, fase es FIN_DE_RONDA', async ({ page }) =>
   }
 
   // CAMBIO_TURNO → iniciar turno Eq2
-  await page.waitForFunction(() => document.querySelector('#btn-trivia-iniciar-turno'), { timeout: 10000 });
-  await page.click('#btn-trivia-iniciar-turno');
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-turno-trivia"]'), { timeout: 10000 });
+  await page.click('[data-accion-conductor="iniciar-turno-trivia"]');
   await page.waitForTimeout(300);
 
   // Eq2: elegir set + responder 5 preguntas
-  await page.waitForFunction(() => document.querySelector('[data-set-id]'), { timeout: 10000 });
-  await page.click(`[data-set-id="${setIdEq2}"]`);
+  await page.waitForFunction(() => document.querySelector('[data-accion-conductor="seleccionar-set-trivia"]'), { timeout: 10000 });
+  await elegirSetTrivia(page, setIdEq2);
   await page.waitForTimeout(300);
 
   for (let i = 0; i < 5; i++) {
-    await page.waitForFunction(() => document.querySelector('#btn-trivia-iniciar-respuesta'), { timeout: 10000 });
-    await page.click('#btn-trivia-iniciar-respuesta');
+    await page.waitForFunction(() => document.querySelector('[data-accion-conductor="iniciar-tiempo-trivia"]'), { timeout: 10000 });
+    await page.click('[data-accion-conductor="iniciar-tiempo-trivia"]');
     await page.waitForTimeout(200);
 
     await page.waitForFunction(() => document.querySelector('#shell-game-container [data-opcion-index]'), { timeout: 10000 });
     await page.click('[data-opcion-index="0"]');
     await page.waitForTimeout(200);
 
-    await page.waitForFunction(() => document.querySelector('#btn-trivia-validar'), { timeout: 10000 });
-    await page.click('#btn-trivia-validar');
+    await page.waitForFunction(() => document.querySelector('[data-accion-conductor="validar-respuesta-trivia"]'), { timeout: 10000 });
+    await page.click('[data-accion-conductor="validar-respuesta-trivia"]');
     await page.waitForTimeout(300);
 
-    const btnSiguiente = await page.$('#btn-trivia-siguiente');
+    const btnSiguiente = await page.$('[data-accion-conductor="siguiente-pregunta-trivia"]');
     if (btnSiguiente) {
       await btnSiguiente.click();
       await page.waitForTimeout(300);
@@ -203,7 +203,7 @@ test('al terminar 5 preguntas de Eq2, fase es FIN_DE_RONDA', async ({ page }) =>
   // Verificar FIN_DE_RONDA
   await page.waitForFunction(() => {
     const panel = document.querySelector('#shell-panel-conductor');
-    return panel && panel.querySelector('#btn-trivia-siguiente-ronda');
+    return panel && panel.querySelector('[data-accion-conductor="iniciar-siguiente-ronda-trivia"]');
   }, { timeout: 10000 });
 
   const ctx = await page.evaluate(async (pid) => {

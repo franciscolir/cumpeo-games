@@ -410,6 +410,84 @@ export const TriviaGameUI = {
     }
   },
 
+  /**
+   * Declara las acciones del panel conductor para la fase actual
+   * (contrato nuevo — 8.5a). Si existe, el shell renderiza el panel
+   * desde acá; si no o devuelve array vacío, el shell usa
+   * renderizarPanelConductor (legacy, convivencia D8).
+   *
+   * Los `accion` son exactamente los strings que maneja el switch
+   * de onAccion del shell (sin renombrar).
+   *
+   * @param {object} estadoJuego estado crudo del juego
+   * @param {object} contexto - { partida, juegoEjecutado, equipos,
+   *                              itemsDelJuego, setsDisponibles,
+   *                              urlsImagenes, puedeControlar }
+   * @returns {Array<object>} descriptores de acciones
+   */
+  accionesConductor(estadoJuego, contexto) {
+    const fase = estadoJuego?.fase || '';
+    const equipo = estadoJuego?.equipo_actual || 1;
+    const nombreEquipo = _nombreEquipo(equipo, contexto);
+
+    switch (fase) {
+      case 'INICIO_RONDA':
+        return [
+          { tipo: 'primario', texto: 'Comenzar ronda', accion: 'iniciar-ronda-trivia' }
+        ];
+
+      case 'SELECCIONANDO_SET': {
+        const sets = contexto?.setsDisponibles || [];
+        if (sets.length === 0) {
+          return [
+            { tipo: 'mensaje', texto: 'No hay sets disponibles.', variante: 'error' }
+          ];
+        }
+        return [
+          { tipo: 'mensaje', texto: `Elegí un set para ${nombreEquipo}` },
+          ...sets.map((s) => ({
+            tipo: 'fantasma',
+            texto: s.nombre || s.id,
+            accion: 'seleccionar-set-trivia',
+            payload: { set: s }
+          }))
+        ];
+      }
+
+      case 'MOSTRANDO_PREGUNTA':
+        return [
+          { tipo: 'primario', texto: 'Iniciar respuesta', accion: 'iniciar-tiempo-trivia' }
+        ];
+
+      case 'SELECCIONANDO_RESPUESTA': {
+        const seleccionada = estadoJuego?.opcion_seleccionada;
+        const disabled = seleccionada === null || seleccionada === undefined;
+        return [
+          { tipo: 'primario', texto: 'Validar', accion: 'validar-respuesta-trivia', disabled },
+          { tipo: 'fantasma', texto: 'Pasar', accion: 'pasar-pregunta-trivia' }
+        ];
+      }
+
+      case 'MOSTRANDO_RESULTADO':
+        return [
+          { tipo: 'primario', texto: 'Siguiente pregunta', accion: 'siguiente-pregunta-trivia' }
+        ];
+
+      case 'CAMBIO_TURNO':
+        return [
+          { tipo: 'primario', texto: `Iniciar turno de ${nombreEquipo}`, accion: 'iniciar-turno-trivia' }
+        ];
+
+      case 'FIN_DE_RONDA':
+        return [
+          { tipo: 'primario', texto: 'Siguiente ronda', accion: 'iniciar-siguiente-ronda-trivia' }
+        ];
+
+      default:
+        return [];
+    }
+  },
+
   cleanup() {
     _timer?.cancelar();
   }
