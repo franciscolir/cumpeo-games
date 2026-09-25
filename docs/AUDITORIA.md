@@ -154,6 +154,8 @@
 4 pospuestos: 8.7b (#135), 8.8 (sin spec), 8.9 (#137), 8.10 (#136).
 2662 unit + ~223 e2e. Deudas #134-#137. | PENDIENTE |
 
+| 2026-09-25 | 8 | Fase 3 | ✅ APROBADO | Cerrar #83 (heartbeat). Resuelto en 5.8e. | PENDIENTE |
+
 ---
 
 ## Cierres de bloque
@@ -237,7 +239,7 @@ _(ninguna)_
 | 79 | Test `flujo-completo.spec.js:13` de Memoria tarda 10s. Considerar optimizar. | Paso 5.7d (detectado) | Baja |
 | 80 | ROADMAP con deuda estructural: conteos inconsistentes (`/10`, `/16`, `/20`, `/21`), historial con `5.7` duplicado, sección 2 desincronizada. Corregido en 5.7-cierre. | Paso 5.7d (detectado) | Media |
 | 82 | Agente externo construyó 5.8b, 5.8c y 5.8d sin auditoría intermedia. Violación de regla 9 de CONTINUIDAD.md. Escalar si se repite. | Paso 5.8d (detectado en auditoría) | Alta |
-| 83 | Heartbeat en shell-partida.js introdujo regresión sistémica en e2e de Memoricé, Rosco, Historia Enredada y QPEP (12+ fallas nuevas). Revertido en 5.8-revert. Reabrir como paso dedicado con tests propios. | Paso 5.8d (detectado en auditoría) | Alta |
+| 83 | ~~Heartbeat en shell-partida.js introdujo regresión sistémica en e2e de Memoricé, Rosco, Historia Enredada y QPEP (12+ fallas nuevas). Revertido en 5.8-revert. Reabrir como paso dedicado con tests propios.~~ **Cerrada en 5.8e** (reimplementado como ControlService.iniciarHeartbeat con tests propios, commit 1d865dd). | Paso 5.8d (detectado) / 5.8e | ~~Alta~~ Cerrada |
 | 85 | El agente reportó "4 fallas e2e pre-existentes" cuando el run real mostraba 17 fallas visibles (mínimo 12 nuevas). Deuda #61 agravada. | Paso 5.8d (detectado en auditoría) | Crítica |
 | 86 | El run de Playwright se corta con `tail` en el pipe. Usar `> /tmp/e2e.txt 2>&1` y leer el archivo después. | Paso 5.8d (detectado en auditoría) | Baja |
 | 87 | `indexeddb-smoke.spec.js:6` falla intermitentemente en run completo (pre-existente). Revisar config del adapter o condición del test. | Run completo 5.8e (detectado) | Baja |
