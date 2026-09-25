@@ -4,6 +4,7 @@
    Cubre: set vacío del submodo PREGUNTAS → al elegirlo el shell
    muestra alerta "Set inválido" y NO avanza de fase (el juego ya
    no valida al iniciar la partida, solo al elegir el set).
+   Selectores: descriptores `data-accion-conductor` (8.5d).
    ============================================================= */
 
 import { test, expect } from '@playwright/test';
@@ -13,7 +14,8 @@ import {
   iniciarPartidaPictionary,
   obtenerContextoPictionary,
   irAConductor,
-  esperarBotonPictionary
+  esperarBotonPictionary,
+  accionSelector
 } from './_helpers/pictionary.js';
 
 test.beforeEach(loginTestUser);
@@ -76,7 +78,9 @@ test('set vacío del submodo PREGUNTAS muestra alerta y no avanza de fase', asyn
 
   await irAConductor(page, partidaId);
   await iniciarPartidaPictionary(page, partidaId);
-  await esperarBotonPictionary(page, '#btn-pic-iniciar-juego');
+
+  const iniciar = accionSelector('iniciar-juego-pictionary');
+  await esperarBotonPictionary(page, iniciar);
 
   let dialogMsg = '';
   page.on('dialog', async (dialog) => {
@@ -84,11 +88,13 @@ test('set vacío del submodo PREGUNTAS muestra alerta y no avanza de fase', asyn
     await dialog.accept();
   });
 
-  await page.click('#btn-pic-iniciar-juego');
-  await esperarBotonPictionary(page, '#btn-pic-submodo-PREGUNTAS');
-  await page.click('#btn-pic-submodo-PREGUNTAS');
-  await esperarBotonPictionary(page, '#btn-pic-elegir-set');
-  await page.click('#btn-pic-elegir-set');
+  await page.click(iniciar);
+  const submodo = accionSelector('elegir-submodo-pictionary', '{"submodo":"PREGUNTAS"}');
+  await esperarBotonPictionary(page, submodo);
+  await page.click(submodo);
+  const elegirSet = accionSelector('elegir-set-pictionary');
+  await esperarBotonPictionary(page, elegirSet);
+  await page.click(elegirSet);
 
   await expect.poll(() => dialogMsg, { timeout: 5000 }).toContain('Set inválido');
   expect(dialogMsg).toContain('items no puede estar vacío');
@@ -98,6 +104,6 @@ test('set vacío del submodo PREGUNTAS muestra alerta y no avanza de fase', asyn
   expect(ctx.estadoJuego.submodo_actual).toBe('PREGUNTAS');
 
   const panel = page.locator('#shell-panel-conductor');
-  await expect(panel.locator('#pic-set-select')).toBeVisible();
-  await expect(panel.locator('#btn-pic-iniciar-tiempo')).toHaveCount(0);
+  await expect(panel.locator(elegirSet)).toBeVisible();
+  await expect(panel.locator(accionSelector('iniciar-tiempo-pictionary'))).toHaveCount(0);
 });

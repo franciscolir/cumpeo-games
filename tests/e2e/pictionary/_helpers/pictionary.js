@@ -4,6 +4,9 @@
    config `palabras_por_turno`, 9 fases reales y acciones
    reales del shell vía `window.__shellPartidaCallbacks`
    (sin fabricar estados).
+   8.5d: selectores migrados a descriptores `data-accion-conductor`
+   (`accionSelector`); el motor `_ejecutarFasesPictionary` no usa
+   DOM (llama onAccion directamente) y no cambió.
    ============================================================= */
 
 import { waitForCumpeo } from '../../_helpers/auth.js';
@@ -164,27 +167,43 @@ export async function irAPublica(page, codigo) {
 }
 
 /**
- * Espera a que el panel del conductor muestre un botón específico.
+ * Construye un selector CSS para un descriptor del panel conductor
+ * (`data-accion-conductor`), opcionalmente filtrando por substring
+ * del payload JSON (decodificado, comillas simples en el CSS).
+ * @param {string} accion - p. ej. `elegir-submodo-pictionary`.
+ * @param {string} [payload] - substring del payload, p. ej. `{"submodo":"PALABRAS"}`.
+ * @returns {string} selector CSS.
  */
-export async function esperarBotonPictionary(page, botonId) {
-  await page.waitForFunction((id) => {
+export function accionSelector(accion, payload) {
+  return payload
+    ? `[data-accion-conductor="${accion}"][data-accion-payload*='${payload}']`
+    : `[data-accion-conductor="${accion}"]`;
+}
+
+/**
+ * Espera a que el panel del conductor muestre un selector dado
+ * (descriptores `[data-accion-conductor=…]` desde 8.5d).
+ */
+export async function esperarBotonPictionary(page, selector) {
+  await page.waitForFunction((sel) => {
     const panel = document.querySelector('#shell-panel-conductor');
-    return panel && panel.querySelector(id);
-  }, botonId, { timeout: 15000 });
+    return panel && panel.querySelector(sel);
+  }, selector, { timeout: 15000 });
 }
 
 /**
  * Lleva la UI hasta la fase ADIVINANDO (submodo → set → tiempo).
- * Deja el botón `#btn-pic-acierto` visible.
+ * Deja visible el botón `[data-accion-conductor="marcar-acierto-pictionary"]`.
  */
 export async function empezarTurnoUI(page) {
-  await esperarBotonPictionary(page, '#btn-pic-submodo-PALABRAS');
-  await page.click('#btn-pic-submodo-PALABRAS');
-  await esperarBotonPictionary(page, '#btn-pic-elegir-set');
-  await page.click('#btn-pic-elegir-set');
-  await esperarBotonPictionary(page, '#btn-pic-iniciar-tiempo');
-  await page.click('#btn-pic-iniciar-tiempo');
-  await esperarBotonPictionary(page, '#btn-pic-acierto');
+  const submodo = accionSelector('elegir-submodo-pictionary', '{"submodo":"PALABRAS"}');
+  await esperarBotonPictionary(page, submodo);
+  await page.click(submodo);
+  await esperarBotonPictionary(page, accionSelector('elegir-set-pictionary'));
+  await page.click(accionSelector('elegir-set-pictionary'));
+  await esperarBotonPictionary(page, accionSelector('iniciar-tiempo-pictionary'));
+  await page.click(accionSelector('iniciar-tiempo-pictionary'));
+  await esperarBotonPictionary(page, accionSelector('marcar-acierto-pictionary'));
 }
 
 /**
@@ -193,7 +212,7 @@ export async function empezarTurnoUI(page) {
  */
 export async function jugarTurnoUI(page) {
   await empezarTurnoUI(page);
-  await page.click('#btn-pic-acierto');
+  await page.click(accionSelector('marcar-acierto-pictionary'));
   await page.waitForTimeout(300);
 }
 

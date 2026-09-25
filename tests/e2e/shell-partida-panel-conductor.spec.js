@@ -9,12 +9,16 @@
    Enredada exponen `accionesConductor` con convivencia legacy
    (D1/D8) — el shell los ignora cuando devuelven array vacío.
 
-   8.5b.2: Memoria migrado, Pictionary devuelve [] en todas
-   las fases (bonus requiere payload compuesto — deuda #131) y
-   Rosco parcial ('' y TURNO_ACTIVO → [] — deuda #132).
+   8.5b.2: Memoria migrado y Rosco parcial ('' y TURNO_ACTIVO
+   → [] — deuda #132).
 
    8.5c.1: JUGANDO de Memoria usa descriptor `selector` (deuda
    #130 cerrada — el handler convierte `Number(payload.valor)`).
+
+   8.5d: Pictionary migrado completo (deuda #131 cerrada):
+   9 fases con descriptores + bonus `input` en ADIVINANDO /
+   ESPERA_VALIDACION / FIN_DE_RONDA; INICIO_RONDA, CAMBIO_TURNO
+   y FIN_DE_JUEGO siguen en [] (fallback legacy, decisión D2).
 
    Nota: Trivia conserva `renderizarPanelConductor` legacy
    (convivencia D8) — el shell lo ignora cuando hay
@@ -291,7 +295,7 @@ test('4 GameUIs de 8.5b.1/8.5c.2a: accionesConductor por fase, VOTANDO Historia 
   });
 });
 
-test('3 GameUIs de 8.5b.2/8.5c.1: Memoria con selector en JUGANDO, Pictionary [] y Rosco parcial con legacy intacto', async ({ page }) => {
+test('3 GameUIs de 8.5b.2/8.5c.1/8.5d: Memoria con selector en JUGANDO, Pictionary migrado y Rosco parcial con legacy intacto', async ({ page }) => {
   await page.goto('/');
   await waitForCumpeo(page);
 
@@ -352,8 +356,19 @@ test('3 GameUIs de 8.5b.2/8.5c.1: Memoria con selector en JUGANDO, Pictionary []
     }
   ]);
 
-  // M2-A (deuda #131): Pictionary → [] en todas las fases (legacy intacto)
-  expect(res.PICTIONARY.largos).toEqual([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+  // M2-A → 8.5d (deuda #131 cerrada): Pictionary migrado.
+  // fases: '', INICIO_RONDA, SELECCIONANDO_SUBMODO, SELECCIONANDO_SET,
+  // MOSTRANDO_PALABRA, ADIVINANDO, ESPERA_VALIDACION, CAMBIO_TURNO,
+  // FIN_DE_RONDA, FIN_DE_JUEGO
+  // - '': botón Iniciar juego (1)
+  // - INICIO_RONDA / CAMBIO_TURNO / FIN_DE_JUEGO: [] → fallback legacy (D2)
+  // - SELECCIONANDO_SUBMODO: mensaje + 4 submodos (5)
+  // - SELECCIONANDO_SET: mensaje + 1 set del fixture sin submodo (2)
+  // - MOSTRANDO_PALABRA: 1
+  // - ADIVINANDO: 3 botones + 2 inputs de bonus (5)
+  // - ESPERA_VALIDACION: 1 + 2 bonus (3)
+  // - FIN_DE_RONDA: 1 ('Finalizar juego', sin config → rondas=1) + 2 bonus (3)
+  expect(res.PICTIONARY.largos).toEqual([1, 0, 5, 2, 1, 5, 3, 0, 3, 0]);
 
   // M3-A (8.5b.2) + 8.5c.2a (deuda #132): Rosco migra
   // INICIO_RONDA/TURNO_ACTIVO (html + 5 botones)/CAMBIO_TURNO/

@@ -11,7 +11,8 @@ import {
   crearSetPictionary,
   iniciarPartidaPictionary,
   irAConductor,
-  esperarBotonPictionary
+  esperarBotonPictionary,
+  accionSelector
 } from './pictionary/_helpers/pictionary.js';
 import {
   setupPartidaHistoriaEnredada,
@@ -67,7 +68,7 @@ async function prepararPictionaryConTiempo(page) {
   await irAConductor(page, partidaId);
   await iniciarPartidaPictionary(page, partidaId);
 
-  await esperarBotonPictionary(page, '#btn-pic-iniciar-juego');
+  await esperarBotonPictionary(page, accionSelector('iniciar-juego-pictionary'));
   await page.evaluate(() => window.__shellPartidaCallbacks.onAccion('iniciar-juego-pictionary', {}));
 
   return partidaId;

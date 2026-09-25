@@ -3,6 +3,7 @@
 
    Cubre: crear set → partida → iniciar → elegir submodo →
    set → tiempo → acierto → cambios de turno → fin de ronda.
+   Selectores: descriptores `data-accion-conductor` (8.5d).
    ============================================================= */
 
 import { test, expect } from '@playwright/test';
@@ -14,7 +15,8 @@ import {
   irAConductor,
   esperarBotonPictionary,
   jugarTurnoUI,
-  avanzarTurnosProgramatico
+  avanzarTurnosProgramatico,
+  accionSelector
 } from './_helpers/pictionary.js';
 
 test.beforeEach(loginTestUser);
@@ -24,14 +26,16 @@ test('crear set + partida + iniciar muestra panel para elegir submodo', async ({
   await irAConductor(page, partidaId);
   await iniciarPartidaPictionary(page, partidaId);
 
-  await esperarBotonPictionary(page, '#btn-pic-iniciar-juego');
-  await page.click('#btn-pic-iniciar-juego');
+  const iniciar = accionSelector('iniciar-juego-pictionary');
+  await esperarBotonPictionary(page, iniciar);
+  await page.click(iniciar);
 
-  await esperarBotonPictionary(page, '#btn-pic-submodo-PALABRAS');
+  const submodo = accionSelector('elegir-submodo-pictionary', '{"submodo":"PALABRAS"}');
+  await esperarBotonPictionary(page, submodo);
   const panel = page.locator('#shell-panel-conductor');
   await expect(panel.getByText('Elegí el submodo de representación')).toBeVisible();
-  await expect(panel.locator('#btn-pic-submodo-GESTOS')).toBeVisible();
-  await expect(panel.locator('#btn-pic-submodo-DIBUJO')).toBeVisible();
+  await expect(panel.locator(accionSelector('elegir-submodo-pictionary', '{"submodo":"GESTOS"}'))).toBeVisible();
+  await expect(panel.locator(accionSelector('elegir-submodo-pictionary', '{"submodo":"DIBUJO"}'))).toBeVisible();
 });
 
 test('jugar 1 turno (PALABRAS) suma 10 a Eq1 y deja al Eq2 en el mismo submodo', async ({ page }) => {
@@ -39,9 +43,13 @@ test('jugar 1 turno (PALABRAS) suma 10 a Eq1 y deja al Eq2 en el mismo submodo',
   await irAConductor(page, partidaId);
   await iniciarPartidaPictionary(page, partidaId);
 
-  await esperarBotonPictionary(page, '#btn-pic-iniciar-juego');
-  await page.click('#btn-pic-iniciar-juego');
-  await esperarBotonPictionary(page, '#btn-pic-submodo-PALABRAS');
+  const iniciar = accionSelector('iniciar-juego-pictionary');
+  await esperarBotonPictionary(page, iniciar);
+  await page.click(iniciar);
+  await esperarBotonPictionary(
+    page,
+    accionSelector('elegir-submodo-pictionary', '{"submodo":"PALABRAS"}')
+  );
 
   const ctx1 = await obtenerContextoPictionary(page, partidaId);
   expect(ctx1.estadoJuego.fase).toBe('SELECCIONANDO_SUBMODO');
@@ -64,9 +72,13 @@ test('jugar los 8 turnos de ronda 1 (4 submodos × 2 equipos) llega a FIN_DE_RON
   await irAConductor(page, partidaId);
   await iniciarPartidaPictionary(page, partidaId);
 
-  await esperarBotonPictionary(page, '#btn-pic-iniciar-juego');
-  await page.click('#btn-pic-iniciar-juego');
-  await esperarBotonPictionary(page, '#btn-pic-submodo-PALABRAS');
+  const iniciar = accionSelector('iniciar-juego-pictionary');
+  await esperarBotonPictionary(page, iniciar);
+  await page.click(iniciar);
+  await esperarBotonPictionary(
+    page,
+    accionSelector('elegir-submodo-pictionary', '{"submodo":"PALABRAS"}')
+  );
 
   await avanzarTurnosProgramatico(page, partidaId, 8);
 
@@ -77,5 +89,7 @@ test('jugar los 8 turnos de ronda 1 (4 submodos × 2 equipos) llega a FIN_DE_RON
   expect(ctx.estadoJuego.submodo_actual).toBe('PALABRAS');
   expect(ctx.estadoJuego.equipo_actual).toBe(1);
 
-  await expect(page.locator('#shell-panel-conductor').locator('#btn-pic-siguiente-ronda')).toBeVisible();
+  await expect(
+    page.locator('#shell-panel-conductor').locator(accionSelector('siguiente-ronda-pictionary'))
+  ).toBeVisible();
 });

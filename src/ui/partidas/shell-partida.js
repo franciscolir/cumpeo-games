@@ -1230,9 +1230,12 @@ async function _renderContenido(container, app, partidaId) {
           const { PictionaryGameDefinition } = await import('../../games/pictionary/PictionaryGameDefinition.js');
           const config = juegoActivo.configuracion_congelada || PictionaryGameDefinition.defaultConfig;
           const equipo = payload.equipo;
-          const puntos = payload.puntos || 0;
+          // 8.5d: acepta `puntos` (legacy renderizarPanelConductor) o
+          // `valor` (descriptor input → binding { ...payload, valor }).
+          const puntosRaw = payload.puntos ?? payload.valor ?? 0;
+          const puntos = Number(puntosRaw);
           if (equipo !== 1 && equipo !== 2) return;
-          if (puntos <= 0) return;
+          if (!Number.isInteger(puntos) || puntos <= 0) return;
           const configConBonus = { ...config, bonus_puntos: puntos };
           const nuevoEstado = PictionaryGameDefinition.aplicarBonus(estadoJuego, configConBonus, equipo);
           await app.services.partida.actualizarEstadoJuego(

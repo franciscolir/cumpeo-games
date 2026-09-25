@@ -412,17 +412,155 @@ export const PictionaryGameUI = {
   /**
    * Descriptores de acciones del panel conductor (contrato 8.5a).
    *
-   * M2-A (8.5b.2): devuelve [] en todas las fases → fallback
-   * completo a renderizarPanelConductor legacy. El bonus del panel
-   * requiere payload compuesto { equipo, puntos } que el contrato
-   * no expresa (el binding `input` envía { valor } y el payload de
-   * botón es estático) y el bonus vive en todas las fases, así que
-   * migrar parcialmente el panel lo rompería. Deuda #131.
+   * 8.5d (deuda #131 cerrada): migra las 9 fases de Pictionary a
+   * descriptores. El bonus manual es un descriptor `input` por equipo
+   * con `payload { equipo }` en las fases activas (ADIVINANDO,
+   * ESPERA_VALIDACION, FIN_DE_RONDA): el binding `input` envía
+   * `{ ...payload, valor }` (valor string) y el handler
+   * `aplicar-bonus-pictionary` acepta `puntos` (legacy) o `valor`.
    *
-   * @returns {Array<object>} siempre [] (fallback legacy)
+   * INICIO_RONDA / CAMBIO_TURNO / FIN_DE_JUEGO devuelven [] a
+   * propósito (decisión D2): caen al fallback legacy
+   * `renderizarPanelConductor` ("Preparando turno…", panel vacío y
+   * su bloque de bonus legacy, que sigue visible en esas fases).
+   *
+   * @param {object} estadoJuego
+   * @param {object} [contexto]
+   * @returns {Array<object>} descriptores de acción.
    */
-  accionesConductor() {
-    return [];
+  accionesConductor(estadoJuego, contexto = {}) {
+    const fase = estadoJuego?.fase || '';
+    const submodoActual = estadoJuego?.submodo_actual || 'PALABRAS';
+    const equipo1 = contexto.equipos?.[0] || { nombre: 'Eq1' };
+    const equipo2 = contexto.equipos?.[1] || { nombre: 'Eq2' };
+
+    let acciones = [];
+
+    switch (fase) {
+      case '':
+        acciones = [
+          { tipo: 'primario', texto: 'Iniciar juego', accion: 'iniciar-juego-pictionary' }
+        ];
+        break;
+
+      case 'SELECCIONANDO_SUBMODO':
+        acciones = [
+          { tipo: 'mensaje', texto: 'Elegí el submodo de representación' },
+          {
+            tipo: estadoJuego?.submodo_actual === 'PALABRAS' ? 'primario' : 'secundario',
+            texto: 'Palabras prohibidas',
+            accion: 'elegir-submodo-pictionary',
+            payload: { submodo: 'PALABRAS' }
+          },
+          {
+            tipo: estadoJuego?.submodo_actual === 'GESTOS' ? 'primario' : 'secundario',
+            texto: 'Gestos',
+            accion: 'elegir-submodo-pictionary',
+            payload: { submodo: 'GESTOS' }
+          },
+          {
+            tipo: estadoJuego?.submodo_actual === 'PREGUNTAS' ? 'primario' : 'secundario',
+            texto: 'Preguntas sí/no',
+            accion: 'elegir-submodo-pictionary',
+            payload: { submodo: 'PREGUNTAS' }
+          },
+          {
+            tipo: estadoJuego?.submodo_actual === 'DIBUJO' ? 'primario' : 'secundario',
+            texto: 'Dibujo',
+            accion: 'elegir-submodo-pictionary',
+            payload: { submodo: 'DIBUJO' }
+          }
+        ];
+        break;
+
+      case 'SELECCIONANDO_SET': {
+        const sets = (contexto.setsDisponibles || [])
+          .filter((s) => !s.submodo || s.submodo === submodoActual);
+        if (sets.length === 0) {
+          acciones = [
+            { tipo: 'mensaje', texto: 'No hay sets disponibles para este submodo.', variante: 'error' }
+          ];
+        } else {
+          acciones = [
+            { tipo: 'mensaje', texto: `Elegí un set — ${submodoActual}` },
+            ...sets.map((s) => ({
+              tipo: 'fantasma',
+              texto: s.nombre || s.id,
+              accion: 'elegir-set-pictionary',
+              payload: { set_id: s.id }
+            }))
+          ];
+        }
+        break;
+      }
+
+      case 'MOSTRANDO_PALABRA':
+        acciones = [
+          { tipo: 'primario', texto: 'Iniciar tiempo', accion: 'iniciar-tiempo-pictionary' }
+        ];
+        break;
+
+      case 'ADIVINANDO':
+        acciones = [
+          { tipo: 'primario', texto: 'Correcto', accion: 'marcar-acierto-pictionary' },
+          { tipo: 'peligro', texto: 'Incorrecto', accion: 'marcar-error-pictionary' },
+          { tipo: 'secundario', texto: 'Pasar palabra', accion: 'pasar-palabra-pictionary' }
+        ];
+        break;
+
+      case 'ESPERA_VALIDACION':
+        acciones = [
+          { tipo: 'primario', texto: 'Siguiente turno', accion: 'siguiente-turno-pictionary' }
+        ];
+        break;
+
+      case 'FIN_DE_RONDA': {
+        const config = contexto.juegoEjecutado?.configuracion_congelada || {};
+        const totalRondas = config.rondas || 1;
+        const siguienteRonda = (estadoJuego.ronda_actual || 1) + 1;
+        const esUltimaRonda = siguienteRonda > totalRondas;
+        acciones = [
+          {
+            tipo: 'primario',
+            texto: esUltimaRonda ? 'Finalizar juego' : 'Iniciar siguiente ronda',
+            accion: 'siguiente-ronda-pictionary'
+          }
+        ];
+        break;
+      }
+
+      case 'INICIO_RONDA':
+      case 'CAMBIO_TURNO':
+      case 'FIN_DE_JUEGO':
+      default:
+        acciones = [];
+        break;
+    }
+
+    const fasesConBonus = ['ADIVINANDO', 'ESPERA_VALIDACION', 'FIN_DE_RONDA'];
+    if (fasesConBonus.includes(fase)) {
+      acciones = [
+        ...acciones,
+        {
+          tipo: 'input',
+          label: `Bonus para ${equipo1.nombre}`,
+          tipoInput: 'number',
+          min: 1,
+          accion: 'aplicar-bonus-pictionary',
+          payload: { equipo: 1 }
+        },
+        {
+          tipo: 'input',
+          label: `Bonus para ${equipo2.nombre}`,
+          tipoInput: 'number',
+          min: 1,
+          accion: 'aplicar-bonus-pictionary',
+          payload: { equipo: 2 }
+        }
+      ];
+    }
+
+    return acciones;
   },
 
   cleanup() {

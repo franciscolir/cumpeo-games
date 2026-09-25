@@ -5,6 +5,7 @@
    los turnos previos con las acciones del conductor hasta llegar a
    MOSTRANDO_PALABRA del submodo objetivo, y verifica la UI del
    conductor (y del público en PALABRAS).
+   Selectores: descriptores `data-accion-conductor` (8.5d).
    ============================================================= */
 
 import { test, expect } from '@playwright/test';
@@ -15,19 +16,28 @@ import {
   irAConductor,
   irAPublica,
   esperarBotonPictionary,
-  saltarASubmodoPictionary
+  saltarASubmodoPictionary,
+  accionSelector
 } from './_helpers/pictionary.js';
 
 test.beforeEach(loginTestUser);
+
+async function iniciarYEsperarSubmodo(page) {
+  const iniciar = accionSelector('iniciar-juego-pictionary');
+  await esperarBotonPictionary(page, iniciar);
+  await page.click(iniciar);
+  await esperarBotonPictionary(
+    page,
+    accionSelector('elegir-submodo-pictionary', '{"submodo":"PALABRAS"}')
+  );
+}
 
 test('submodo PALABRAS: conductor ve concepto y palabras prohibidas', async ({ page }) => {
   const { partidaId } = await crearPartidaPictionary(page);
   await irAConductor(page, partidaId);
   await iniciarPartidaPictionary(page, partidaId);
 
-  await esperarBotonPictionary(page, '#btn-pic-iniciar-juego');
-  await page.click('#btn-pic-iniciar-juego');
-  await esperarBotonPictionary(page, '#btn-pic-submodo-PALABRAS');
+  await iniciarYEsperarSubmodo(page);
 
   await saltarASubmodoPictionary(page, partidaId, 'PALABRAS');
 
@@ -44,9 +54,7 @@ test('submodo PALABRAS: público ve concepto y palabras prohibidas', async ({ pa
   await irAConductor(page, partidaId);
   await iniciarPartidaPictionary(page, partidaId);
 
-  await esperarBotonPictionary(page, '#btn-pic-iniciar-juego');
-  await page.click('#btn-pic-iniciar-juego');
-  await esperarBotonPictionary(page, '#btn-pic-submodo-PALABRAS');
+  await iniciarYEsperarSubmodo(page);
 
   await saltarASubmodoPictionary(page, partidaId, 'PALABRAS');
 
@@ -70,9 +78,7 @@ test('submodo GESTOS: conductor ve gestos, sin palabras prohibidas', async ({ pa
   await irAConductor(page, partidaId);
   await iniciarPartidaPictionary(page, partidaId);
 
-  await esperarBotonPictionary(page, '#btn-pic-iniciar-juego');
-  await page.click('#btn-pic-iniciar-juego');
-  await esperarBotonPictionary(page, '#btn-pic-submodo-PALABRAS');
+  await iniciarYEsperarSubmodo(page);
 
   await saltarASubmodoPictionary(page, partidaId, 'GESTOS');
 
@@ -89,9 +95,7 @@ test('submodo PREGUNTAS: conductor ve Preguntas sí/no y Adivinador de espaldas'
   await irAConductor(page, partidaId);
   await iniciarPartidaPictionary(page, partidaId);
 
-  await esperarBotonPictionary(page, '#btn-pic-iniciar-juego');
-  await page.click('#btn-pic-iniciar-juego');
-  await esperarBotonPictionary(page, '#btn-pic-submodo-PALABRAS');
+  await iniciarYEsperarSubmodo(page);
 
   await saltarASubmodoPictionary(page, partidaId, 'PREGUNTAS');
 
@@ -108,9 +112,7 @@ test('submodo DIBUJO: conductor ve Dibujo y Pizarra física', async ({ page }) =
   await irAConductor(page, partidaId);
   await iniciarPartidaPictionary(page, partidaId);
 
-  await esperarBotonPictionary(page, '#btn-pic-iniciar-juego');
-  await page.click('#btn-pic-iniciar-juego');
-  await esperarBotonPictionary(page, '#btn-pic-submodo-PALABRAS');
+  await iniciarYEsperarSubmodo(page);
 
   await saltarASubmodoPictionary(page, partidaId, 'DIBUJO');
 
