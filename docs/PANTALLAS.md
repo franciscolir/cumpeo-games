@@ -253,7 +253,7 @@ text
   - Cambia la UI a estado "espera".
   - La vista pública recibe el estado y muestra su modo espera.
 
-#### Panel conductor (contrato `accionesConductor` — 8.5a / 8.5b.1)
+#### Panel conductor (contrato `accionesConductor` — 8.5a / 8.5b.1 / 8.5b.2)
 
 - **Estado actual:** ✅ **implementado en 8.5a.** El shell renderiza
   `#shell-panel-conductor` desde `gameUI.accionesConductor(estadoJuego, contexto)`
@@ -266,11 +266,18 @@ text
   en JSON) y bindea a `callbacks.onAccion(accion, payload)`. Los `accion`
   son exactamente los strings del switch `onAccion` del shell.
 - **Adopción:** Trivia (8.5a, 8 fases); Anti-Trivia, Canción Incompleta,
-  Enlaces e Historia Enredada (8.5b.1). Los demás GameUIs siguen en legacy
-  hasta 8.5b.2/8.7. **Excepción D3 (8.5b.1):** Historia Enredada devuelve
-  `[]` en fase `VOTANDO` — el binding `input` del shell envía `{ valor }`
-  pero el handler `asignar-puntos-historia` lee `payload.puntos` (deuda
-  #129) → fallback legacy con input + botón `{ puntos }`.
+  Enlaces e Historia Enredada (8.5b.1); **Memoria migrado completo** y
+  **Rosco parcial** + **Pictionary sin migrar** (8.5b.2). Quedan en legacy
+  Pictionary, Rosco (fases `''`/`TURNO_ACTIVO`), QPEP y el resto hasta
+  8.5c/8.7. Excepciones: **D3 (8.5b.1)** Historia Enredada devuelve `[]`
+  en `VOTANDO` (binding `input` envía `{ valor }` pero el handler lee
+  `payload.puntos` — deuda #129); **M1-A (8.5b.2)** Memoria `JUGANDO` usa
+  2 botones fantasma `{ equipo }` en vez de `selector` (el binding
+  selector envía `{ valor }` pero `cambiar-turno-manual-memoria` lee
+  `payload.equipo` — deuda #130); **M2-A** Pictionary devuelve `[]` en
+  todas las fases (bonus requiere payload compuesto `{ equipo, puntos }`
+  — deuda #131); **M3-A** Rosco `''`/`TURNO_ACTIVO` → `[]` (modal con
+  `{ sets }` y card RESPUESTA — deuda #132).
 
 #### Selector A/B
 
@@ -299,7 +306,7 @@ text
   8.5b.1 también Anti-Trivia (`marcar-acierto/error-antitrivia`),
   Canción Incompleta (`marcar-acierto/error-cancion-incompleta`),
   Enlaces (`validar-enlaces`) e Historia Enredada (fases no-VOTANDO).
-  Los demás GameUIs migran en 8.5b.2/8.7.
+  Los demás GameUIs (Pictionary, Rosco, QPEP) migran en 8.5c/8.7.
 - **TO-BE:** conjunto de botones unificado visualmente en el panel derecho.
   Las acciones siguen siendo específicas por juego (`onAccion` con tipo).
 
@@ -646,8 +653,8 @@ existentes (`comenzarPartida`, `pausarJuego`, `reanudarJuego`,
 | 6 | No hay `EXTRAS` UI | No se pueden usar herramientas auxiliares | Alta | Media |
 | 7 | No hay `AVATAR REACT` | Reservado, sin especificación | TBD | Baja |
 | 8 | No hay `SOUND BAR` | Reservado, sin especificación | TBD | Baja |
-| 9 | ~~`CORRECTO / ERROR / SIGUIENTE` por juego, no unificados~~ **🔵 parcialmente resuelto en 8.5a + 8.5b.1** (contrato `accionesConductor` + Trivia, Anti-Trivia, Canción Incompleta, Enlaces, Historia Enredada; resto en 8.5b.2/8.7) | Inconsistencia visual | Media | Media |
-| 10 | ~~Selector A/B por juego, no unificado~~ **🔵 parcialmente resuelto en 8.5a** (tipo `selector` disponible en el contrato; adopción en 8.7) | Inconsistencia visual | Media | Media |
+| 9 | ~~`CORRECTO / ERROR / SIGUIENTE` por juego, no unificados~~ **🔵 parcialmente resuelto en 8.5a + 8.5b.1** (contrato `accionesConductor` + Trivia, Anti-Trivia, Canción Incompleta, Enlaces, Historia Enredada; Pictionary/Rosco/QPEP en 8.5c/8.7 — 8.5b.2 migró Memoria pero sin botones CORRECTO/ERROR) | Inconsistencia visual | Media | Media |
+| 10 | ~~Selector A/B por juego, no unificado~~ **🔵 parcialmente resuelto en 8.5a** (tipo `selector` disponible en el contrato; adopción en 8.7; en 8.5b.2 Memoria `JUGANDO` usó 2 botones `{ equipo }` en vez de `selector` por deuda #130) | Inconsistencia visual | Media | Media |
 | 11 | ~~Barra superior fragmentada (cada GameUI renderiza su timer)~~ **⏳ parcialmente resuelto en 8.2** (shell con `#shell-timer`; timers de GameUI aún activos, duplicación hasta 8.7) | Inconsistencia visual | Media | Media |
 
 ---
@@ -668,6 +675,7 @@ existentes (`comenzarPartida`, `pausarJuego`, `reanudarJuego`,
 | 8.5 | Panel conductor unificado (conductor) | Shell unifica START/PAUSE, FINISH/NEXT, A/B, CORRECTO/ERROR/SIGUIENTE | Alta | 9, 10 |
 | 8.5a | Contrato `accionesConductor` + piloto Trivia (funde 8.5-pre) | ✅ El shell renderiza `#shell-panel-conductor` desde descriptores declarativos (`data-accion-conductor` + payload) con fallback a `renderizarPanelConductor` legacy (D1/D8); `TriviaGameUI.accionesConductor` (8 fases) como piloto; specs de Trivia migrados a los nuevos selectores | Media | 9, 10 (parcial) |
 | 8.5b.1 | Migrar 4 GameUIs a `accionesConductor` | ✅ `accionesConductor` en Anti-Trivia, Canción Incompleta, Enlaces e Historia Enredada con convivencia legacy (D1); Historia `VOTANDO` → `[]` (D3 suspendida, deudas #128 QPEP / #129 input `{valor}` vs `{puntos}`); e2e de anti-trivia/enlaces/historia migrados a `[data-accion-conductor]` (canción solo smoke); +1 test de contrato en `shell-partida-panel-conductor.spec.js` | Media | 9 (parcial) |
+| 8.5b.2 | Migrar 3 GameUIs a `accionesConductor` | ✅ Memoria migrado completo (M1-A: `JUGANDO` → 2 botones fantasma `{ equipo }`), Pictionary `[]` total (M2-A, deuda #131) y Rosco parcial (M3-A: `''`/`TURNO_ACTIVO` → `[]`, deuda #132); e2e de memoria (4) y rosco (3) migrados a `[data-accion-conductor]` (pictionary sin tocar, #122); +1 test de contrato; deuda #130 (selector `{valor}` vs `payload.equipo`) | Media | 9 (parcial) |
 | 8.6 | `AJUSTES` global | Modal/pantalla nueva | Media | 5 |
 | 8.7 | Refactor de los 9 GameUIs al panel unificado | Refactor masivo | Muy alta | — |
 | 8.8 | Zona inferior (placeholder) | Espacios reservados Avatar + Sound | Baja | 7, 8 |
