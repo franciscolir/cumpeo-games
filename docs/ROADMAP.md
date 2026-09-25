@@ -277,6 +277,7 @@ Fuente: `docs/PANTALLAS.md` §8 (plan de 11 pasos, gaps #1–#11).
 | 8.3 | Modal de pausa + contador (sin auto-transición: deuda #123 → 8.4) | 🕓 IMPLEMENTADO (sin commit) | PENDIENTE |
 | 8.4 | Botón MODO ESPERA + estado UI + auto-transición (cierra #123 y #124) | 🕓 IMPLEMENTADO (sin commit) | PENDIENTE |
 | 8.5a | Contrato `accionesConductor` + piloto Trivia (funde 8.5-pre) | 🕓 IMPLEMENTADO (sin commit) | PENDIENTE |
+| 8.5b.1 | Migrar 4 GameUIs a `accionesConductor` (Anti-Trivia, Canción Incompleta, Enlaces, Historia Enredada) | 🕓 IMPLEMENTADO (sin commit) | PENDIENTE |
 | 8.5 | Panel conductor unificado | ⬜ | — |
 | 8.6 | AJUSTES global (UI) | ⬜ | — |
 | 8.7 | Refactor de los 9 GameUIs al panel unificado | ⬜ | — |
