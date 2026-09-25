@@ -80,13 +80,12 @@ test('selector manual cambia el equipo', async ({ page }) => {
   const estado = await obtenerEstadoMemoria(page, String(partidaId));
   expect(estado.equipo_actual).toBe(1);
 
-  // Botones de cambio manual (descriptores accionesConductor)
+  // Selector de cambio manual (descriptor selector — 8.5c.1)
   await page.waitForFunction(() => {
-    return Array.from(document.querySelectorAll('[data-accion-conductor="cambiar-turno-manual-memoria"]'))
-      .some((el) => JSON.parse(el.dataset.accionPayload).equipo === 2);
+    return document.querySelector('[data-accion-conductor="cambiar-turno-manual-memoria"]');
   }, { timeout: 10000 });
 
-  await page.locator('[data-accion-conductor="cambiar-turno-manual-memoria"]').nth(1).click();
+  await page.selectOption('[data-accion-conductor="cambiar-turno-manual-memoria"]', '2');
   await page.waitForTimeout(500);
 
   // Verificar que ahora es CAMBIO_TURNO (manual)

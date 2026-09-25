@@ -106,4 +106,58 @@ describe('_renderAccionesConductor (contrato accionesConductor — 8.5a)', () =>
     expect(_renderAccionesConductor([])).toContain('flex flex-col');
     expect(_renderAccionesConductor([])).not.toContain('data-accion-conductor');
   });
+
+  // Extensiones 8.5c.1
+
+  it('input con payload inyecta data-accion-payload escapado', () => {
+    const html = _renderAccionesConductor([
+      {
+        tipo: 'input',
+        label: 'Bonus',
+        tipoInput: 'number',
+        accion: 'aplicar-bonus-pictionary',
+        payload: { equipo: 1, "obs": 'a"b & c' }
+      }
+    ]);
+
+    expect(html).toContain('data-accion-conductor="aplicar-bonus-pictionary"');
+    expect(html).toContain('data-accion-payload="');
+    expect(html).not.toContain('data-accion-payload="{"');
+  });
+
+  it('input sin payload no tiene data-accion-payload', () => {
+    const html = _renderAccionesConductor([
+      { tipo: 'input', label: 'Puntos', tipoInput: 'number', accion: 'asignar-puntos' }
+    ]);
+
+    expect(html).toContain('data-accion-conductor="asignar-puntos"');
+    expect(html).not.toContain('data-accion-payload');
+  });
+
+  it('selector con payload inyecta data-accion-payload', () => {
+    const html = _renderAccionesConductor([
+      {
+        tipo: 'selector',
+        label: 'Ronda',
+        opciones: [{ valor: 1, texto: '1' }],
+        valorActual: 1,
+        accion: 'cambiar-turno-manual-memoria',
+        payload: { equipo: 2 }
+      }
+    ]);
+
+    expect(html).toContain('<select');
+    expect(html).toContain('data-accion-conductor="cambiar-turno-manual-memoria"');
+    expect(html).toContain('data-accion-payload="{&quot;equipo&quot;:2}"');
+  });
+
+  it('descriptor html inyecta HTML sin escapar', () => {
+    const html = _renderAccionesConductor([
+      { tipo: 'html', html: '<p class="bg-[#fff9e6]">RESPUESTA: <b>¡Á&amp;O!</b></p>' }
+    ]);
+
+    expect(html).toContain('<p class="bg-[#fff9e6]">RESPUESTA: <b>¡Á&amp;O!</b></p>');
+    expect(html).not.toContain('&lt;p class');
+    expect(html).not.toContain('data-accion-conductor');
+  });
 });

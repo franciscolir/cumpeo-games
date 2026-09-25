@@ -497,10 +497,10 @@ export const MemoriaGameUI = {
    * Los `accion` son exactamente los strings que maneja el switch
    * de onAccion del shell (sin renombrar).
    *
-   * M1-A (8.5b.2): JUGANDO usa 2 botones fantasma con payload
-   * { equipo } — paridad con el legacy. El descriptor `selector`
-   * no sirve porque el binding envía { valor } y el handler lee
-   * payload.equipo (deuda #130).
+   * 8.5c.1: JUGANDO usa el descriptor `selector` (envía `{ valor }`
+   * string); el handler `cambiar-turno-manual-memoria` convierte con
+   * `Number(payload.valor)` y sigue aceptando `{ equipo }` por
+   * retrocompatibilidad (deuda #130 cerrada).
    *
    * @param {object} estadoJuego estado crudo del juego
    * @param {object} contexto - { partida, juegoEjecutado, equipos,
@@ -551,9 +551,10 @@ export const MemoriaGameUI = {
 
       case 'JUGANDO':
         return [
-          { tipo: 'mensaje', texto: 'Cambiar a:' },
-          { tipo: 'secundario', texto: equipo1.nombre, accion: 'cambiar-turno-manual-memoria', payload: { equipo: 1 } },
-          { tipo: 'secundario', texto: equipo2.nombre, accion: 'cambiar-turno-manual-memoria', payload: { equipo: 2 } }
+          { tipo: 'selector', label: 'Cambiar a', opciones: [
+            { valor: 1, texto: equipo1.nombre },
+            { valor: 2, texto: equipo2.nombre }
+          ], valorActual: equipo, accion: 'cambiar-turno-manual-memoria' }
         ];
 
       case 'CAMBIO_TURNO':

@@ -9,10 +9,12 @@
    Enredada exponen `accionesConductor` con convivencia legacy
    (D1/D8) — el shell los ignora cuando devuelven array vacío.
 
-   8.5b.2: Memoria migrado (JUGANDO usa 2 botones fantasma con
-   payload { equipo } — deuda #130), Pictionary devuelve [] en
-   todas las fases (bonus requiere payload compuesto — deuda
-   #131) y Rosco parcial ('' y TURNO_ACTIVO → [] — deuda #132).
+   8.5b.2: Memoria migrado, Pictionary devuelve [] en todas
+   las fases (bonus requiere payload compuesto — deuda #131) y
+   Rosco parcial ('' y TURNO_ACTIVO → [] — deuda #132).
+
+   8.5c.1: JUGANDO de Memoria usa descriptor `selector` (deuda
+   #130 cerrada — el handler convierte `Number(payload.valor)`).
 
    Nota: Trivia conserva `renderizarPanelConductor` legacy
    (convivencia D8) — el shell lo ignora cuando hay
@@ -278,7 +280,7 @@ test('4 GameUIs de 8.5b.1: accionesConductor devuelve array por fase, VOTANDO Hi
   expect(res.votandoVacio).toBe(0);
 });
 
-test('3 GameUIs de 8.5b.2: Memoria migrado, Pictionary [] y Rosco parcial con legacy intacto', async ({ page }) => {
+test('3 GameUIs de 8.5b.2/8.5c.1: Memoria con selector en JUGANDO, Pictionary [] y Rosco parcial con legacy intacto', async ({ page }) => {
   await page.goto('/');
   await waitForCumpeo(page);
 
@@ -308,7 +310,13 @@ test('3 GameUIs de 8.5b.2: Memoria migrado, Pictionary [] y Rosco parcial con le
     const mem = window.cumpeo.uiRegistry.obtener('MEMORIA');
     out.memoriaJugando = mem
       .accionesConductor({ fase: 'JUGANDO', equipo_actual: 1 }, contexto)
-      .map((d) => ({ tipo: d.tipo, texto: d.texto, accion: d.accion, payload: d.payload ?? null }));
+      .map((d) => ({
+        tipo: d.tipo,
+        label: d.label ?? null,
+        accion: d.accion,
+        valorActual: d.valorActual ?? null,
+        opciones: (d.opciones || []).map((o) => o.valor)
+      }));
 
     return out;
   });
@@ -318,14 +326,19 @@ test('3 GameUIs de 8.5b.2: Memoria migrado, Pictionary [] y Rosco parcial con le
     expect(res[codigo].legacyIntacto, codigo).toBe(true);
   }
 
-  // Memoria migrado en todas las fases (M1-A)
-  expect(res.MEMORIA.largos).toEqual([1, 1, 2, 1, 3, 1, 1, 0]);
+  // Memoria migrado en todas las fases (M1-A / 8.5c.1)
+  expect(res.MEMORIA.largos).toEqual([1, 1, 2, 1, 1, 1, 1, 0]);
 
-  // M1-A: JUGANDO → mensaje + 2 botones fantasma con payload { equipo }
+  // 8.5c.1 (deuda #130 cerrada): JUGANDO → 1 descriptor selector
+  // (el binding envía { valor } string; el handler convierte)
   expect(res.memoriaJugando).toEqual([
-    { tipo: 'mensaje', texto: 'Cambiar a:', accion: undefined, payload: null },
-    { tipo: 'secundario', texto: 'Rojo', accion: 'cambiar-turno-manual-memoria', payload: { equipo: 1 } },
-    { tipo: 'secundario', texto: 'Azul', accion: 'cambiar-turno-manual-memoria', payload: { equipo: 2 } }
+    {
+      tipo: 'selector',
+      label: 'Cambiar a',
+      accion: 'cambiar-turno-manual-memoria',
+      valorActual: 1,
+      opciones: [1, 2]
+    }
   ]);
 
   // M2-A (deuda #131): Pictionary → [] en todas las fases (legacy intacto)

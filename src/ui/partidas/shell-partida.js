@@ -449,7 +449,11 @@ async function _renderContenido(container, app, partidaId) {
         } else if (tipo === 'cambiar-turno-manual-memoria') {
           const { MemoriaGameDefinition } = await import('../../games/memoria/MemoriaGameDefinition.js');
           const config = juegoActivo.configuracion_congelada || MemoriaGameDefinition.defaultConfig;
-          const nuevoEstado = MemoriaGameDefinition.cambiarTurno(estadoJuego, config, payload.equipo);
+          // Acepta { equipo } (legacy) o { valor } (descriptor selector — 8.5c.1).
+          const equipoRaw = payload.equipo ?? payload.valor;
+          const equipo = Number(equipoRaw);
+          if (equipo !== 1 && equipo !== 2) return;
+          const nuevoEstado = MemoriaGameDefinition.cambiarTurno(estadoJuego, config, equipo);
           await app.services.partida.actualizarEstadoJuego(
             partidaId, juegoActivo.id, nuevoEstado,
             juegoActivo.state_version, sessionId, nuevoActionId()
@@ -1388,7 +1392,8 @@ function _renderBotonConductor(d) {
 /**
  * Renderiza el panel conductor a partir de descriptores de acción.
  * Soporta: botón (`primario`/`secundario`/`peligro`/`fantasma`),
- * `selector`, `input` y `mensaje`. Los botones consecutivos se
+ * `selector`, `input`, `html` (8.5c.1 — inyectado sin escapar,
+ * HTML confiable del GameUI) y `mensaje`. Los botones consecutivos se
  * agrupan en una fila flex-wrap.
  *
  * Exportada para tests unitarios (8.5a).
@@ -1418,10 +1423,13 @@ export function _renderAccionesConductor(acciones) {
         const seleccionada = String(o.valor) === String(d.valorActual) ? ' selected' : '';
         return `<option value="${_escapeAttrConductor(o.valor)}"${seleccionada}>${o.texto}</option>`;
       }).join('');
+      const payloadAttr = d.payload !== undefined
+        ? ` data-accion-payload="${_escapeAttrConductor(JSON.stringify(d.payload))}"`
+        : '';
       partes.push(`
         <label class="font-label-md uppercase text-on-surface-variant flex items-center gap-2">
           ${d.label || ''}
-          <select data-accion-conductor="${_escapeAttrConductor(d.accion)}"
+          <select data-accion-conductor="${_escapeAttrConductor(d.accion)}"${payloadAttr}
             class="border-2 border-on-surface rounded-lg px-2 py-1 bg-surface-container-lowest font-body-md normal-case">${opciones}</select>
         </label>
       `);
@@ -1429,14 +1437,20 @@ export function _renderAccionesConductor(acciones) {
       cerrarFila();
       const minAttr = d.min !== undefined ? ` min="${_escapeAttrConductor(d.min)}"` : '';
       const maxAttr = d.max !== undefined ? ` max="${_escapeAttrConductor(d.max)}"` : '';
+      const payloadAttr = d.payload !== undefined
+        ? ` data-accion-payload="${_escapeAttrConductor(JSON.stringify(d.payload))}"`
+        : '';
       partes.push(`
         <label class="font-label-md uppercase text-on-surface-variant flex items-center gap-2">
           ${d.label || ''}
-          <input type="${d.tipoInput || 'text'}" value="${_escapeAttrConductor(d.valorActual ?? '')}"${minAttr}${maxAttr}
+          <input type="${d.tipoInput || 'text'}" value="${_escapeAttrConductor(d.valorActual ?? '')}"${minAttr}${maxAttr}${payloadAttr}
             data-accion-conductor="${_escapeAttrConductor(d.accion)}"
             class="border-2 border-on-surface rounded-lg px-2 py-1 bg-surface-container-lowest font-body-md normal-case w-24" />
         </label>
       `);
+    } else if (d.tipo === 'html') {
+      cerrarFila();
+      partes.push(`<div>${d.html}</div>`);
     } else {
       filaBotones.push(_renderBotonConductor(d));
     }
@@ -1464,11 +1478,13 @@ function _bindAccionesConductor(container, callbacks) {
       });
     } else if (el.tagName === 'SELECT') {
       el.addEventListener('change', async (e) => {
-        await callbacks.onAccion(accion, { valor: e.target.value });
+        const payloadBase = _parsearPayloadConductor(el.dataset.accionPayload);
+        await callbacks.onAccion(accion, { ...payloadBase, valor: e.target.value });
       });
     } else if (el.tagName === 'INPUT') {
       el.addEventListener('change', async (e) => {
-        await callbacks.onAccion(accion, { valor: e.target.value });
+        const payloadBase = _parsearPayloadConductor(el.dataset.accionPayload);
+        await callbacks.onAccion(accion, { ...payloadBase, valor: e.target.value });
       });
     }
   });
