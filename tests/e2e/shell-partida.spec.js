@@ -975,3 +975,42 @@ test('abrir Ajustes muestra modal con valor actual; guardar actualiza', async ({
     await page.evaluate(() => window.cumpeo.services.ajustes.actualizar({ tiempo_max_pausa_seg: 120 }));
   }
 });
+
+test('modo espera visible cuando partida EN_CURSO sin juego activo', async ({ page }) => {
+  await page.goto('/');
+  const { id } = await setupCircuitoYPartida(page);
+  await page.evaluate(async (pid) => {
+    await window.cumpeo.services.partida.tomarControl(pid, window.cumpeo.session.sessionId);
+    await window.cumpeo.services.partida.comenzarPartida(pid, window.cumpeo.session.sessionId, crypto.randomUUID());
+  }, id);
+
+  await page.goto('/');
+  await page.goto(`/#/partidas/${id}`);
+  await waitForCumpeo(page);
+
+  const espera = page.locator('#shell-game-container [data-role="modo-espera"]');
+  await expect(espera).toBeVisible({ timeout: 15000 });
+  await expect(page.locator('#shell-panel-conductor')).toBeVisible();
+  await expect(page.getByText('Este juego aún no tiene panel conductor')).toHaveCount(0);
+  await expect(page.locator('#cola-moderacion')).toBeVisible();
+});
+
+test('modo espera muestra poster del próximo juego', async ({ page }) => {
+  await page.goto('/');
+  const { id } = await setupCircuitoYPartida(page);
+  await page.evaluate(async (pid) => {
+    await window.cumpeo.services.partida.tomarControl(pid, window.cumpeo.session.sessionId);
+    await window.cumpeo.services.partida.comenzarPartida(pid, window.cumpeo.session.sessionId, crypto.randomUUID());
+  }, id);
+
+  await page.goto('/');
+  await page.goto(`/#/partidas/${id}`);
+  await waitForCumpeo(page);
+
+  const poster = page.locator('#shell-game-container [data-role="poster-img"]');
+  await expect(poster).toBeVisible({ timeout: 15000 });
+  await expect(poster).toHaveAttribute('src', /\/posters\/(trivia|placeholder)\.png/);
+  await expect(poster).toHaveAttribute('alt', /Trivia/i);
+  await expect(page.locator('[data-role="modo-espera-ronda"]')).toBeVisible();
+  await expect(page.locator('[data-role="btn-iniciar-juego-espera"]')).toBeVisible();
+});

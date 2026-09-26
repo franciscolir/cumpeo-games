@@ -388,3 +388,25 @@ test('pública muestra resultado en REVELANDO', async ({ page }) => {
   await expect(page.getByText('Resultado del público')).toBeVisible({ timeout: 15000 });
   await expect(page.getByText('17 respuestas')).toBeVisible();
 });
+
+test('modo espera en pública ocupa toda la pantalla', async ({ page }) => {
+  await page.goto('/');
+  const { codigo, partidaId } = await setupPartidaCompleta(page);
+
+  await page.evaluate(async (pid) => {
+    await window.cumpeo.services.partida.tomarControl(pid, window.cumpeo.session.sessionId);
+    await window.cumpeo.services.partida.comenzarPartida(pid, window.cumpeo.session.sessionId, crypto.randomUUID());
+  }, partidaId);
+
+  await page.goto(`/#/publica-nueva/${codigo}`);
+  await waitForCumpeo(page);
+
+  const espera = page.locator('[data-role="modo-espera-publico"]');
+  await expect(espera).toBeVisible({ timeout: 15000 });
+  await expect(page.locator('[data-role="poster-img"]')).toBeVisible();
+  await expect(page.locator('[data-role="qr-section"]')).toHaveCount(0);
+  await expect(page.locator('.border-\\[\\#00D2FF\\]')).toHaveCount(0);
+  await expect(page.locator('[data-role="galeria"]')).toHaveCount(0);
+  await expect(page.locator('[data-role="next-challenge-card"]')).toHaveCount(0);
+  await expect(page.locator('#muro-mensajes')).toBeVisible();
+});
