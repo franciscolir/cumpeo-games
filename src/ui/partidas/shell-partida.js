@@ -170,6 +170,9 @@ async function _renderContenido(container, app, partidaId) {
   const gameUI = codigoJuego ? app.uiRegistry.obtener(codigoJuego) : null;
   const estadoJuego = juegoActivo ? (juegoActivo.estado_juego || {}) : {};
 
+  const mostrarModoEspera = partida.estado === 'EN_CURSO' &&
+    (!juegoActivo || (juegoActivo.estado !== 'EN_CURSO' && juegoActivo.estado !== 'PAUSADO'));
+
   const itemsDelJuego = (codigoJuego === 'QUE_PIENSA_EL_PUBLICO' || codigoJuego === 'TRIVIA' || codigoJuego === 'HISTORIA_ENREDADA' || codigoJuego === 'MEMORIA' || codigoJuego === 'ANTI_TRIVIA' || codigoJuego === 'ENLACES')
     ? await cargarItemsDeJuego(app, juegoActivo)
     : null;
@@ -1357,10 +1360,14 @@ async function _renderContenido(container, app, partidaId) {
       ${_renderShellTimer(estadoJuego)}
       ${_renderHeroScoreboard(partida, juegoActivo, equipos)}
       <div id="shell-game-container" class="flex-1 min-h-0 overflow-hidden p-4">
-        ${gameUI ? '' : _renderPlaceholder('Este juego aún no tiene UI implementada')}
+        ${mostrarModoEspera
+          ? _renderModoEspera(juegos, puedeControlar)
+          : (gameUI ? '' : _renderPlaceholder('Este juego aún no tiene UI implementada'))}
       </div>
       <div id="shell-panel-conductor" class="min-h-[200px] border-t-2.5 border-on-surface bg-surface-container-lowest p-4">
-        ${gameUI ? '' : _renderPlaceholder('Este juego aún no tiene panel conductor')}
+        ${mostrarModoEspera
+          ? ''
+          : (gameUI ? '' : _renderPlaceholder('Este juego aún no tiene panel conductor'))}
       </div>
       ${puedeControlar ? _renderColaModeracion() : ''}
     </div>
@@ -1736,6 +1743,103 @@ function _renderHeroScoreboard(partida, juegoActivo, equipos) {
 }
 
 /* =============================================================
+   Modo espera (5b) — circuito EN_CURSO sin juego activo
+   ============================================================= */
+
+function _derivarProximoDesafio(juegos) {
+  const activo = juegos.find((j) => j.estado === 'EN_CURSO' || j.estado === 'PAUSADO');
+  const pendientes = juegos.filter((j) => j.estado === 'PENDIENTE');
+  const total = juegos.length;
+
+  if (!activo && pendientes.length === 0) {
+    return {
+      ronda: 'ESPERANDO',
+      titulo: 'ESPERANDO INICIO DE JUEGO',
+      descripcion: 'El anfitrión cargará el primer desafío en breve.'
+    };
+  }
+
+  if (activo) {
+    const idxActivo = juegos.indexOf(activo);
+    const siguiente = pendientes[0];
+    if (siguiente) {
+      const idxSiguiente = juegos.indexOf(siguiente);
+      return {
+        ronda: `JUEGO ${idxSiguiente + 1} / ${total}`,
+        titulo: siguiente.juego_nombre || siguiente.juego_codigo || 'PRÓXIMO DESAFÍO',
+        descripcion: 'Prepárate para el siguiente desafío del circuito.'
+      };
+    }
+    return {
+      ronda: `ÚLTIMO · ${idxActivo + 1} / ${total}`,
+      titulo: 'ÚLTIMO DESAFÍO',
+      descripcion: 'Este es el último juego del circuito.'
+    };
+  }
+
+  const siguiente = pendientes[0];
+  if (siguiente) {
+    const idx = juegos.indexOf(siguiente);
+    return {
+      ronda: `JUEGO ${idx + 1} / ${total}`,
+      titulo: siguiente.juego_nombre || siguiente.juego_codigo || 'PRÓXIMO DESAFÍO',
+      descripcion: 'Prepárate para el siguiente desafío del circuito.'
+    };
+  }
+
+  return {
+    ronda: 'ESPERANDO',
+    titulo: 'ESPERANDO INICIO DE JUEGO',
+    descripcion: 'El anfitrión cargará el primer desafío en breve.'
+  };
+}
+
+function _renderPosterJuego(juegoCodigo, juegoNombre) {
+  const codigo = String(juegoCodigo || '').toLowerCase().replace(/_/g, '-');
+  const src = `/posters/${codigo}.png`;
+  const nombre = juegoNombre || juegoCodigo || 'Próximo juego';
+
+  return `
+    <div class="flex flex-col items-center gap-4">
+      <img
+        src="${src}"
+        alt="${nombre}"
+        data-role="poster-img"
+        class="max-w-md w-full rounded-2xl border-3 border-on-surface shadow-comic-lg"
+        onerror="this.onerror=null; this.src='/posters/placeholder.png';"
+      />
+      <h2 class="font-display-hero text-4xl text-primary uppercase">${nombre}</h2>
+    </div>
+  `;
+}
+
+function _renderModoEspera(juegos, puedeControlar) {
+  const { ronda, titulo, descripcion } = _derivarProximoDesafio(juegos);
+  const proximo = juegos.find((j) => j.estado === 'PENDIENTE');
+
+  return `
+    <div class="h-full w-full flex flex-col items-center justify-center gap-6 p-6 text-center" data-role="modo-espera">
+      ${proximo
+        ? _renderPosterJuego(proximo.juego_codigo, proximo.juego_nombre)
+        : `<h2 class="font-display-hero text-4xl text-primary uppercase">${titulo}</h2>`}
+      <span class="font-display-hero text-sm uppercase text-on-surface bg-comicYellow border-2 border-on-surface px-3 py-1" data-role="modo-espera-ronda">${ronda}</span>
+      <p class="font-body-md text-on-surface-variant max-w-xl" data-role="modo-espera-desc">${descripcion}</p>
+      ${proximo && puedeControlar ? `
+        <button
+          type="button"
+          id="btn-iniciar-juego-espera"
+          data-role="btn-iniciar-juego-espera"
+          data-juego-ejecutado-id="${proximo.id}"
+          class="font-display-hero text-xl uppercase border-2.5 border-on-surface rounded-lg px-8 py-3 bg-primary text-on-primary shadow-comic-sm hover:shadow-comic-md transition"
+        >
+          Iniciar juego
+        </button>
+      ` : ''}
+    </div>
+  `;
+}
+
+/* =============================================================
    Placeholder
    ============================================================= */
 
@@ -2055,6 +2159,18 @@ function _salirModoEspera() {
 
 function _bindAcciones(container, app, partidaId, juegoActivo) {
   const sessionId = app.session.sessionId;
+
+  const btnIniciarEspera = container.querySelector('[data-role="btn-iniciar-juego-espera"]');
+  if (btnIniciarEspera) {
+    btnIniciarEspera.addEventListener('click', async () => {
+      const juegoEjecutadoId = btnIniciarEspera.getAttribute('data-juego-ejecutado-id');
+      if (!juegoEjecutadoId) return;
+      try {
+        await app.services.partida.iniciarJuego(partidaId, juegoEjecutadoId, sessionId, nuevoActionId());
+        await _renderContenido(container, app, partidaId);
+      } catch (err) { window.alert(`Error: ${err.message}`); }
+    });
+  }
 
   const btnTomarControl = container.querySelector('#btn-tomar-control');
   if (btnTomarControl) {

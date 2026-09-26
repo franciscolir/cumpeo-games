@@ -164,6 +164,9 @@ async function _renderContenido(container, app, codigo) {
   const fase = juegoActivo?.estado_juego?.fase || '';
   const mostrarGaleria = !juegoActivo;
 
+  const esModoEspera = partida.estado === 'EN_CURSO' &&
+    (!juegoActivo || (juegoActivo.estado !== 'EN_CURSO' && juegoActivo.estado !== 'PAUSADO'));
+
   let escenarioHTML;
   if (esRosco) {
     escenarioHTML = _renderEscenarioRosco(juegoActivo, fase, contexto);
@@ -186,6 +189,20 @@ async function _renderContenido(container, app, codigo) {
     escenarioHTML = _renderEscenarioEnlaces(juegoActivo, fase, contexto);
   } else {
     escenarioHTML = _renderEscenario(juegoActivo);
+  }
+
+  if (esModoEspera) {
+    container.innerHTML = `
+      <div class="min-h-screen flex flex-col bg-background">
+        ${_renderHeader(partida, juegoActivo)}
+        <div class="flex-1 flex items-center justify-center px-6 py-8">
+          ${_renderModoEsperaPublico(juegos)}
+        </div>
+        ${_renderMuroMensajes()}
+      </div>
+    `;
+    await _cargarMuroMensajes(container, app, partida.id);
+    return;
   }
 
   container.innerHTML = `
@@ -1099,6 +1116,44 @@ function _renderProximoDesafio(juegos) {
         ${descripcion}
       </p>
     </section>
+  `;
+}
+
+/* =============================================================
+   Modo espera (5b) — pantalla completa
+   ============================================================= */
+
+function _renderPosterJuego(juegoCodigo, juegoNombre) {
+  const codigo = String(juegoCodigo || '').toLowerCase().replace(/_/g, '-');
+  const src = `/posters/${codigo}.png`;
+  const nombre = juegoNombre || juegoCodigo || 'Próximo juego';
+
+  return `
+    <div class="flex flex-col items-center gap-4">
+      <img
+        src="${src}"
+        alt="${nombre}"
+        data-role="poster-img"
+        class="max-w-md w-full rounded-2xl border-3 border-on-surface shadow-comic-lg"
+        onerror="this.onerror=null; this.src='/posters/placeholder.png';"
+      />
+      <h2 class="font-display-hero text-4xl text-primary uppercase">${nombre}</h2>
+    </div>
+  `;
+}
+
+function _renderModoEsperaPublico(juegos) {
+  const { ronda, titulo, descripcion } = _derivarProximoDesafio(juegos);
+  const proximo = juegos.find((j) => j.estado === 'PENDIENTE');
+
+  return `
+    <div class="flex flex-col items-center gap-6 text-center w-full max-w-3xl" data-role="modo-espera-publico">
+      ${proximo
+        ? _renderPosterJuego(proximo.juego_codigo, proximo.juego_nombre)
+        : `<h2 class="font-display-hero text-4xl text-primary uppercase">${titulo}</h2>`}
+      <span class="font-display-hero text-sm uppercase text-on-surface bg-comicYellow border-2 border-on-surface px-3 py-1" data-role="modo-espera-ronda">${ronda}</span>
+      <p class="font-body-md text-on-surface-variant max-w-xl" data-role="modo-espera-desc">${descripcion}</p>
+    </div>
   `;
 }
 
