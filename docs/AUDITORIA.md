@@ -292,6 +292,8 @@ aprobación del operador. Violación de regla 5 de CONTINUIDAD.md.
 Verificar siempre que el agente NO commitee: la evidencia debe
 incluir `git log` mostrando HEAD sin cambios. | Paso 5a (detectado)
 | Baja |
+| 142 | `shell-partida.spec.js:945` (abrir Ajustes) falla con "permission denied for table ajustes_globales". RLS de 0019 aplicado pero GRANTs faltantes en Supabase Cloud. Pre-existente (verificado con `git stash push -u` en 391c4c3). | Paso 5b (detectado) | Media |
+| 143 | `_derivarProximoDesafio` y `_renderPosterJuego` duplicados en shell-partida.js y shell-publica.js. Mover a `src/ui/_shared/` para evitar duplicación. | Paso 5b (detectado) | Baja |
 ---
 
 ## Deuda técnica cerrada
